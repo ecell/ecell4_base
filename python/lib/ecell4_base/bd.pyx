@@ -1,17 +1,21 @@
 import collections
 import numbers
 
-from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
-from ecell4.core cimport *
-import numbers
+from cython cimport address
+from libcpp.string cimport string
+from libcpp.vector cimport vector
+
+from ecell4_base.types cimport *
+from ecell4_base.shared_ptr cimport shared_ptr
+from ecell4_base.core cimport *
 
 from deprecated import deprecated
 
 
 ## ReactionInfo
 cdef class ReactionInfo:
-    """A class stores detailed information about a reaction in egfrd.
+    """A class stores detailed information about a reaction in bd.
 
     ReactionInfo(t, reactants, products)
 
@@ -21,7 +25,7 @@ cdef class ReactionInfo:
         """Constructor.
 
         Args:
-          t (Real): A time when a reaction occurs
+          t (Real): A time when a reaction occurred
           reactants (list): A list of reactants.
             Reactants are given as a pair of ``ParticleID`` and ``Particle``.
           products (list): A list of products.
@@ -106,12 +110,12 @@ cdef ReactionInfo ReactionInfo_from_Cpp_ReactionInfo(Cpp_ReactionInfo* ri):
     r.thisptr = new_obj
     return r
 
-## EGFRDWorld
-#  a python wrapper for Cpp_EGFRDWorld
-cdef class EGFRDWorld:
-    """A class containing the properties of the egfrd world.
+## BDWorld
+#  a python wrapper for Cpp_BDWorld
+cdef class BDWorld:
+    """A class containing the properties of the bd world.
 
-    EGFRDWorld(edge_lengths=None, matrix_sizes=None, GSLRandomNumberGenerator rng=None)
+    BDWorld(edge_lengths=None, matrix_sizes=None, GSLRandomNumberGenerator rng=None)
 
     """
 
@@ -125,7 +129,7 @@ cdef class EGFRDWorld:
             A size of the World.
         matrix_sizes : Integer3, optional
             A size of a cell matrix.
-            The number of cells must be larger than 3, in principle.
+                The number of cells must be larger than 3, in principle.
         rng : GSLRandomNumberGenerator, optional
             A random number generator.
 
@@ -136,29 +140,27 @@ cdef class EGFRDWorld:
                   GSLRandomNumberGenerator rng=None):
         cdef string filename
 
-        if rng is not None:
-            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
-                new Cpp_EGFRDWorld(
-                    deref((<Real3>edge_lengths).thisptr),
-                    deref(matrix_sizes.thisptr), deref(rng.thisptr)))
-        elif matrix_sizes is not None:
-            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
-                new Cpp_EGFRDWorld(
-                    deref((<Real3>edge_lengths).thisptr),
+        if edge_lengths is None:
+            self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld())
+        elif matrix_sizes is None:
+            if isinstance(edge_lengths, Real3):
+                self.thisptr = new shared_ptr[Cpp_BDWorld](
+                    new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr)))
+            else:
+                filename = tostring(edge_lengths)
+                self.thisptr = new shared_ptr[Cpp_BDWorld](new Cpp_BDWorld(filename))
+        elif rng is None:
+            self.thisptr = new shared_ptr[Cpp_BDWorld](
+                new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr),
                     deref(matrix_sizes.thisptr)))
-        elif edge_lengths is None:
-            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](new Cpp_EGFRDWorld())
-        elif isinstance(edge_lengths, Real3):
-            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
-                new Cpp_EGFRDWorld(deref((<Real3>edge_lengths).thisptr)))
         else:
-            filename = tostring(edge_lengths)
-            self.thisptr = new shared_ptr[Cpp_EGFRDWorld](
-                new Cpp_EGFRDWorld(filename))
+            self.thisptr = new shared_ptr[Cpp_BDWorld](
+                new Cpp_BDWorld(deref((<Real3>edge_lengths).thisptr),
+                    deref(matrix_sizes.thisptr), deref(rng.thisptr)))
 
     def __dealloc__(self):
         # XXX: Here, we release shared pointer,
-        #      and if reference count to the EGFRDWorld object,
+        #      and if reference count to the BDWorld object,
         #      it will be released automatically.
         del self.thisptr
 
@@ -223,65 +225,18 @@ cdef class EGFRDWorld:
     def actual_lengths(self):
         return self.edge_lengths()
 
-    def matrix_sizes(self):
-        """matrix_sizes() -> Integer3
+    def list_species(self):
+        """Return a list of species."""
+        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
 
-        Return the matrix sizes of the world.
-
-        """
-        cdef Cpp_Integer3 sizes = self.thisptr.get().matrix_sizes()
-        return Integer3_from_Cpp_Integer3(address(sizes))
-
-    def set_value(self, Species sp, Real value):
-        """set_value(sp, value)
-
-        Set the value of the given species.
-
-        Parameters
-        ----------
-        sp : Species
-            a species whose value you set
-        value : Real
-            a value set
-
-        """
-        self.thisptr.get().set_value(deref(sp.thisptr), value)
-
-    def get_value(self, Species sp):
-        """get_value(sp) -> Real
-
-        Return the value (number) corresponding the given Species.
-
-        Parameters
-        ----------
-        sp : Species
-            a species whose value you require
-
-        Returns
-        -------
-        Real:
-            the value
-
-        """
-        return self.thisptr.get().get_value(deref(sp.thisptr))
-
-    def get_value_exact(self, Species sp):
-        """get_value_exact(sp) -> Real
-
-        Return the value (number) corresponding the given Species.
-
-        Parameters
-        ----------
-        sp : Species
-            a species whose value you require
-
-        Returns
-        -------
-        Real:
-            the value
-
-        """
-        return self.thisptr.get().get_value_exact(deref(sp.thisptr))
+        retval = []
+        cdef vector[Cpp_Species].iterator it = species.begin()
+        while it != species.end():
+            retval.append(
+                 Species_from_Cpp_Species(
+                     <Cpp_Species*>(address(deref(it)))))
+            inc(it)
+        return retval
 
     def num_particles(self, Species sp = None):
         """num_particles(sp=None) -> Integer
@@ -296,7 +251,8 @@ cdef class EGFRDWorld:
 
         Returns
         -------
-            Integer: The number of particles (of the given species)
+        Integer:
+            The number of particles (of the given species)
 
         """
         if sp is None:
@@ -511,15 +467,15 @@ cdef class EGFRDWorld:
             inc(it)
         return retval
 
-    # def periodic_transpose(self, Real3 pos1, Real3 pos2):
-    #     """periodic_transpose(Real3 pos1, Real3 pos2) -> Real3
-    #
-    #     Return a closest image of pos1 relative to the given position (pos2).
-    #
-    #     """
-    #     cdef Cpp_Real3 newpos = self.thisptr.get().periodic_transpose(
-    #         deref(pos1.thisptr), deref(pos2.thisptr))
-    #     return Real3_from_Cpp_Real3(address(newpos))
+    def periodic_transpose(self, Real3 pos1, Real3 pos2):
+        """periodic_transpose(Real3 pos1, Real3 pos2) -> Real3
+
+        Return a closest image of pos1 relative to the given position (pos2).
+
+        """
+        cdef Cpp_Real3 newpos = self.thisptr.get().periodic_transpose(
+            deref(pos1.thisptr), deref(pos2.thisptr))
+        return Real3_from_Cpp_Real3(address(newpos))
 
     def apply_boundary(self, Real3 pos):
         """apply_boundary(Real3 pos) -> Real3
@@ -531,13 +487,13 @@ cdef class EGFRDWorld:
         cdef Cpp_Real3 newpos = self.thisptr.get().apply_boundary(deref(pos.thisptr))
         return Real3_from_Cpp_Real3(address(newpos))
 
-    # def distance_sq(self, Real3 pos1, Real3 pos2):
-    #     """distance_sq(Real3 pos1, Real3 pos2) -> Real
-    #
-    #     Return a square of the closest distance between the given positions.
-    #
-    #     """
-    #     return self.thisptr.get().distance_sq(deref(pos1.thisptr), deref(pos2.thisptr))
+    def distance_sq(self, Real3 pos1, Real3 pos2):
+        """distance_sq(Real3 pos1, Real3 pos2) -> Real
+
+        Return a square of the closest distance between the given positions.
+
+        """
+        return self.thisptr.get().distance_sq(deref(pos1.thisptr), deref(pos2.thisptr))
 
     def distance(self, Real3 pos1, Real3 pos2):
         """distance(Real3 pos1, Real3 pos2) -> Real
@@ -551,36 +507,55 @@ cdef class EGFRDWorld:
         """Return the volume of the world."""
         return self.thisptr.get().volume()
 
-    def has_species(self, Species sp):
-        """has_species(sp) -> bool
+    # def has_species(self, Species sp):
+    #     """has_species(sp) -> bool
+    #
+    #     Check if the given species is in the space or not.
+    #
+    #     Args:
+    #         sp (Species): A species to be found.
+    #
+    #     Returns:
+    #         bool: True if the species in the space.
+    #
+    #     """
+    #     return self.thisptr.get().has_species(deref(sp.thisptr))
 
-        Check if the given species is in the space or not.
+    def get_value(self, Species sp):
+        """get_value(sp) -> Real
+
+        Return the value (number) corresponding the given Species.
 
         Parameters
         ----------
         sp : Species
-            A species to be found.
+            a species whose value you require
 
         Returns
         -------
-        bool:
-            True if the species in the space.
+        Real:
+            the value
 
         """
-        return self.thisptr.get().has_species(deref(sp.thisptr))
+        return self.thisptr.get().get_value(deref(sp.thisptr))
 
-    def list_species(self):
-        """Return a list of species."""
-        cdef vector[Cpp_Species] species = self.thisptr.get().list_species()
+    def get_value_exact(self, Species sp):
+        """get_value_exact(sp) -> Real
 
-        retval = []
-        cdef vector[Cpp_Species].iterator it = species.begin()
-        while it != species.end():
-            retval.append(
-                 Species_from_Cpp_Species(
-                     <Cpp_Species*>(address(deref(it)))))
-            inc(it)
-        return retval
+        Return the value (number) corresponding the given Species.
+
+        Parameters
+        ----------
+        sp : Species
+            a species whose value you require
+
+        Returns
+        -------
+        Real:
+            the value
+
+        """
+        return self.thisptr.get().get_value_exact(deref(sp.thisptr))
 
     def num_molecules(self, Species sp):
         """num_molecules(sp) -> Integer
@@ -590,14 +565,18 @@ cdef class EGFRDWorld:
         Parameters
         ----------
         sp : Species
-            a species whose molecules you count
+            A species whose molecules you count
 
         Returns
         -------
         Integer:
-            the number of molecules (of a given species)
+            The number of molecules (of a given species)
 
         """
+        # if sp is None:
+        #     return self.thisptr.get().num_molecules()
+        # else:
+        #     return self.thisptr.get().num_molecules(deref(sp.thisptr))
         return self.thisptr.get().num_molecules(deref(sp.thisptr))
 
     def num_molecules_exact(self, Species sp):
@@ -608,18 +587,21 @@ cdef class EGFRDWorld:
         Parameters
         ----------
         sp : Species
-            a species whose molecules you count
+            A species whose molecules you count
 
         Returns
         -------
         Integer:
-            the number of molecules of a given species
+            The number of molecules of a given species
 
         """
         return self.thisptr.get().num_molecules_exact(deref(sp.thisptr))
 
     # def add_species(self, Species sp):
     #     self.thisptr.get().add_species(deref(sp.thisptr))
+
+    # def add_molecules(self, Species sp, Integer num):
+    #     self.thisptr.get().add_molecules(deref(sp.thisptr), num)
 
     def add_molecules(self, Species sp, Integer num, shape=None):
         """add_molecules(sp, num, shape=None)
@@ -701,78 +683,61 @@ cdef class EGFRDWorld:
         return GSLRandomNumberGenerator_from_Cpp_RandomNumberGenerator(
             self.thisptr.get().rng())
 
-cdef EGFRDWorld EGFRDWorld_from_Cpp_EGFRDWorld(
-    shared_ptr[Cpp_EGFRDWorld] w):
-    r = EGFRDWorld(Real3(1, 1, 1))
+    def as_base(self):
+        """Return self as a base class. Only for developmental use."""
+        retval = WorldInterface()
+        del retval.thisptr
+        retval.thisptr = new shared_ptr[Cpp_WorldInterface](
+            <shared_ptr[Cpp_WorldInterface]>deref(self.thisptr))
+        return retval
+
+cdef BDWorld BDWorld_from_Cpp_BDWorld(
+    shared_ptr[Cpp_BDWorld] w):
+    r = BDWorld(Real3(1, 1, 1))
     r.thisptr.swap(w)
     return r
 
-## EGFRDSimulator
-#  a python wrapper for Cpp_EGFRDSimulator
-cdef class EGFRDSimulator:
-    """ A class running the simulation with the egfrd algorithm.
+## BDSimulator
+#  a python wrapper for Cpp_BDSimulator
+cdef class BDSimulator:
+    """ A class running the simulation with the bd algorithm.
 
-    EGFRDSimulator(m, w)
+    BDSimulator(m, w, bd_dt_factor)
 
     """
 
-    def __init__(self, *args):
-        """EGFRDSimulator(w, m, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
-        EGFRDSimulator(w, bd_dt_factor, dissociation_retry_moves, user_max_shell_size)
+    def __init__(self, BDWorld w, m=None, bd_dt_factor=None):
+        """BDSimulator(w, m, bd_dt_factor)
 
         Constructor.
 
         Parameters
         ----------
-        w : EGFRDWorld
+        w : BDWorld
             A world
         m : Model, optional
             A model
-        bd_dt_factor : Real, optional
-        dissociation_retry_moves : Integer, optional
-        user_max_shell_size : Real, optional
+        bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, EGFRDWorld w, *args):
-        if len(args) == 0:
-            self.thisptr = new Cpp_EGFRDSimulator(deref(w.thisptr))
-        elif isinstance(args[0], (Model, NetworkModel, NetfreeModel)):
-            if len(args) == 1:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]))
-            elif len(args) == 2:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
-                    <Real>args[1])
-            elif len(args) == 3:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
-                    <Real>args[1], <Integer>args[2])
-            elif len(args) == 4:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
-                    <Real>args[1], <Integer>args[2], <Real>args[3])
+    def __cinit__(self, BDWorld w, m=None, bd_dt_factor=None):
+        if m is None:
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(w.thisptr))
             else:
-                raise ValueError(
-                    "The number of arguments is invalid [{}].".format(len(args) + 1))
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(w.thisptr), <Real>bd_dt_factor)
         else:
-            if len(args) == 1:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr),
-                    <Real>args[0])
-            elif len(args) == 2:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr),
-                    <Real>args[0], <Integer>args[1])
-            elif len(args) == 3:
-                self.thisptr = new Cpp_EGFRDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
-                    <Real>args[1], <Integer>args[2], <Real>args[3])
+            if bd_dt_factor is None:
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(w.thisptr), Cpp_Model_from_Model(m))
             else:
-                raise ValueError(
-                    "The number of arguments is invalid [{}].".format(len(args) + 1))
+                self.thisptr = new Cpp_BDSimulator(
+                    deref(w.thisptr), Cpp_Model_from_Model(m),
+                    <Real>bd_dt_factor)
 
     def __dealloc__(self):
         del self.thisptr
@@ -801,19 +766,49 @@ cdef class EGFRDSimulator:
         if upto is None:
             self.thisptr.step()
         else:
-            return self.thisptr.step(<Real> upto)
+            return self.thisptr.step(upto)
 
     def t(self):
         """Return the time."""
         return self.thisptr.t()
 
+    def set_t(self, Real t_new):
+        """set_t(t)
+
+        Set the current time.
+
+        Parameters
+        ----------
+        t : Real
+            a current time.
+
+        """
+        self.thisptr.set_t(t_new)
+
     def dt(self):
         """Return the step interval."""
         return self.thisptr.dt()
 
+    def set_dt(self, Real& dt):
+        """set_dt(dt)
+
+        Set a step interval.
+
+        Parameters
+        ----------
+        dt : Real
+            a step interval
+
+        """
+        self.thisptr.set_dt(dt)
+
     def next_time(self):
         """Return the scheduled time for the next step."""
         return self.thisptr.next_time()
+
+    def initialize(self):
+        """Initialize the simulator."""
+        self.thisptr.initialize()
 
     def check_reaction(self):
         """Return if any reaction occurred at the last step, or not."""
@@ -842,44 +837,13 @@ cdef class EGFRDSimulator:
             inc(it)
         return retval
 
-
-    def set_t(self, Real new_t):
-        """set_t(t)
-
-        Set the current time.
-
-        Parameters
-        ----------
-        t : Real
-            A current time.
-
-        """
-        self.thisptr.set_t(new_t)
-
-    def set_dt(self, Real dt):
-        """set_dt(dt)
-
-        Set a step interval.
-
-        Parameters
-        ----------
-        dt : Real
-            A step interval
-
-        """
-        self.thisptr.set_dt(dt)
-
-    def initialize(self):
-        """Initialize the simulator."""
-        self.thisptr.initialize()
-
     def model(self):
         """Return the model bound."""
         return Model_from_Cpp_Model(self.thisptr.model())
 
     def world(self):
         """Return the world bound."""
-        return EGFRDWorld_from_Cpp_EGFRDWorld(self.thisptr.world())
+        return BDWorld_from_Cpp_BDWorld(self.thisptr.world())
 
     def run(self, Real duration, observers=None, is_dirty=None):
         """run(duration, observers, is_dirty)
@@ -919,412 +883,10 @@ cdef class EGFRDSimulator:
             else:
                 self.thisptr.run(duration,
                     deref((<Observer>(observers.as_base())).thisptr), is_dirty)
-
-    def set_paranoiac(self, val):
-        self.thisptr.set_paranoiac(<bool>val)
-
-cdef EGFRDSimulator EGFRDSimulator_from_Cpp_EGFRDSimulator(Cpp_EGFRDSimulator* s):
-    r = EGFRDSimulator(
-        EGFRDWorld_from_Cpp_EGFRDWorld(s.world()), Model_from_Cpp_Model(s.model()))
-    del r.thisptr
-    r.thisptr = s
-    return r
-
-## EGFRDFactory
-#  a python wrapper for Cpp_EGFRDFactory
-cdef class EGFRDFactory:
-    """ A factory class creating a EGFRDWorld instance and a EGFRDSimulator instance.
-
-    EGFRDFactory(Integer3 matrix_sizes=None, Real bd_dt_factor=None,
-                 Integer dissociation_retry_moves=None, Real user_max_shell_size=None)
-
-    """
-
-    def __init__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
-                 dissociation_retry_moves=None, user_max_shell_size=None):
-        """Constructor.
-
-        Parameters
-        ----------
-        matrix_sizes : Integer3, optional
-            A size of a cell matrix.
-            The number of cells must be larger than 3, in principle.
-        bd_dt_factor : Real, optioanl
-            A rescaling factor for the step interval
-            of BD propagation in a Multi domain.
-        dissociation_retry_moves : Integer, optional
-            A number of trials for placing a new product when it's failed
-            because of the overlap.
-        user_max_shell_size : Real, optional
-            A custom max shell size.
-
-        """
-        pass
-
-    def __cinit__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
-                  dissociation_retry_moves=None, user_max_shell_size=None):
-        self.thisptr = new Cpp_EGFRDFactory(
-            Cpp_EGFRDFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
-            Cpp_EGFRDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor,
-            Cpp_EGFRDFactory.default_dissociation_retry_moves() if dissociation_retry_moves is None else <Integer>dissociation_retry_moves,
-            Cpp_EGFRDFactory.default_user_max_shell_size() if user_max_shell_size is None else <Real>user_max_shell_size)
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def rng(self, GSLRandomNumberGenerator rng):
-        """rng(GSLRandomNumberGenerator) -> EGFRDFactory
-
-        Set a random number generator, and return self.
-
-        """
-        cdef Cpp_EGFRDFactory *ptr = self.thisptr.rng_ptr(deref(rng.thisptr))
-        assert ptr == self.thisptr
-        return self
-
-    def world(self, arg1=None):
-        """world(arg1=None) -> EGFRDWorld
-
-        Return a EGFRDWorld instance.
-
-        Parameters
-        ----------
-        arg1 : Real3, Real, str, optional. default None
-            If Real3, it suggests the lengths of edges of a ``BDWorld`` created.
-            If Real, it suggests the volume.
-            If str, it suggests the path of a HDF5 file loaded.
-
-        Returns
-        -------
-        EGFRDWorld:
-            The created world
-
-        """
-        if arg1 is None:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world()))
-        elif isinstance(arg1, Real3):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](
-                    self.thisptr.world(deref((<Real3>arg1).thisptr))))
-        elif isinstance(arg1, numbers.Number):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(<Real>(arg1))))
-        elif isinstance(arg1, str):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(tostring(arg1))))
-        else:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(
-                    Cpp_Model_from_Model(arg1))))
-
-    def simulator(self, EGFRDWorld arg1, arg2=None):
-        """simulator(arg1, arg2) -> EGFRDSimulator
-
-        Return a EGFRDSimulator instance.
-
-        Parameters
-        ----------
-        arg1 : EGFRDWorld
-            A world
-        arg2 : Model, optional
-            A simulation model
-
-        Returns
-        -------
-        EGFRDSimulator:
-            The created simulator
-
-        """
-        if arg2 is None:
-            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-                self.thisptr.simulator(deref(arg1.thisptr)))
-        else:
-            return EGFRDSimulator_from_Cpp_EGFRDSimulator(
-                self.thisptr.simulator(
-                    deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
-
-    def create_world(self, arg1=None):
-        """create_world(arg1=None) -> EGFRDWorld
-
-        Return a EGFRDWorld instance.
-
-        Parameters
-        ----------
-        arg1 : Real3
-            The lengths of edges of a EGFRDWorld created
-
-        or
-
-        arg1 : str
-            The path of a HDF5 file for EGFRDWorld
-
-        Returns
-        -------
-        EGFRDWorld:
-            The created world
-
-        """
-        import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
-        return self.world(arg1)
-
-    def create_simulator(self, EGFRDWorld arg1, arg2=None):
-        """create_simulator(arg1, arg2) -> EGFRDSimulator
-
-        Return a EGFRDSimulator instance.
-
-        Parameters
-        ----------
-        arg1 : EGFRDWorld
-            A world
-        arg2 : Model, optional
-            A simulation model
-
-        Returns
-        -------
-        EGFRDSimulator:
-            The created simulator
-
-        """
-        import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
-        return self.simulator(arg1, arg2)
-
-## BDSimulator
-#  a python wrapper for Cpp_BDSimulator
-cdef class BDSimulator:
-    """ A class running the simulation with the bd algorithm.
-
-    BDSimulator(m, w)
-
-    """
-
-    def __init__(self, *args):
-        """BDSimulator(w, m, bd_dt_factor, dissociation_retry_moves)
-        BDSimulator(w, bd_dt_factor, dissociation_retry_moves)
-
-        Constructor.
-
-        Parameters
-        ----------
-        w : EGFRDWorld
-            A world
-        m : Model, optional
-            A model
-        bd_dt_factor : Real, optional
-        dissociation_retry_moves : Integer, optional
-
-        """
-        pass
-
-    def __cinit__(self, EGFRDWorld w, *args):
-        if len(args) == 0:
-            self.thisptr = new Cpp_BDSimulator(deref(w.thisptr))
-        elif isinstance(args[0], (Model, NetworkModel, NetfreeModel)):
-            if len(args) == 1:
-                self.thisptr = new Cpp_BDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]))
-            elif len(args) == 2:
-                self.thisptr = new Cpp_BDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
-                    <Real>args[1])
-            elif len(args) == 3:
-                self.thisptr = new Cpp_BDSimulator(
-                    deref(w.thisptr), Cpp_Model_from_Model(args[0]),
-                    <Real>args[1], <Integer>args[2])
-            else:
-                raise ValueError(
-                    "The number of arguments is invalid [{}].".format(len(args) + 1))
-        else:
-            if len(args) == 1:
-                self.thisptr = new Cpp_BDSimulator(
-                    deref(w.thisptr),
-                    <Real>args[0])
-            elif len(args) == 2:
-                self.thisptr = new Cpp_BDSimulator(
-                    deref(w.thisptr),
-                    <Real>args[0], <Integer>args[1])
-            else:
-                raise ValueError(
-                    "The number of arguments is invalid [{}].".format(len(args) + 1))
-
-    def __dealloc__(self):
-        del self.thisptr
-
-    def num_steps(self):
-        """Return the number of steps."""
-        return self.thisptr.num_steps()
-
-    def step(self, upto = None):
-        """step(upto=None) -> bool
-
-        Step the simulation.
-
-        Parameters
-        ----------
-        upto : Real, optional
-            The time which to step the simulation up to
-
-        Returns
-        -------
-        bool:
-            True if the simulation did not reach the given time.
-            When upto is not given, nothing will be returned.
-
-        """
-        if upto is None:
-            self.thisptr.step()
-        else:
-            return self.thisptr.step(<Real> upto)
-
-    def t(self):
-        """Return the time."""
-        return self.thisptr.t()
-
-    def dt(self):
-        """Return the step interval."""
-        return self.thisptr.dt()
-
-    def next_time(self):
-        """Return the scheduled time for the next step."""
-        return self.thisptr.next_time()
-
-    def check_reaction(self):
-        """Return if any reaction occurred at the last step, or not."""
-        return self.thisptr.check_reaction()
-
-    def last_reactions(self):
-        """last_reactions() -> [(ReactionRule, ReactionInfo)]
-
-        Return reactions occuring at the last step.
-
-        Returns
-        -------
-        list:
-            The list of reaction rules and infos.
-
-        """
-        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]] reactions = self.thisptr.last_reactions()
-        cdef vector[pair[Cpp_ReactionRule, Cpp_ReactionInfo]].iterator it = reactions.begin()
-        retval = []
-        while it != reactions.end():
-            retval.append((
-                ReactionRule_from_Cpp_ReactionRule(
-                    <Cpp_ReactionRule*>(address(deref(it).first))),
-                ReactionInfo_from_Cpp_ReactionInfo(
-                    <Cpp_ReactionInfo*>(address(deref(it).second)))))
-            inc(it)
-        return retval
-
-    def set_t(self, Real new_t):
-        """set_t(t)
-
-        Set the current time.
-
-        Parameters
-        ----------
-        t : Real
-            a current time.
-
-        """
-        self.thisptr.set_t(new_t)
-
-    def set_dt(self, Real dt):
-        """set_dt(dt)
-
-        Set a step interval.
-
-        Parameters
-        ----------
-        dt : Real
-            a step interval
-
-        """
-        self.thisptr.set_dt(dt)
-
-    def initialize(self):
-        """Initialize the simulator."""
-        self.thisptr.initialize()
-
-    def model(self):
-        """Return the model bound."""
-        return Model_from_Cpp_Model(self.thisptr.model())
-
-    def world(self):
-        """Return the world bound."""
-        return EGFRDWorld_from_Cpp_EGFRDWorld(self.thisptr.world())
-
-    def run(self, Real duration, observers=None, is_dirty=None):
-        """run(duration, observers, is_dirty)
-
-        Run the simulation.
-
-        Parameters
-        ----------
-        duration : Real
-            A duration for running a simulation.
-            A simulation is expected to be stopped at t() + duration.
-        observers : list of Obeservers, optional
-            observers
-        is_dirty : bool, default True
-            If True, call initialize before running.
-
-        """
-        cdef vector[shared_ptr[Cpp_Observer]] tmp
-
-        if is_dirty is None:
-            if observers is None:
-                self.thisptr.run(duration)
-            elif isinstance(observers, collections.Iterable):
-                for obs in observers:
-                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-                self.thisptr.run(duration, tmp)
-            else:
-                self.thisptr.run(duration,
-                    deref((<Observer>(observers.as_base())).thisptr))
-        else:
-            if observers is None:
-                self.thisptr.run(duration, is_dirty)
-            elif isinstance(observers, collections.Iterable):
-                for obs in observers:
-                    tmp.push_back(deref((<Observer>(obs.as_base())).thisptr))
-                self.thisptr.run(duration, tmp, is_dirty)
-            else:
-                self.thisptr.run(duration,
-                    deref((<Observer>(observers.as_base())).thisptr), is_dirty)
-
-    def dt_factor(self):
-        return self.thisptr.dt_factor()
-
-    def add_potential(self, Species sp, shape, threshold=None):
-        """add_potential(sp, arg)
-
-        Set the potential for each Species.
-
-        Parameters
-        ----------
-        sp : Species
-            a species of molecules to add
-        shape : Real or Shape
-            a radius or a shape for the potential
-        threshold : Real, optional
-            a threshold
-            default is None.
-
-        """
-        if threshold is None:
-            if isinstance(shape, numbers.Number):
-                self.thisptr.add_potential(deref(sp.thisptr), <Real>shape)
-            else:
-                self.thisptr.add_potential(
-                    deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr))
-        else:
-            self.thisptr.add_potential(
-                deref(sp.thisptr), deref((<Shape>(shape.as_base())).thisptr), <Real>threshold)
-
 
 cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
     r = BDSimulator(
-        EGFRDWorld_from_Cpp_EGFRDWorld(s.world()), Model_from_Cpp_Model(s.model()))
+        BDWorld_from_Cpp_BDWorld(s.world()), Model_from_Cpp_Model(s.model()))
     del r.thisptr
     r.thisptr = s
     return r
@@ -1334,13 +896,11 @@ cdef BDSimulator BDSimulator_from_Cpp_BDSimulator(Cpp_BDSimulator* s):
 cdef class BDFactory:
     """ A factory class creating a BDWorld instance and a BDSimulator instance.
 
-    BDFactory(Integer3 matrix_sizes=None, Real bd_dt_factor=None,
-              Integer dissociation_retry_moves=None)
+    BDFactory(Integer3 matrix_sizes=None, Real bd_dt_factor=None)
 
     """
 
-    def __init__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
-                 dissociation_retry_moves=None):
+    def __init__(self, Integer3 matrix_sizes=None, bd_dt_factor=None):
         """Constructor.
 
         Parameters
@@ -1348,22 +908,15 @@ cdef class BDFactory:
         matrix_sizes : Integer3, optional
             A size of a cell matrix.
             The number of cells must be larger than 3, in principle.
-        bd_dt_factor : Real, optioanl
-            A rescaling factor for the step interval
-            of BD propagation in a Multi domain.
-        dissociation_retry_moves : Integer, optional
-            A number of trials for placing a new product when it's failed
-            because of the overlap.
+        bd_dt_factor : Real
 
         """
         pass
 
-    def __cinit__(self, Integer3 matrix_sizes=None, bd_dt_factor=None,
-                  dissociation_retry_moves=None):
+    def __cinit__(self, Integer3 matrix_sizes=None, bd_dt_factor=None):
         self.thisptr = new Cpp_BDFactory(
             Cpp_BDFactory.default_matrix_sizes() if matrix_sizes is None else deref(matrix_sizes.thisptr),
-            Cpp_BDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor,
-            Cpp_BDFactory.default_dissociation_retry_moves() if dissociation_retry_moves is None else <Integer>dissociation_retry_moves)
+            Cpp_BDFactory.default_bd_dt_factor() if bd_dt_factor is None else <Real>bd_dt_factor)
 
     def __dealloc__(self):
         del self.thisptr
@@ -1379,9 +932,9 @@ cdef class BDFactory:
         return self
 
     def world(self, arg1=None):
-        """world(arg1=None) -> EGFRDWorld
+        """world(arg1=None) -> BDWorld
 
-        Return a EGFRDWorld instance.
+        Return a ``BDWorld`` instance.
 
         Parameters
         ----------
@@ -1392,39 +945,38 @@ cdef class BDFactory:
 
         Returns
         -------
-        EGFRDWorld:
+        BDWorld:
             The created world
 
         """
         if arg1 is None:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](
-                    self.thisptr.world()))
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world()))
         elif isinstance(arg1, Real3):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](
                     self.thisptr.world(deref((<Real3>arg1).thisptr))))
         elif isinstance(arg1, numbers.Number):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(<Real>(arg1))))
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(<Real>arg1)))
         elif isinstance(arg1, str):
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(tostring(arg1))))
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(tostring(arg1))))
         else:
-            return EGFRDWorld_from_Cpp_EGFRDWorld(
-                shared_ptr[Cpp_EGFRDWorld](self.thisptr.world(
+            return BDWorld_from_Cpp_BDWorld(
+                shared_ptr[Cpp_BDWorld](self.thisptr.world(
                     Cpp_Model_from_Model(arg1))))
 
-    def simulator(self, EGFRDWorld arg1, arg2=None):
-        """simulator(arg1, arg2) -> BDSimulator
+    def simulator(self, BDWorld arg1, arg2=None):
+        """simulator(arg1, arg2=None) -> BDSimulator
 
-        Return a BDSimulator instance.
+        Return a ``BDSimulator`` instance.
 
         Parameters
         ----------
-        arg1 : EGFRDWorld
+        arg1 : BDWorld
             A world
-        arg2 : Model
+        arg2 : Model, optional
             A simulation model
 
         Returns
@@ -1442,39 +994,39 @@ cdef class BDFactory:
                     deref(arg1.thisptr), Cpp_Model_from_Model(arg2)))
 
     def create_world(self, arg1=None):
-        """create_world(arg1=None) -> EGFRDWorld
+        """create_world(arg1=None) -> BDWorld
 
-        Return a EGFRDWorld instance.
+        Return a ``BDWorld`` instance.
 
         Parameters
         ----------
         arg1 : Real3
-            The lengths of edges of a EGFRDWorld created
+            The lengths of edges of a ``BDWorld`` created
 
         or
 
         arg1 : str
-            The path of a HDF5 file for EGFRDWorld
+            The path of a HDF5 file for ``BDWorld``
 
         Returns
         -------
-        EGFRDWorld:
+        BDWorld:
             The created world
 
         """
         import warnings; warnings.warn("Function 'create_world()' has moved to 'world()'", DeprecationWarning)
         return self.world(arg1)
 
-    def create_simulator(self, EGFRDWorld arg1, arg2=None):
-        """create_simulator(arg1, arg2) -> BDSimulator
+    def create_simulator(self, BDWorld arg1, arg2=None):
+        """create_simulator(arg1, arg2=None) -> BDSimulator
 
-        Return a BDSimulator instance.
+        Return a ``BDSimulator`` instance.
 
         Parameters
         ----------
         arg1 : BDWorld
             A world
-        arg2 : Model
+        arg2 : Model, optional
             A simulation model
 
         Returns
@@ -1486,8 +1038,8 @@ cdef class BDFactory:
         import warnings; warnings.warn("Function 'create_simulator()' has moved to 'simulator()'", DeprecationWarning)
         return self.simulator(arg1, arg2)
 
-Factory = EGFRDFactory  # This is an alias
-World = EGFRDWorld  # This is an alias
-Simulator = EGFRDSimulator  # This is an alias
+Factory = BDFactory  # This is an alias
+World = BDWorld  # This is an alias
+Simulator = BDSimulator  # This is an alias
 
-__all__ = ["EGFRDWorld", "EGFRDSimulator", "EGFRDFactory", "BDSimulator", "BDFactory"]
+__all__ = ["BDWorld", "BDSimulator", "BDFactory"]
