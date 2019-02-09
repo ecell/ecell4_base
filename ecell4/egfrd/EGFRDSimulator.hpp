@@ -1363,7 +1363,7 @@ public:
                     ::size(shell_ids)) == num_shells);
         }
 
-        CHECK((*base_type::world_).num_particles() == particles_correspond_to_domains);
+        CHECK((*base_type::world_).num_particles() == static_cast<ecell4::Integer>(particles_correspond_to_domains));
 
         {
             std::vector<domain_id_type> diff;
@@ -2548,9 +2548,9 @@ protected:
     template<typename Tshell>
     void determine_next_event(AnalyticalSingle<traits_type, Tshell>& domain)
     {
-        typedef Tshell shell_type;
-        typedef typename shell_type::shape_type shape_type;
-        typedef typename detail::get_greens_function<shape_type>::type greens_function;
+        // typedef Tshell shell_type;
+        // typedef typename shell_type::shape_type shape_type;
+        // typedef typename detail::get_greens_function<shape_type>::type greens_function;
         time_type const dt_reaction(draw_single_reaction_time(domain.particle().second.species()));
         time_type const dt_escape_or_interaction(draw_escape_or_interaction_time(domain));
         LOG_DEBUG(("determine_next_event: %s => dt_reaction=%.16g, "
@@ -2671,7 +2671,7 @@ protected:
     void restore_domain(AnalyticalSingle<traits_type, T>& domain,
                         std::pair<domain_id_type, length_type> const& closest)
     {
-        typedef typename AnalyticalSingle<traits_type, T>::shell_type shell_type;
+        // typedef typename AnalyticalSingle<traits_type, T>::shell_type shell_type;
         domain_type const* closest_domain(
             closest.second == std::numeric_limits<length_type>::infinity() ?
                 (domain_type const*)0: get_domain(closest.first).get());
@@ -3419,7 +3419,7 @@ protected:
     template<typename T>
     void fire_event(AnalyticalPair<traits_type, T>& domain, pair_event_kind kind)
     {
-        typedef AnalyticalSingle<traits_type, T> corresponding_single_type;
+        // typedef AnalyticalSingle<traits_type, T> corresponding_single_type;
 
         if (kind == PAIR_EVENT_IV_UNDETERMINED)
         {

@@ -27,10 +27,13 @@ class EGFRDFactory
 public:
 
     typedef SimulatorFactory<EGFRDWorld, EGFRDSimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef EGFRDFactory this_type;
 
 protected:
 
-    typedef EGFRDWorld::matrix_sizes_type matrix_sizes_type;
+    typedef world_type::matrix_sizes_type matrix_sizes_type;
 
 public:
 
@@ -43,6 +46,11 @@ public:
           matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor),
           dissociation_retry_moves_(dissociation_retry_moves),
           user_max_shell_size_(user_max_shell_size)
+    {
+        ; // do nothing
+    }
+
+    virtual ~EGFRDFactory()
     {
         ; // do nothing
     }
@@ -67,92 +75,64 @@ public:
         return 0.0;
     }
 
-    virtual ~EGFRDFactory()
-    {
-        ; // do nothing
-    }
-
-    EGFRDFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline EGFRDFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual EGFRDWorld* create_world(const std::string filename) const
-    {
-        return new EGFRDWorld(filename);
-    }
+protected:
 
-    virtual EGFRDWorld* create_world(
-        const Real3& edge_lengths = Real3(1, 1, 1)) const
+    virtual world_type* create_world(const Real3& edge_lengths) const override
     {
         if (rng_)
         {
             if (matrix_sizes_ != default_matrix_sizes())
             {
-                return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
+                return new world_type(edge_lengths, matrix_sizes_, rng_);
             }
             else
             {
-                EGFRDWorld* ret = new EGFRDWorld(edge_lengths);
+                world_type* ret = new world_type(edge_lengths);
                 (*ret).set_rng(rng_);
                 return ret;
             }
         }
         else if (matrix_sizes_ != default_matrix_sizes())
         {
-            return new EGFRDWorld(edge_lengths, matrix_sizes_);
+            return new world_type(edge_lengths, matrix_sizes_);
         }
         else
         {
-            return new EGFRDWorld(edge_lengths);
+            return new world_type(edge_lengths);
         }
     }
 
-    virtual EGFRDWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return extras::generate_world_from_model(*this, m);
-    }
-
-    virtual EGFRDSimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
+    virtual simulator_type* create_simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         if (user_max_shell_size_ != default_user_max_shell_size())
         {
-            return new EGFRDSimulator(
-                world, model, bd_dt_factor_, dissociation_retry_moves_, user_max_shell_size_);
+            return new simulator_type(
+                w, m, bd_dt_factor_, dissociation_retry_moves_, user_max_shell_size_);
         }
         else if (dissociation_retry_moves_ != default_dissociation_retry_moves())
         {
-            return new EGFRDSimulator(
-                world, model, bd_dt_factor_, dissociation_retry_moves_);
+            return new simulator_type(
+                w, m, bd_dt_factor_, dissociation_retry_moves_);
         }
         else if (bd_dt_factor_ != default_bd_dt_factor())
         {
-            return new EGFRDSimulator(world, model, bd_dt_factor_);
+            return new simulator_type(w, m, bd_dt_factor_);
         }
         else
         {
-            return new EGFRDSimulator(world, model);
-        }
-    }
-
-    virtual EGFRDSimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        if (boost::shared_ptr<Model> bound_model = world->lock_model())
-        {
-            return create_simulator(bound_model, world);
-        }
-        else
-        {
-            throw std::invalid_argument("A world must be bound to a model.");
+            return new simulator_type(w, m);
         }
     }
 
@@ -171,10 +151,13 @@ class BDFactory
 public:
 
     typedef SimulatorFactory<EGFRDWorld, BDSimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef BDFactory this_type;
 
 protected:
 
-    typedef EGFRDWorld::matrix_sizes_type matrix_sizes_type;
+    typedef world_type::matrix_sizes_type matrix_sizes_type;
 
 public:
 
@@ -185,6 +168,11 @@ public:
         : base_type(), rng_(),
           matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor),
           dissociation_retry_moves_(dissociation_retry_moves)
+    {
+        ; // do nothing
+    }
+
+    virtual ~BDFactory()
     {
         ; // do nothing
     }
@@ -204,87 +192,59 @@ public:
         return -1;
     }
 
-    virtual ~BDFactory()
-    {
-        ; // do nothing
-    }
-
-    BDFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline BDFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual EGFRDWorld* create_world(const std::string filename) const
-    {
-        return new EGFRDWorld(filename);
-    }
+protected:
 
-    virtual EGFRDWorld* create_world(
-        const Real3& edge_lengths = Real3(1, 1, 1)) const
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {
             if (matrix_sizes_ != default_matrix_sizes())
             {
-                return new EGFRDWorld(edge_lengths, matrix_sizes_, rng_);
+                return new world_type(edge_lengths, matrix_sizes_, rng_);
             }
             else
             {
-                EGFRDWorld* ret = new EGFRDWorld(edge_lengths);
+                world_type* ret = new world_type(edge_lengths);
                 (*ret).set_rng(rng_);
                 return ret;
             }
         }
         else if (matrix_sizes_ != default_matrix_sizes())
         {
-            return new EGFRDWorld(edge_lengths, matrix_sizes_);
+            return new world_type(edge_lengths, matrix_sizes_);
         }
         else
         {
-            return new EGFRDWorld(edge_lengths);
+            return new world_type(edge_lengths);
         }
     }
 
-    virtual EGFRDWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return extras::generate_world_from_model(*this, m);
-    }
-
-    virtual BDSimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
+    virtual simulator_type* create_simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         if (dissociation_retry_moves_ != default_dissociation_retry_moves())
         {
-            return new BDSimulator(
-                world, model, bd_dt_factor_, dissociation_retry_moves_);
+            return new simulator_type(
+                w, m, bd_dt_factor_, dissociation_retry_moves_);
         }
         else if (bd_dt_factor_ != default_bd_dt_factor())
         {
-            return new BDSimulator(world, model, bd_dt_factor_);
+            return new simulator_type(w, m, bd_dt_factor_);
         }
         else
         {
-            return new BDSimulator(world, model);
-        }
-    }
-
-    virtual BDSimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        if (boost::shared_ptr<Model> bound_model = world->lock_model())
-        {
-            return create_simulator(bound_model, world);
-        }
-        else
-        {
-            throw std::invalid_argument("A world must be bound to a model.");
+            return new simulator_type(w, m);
         }
     }
 

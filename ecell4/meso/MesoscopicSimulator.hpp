@@ -78,11 +78,11 @@ protected:
 };
 
 class MesoscopicSimulator
-    : public SimulatorBase<Model, MesoscopicWorld>
+    : public SimulatorBase<MesoscopicWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, MesoscopicWorld> base_type;
+    typedef SimulatorBase<MesoscopicWorld> base_type;
     typedef SubvolumeSpace::coordinate_type coordinate_type;
     typedef ReactionInfo reaction_info_type;
 
@@ -199,7 +199,7 @@ protected:
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
-            assert(retval.second >= reactions.size());
+            assert(retval.second >= static_cast<Integer>(reactions.size()));
 
             if (reactions.size() == 0)
             {
@@ -401,7 +401,7 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return num_tot1_[c] * rr_.k();
+            return (num_tot1_[c] > 0 ? num_tot1_[c] * rr_.k() : 0.0);
         }
 
     protected:
@@ -423,7 +423,10 @@ protected:
         }
 
         SecondOrderReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
-            : base_type(sim, rr), num_tot1_(sim->world()->num_subvolumes()), num_tot2_(sim->world()->num_subvolumes()), num_tot12_(sim->world()->num_subvolumes())
+            : base_type(sim, rr),
+            num_tot1_(sim->world()->num_subvolumes()),
+            num_tot2_(sim->world()->num_subvolumes()),
+            num_tot12_(sim->world()->num_subvolumes())
         {
             ;
         }
@@ -527,7 +530,8 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return (num_tot1_[c] * num_tot2_[c] - num_tot12_[c]) * rr_.k() / world().subvolume();
+            const Integer num = num_tot1_[c] * num_tot2_[c] - num_tot12_[c];
+            return (num > 0 ? num * rr_.k() / world().subvolume(): 0.0);
         }
 
     protected:
@@ -634,8 +638,8 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return (num_tot_[c] * rr_.k()
-                    * world().get_occupancy(rr_.reactants()[stidx_], c));
+            const Real occupancy = world().get_occupancy(rr_.reactants()[stidx_], c);
+            return (num_tot_[c] > 0 ? num_tot_[c] * rr_.k() * occupancy : 0.0);
         }
 
     protected:
@@ -765,7 +769,7 @@ protected:
         void set_dependency(ReactionRuleProxy* proxy)
         {
             const std::vector<Integer> coefs = proxy->check_dependency(pool_->species());
-            if (std::count(coefs.begin(), coefs.end(), 0) < coefs.size())
+            if (std::count(coefs.begin(), coefs.end(), 0) < std::distance(coefs.begin(), coefs.end()))
             {
                 dependencies_.push_back(std::make_pair(proxy, coefs));
             }
@@ -828,9 +832,9 @@ protected:
 public:
 
     MesoscopicSimulator(
-        boost::shared_ptr<Model> model,
-        boost::shared_ptr<MesoscopicWorld> world)
-        : base_type(model, world)
+        boost::shared_ptr<MesoscopicWorld> world,
+        boost::shared_ptr<Model> model)
+        : base_type(world, model)
     {
         initialize();
     }

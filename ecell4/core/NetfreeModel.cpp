@@ -7,6 +7,84 @@
 namespace ecell4
 {
 
+bool NetfreeModel::update_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        add_species_attribute(sp);
+        return true;
+    }
+    // for (Species::attributes_container_type::const_iterator
+    //     j(sp.attributes().begin()); j != sp.attributes().end(); ++j)
+    // {
+    //     if ((*i).has_attribute((*j).first))
+    //     {
+    //         std::ostringstream message;
+    //         message << "Attribute '" << (*j).first << "' of '" << sp.serial()
+    //             << "' is going to be updated from '" << (*i).get_attribute((*j).first)
+    //             << "' to '" << (*j).second << "'";
+    //         throw AlreadyExists(message.str()); // use boost::format if it's allowed
+    //     }
+    //     (*i).set_attribute((*j).first, (*j).second);
+    // }
+    (*i).overwrite_attributes(sp);
+    return false;
+}
+
+void NetfreeModel::add_species_attribute(const Species& sp)
+{
+    if (has_species_attribute_exact(sp))
+    {
+        throw AlreadyExists("species already exists");
+    }
+    species_attributes_.push_back(sp);
+}
+
+void NetfreeModel::remove_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        std::ostringstream message;
+        message << "The given Speices [" << sp.serial() << "] was not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+    species_attributes_.erase(i, species_attributes_.end());
+}
+
+bool NetfreeModel::has_species_attribute(const Species& sp) const
+{
+    return has_species_attribute_exact(sp);
+}
+
+bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
+{
+    species_container_type::const_iterator i(
+        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    return (i != species_attributes_.end());
+}
+
+Species NetfreeModel::apply_species_attributes(const Species& sp) const
+{
+    for (species_container_type::const_iterator
+        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+    {
+        if (SpeciesExpressionMatcher(*i).match(sp))
+        {
+            Species ret(sp);
+            ret.set_attributes(*i);
+            return ret;
+        }
+    }
+    return sp;
+}
+
+Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
+{
+    return SpeciesExpressionMatcher(pttrn).count(sp);
+}
+
 std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     const Species& sp) const
 {
@@ -123,191 +201,25 @@ std::vector<ReactionRule> NetfreeModel::query_reaction_rules(
     return retval;
 }
 
-Integer NetfreeModel::apply(const Species& pttrn, const Species& sp) const
-{
-    return pttrn.count(sp);
-}
-
 std::vector<ReactionRule> NetfreeModel::apply(
     const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants) const
 {
     return rr.generate(reactants);
 }
 
-void NetfreeModel::add_species_attribute(const Species& sp)
-{
-    if (has_species_attribute_exact(sp))
-    {
-        throw AlreadyExists("species already exists");
-    }
-    species_attributes_.push_back(sp);
-}
-
-void NetfreeModel::remove_species_attribute(const Species& sp)
-{
-    species_container_type::iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
-    if (i == species_attributes_.end())
-    {
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
-    }
-    species_attributes_.erase(i);
-}
-
-bool NetfreeModel::has_species_attribute(const Species& sp) const
-{
-    return has_species_attribute_exact(sp);
-}
-
-bool NetfreeModel::has_species_attribute_exact(const Species& sp) const
-{
-    species_container_type::const_iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
-    return (i != species_attributes_.end());
-}
-
 void NetfreeModel::add_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::const_iterator
-        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
-    if (i != reaction_rules_.end())
-    {
-        throw AlreadyExists("reaction rule already exists");
-    }
-
-    // const reaction_rule_container_type::size_type idx(reaction_rules_.size());
     reaction_rules_.push_back(rr);
-
-    // if (rr.reactants().size() == 1)
-    // {
-    //     first_order_reaction_rules_map_[rr.reactants()[0].serial()].push_back(idx);
-    // }
-    // else if (rr.reactants().size() == 2)
-    // {
-    //     const Species::serial_type
-    //         serial1(rr.reactants()[0].serial()),
-    //         serial2(rr.reactants()[1].serial());
-    //     const std::pair<Species::serial_type, Species::serial_type>
-    //         key(serial1 < serial2?
-    //             std::make_pair(serial1, serial2):
-    //             std::make_pair(serial2, serial1));
-    //     second_order_reaction_rules_map_[key].push_back(idx);
-    // }
-    // else
-    // {
-    //     ;
-    // }
 }
 
 void NetfreeModel::remove_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::iterator
-        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
+    reaction_rule_container_type::iterator i(std::remove(reaction_rules_.begin(), reaction_rules_.end(), rr));
     if (i == reaction_rules_.end())
     {
-        throw NotFound("reaction rule not found");
+        throw NotFound("The given reaction rule was not found.");
     }
-    reaction_rules_.erase(i);
-
-    // reaction_rule_container_type::size_type const
-    //     idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
-    // if (rr.reactants().size() == 1)
-    // {
-    //     first_order_reaction_rules_map_type::iterator
-    //         j(first_order_reaction_rules_map_.find(rr.reactants()[0].serial()));
-    //     if (j == first_order_reaction_rules_map_.end())
-    //     {
-    //         throw IllegalState("no corresponding map key found");
-    //     }
-
-    //     first_order_reaction_rules_map_type::mapped_type::iterator
-    //         k(std::remove((*j).second.begin(), (*j).second.end(), idx));
-    //     if (k == (*j).second.end())
-    //     {
-    //         throw IllegalState("no corresponding map value found");
-    //     }
-    //     else
-    //     {
-    //         (*j).second.erase(k, (*j).second.end());
-    //     }
-    // }
-    // else if (rr.reactants().size() == 2)
-    // {
-    //     second_order_reaction_rules_map_type::iterator
-    //         j(second_order_reaction_rules_map_.find(std::make_pair(
-    //             rr.reactants()[0].serial(), rr.reactants()[1].serial())));
-    //     if (j == second_order_reaction_rules_map_.end())
-    //     {
-    //         throw IllegalState("no corresponding map key found");
-    //     }
-
-    //     second_order_reaction_rules_map_type::mapped_type::iterator
-    //         k(std::remove((*j).second.begin(), (*j).second.end(), idx));
-    //     if (k == (*j).second.end())
-    //     {
-    //         throw IllegalState("no corresponding map value found");
-    //     }
-    //     else
-    //     {
-    //         (*j).second.erase(k, (*j).second.end());
-    //     }
-    // }
-
-    // if (idx < last_idx)
-    // {
-    //     reaction_rule_container_type::value_type const
-    //         last_value(reaction_rules_[last_idx]);
-    //     (*i) = last_value;
-
-    //     if (last_value.reactants().size() == 1)
-    //     {
-    //         first_order_reaction_rules_map_type::iterator
-    //             j(first_order_reaction_rules_map_.find(
-    //                 last_value.reactants()[0].serial()));
-    //         if (j == first_order_reaction_rules_map_.end())
-    //         {
-    //             throw IllegalState("no corresponding map key for the last found");
-    //         }
-
-    //         first_order_reaction_rules_map_type::mapped_type::iterator
-    //             k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
-    //         if (k == (*j).second.end())
-    //         {
-    //             throw IllegalState("no corresponding map value found");
-    //         }
-    //         else
-    //         {
-    //             (*j).second.erase(k, (*j).second.end());
-    //         }
-    //         (*j).second.push_back(idx);
-    //     }
-    //     else if (last_value.reactants().size() == 2)
-    //     {
-    //         second_order_reaction_rules_map_type::iterator
-    //             j(second_order_reaction_rules_map_.find(std::make_pair(
-    //                 last_value.reactants()[0].serial(),
-    //                 last_value.reactants()[1].serial())));
-    //         if (j == second_order_reaction_rules_map_.end())
-    //         {
-    //             throw IllegalState("no corresponding map key for the last found");
-    //         }
-    //         second_order_reaction_rules_map_type::mapped_type::iterator
-    //             k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
-    //         if (k == (*j).second.end())
-    //         {
-    //             throw IllegalState("no corresponding map value found");
-    //         }
-    //         else
-    //         {
-    //             (*j).second.erase(k, (*j).second.end());
-    //         }
-    //         (*j).second.push_back(idx);
-    //     }
-    // }
-
-    // reaction_rules_.pop_back();
+    reaction_rules_.erase(i, reaction_rules_.end());
 }
 
 bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const
@@ -358,7 +270,7 @@ bool check_stoichiometry(const Species& sp,
     for (std::map<Species, Integer>::const_iterator i(max_stoich.begin());
         i != max_stoich.end(); ++i)
     {
-        if ((*i).first.count(sp) > (*i).second)
+        if (static_cast<Integer>(SpeciesExpressionMatcher((*i).first).count(sp)) > (*i).second)
         {
             return false;
         }

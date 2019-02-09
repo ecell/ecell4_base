@@ -225,20 +225,22 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_recursive_generation1)
     rr1.set_k(1.0);
     const Species sp1("X(l,r^1).X(l^1,r^2).X(l^2,r^3).X(l^3,r^4).X(l^4,r)");
 
-    ReactionRuleExpressionMatcher rrexp(rr1);
-    BOOST_CHECK(rrexp.match(sp1));
+    // ReactionRuleExpressionMatcher rrexp(rr1);
+    // BOOST_CHECK(rrexp.match(sp1));
 
-    unsigned int i(0);
-    do {
-        ++i;
-        std::vector<Species> products(rrexp.generate());
-        // const ReactionRule tmp(rrexp.reactants(), products, rr1.k());
-        // std::cerr << "GEN: " << tmp.as_string() << std::endl;
-    } while (rrexp.next());
+    // unsigned int i(0);
+    // do {
+    //     ++i;
+    //     std::vector<Species> products(rrexp.generate());
+    //     // const ReactionRule tmp(rrexp.reactants(), products, rr1.k());
+    //     // std::cerr << "GEN: " << tmp.as_string() << std::endl;
+    // } while (rrexp.next());
 
-    BOOST_CHECK_EQUAL(i, 4);
+    // BOOST_CHECK_EQUAL(i, 4);
 
-    std::vector<ReactionRule> retval(rr1.generate(rrexp.reactants()));
+    std::vector<Species> reactants;
+    reactants.push_back(sp1);
+    std::vector<ReactionRule> retval(rr1.generate(reactants));
     BOOST_CHECK_EQUAL(retval.size(), 4);
 }
 

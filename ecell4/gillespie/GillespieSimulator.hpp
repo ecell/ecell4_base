@@ -1,6 +1,7 @@
 #ifndef ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 #define ECELL4_GILLESPIE_GILLESPIE_SIMULATOR_HPP
 
+#include <limits>
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
@@ -70,11 +71,11 @@ protected:
 };
 
 class GillespieSimulator
-    : public SimulatorBase<Model, GillespieWorld>
+    : public SimulatorBase<GillespieWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, GillespieWorld> base_type;
+    typedef SimulatorBase<GillespieWorld> base_type;
     typedef ReactionInfo reaction_info_type;
 
 protected:
@@ -137,7 +138,7 @@ protected:
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
-            assert(retval.second >= reactions.size());
+            assert(retval.second >= static_cast<Integer>(reactions.size()));
 
             if (reactions.size() == 0)
             {
@@ -297,7 +298,7 @@ protected:
 
         const Real propensity() const
         {
-            return num_tot1_ * rr_.k();
+            return (num_tot1_ > 0 ? num_tot1_ * rr_.k() : 0.0);
         }
 
     protected:
@@ -412,7 +413,8 @@ protected:
 
         const Real propensity() const
         {
-            return (num_tot1_ * num_tot2_ - num_tot12_) * rr_.k() / world().volume();
+            const Integer num = num_tot1_ * num_tot2_ - num_tot12_;
+            return (num > 0 ? num * rr_.k() / world().volume() : 0.0);
         }
 
     protected:
@@ -423,9 +425,9 @@ protected:
 public:
 
     GillespieSimulator(
-        boost::shared_ptr<Model> model,
-        boost::shared_ptr<GillespieWorld> world)
-        : base_type(model, world)
+        boost::shared_ptr<GillespieWorld> world,
+        boost::shared_ptr<Model> model)
+        : base_type(world, model)
     {
         initialize();
     }

@@ -20,11 +20,19 @@ class BDFactory:
 public:
 
     typedef SimulatorFactory<BDWorld, BDSimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef BDFactory this_type;
 
 public:
 
     BDFactory(const Integer3& matrix_sizes = default_matrix_sizes(), Real bd_dt_factor = default_bd_dt_factor())
         : base_type(), rng_(), matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor)
+    {
+        ; // do nothing
+    }
+
+    virtual ~BDFactory()
     {
         ; // do nothing
     }
@@ -39,69 +47,41 @@ public:
         return -1.0;
     }
 
-    virtual ~BDFactory()
-    {
-        ; // do nothing
-    }
-
-    BDFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline BDFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual BDWorld* create_world(const std::string filename) const
-    {
-        return new BDWorld(filename);
-    }
+protected:
 
-    virtual BDWorld* create_world(
-        const Real3& edge_lengths = Real3(1, 1, 1)) const
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {
-            return new BDWorld(edge_lengths, matrix_sizes_, rng_);
+            return new world_type(edge_lengths, matrix_sizes_, rng_);
         }
         else
         {
-            return new BDWorld(edge_lengths, matrix_sizes_);
+            return new world_type(edge_lengths, matrix_sizes_);
         }
     }
 
-    virtual BDWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return extras::generate_world_from_model(*this, m);
-    }
-
-    virtual BDSimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
+    virtual simulator_type* create_simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
         if (bd_dt_factor_ > 0)
         {
-            return new BDSimulator(model, world, bd_dt_factor_);
+            return new simulator_type(w, m, bd_dt_factor_);
         }
         else
         {
-            return new BDSimulator(model, world);
-        }
-    }
-
-    virtual BDSimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        if (bd_dt_factor_ > 0)
-        {
-            return new BDSimulator(world, bd_dt_factor_);
-        }
-        else
-        {
-            return new BDSimulator(world);
+            return new simulator_type(w, m);
         }
     }
 

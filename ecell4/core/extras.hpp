@@ -17,6 +17,7 @@
 #include "Particle.hpp"
 #include "AABB.hpp"
 #include "Model.hpp"
+#include "Shape.hpp"
 
 
 namespace ecell4
@@ -78,10 +79,13 @@ template<typename Tfactory_>
 typename Tfactory_::world_type* generate_world_from_model(
     const Tfactory_& f, const boost::shared_ptr<Model>& m)
 {
-    typename Tfactory_::world_type* w = f.create_world();
+    typename Tfactory_::world_type* w = f.world();
     w->bind_to(m);
     return w;
 }
+
+Shape::dimension_kind
+get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model);
 
 struct VersionInformation
 {
@@ -100,8 +104,8 @@ VersionInformation parse_version_information(const std::string& version);
 bool check_version_information(const std::string& version, const std::string& required);
 
 #ifdef WITH_HDF5
-void save_version_information(H5::CommonFG* root, const std::string& version);
-std::string load_version_information(const H5::CommonFG& root);
+void save_version_information(H5::H5Location* root, const std::string& version);
+std::string load_version_information(const H5::H5Location& root);
 #endif
 std::string load_version_information(const std::string& filename);
 

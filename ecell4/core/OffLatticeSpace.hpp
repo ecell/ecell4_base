@@ -47,9 +47,15 @@ public:
     /*
      * ParticleSpace Traits
      */
-    Real3 actual_lengths() const
+    const Real3& edge_lengths() const
     {
-        throw NotSupported("OffLatticeSpace::actual_lengths() is not supported.");
+        return edge_lengths_;
+    }
+
+    // tmp
+    void set_lengths(const Real3& edge_lengths)
+    {
+        edge_lengths_ = edge_lengths;
     }
 
     const Particle particle_at(const coordinate_type& coord) const;
@@ -57,7 +63,7 @@ public:
     /*
      * VoxelSpace Traits
      */
-    std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const;
+    std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const;
     boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const
     {
         return voxels_.at(coord);
@@ -66,11 +72,6 @@ public:
     /*
      * Coordinate Transformation
      */
-    coordinate_type inner2coordinate(const coordinate_type inner) const
-    {
-        throw NotSupported("OffLatticeSpace::inner2coordinate() is not supported.");
-    }
-
     Real3 coordinate2position(const coordinate_type& coord) const
     {
         return positions_.at(coord);
@@ -92,16 +93,11 @@ public:
         return adjoinings_.at(coord).at(nrand);
     }
 
-    coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const
-    {
-        return get_neighbor(coord, nrand);
-    }
-
     /*
-     * Voxel Manipulation
+     * ParticleVoxel Manipulation
      */
-    bool update_voxel(const ParticleID& pid, const Voxel& v);
+    bool update_voxel(const ParticleID& pid, ParticleVoxel v);
+    bool add_voxel(const Species& species, const ParticleID& pid, const coordinate_type& coord);
     bool remove_voxel(const ParticleID& pid);
     bool remove_voxel(const coordinate_type& coord);
 
@@ -111,12 +107,6 @@ public:
     bool move(const coordinate_type& src,
               const coordinate_type& dest,
               const std::size_t candidate=0);
-
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(boost::shared_ptr<VoxelPool> from,
-                     boost::shared_ptr<VoxelPool> loc,
-                     coordinate_id_pair_type& info,
-                     const Integer nrand);
 
     Integer size() const
     {
@@ -128,37 +118,29 @@ public:
         throw NotSupported("OffLatticeSpace::shape() is not supported.");
     }
 
-    Integer inner_size() const
+    Integer actual_size() const
     {
         return size();
     }
 
 protected:
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool(const Voxel& v);
-    Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const
-    {
-        return static_cast<Integer>(std::count(voxels_.begin(), voxels_.end(), vp));
-    }
-
     bool is_in_range(const coordinate_type& coord) const
     {
-        return 0 <= coord && coord < voxels_.size();
+        return 0 <= coord && coord < static_cast<Integer>(voxels_.size());
     }
 
     void reset(const position_container& positions,
                const coordinate_pair_list_type& adjoining_pairs);
     boost::optional<coordinate_type> get_coord(const ParticleID& pid) const;
-    bool make_molecular_pool(const Species& sp,
-                             Real radius,
-                             Real D,
-                             const std::string loc);
 
 protected:
 
     voxel_container voxels_;
     position_container positions_;
     adjoining_container adjoinings_;
+
+    Real3 edge_lengths_;
 
 };
 

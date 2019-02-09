@@ -63,23 +63,11 @@ public:
         const ReactionRule& rr,
         const ReactionRule::reactant_container_type& reactants) const;
 
-    Species apply_species_attributes(const Species& sp) const
-    {
-        for (species_container_type::const_iterator
-            i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
-        {
-            if (spmatch(*i, sp))
-            {
-                Species retval(sp);
-                retval.set_attributes(*i);
-                return retval;
-            }
-        }
-        return sp;
-    }
+    Species apply_species_attributes(const Species& sp) const;
 
     // NetfreeModelTraits
 
+    bool update_species_attribute(const Species& sp);
     void add_species_attribute(const Species& sp);
     bool has_species_attribute(const Species& sp) const;
     bool has_species_attribute_exact(const Species& sp) const;

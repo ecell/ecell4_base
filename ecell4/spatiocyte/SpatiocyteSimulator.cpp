@@ -99,9 +99,23 @@ void SpatiocyteSimulator::register_events(const Species& sp)
 boost::shared_ptr<SpatiocyteEvent> SpatiocyteSimulator::create_step_event(
         const Species& species, const Real& t, const Real& alpha)
 {
-    boost::shared_ptr<SpatiocyteEvent> event(
-            new StepEvent(model_, world_, species, t, alpha));
-    return event;
+    boost::shared_ptr<MoleculePool> mpool(world_->find_molecule_pool(species));
+    const Shape::dimension_kind dimension(world_->get_dimension(species));
+
+    if (dimension == Shape::THREE)
+    {
+        return boost::shared_ptr<SpatiocyteEvent>(
+                new StepEvent3D(model_, world_, species, t, alpha));
+    }
+    else if (dimension == Shape::TWO)
+    {
+        return boost::shared_ptr<SpatiocyteEvent>(
+                new StepEvent2D(model_, world_, species, t, alpha));
+    }
+    else
+    {
+        throw NotSupported("The dimension of a structure must be two or three.");
+    }
 }
 
 boost::shared_ptr<SpatiocyteEvent>
@@ -185,7 +199,7 @@ void SpatiocyteSimulator::step_()
                 product((*itr).second.products().begin());
                 product != (*itr).second.products().end(); ++product)
         {
-            const Species& species((*product).second.species());
+            const Species& species((*product).species);
             // if (!world_->has_species(species))
             if (std::find(species_list_.begin(), species_list_.end(), species) == species_list_.end())  //XXX:FIXME: Messy patch
                 new_species.push_back(species);

@@ -17,7 +17,7 @@ public:
         ;
     }
 
-    Surface(const boost::shared_ptr<const Shape>& root)
+    Surface(const boost::shared_ptr<Shape>& root)
         : root_(root)
     {
         ;
@@ -61,9 +61,14 @@ public:
         root_->bounding_box(edge_lengths, lower, upper);
     }
 
+    const boost::shared_ptr<Shape>& root() const
+    {
+        return root_;
+    }
+
 protected:
 
-    const boost::shared_ptr<const Shape> root_;
+    boost::shared_ptr<Shape> root_;
 };
 
 struct Union
@@ -71,8 +76,8 @@ struct Union
 {
 public:
 
-    Union(const boost::shared_ptr<const Shape>& a,
-          const boost::shared_ptr<const Shape>& b)
+    Union(const boost::shared_ptr<Shape>& a,
+          const boost::shared_ptr<Shape>& b)
         : a_(a), b_(b)
     {
         ;
@@ -135,10 +140,20 @@ public:
         return Surface(boost::shared_ptr<Shape>(new Union(*this)));
     }
 
+    const boost::shared_ptr<Shape>& one() const
+    {
+        return a_;
+    }
+
+    const boost::shared_ptr<Shape>& another() const
+    {
+        return b_;
+    }
+
 protected:
 
-    const boost::shared_ptr<const Shape> a_;
-    const boost::shared_ptr<const Shape> b_;
+    boost::shared_ptr<Shape> a_;
+    boost::shared_ptr<Shape> b_;
 };
 
 struct Complement
@@ -146,8 +161,8 @@ struct Complement
 {
 public:
 
-    Complement(const boost::shared_ptr<const Shape>& a,
-               const boost::shared_ptr<const Shape>& b)
+    Complement(const boost::shared_ptr<Shape>& a,
+               const boost::shared_ptr<Shape>& b)
         : a_(a), b_(b)
     {
         ;
@@ -207,10 +222,20 @@ public:
         return Surface(boost::shared_ptr<Shape>(new Complement(*this)));
     }
 
+    const boost::shared_ptr<Shape>& one() const
+    {
+        return a_;
+    }
+
+    const boost::shared_ptr<Shape>& another() const
+    {
+        return b_;
+    }
+
 protected:
 
-    const boost::shared_ptr<const Shape> a_;
-    const boost::shared_ptr<const Shape> b_;
+    boost::shared_ptr<Shape> a_;
+    boost::shared_ptr<Shape> b_;
 };
 
 struct AffineTransformation
@@ -224,8 +249,14 @@ public:
         ;
     }
 
-    AffineTransformation(const boost::shared_ptr<const Shape>& root)
+    AffineTransformation(const boost::shared_ptr<Shape>& root)
         : root_(root), a0_(1, 0, 0), a1_(0, 1, 0), a2_(0, 0, 1), b_()
+    {
+        ;
+    }
+
+    AffineTransformation(const boost::shared_ptr<Shape>& root, const Real3& first, const Real3& second, const Real3& third, const Real3& shift)
+        : root_(root), a0_(first), a1_(second), a2_(third), b_(shift)
     {
         ;
     }
@@ -387,6 +418,31 @@ public:
             boost::shared_ptr<Shape>(new AffineTransformation(*this)));
     }
 
+    const Real3 first() const
+    {
+        return a0_;
+    }
+
+    const Real3 second() const
+    {
+        return a1_;
+    }
+
+    const Real3 third() const
+    {
+        return a2_;
+    }
+
+    const Real3 shift() const
+    {
+        return b_;
+    }
+
+    const boost::shared_ptr<Shape>& root() const
+    {
+        return root_;
+    }
+
 protected:
 
     inline void map(Real3& p) const
@@ -430,7 +486,7 @@ protected:
 
 protected:
 
-    const boost::shared_ptr<const Shape> root_;
+    boost::shared_ptr<Shape> root_;
 
     Real3 a0_, a1_, a2_;
     Real3 b_;

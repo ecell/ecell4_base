@@ -39,8 +39,8 @@ public:
     virtual void seed() = 0;
 
 #ifdef WITH_HDF5
-    virtual void save(H5::CommonFG* root) const = 0;
-    virtual void load(const H5::CommonFG& root) = 0;
+    virtual void save(H5::H5Location* root) const = 0;
+    virtual void load(const H5::H5Location& root) = 0;
     virtual void save(const std::string& filename) const = 0;
     virtual void load(const std::string& filename) = 0;
 #else
@@ -90,8 +90,8 @@ public:
     void seed();
 
 #ifdef WITH_HDF5
-    void save(H5::CommonFG* root) const;
-    void load(const H5::CommonFG& root);
+    void save(H5::H5Location* root) const;
+    void load(const H5::H5Location& root);
     void save(const std::string& filename) const;
     void load(const std::string& filename);
 #endif
