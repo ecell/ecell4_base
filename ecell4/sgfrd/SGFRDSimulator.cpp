@@ -590,13 +590,13 @@ SGFRDSimulator::form_pair(
     {
         return boost::none;
     }
+
     if(sgl.dt() != 0.0)
     {
-        SGFRD_TRACE(tracer_.write(
-                    "nearest intruder is not tight. first we need to burst it"));
+        SGFRD_TRACE(tracer_.write("Nearest intruder is not a tight single. "
+                                  "We need to burst it before forming Pair"));
         return boost::none;
     }
-
 
     const FaceID   partner_fid = this->get_face_id(partner_id);
     const ShellID  partner_sid = sgl.shell_id();
@@ -677,7 +677,9 @@ SGFRDSimulator::form_pair(
         pair_shell_size = std::min(pair_shell_size, iter->second);
     }
 
-    if(pair_shell_size >= sh_minim)
+    // maximum available pair shell size determined!
+    if(pair_shell_size >= sh_minim && // pair shell size should be large enough
+       Pair::calc_R_ipv(pair_shell_size, p, partner) > len_ipv)// ipv must be inside
     {
         SGFRD_TRACE(tracer_.write("pair shell size is larger than the minimum. "
                                   "pair can be formed"))
@@ -994,7 +996,7 @@ SGFRDSimulator::form_single_conical_event(
             single_conical_surface_shell_mergin;
 
         /* assertion */{
-        if(false == this->shell_container_.list_shells_within_radius(
+        if(!this->shell_container_.list_shells_within_radius(
             std::make_pair(this->polygon().position_at(vid), vid),
             shell_size).empty())
         {

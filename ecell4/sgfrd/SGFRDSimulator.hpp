@@ -593,12 +593,11 @@ class SGFRDSimulator :
                            this->get_shell(sids[ridx]), dids[ridx], doms[ridx],
                            pids[ridx], ps[ridx], fids[ridx]));
 
-                if(results.size() != 1 || // otherwise, reaction fails.
-                   boost::get<0>(results.front()) != pids[ridx])
+                if(results.size() != 1 || boost::get<0>(results.front()) != pids[ridx])
                 {
                     STAT(stat_reaction_condition.add_count(PairFirstOrder));
                 }
-                else
+                else // reaction fails.
                 {
                     STAT(stat_reaction_condition.add_count(PairFirstOrderFailed));
                 }
@@ -1061,7 +1060,7 @@ class SGFRDSimulator :
 
         BOOST_AUTO(const& rules, this->model_->query_reaction_rules(
                     p1.species(), p2.species()));
-        assert(false == rules.empty());
+        assert(!rules.empty());
 
         const Real k_tot = this->calc_k_tot(rules);
         boost::optional<ReactionRule const&> optr(boost::none);
@@ -1135,7 +1134,7 @@ class SGFRDSimulator :
 
                 inside_checker is_inside_of(
                     p_new.position(), p_new.radius(), fid_new, this->polygon());
-                if(false == is_inside_of(sh))
+                if(!is_inside_of(sh))
                 {
                     // particle sticks out from the shell after reaction
                     // because of its radius.
@@ -1149,7 +1148,7 @@ class SGFRDSimulator :
 
                     // particle overlaps with other particle/domain outside the
                     // shell. rollback the state.
-                    if(false == no_overlap)
+                    if(!no_overlap)
                     {
                         SGFRD_TRACE(tracer_.write(
                                     "reject the reaction because of no space"))
