@@ -720,6 +720,24 @@ cdef class MesoscopicWorld:
             inc(it)
         return retval
 
+    def get_data(self, Species sp):
+        """get_data(sp) -> [Integer]
+
+        Return the numbers of particle in subvolumes.
+
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to list up.
+
+        Returns
+        -------
+        list:
+            A list of the number of particles (of the given species)
+
+        """
+        return self.thisptr.get().get_data(deref(sp.thisptr))
+
     def save(self, filename):
         """save(filename)
 
