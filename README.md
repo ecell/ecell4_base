@@ -35,7 +35,7 @@ You can try this package online from the following links:
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ecell/ecell4-base/master)
 
 - Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try Binder instead.
-- If you use Binder, please go down to `tutorials` or `examples`.
+- If you use Binder, please go down to `ecell4-base-master/readthedocs/tutorials`. or `ecell4-base-master/readthedocs/examples`
 - If you use Azure Notebooks, please go down to `readthedocs/tutorials` or `readthedocs/examples`.
 
 Installation
@@ -44,13 +44,8 @@ Installation
 Please see [INSTALL.md](https://github.com/ecell/ecell4-base/blob/master/INSTALL.md).
 Basically you can install E-Cell4 on any OS just by running
 ```
-pip install ecell
+pip install ecell4
 ```
-
-### Note about Windows
-In Windows environment, all commands should be executed from **Anaconda Prompt** (Not from Command Prompt or PowerShell. You can run Anaconda Prompt from Windows Start Menu).
-This in particular solves the problem of failing to load the DLL used from E-Cell4.
-
 
 Tutorials
 ----------
