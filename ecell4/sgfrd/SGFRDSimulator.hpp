@@ -723,7 +723,8 @@ class SGFRDSimulator :
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
         const Real l_ipv     = gf_ipv.drawR(this->uniform_real(), dt);
-        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
+        const Real theta_ipv = (this->uniform_real() < 0.5 ? -1.0 : 1.0) *
+                               gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
 
         const greens_functions::GreensFunction2DAbsSym
             gf_com(dom.D_com(), dom.R_com());
@@ -944,7 +945,8 @@ class SGFRDSimulator :
         const greens_functions::GreensFunction2DRadAbs
             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(), dom.R_ipv());
         const Real l_ipv     = dom.R_ipv();
-        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt);
+        const Real theta_ipv = gf_ipv.drawTheta(this->uniform_real(), l_ipv, dt) *
+                               (uniform_real() < 0.5 ? -1 : 1) ;
 
         // calculate position of the center of mass
         const greens_functions::GreensFunction2DAbsSym
@@ -1156,7 +1158,8 @@ class SGFRDSimulator :
                             gf_ipv(dom.D_ipv(), dom.kf(), dom.r0(), dom.sigma(),
                                    dom.R_ipv());
                         const Real theta_ipv = gf_ipv.drawTheta(
-                                this->uniform_real(), dom.sigma(), dt);
+                                this->uniform_real(), dom.sigma(), dt) *
+                               (uniform_real() < 0.5 ? -1 : 1);
                         const Real3 disp_ipv =
                             rotate(theta_ipv, f.normal(), dom.ipv());
 
