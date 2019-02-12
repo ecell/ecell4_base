@@ -99,6 +99,7 @@ SGFRDSimulator::propagate_single_conical(
     const Real del_t = tm - dom.begin_time();
     const Real r     = gf.drawR(this->uniform_real(), del_t);
     const Real theta = gf.drawTheta(this->uniform_real(), r, del_t);
+    // RefWedgeAbs::drawTheta returns [-phi, phi].
 
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta));
 
@@ -402,6 +403,7 @@ SGFRDSimulator::escape_single_conical(
         gf(p.D(), length(p.position() - sh.position()),
            r,     sh.shape().apex_angle());
     const Real theta = gf.drawTheta(this->uniform_real(), r, dom.dt());
+    // RefWedgeAbs::drawTheta returns [-phi, phi].
 
     SGFRD_TRACE(tracer_.write("r = %1%, theta = %2%", r, theta))
 
