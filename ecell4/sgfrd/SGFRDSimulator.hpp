@@ -751,17 +751,15 @@ class SGFRDSimulator :
         const ParticleID pid2 = dom.particle_id_at(1);
 
         // ipv is a vector from p1 to p2
-        const Real  ratio_p1     = -p1.D() / (p1.D() + p2.D());
-        const Real  ratio_p2     =  p2.D() / (p1.D() + p2.D());
-        const Real3 disp_ipv_p1  = disp_ipv  * ratio_p1;
-        const Real3 disp_ipv_p2  = disp_ipv  * ratio_p2;
-        const Real3 disp_ipv0_p1 = dom.ipv() * ratio_p1;
-        const Real3 disp_ipv0_p2 = dom.ipv() * ratio_p2;
+        const Real  rD12        = 1.0 / (p1.D() + p2.D());
+        const Real3 disp_ipv_p1 = disp_ipv * (-p1.D() * rD12);
+        const Real3 disp_ipv_p2 = disp_ipv * ( p2.D() * rD12);
 
-        Real3 disp_p1 = disp_com - disp_ipv0_p1 + disp_ipv_p1;
-        Real3 disp_p2 = disp_com - disp_ipv0_p2 + disp_ipv_p2;
-        std::pair<Real3, FaceID> pos_p1(p1.position(), this->get_face_id(pid1));
-        std::pair<Real3, FaceID> pos_p2(p2.position(), this->get_face_id(pid2));
+        Real3 disp_p1 = disp_com + disp_ipv_p1;
+        Real3 disp_p2 = disp_com + disp_ipv_p2;
+        // start from CoM
+        std::pair<Real3, FaceID> pos_p1(sh.position(), sh.structure_id());
+        std::pair<Real3, FaceID> pos_p2(sh.position(), sh.structure_id());
 
         pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
         pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
