@@ -2,6 +2,10 @@
 #include <pybind11/operators.h>
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Context.hpp>
+#include <ecell4/core/extras.hpp>
+#include <ecell4/core/functions.hpp>
+#include <ecell4/core/types.hpp>
+#include <ecell4/core/BDMLWriter.hpp>
 
 namespace py = pybind11;
 
@@ -382,5 +386,11 @@ namespace {
         define_rng(m);
         define_reaction_rule(m);
         define_particle_voxel(m);
+
+        m.def("load_version_information", (std::string (*)(const std::string&)) &extras::load_version_information);
+        m.def("cbrt", &ecell4::cbrt);
+        m.attr("N_A") = N_A;
+        m.attr("epsilon") = epsilon;
+        m.def("_save_bd5", &save_bd5);
     }
 }
