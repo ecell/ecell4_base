@@ -6,6 +6,7 @@
 #include "reaction_rule_descriptor.hpp"
 #include "model.hpp"
 #include "observers.hpp"
+#include "shape.hpp"
 
 namespace py = pybind11;
 
@@ -34,5 +35,6 @@ PYBIND11_MODULE(ecell4, m) {
     define_reaction_rule_descriptor(m);
     define_model(m);
     define_observers(m);
+    define_shape(m);
     setup_spatiocyte_module(m_spatiocyte);
 }
