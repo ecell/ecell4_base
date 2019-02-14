@@ -341,6 +341,36 @@ namespace {
         m.def("create_unbinding_reaction_rule", &create_unbinding_reaction_rule);
     }
 
+    void define_particle_voxel(py::module& m)
+    {
+        py::class_<ParticleVoxel>(m, "ParticleVoxel")
+            .def(py::init<Species, Integer, Real, Real>())
+            .def(py::init<Species, Integer, Real, Real, std::string>())
+            .def("coordinate", [](const ParticleVoxel &self) { return self.coordinate; })
+            .def("D", [](const ParticleVoxel &self) { return self.D; })
+            .def("radius", [](const ParticleVoxel &self) { return self.radius; })
+            .def("species", [](const ParticleVoxel &self) { return self.species; })
+            .def("loc", [](const ParticleVoxel &self) { return self.loc; })
+            .def(py::pickle(
+                [](const ParticleVoxel &self)
+                {
+                    return py::make_tuple(self.species, self.coordinate, self.radius, self.D, self.loc);
+                },
+                [](py::tuple t)
+                {
+                    if (t.size() != 5)
+                        throw std::runtime_error("Invalid state");
+                    return ParticleVoxel(
+                        t[0].cast<Species>(),
+                        t[1].cast<Integer>(),
+                        t[2].cast<Real>(),
+                        t[3].cast<Real>(),
+                        t[4].cast<std::string>()
+                    );
+                }
+            ));
+    }
+
     void setup_module(py::module& m)
     {
         define_real3(m);
@@ -351,5 +381,6 @@ namespace {
         define_particle(m);
         define_rng(m);
         define_reaction_rule(m);
+        define_particle_voxel(m);
     }
 }
