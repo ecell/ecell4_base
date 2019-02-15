@@ -405,6 +405,11 @@ public:
         return cs_->reserve_pool(sp, minfo.D, minfo.loc);
     }
 
+    std::vector<Integer> get_data(const Species& sp) const
+    {
+        return cs_->get_data(sp);
+    }
+
 private:
 
     boost::scoped_ptr<SubvolumeSpace> cs_;
