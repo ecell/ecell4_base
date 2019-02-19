@@ -883,6 +883,9 @@ SGFRDSimulator::form_single_conical_event(
 {
     SGFRD_SCOPE(us, form_single_conical_event, tracer_);
 
+    // create_event should handle D == 0 case.
+    assert(p.D() != 0.0);
+
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
     const std::vector<std::pair<VertexID, Real> > intrusive_vertices(
             get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
@@ -891,20 +894,6 @@ SGFRDSimulator::form_single_conical_event(
     const Real dist_to_v = intrusive_vertices.front().second;
     SGFRD_TRACE(tracer_.write("vertex id = %1%, distance = %2%", vid, dist_to_v));
 
-    if(p.D() == 0.0)
-    {
-        SGFRD_TRACE(tracer_.write("diffusion coefficient is 0."))
-        SGFRD_TRACE(tracer_.write("creating tight conical single event"))
-
-        const Real shell_size = (p.radius() + dist_to_v) *
-                                (1.0 + minimum_separation_factor);
-
-        // check particle does not overlap with any others.
-        assert(get_intrusive_domains(vid, shell_size).empty());
-
-        return ok(add_event(create_single(
-            create_single_conical_surface_shell(vid, shell_size), pid, p)));
-    }
 
     const Real min_cone_size = (p.radius() + dist_to_v) *
                                single_conical_surface_shell_factor;
@@ -997,7 +986,7 @@ SGFRDSimulator::form_single_conical_event(
                      shrinked_or_multi.front().second) *
             single_conical_surface_shell_mergin;
 
-        /* assertion */{
+        /* stop if overlapping shell exists */{
         if(!this->shell_container_.list_shells_within_radius(
             std::make_pair(this->polygon().position_at(vid), vid),
             shell_size).empty())
@@ -1030,21 +1019,11 @@ SGFRDSimulator::form_single_circular_event(
     SGFRD_SCOPE(us, form_single_circular_event, tracer_);
     SGFRD_TRACE(tracer_.write("forming single domain for particle %1% r = %2%",
                 pid, p.radius()));
+    // create_event should handle D == 0 case.
+    assert(p.D() != 0.0);
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
-
-    if(p.D() == 0.0)
-    {
-        SGFRD_TRACE(tracer_.write("diffusion coefficient is 0."))
-        SGFRD_TRACE(tracer_.write("creating tight single event"))
-        const Real shell_size = p.radius() * (1.0 + minimum_separation_factor);
-
-        // check the particle does not overlap with any others.
-        assert(get_intrusive_domains(pos, shell_size).empty());
-        return ok(add_event(create_single(
-                create_single_circular_shell(pos, shell_size), pid, p)));
-    }
 
     /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
      * as `std::pair<DomainID, Real>` is not a distance between particle and  *
@@ -1182,6 +1161,25 @@ DomainID SGFRDSimulator::create_event(
             const ParticleID& pid, const Particle& p, const FaceID fid)
 {
     SGFRD_SCOPE(us, create_event, tracer_);
+
+    if(p.D() == 0.0)
+    {
+        SGFRD_TRACE(tracer_.write("diffusion coefficient is 0."))
+        SGFRD_TRACE(tracer_.write("creating smallest single."))
+
+        const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+        const Real shell_size = p.radius() * (1.0 + minimum_separation_factor);
+
+        // check particle does not overlap with any others.
+        assert(get_intrusive_domains(pos, shell_size).empty());
+
+        // create_tight_shell makes domain that lasts for 0.0 tau.
+        // tight_shells are for particles that have just been added to the
+        // system or just been bursted.
+        return add_event(create_single(
+            create_single_circular_shell(pos, shell_size), pid, p));
+    }
+
     const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
