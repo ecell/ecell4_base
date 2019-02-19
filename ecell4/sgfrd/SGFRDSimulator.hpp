@@ -658,13 +658,12 @@ class SGFRDSimulator :
                 if(!products.empty())
                 {
                     ParticleID pid; Particle p; FaceID fid;
-                    boost::tie(pid, p, fid) = products.front();
-
-                    SGFRD_TRACE(tracer_.write(
-                                "adding next event for particle %1%", pid))
-
-                    add_event(create_tight_domain(
+                    BOOST_FOREACH(boost::tie(pid, p, fid), products)
+                    {
+                        SGFRD_TRACE(tracer_.write("adding next event for %1%", pid));
+                        add_event(create_tight_domain(
                                 create_tight_shell(pid, p, fid), pid, p));
+                    }
                 }
                 return;
             }
