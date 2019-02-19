@@ -530,10 +530,14 @@ class SGFRDSimulator :
                 dom.eventkind() = Pair::IV_ESCAPE;
                 SGFRD_TRACE(tracer_.write("pair event kind = IV_ESCAPE"));
             }
-            else
+            else if(iv_kind == greens_functions::GreensFunction::IV_REACTION)
             {
                 dom.eventkind() = Pair::IV_REACTION;
                 SGFRD_TRACE(tracer_.write("pair event kind = IV_REACTION"));
+            }
+            else
+            {
+                assert(false && "neither Pair::IV_ESCAPE/REACTION");
             }
         }
 
