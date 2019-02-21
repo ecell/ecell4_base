@@ -220,7 +220,11 @@ void MesoscopicSimulator::initialize(void)
     {
         const ReactionRule& rr(*i);
 
-        if (rr.reactants().size() == 0)
+        if (rr.has_descriptor())
+        {
+            proxies_.push_back(new DescriptorReactionRuleProxy(this, rr));
+        }
+        else if (rr.reactants().size() == 0)
         {
             proxies_.push_back(new ZerothOrderReactionRuleProxy(this, rr));
         }
