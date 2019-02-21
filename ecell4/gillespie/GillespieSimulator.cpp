@@ -7,6 +7,7 @@
 #include <sstream>
 #include <cstdio>
 #include <cstring>
+#include <cmath>
 
 #include <boost/scoped_array.hpp>
 
@@ -94,10 +95,15 @@ bool GillespieSimulator::__draw_next_reaction(void)
     }
 
     next_reaction_rule_ = events_[idx].reaction_rule();
-    next_reaction_ = events_[idx].draw();
-
+    boost::optional<ReactionRule> r = events_[idx].draw();
     this->dt_ += dt;
-    return (next_reaction_.k() > 0.0);  // Skip the reaction if false
+
+    if (!r)
+    {
+        return false;
+    }
+    next_reaction_ = r.get();
+    return true;
 }
 
 void GillespieSimulator::draw_next_reaction(void)
@@ -128,26 +134,60 @@ void GillespieSimulator::step(void)
 
     const Real t0(t()), dt0(dt());
 
-    // if (dt0 == 0.0 || next_reaction_.k() <= 0.0)
-    if (next_reaction_.k() <= 0.0)
-    {
-        // Any reactions cannot occur.
-        return;
-    }
+    // // if (dt0 == 0.0 || next_reaction_.k() <= 0.0)
+    // if (next_reaction_.k() <= 0.0)
+    // {
+    //     // Any reactions cannot occur.
+    //     return;
+    // }
 
     // Reaction[u] occurs.
-    for (ReactionRule::reactant_container_type::const_iterator
-        it(next_reaction_.reactants().begin());
-        it != next_reaction_.reactants().end(); ++it)
+    if (!next_reaction_.has_descriptor())
     {
-        decrement_molecules(*it);
-    }
+        for (ReactionRule::reactant_container_type::const_iterator
+            it(next_reaction_.reactants().begin());
+            it != next_reaction_.reactants().end(); ++it)
+        {
+            decrement_molecules(*it);
+        }
 
-    for (ReactionRule::product_container_type::const_iterator
-        it(next_reaction_.products().begin());
-        it != next_reaction_.products().end(); ++it)
+        for (ReactionRule::product_container_type::const_iterator
+            it(next_reaction_.products().begin());
+            it != next_reaction_.products().end(); ++it)
+        {
+            increment_molecules(*it);
+        }
+    }
+    else
     {
-        increment_molecules(*it);
+        const boost::shared_ptr<ReactionRuleDescriptor>& desc = next_reaction_.get_descriptor();
+        assert(desc->is_available());
+
+        const ReactionRule::reactant_container_type& reactants(next_reaction_.reactants());
+        const ReactionRuleDescriptor::coefficient_container_type&
+            reactant_coefficients(desc->reactant_coefficients());
+        assert(reactants.size() == reactant_coefficients.size());
+        for (std::size_t i = 0; i < reactants.size(); ++i)
+        {
+            assert(reactant_coefficients[i] >= 0);
+            for (std::size_t j = 0; j < (std::size_t)round(reactant_coefficients[i]); ++j)
+            {
+                decrement_molecules(reactants[i]);
+            }
+        }
+
+        const ReactionRule::product_container_type& products(next_reaction_.products());
+        const ReactionRuleDescriptor::coefficient_container_type&
+            product_coefficients(desc->product_coefficients());
+        assert(products.size() == product_coefficients.size());
+        for (std::size_t i = 0; i < products.size(); ++i)
+        {
+            assert(product_coefficients[i] >= 0);
+            for (std::size_t j = 0; j < (std::size_t)round(product_coefficients[i]); ++j)
+            {
+                increment_molecules(products[i]);
+            }
+        }
     }
 
     this->set_t(t0 + dt0);
@@ -184,10 +224,62 @@ bool GillespieSimulator::step(const Real &upto)
     }
 }
 
+void GillespieSimulator::check_model()
+{
+    // Check if the given model is supported or not.
+    const Model::reaction_rule_container_type&
+        reaction_rules(model_->reaction_rules());
+
+    for (Model::reaction_rule_container_type::const_iterator
+        i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+
+        if (rr.has_descriptor())
+        {
+            const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
+
+            if (not desc->is_available())
+            {
+                throw NotSupported(
+                    "The given reaction rule descriptor is not available.");
+            }
+            else if ((rr.reactants().size() != desc->reactant_coefficients().size())
+                    || (rr.products().size() != desc->product_coefficients().size()))
+            {
+                throw NotSupported(
+                    "Mismatch between the number of stoichiometry coefficients and of reactants.");
+            }
+            else
+            {
+                for (ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                    it(desc->reactant_coefficients().begin()); it != desc->reactant_coefficients().end();
+                    it++)
+                {
+                    if ((*it) < 0)
+                    {
+                        throw NotSupported("A stoichiometric coefficient must be non-negative.");
+                    }
+                    else if (abs((*it) - round(*it)) > 1e-10 * (*it))
+                    {
+                        throw NotSupported("A stoichiometric coefficient must be an integer.");
+                    }
+                }
+            }
+        }
+        else if (rr.reactants().size() > 2)
+        {
+            throw NotSupported("No more than 2 reactants are supported.");
+        }
+    }
+}
+
 void GillespieSimulator::initialize(void)
 {
     const Model::reaction_rule_container_type&
         reaction_rules(model_->reaction_rules());
+
+    check_model();
 
     events_.clear();
     for (Model::reaction_rule_container_type::const_iterator
@@ -195,7 +287,41 @@ void GillespieSimulator::initialize(void)
     {
         const ReactionRule& rr(*i);
 
-        if (rr.reactants().size() == 0)
+        if (rr.has_descriptor())
+        {
+            const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
+
+            if (not desc->is_available())
+            {
+                throw NotSupported(
+                    "The given reaction rule descriptor is not available.");
+            }
+            else if ((rr.reactants().size() != desc->reactant_coefficients().size())
+                    || (rr.products().size() != desc->product_coefficients().size()))
+            {
+                throw NotSupported(
+                    "Mismatch between the number of stoichiometry coefficients and of reactants.");
+            }
+            else
+            {
+                for (ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                    it(desc->reactant_coefficients().begin()); it != desc->reactant_coefficients().end();
+                    it++)
+                {
+                    if ((*it) < 0)
+                    {
+                        throw NotSupported("A stoichiometric coefficient must be non-negative.");
+                    }
+                    else if (abs((*it) - round(*it)) > 1e-10 * (*it))
+                    {
+                        throw NotSupported("A stoichiometric coefficient must be an integer.");
+                    }
+                }
+            }
+
+            events_.push_back(new DescriptorReactionRuleEvent(this, rr));
+        }
+        else if (rr.reactants().size() == 0)
         {
             events_.push_back(new ZerothOrderReactionRuleEvent(this, rr));
         }
@@ -209,7 +335,7 @@ void GillespieSimulator::initialize(void)
         }
         else
         {
-            throw NotSupported("not supported yet.");
+            throw IllegalState("Never get here");
         }
 
         events_.back().initialize();
