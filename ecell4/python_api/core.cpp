@@ -14,6 +14,7 @@
 #include "reaction_rule_descriptor.hpp"
 #include "shape.hpp"
 #include "world_interface.hpp"
+#include "simulator.hpp"
 
 namespace py = pybind11;
 
@@ -466,7 +467,7 @@ void define_model(py::module& m)
 static inline
 void define_world_interface(py::module& m)
 {
-    py::class_<WorldInterface, PyWorldInterface<>>(m, "WorldInterface")
+    py::class_<WorldInterface, PyWorldInterface<>, boost::shared_ptr<WorldInterface>>(m, "WorldInterface")
         .def("t", &WorldInterface::t)
         .def("set_t", &WorldInterface::set_t)
         .def("save", &WorldInterface::save)
@@ -987,6 +988,20 @@ void define_shape(py::module& m)
         });
 }
 
+void define_simulator(py::module& m)
+{
+    py::class_<Simulator, PySimulator<>>(m, "Simulator")
+        .def("initialize", &Simulator::initialize)
+        .def("t", &Simulator::t)
+        .def("dt", &Simulator::dt)
+        .def("set_dt", &Simulator::set_dt)
+        .def("num_steps", &Simulator::num_steps)
+        .def("step", (void (Simulator::*)()) &Simulator::step)
+        .def("step", (bool (Simulator::*)(const Real&)) &Simulator::step)
+        .def("check_reaction", &Simulator::check_reaction)
+        .def("next_time", &Simulator::next_time);
+}
+
 void setup_module(py::module& m)
 {
     define_real3(m);
@@ -1003,6 +1018,7 @@ void setup_module(py::module& m)
     define_reaction_rule_descriptor(m);
     define_observers(m);
     define_shape(m);
+    define_simulator(m);
 
     m.def("load_version_information", (std::string (*)(const std::string&)) &extras::load_version_information);
     m.def("cbrt", &ecell4::cbrt);

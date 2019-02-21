@@ -4,18 +4,7 @@
 #include "world_interface.hpp"
 
 namespace py = pybind11;
-
-namespace {
-    using namespace ecell4::spatiocyte;
-    using namespace ecell4::python_api;
-
-    void setup_spatiocyte_module(py::module& m)
-    {
-        py::class_<SpatiocyteWorld, ecell4::WorldInterface, PyWorldImpl<SpatiocyteWorld>>(m, "SpatiocyteWorld")
-            .def(py::init<>());
-    }
-
-}
+using namespace ecell4::python_api;
 
 PYBIND11_MODULE(ecell4, m) {
     py::module m_bd         = m.def_submodule("bd",         "A submodule of ecell4");

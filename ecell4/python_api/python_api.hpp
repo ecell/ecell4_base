@@ -12,6 +12,7 @@ namespace python_api
 {
 
 void setup_module(pybind11::module& m);
+void setup_spatiocyte_module(pybind11::module& m);
 
 }
 
