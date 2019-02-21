@@ -39,8 +39,8 @@ void define_bd_simulator(py::module& m)
         .def(py::init<boost::shared_ptr<BDWorld>, Real>())
         .def(py::init<boost::shared_ptr<BDWorld>, boost::shared_ptr<Model>>())
         .def(py::init<boost::shared_ptr<BDWorld>, boost::shared_ptr<Model>, Real>())
-        .def("set_t", &BDSimulator::set_t)
-        .def("last_reactions", &BDSimulator::last_reactions);
+        .def("last_reactions", &BDSimulator::last_reactions)
+        .def("set_t", &BDSimulator::set_t);
     define_simulator_functions(simulator);
 }
 

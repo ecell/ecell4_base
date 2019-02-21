@@ -46,6 +46,7 @@ void define_bd_simulator(py::module& m)
         .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>>())
         .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real>())
         .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int>())
+        .def("last_reactions", &BDSimulator::last_reactions)
         .def("set_t", &BDSimulator::set_t)
         .def("dt_factor", &BDSimulator::dt_factor)
         .def("add_potential",

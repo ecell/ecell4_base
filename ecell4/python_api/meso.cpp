@@ -37,6 +37,7 @@ void define_meso_simulator(py::module& m)
     simulator
         .def(py::init<boost::shared_ptr<MesoscopicWorld>>())
         .def(py::init<boost::shared_ptr<MesoscopicWorld>, boost::shared_ptr<Model>>())
+        .def("last_reactions", &MesoscopicSimulator::last_reactions)
         .def("set_t", &MesoscopicSimulator::set_t);
     define_simulator_functions(simulator);
 }

@@ -35,6 +35,7 @@ void define_gillespie_simulator(py::module& m)
     simulator
         .def(py::init<boost::shared_ptr<GillespieWorld>>())
         .def(py::init<boost::shared_ptr<GillespieWorld>, boost::shared_ptr<Model>>())
+        .def("last_reactions", &GillespieSimulator::last_reactions)
         .def("set_t", &GillespieSimulator::set_t);
     define_simulator_functions(simulator);
 }

@@ -17,7 +17,8 @@ PYBIND11_MODULE(ecell4, m) {
     setup_module(m);
     setup_bd_module(m_bd);
     setup_egfrd_module(m_egfrd);
-    setup_meso_module(m_meso);
     setup_gillespie_module(m_gillespie);
+    setup_meso_module(m_meso);
+    setup_ode_module(m_ode);
     setup_spatiocyte_module(m_spatiocyte);
 }

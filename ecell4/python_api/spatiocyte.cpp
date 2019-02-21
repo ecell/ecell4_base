@@ -69,7 +69,9 @@ void define_spatiocyte_simulator(py::module& m)
         boost::shared_ptr<SpatiocyteSimulator>> simulator(m, "SpatiocyteSimulator");
     simulator
         .def(py::init<boost::shared_ptr<SpatiocyteWorld>>())
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>());
+        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>())
+        .def("last_reactions", &SpatiocyteSimulator::last_reactions)
+        .def("set_t", &SpatiocyteSimulator::set_t);
     define_simulator_functions(simulator);
 }
 
