@@ -59,11 +59,11 @@ namespace python_api
             .def("reset", &Observer::reset)
             .def("num_steps", &Observer::num_steps);
 
-        py::class_<FixedIntervalPythonHooker, PyObserver<FixedIntervalPythonHooker>,
+        py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
             boost::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
             .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>());
 
-        py::class_<FixedIntervalNumberObserver, PyObserver<FixedIntervalNumberObserver>,
+        py::class_<FixedIntervalNumberObserver, Observer, PyObserver<FixedIntervalNumberObserver>,
             boost::shared_ptr<FixedIntervalNumberObserver>>(m, "FixedIntervalNumberObserver")
             .def(py::init<const Real&>())
             .def(py::init<const Real&, const std::vector<std::string>&>())
@@ -71,7 +71,7 @@ namespace python_api
             .def("targets", &FixedIntervalNumberObserver::targets)
             .def("save", &FixedIntervalNumberObserver::save);
 
-        py::class_<NumberObserver, PyObserver<NumberObserver>,
+        py::class_<NumberObserver, Observer, PyObserver<NumberObserver>,
             boost::shared_ptr<NumberObserver>>(m, "NumberObserver")
             .def(py::init<>())
             .def(py::init<const std::vector<std::string>&>())
@@ -79,7 +79,7 @@ namespace python_api
             .def("targets", &NumberObserver::targets)
             .def("save", &NumberObserver::save);
 
-        py::class_<TimingNumberObserver, PyObserver<TimingNumberObserver>,
+        py::class_<TimingNumberObserver, Observer, PyObserver<TimingNumberObserver>,
             boost::shared_ptr<TimingNumberObserver>>(m, "TimingNumberObserver")
             .def(py::init<const std::vector<Real>&>())
             .def(py::init<const std::vector<Real>&, const std::vector<std::string>&>())
@@ -87,14 +87,14 @@ namespace python_api
             .def("targets", &TimingNumberObserver::targets)
             .def("save", &TimingNumberObserver::save);
 
-        py::class_<FixedIntervalHDF5Observer, PyObserver<FixedIntervalHDF5Observer>,
+        py::class_<FixedIntervalHDF5Observer, Observer, PyObserver<FixedIntervalHDF5Observer>,
             boost::shared_ptr<FixedIntervalHDF5Observer>>(m, "FixedIntervalHDF5Observer")
             .def(py::init<const Real&, const std::string&>())
             .def("prefix", &FixedIntervalHDF5Observer::prefix)
             .def("filename", (const std::string (FixedIntervalHDF5Observer::*)() const) &FixedIntervalHDF5Observer::filename)
             .def("filename", (const std::string (FixedIntervalHDF5Observer::*)(const Integer) const) &FixedIntervalHDF5Observer::filename);
 
-        py::class_<FixedIntervalCSVObserver, PyObserver<FixedIntervalCSVObserver>,
+        py::class_<FixedIntervalCSVObserver, Observer, PyObserver<FixedIntervalCSVObserver>,
             boost::shared_ptr<FixedIntervalCSVObserver>>(m, "FixedIntervalCSVObserver")
             .def(py::init<const Real&, const std::string&>())
             .def(py::init<const Real&, const std::string&, std::vector<std::string>&>())
@@ -103,7 +103,7 @@ namespace python_api
             .def("set_header", &FixedIntervalCSVObserver::set_header)
             .def("set_formatter", &FixedIntervalCSVObserver::set_formatter);
 
-        py::class_<CSVObserver, PyObserver<CSVObserver>, boost::shared_ptr<CSVObserver>>(m, "CSVObserver")
+        py::class_<CSVObserver, Observer, PyObserver<CSVObserver>, boost::shared_ptr<CSVObserver>>(m, "CSVObserver")
             .def(py::init<const std::string&>())
             .def(py::init<const std::string&, std::vector<std::string>&>())
             .def("log", &CSVObserver::log)
@@ -111,7 +111,7 @@ namespace python_api
             .def("set_header", &CSVObserver::set_header)
             .def("set_formatter", &CSVObserver::set_formatter);
 
-        py::class_<FixedIntervalTrajectoryObserver, PyObserver<FixedIntervalTrajectoryObserver>,
+        py::class_<FixedIntervalTrajectoryObserver, Observer, PyObserver<FixedIntervalTrajectoryObserver>,
             boost::shared_ptr<FixedIntervalTrajectoryObserver>>(m, "FixedIntervalTrajectoryObserver")
             .def(py::init<const Real&, const std::vector<ParticleID>&>())
             .def(py::init<const Real&, const std::vector<ParticleID>&, const bool>())
@@ -122,7 +122,7 @@ namespace python_api
             .def("num_tracers", &FixedIntervalTrajectoryObserver::num_tracers)
             .def("t", &FixedIntervalTrajectoryObserver::t);
 
-        py::class_<TimingTrajectoryObserver, PyObserver<TimingTrajectoryObserver>,
+        py::class_<TimingTrajectoryObserver, Observer, PyObserver<TimingTrajectoryObserver>,
             boost::shared_ptr<TimingTrajectoryObserver>>(m, "TimingTrajectoryObserver")
             .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&>())
             .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&, const bool>())
@@ -133,7 +133,7 @@ namespace python_api
             .def("num_tracers", &TimingTrajectoryObserver::num_tracers)
             .def("t", &TimingTrajectoryObserver::t);
 
-        py::class_<FixedIntervalTrackingObserver, PyObserver<FixedIntervalTrackingObserver>,
+        py::class_<FixedIntervalTrackingObserver, Observer, PyObserver<FixedIntervalTrackingObserver>,
             boost::shared_ptr<FixedIntervalTrackingObserver>>(m, "FixedIntervalTrackingObserver")
             .def(py::init<const Real&, const std::vector<Species>&>())
             .def(py::init<const Real&, const std::vector<Species>&, const bool&>())
@@ -143,7 +143,7 @@ namespace python_api
             .def("num_tracers", &FixedIntervalTrackingObserver::num_tracers)
             .def("t", &FixedIntervalTrackingObserver::t);
 
-        py::class_<TimeoutObserver, PyObserver<TimeoutObserver>, boost::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
+        py::class_<TimeoutObserver, Observer, PyObserver<TimeoutObserver>, boost::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
             .def(py::init<>())
             .def(py::init<const Real>())
             .def("interval", &TimeoutObserver::interval)

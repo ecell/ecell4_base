@@ -125,7 +125,7 @@ namespace python_api
             .def("add_species_attributes", &Model::add_species_attributes)
             .def("add_reaction_rules", &Model::add_reaction_rules);
 
-        py::class_<NetworkModel, PyModel<NetworkModel>,
+        py::class_<NetworkModel, Model, PyModel<NetworkModel>,
             boost::shared_ptr<NetworkModel>>(m, "NetworkModel")
             .def(py::init<>())
             .def(py::pickle(
@@ -144,7 +144,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<NetfreeModel, PyModel<NetfreeModel>,
+        py::class_<NetfreeModel, Model, PyModel<NetfreeModel>,
             boost::shared_ptr<NetfreeModel>>(m, "NetfreeModel")
             .def(py::init<>())
             .def("set_effective", &NetfreeModel::set_effective)

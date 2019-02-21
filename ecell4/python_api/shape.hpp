@@ -59,7 +59,7 @@ namespace python_api
             .def("is_inside", &Shape::is_inside)
             ;
 
-        py::class_<Surface, PyShape<Surface>, boost::shared_ptr<Surface>>(m, "Surface")
+        py::class_<Surface, Shape, PyShape<Surface>, boost::shared_ptr<Surface>>(m, "Surface")
             .def("root", &Surface::root)
             .def(py::pickle(
                 [](const Surface& self)
@@ -74,7 +74,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<Union, PyShape<Union>, boost::shared_ptr<Union>>(m, "Union")
+        py::class_<Union, Shape, PyShape<Union>, boost::shared_ptr<Union>>(m, "Union")
             .def(py::init<const boost::shared_ptr<Shape>&, const boost::shared_ptr<Shape>&>())
             .def("surface", &Union::surface)
             .def("one", &Union::one)
@@ -95,7 +95,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<Complement, PyShape<Complement>, boost::shared_ptr<Complement>>(m, "Complement")
+        py::class_<Complement, Shape, PyShape<Complement>, boost::shared_ptr<Complement>>(m, "Complement")
             .def(py::init<const boost::shared_ptr<Shape>&, const boost::shared_ptr<Shape>&>())
             .def("surface", &Complement::surface)
             .def("one", &Complement::one)
@@ -116,7 +116,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<AffineTransformation, PyShape<AffineTransformation>,
+        py::class_<AffineTransformation, Shape, PyShape<AffineTransformation>,
             boost::shared_ptr<AffineTransformation>>(m, "AffineTransformation")
             .def(py::init<>())
             .def(py::init<const boost::shared_ptr<Shape>&>())
@@ -151,7 +151,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<Sphere, PyShape<Sphere>, boost::shared_ptr<Sphere>>(m, "Sphere")
+        py::class_<Sphere, Shape, PyShape<Sphere>, boost::shared_ptr<Sphere>>(m, "Sphere")
             .def(py::init<const Real3&, const Real>())
             .def("distance", &Sphere::distance)
             .def("surface", &Sphere::surface)
@@ -170,7 +170,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<SphericalSurface, PyShape<SphericalSurface>,
+        py::class_<SphericalSurface, Shape, PyShape<SphericalSurface>,
             boost::shared_ptr<SphericalSurface>>(m, "SphericalSurface")
             .def(py::init<const Real3&, const Real>())
             .def("distance", &SphericalSurface::distance)
@@ -190,7 +190,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<Cylinder, PyShape<Cylinder>, boost::shared_ptr<Cylinder>>(m, "Cylinder")
+        py::class_<Cylinder, Shape, PyShape<Cylinder>, boost::shared_ptr<Cylinder>>(m, "Cylinder")
             .def(py::init<const Real3&, const Real, const Real3&, const Real>())
             .def("distance", &Cylinder::distance)
             .def("surface", &Cylinder::surface)
@@ -215,7 +215,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<CylindricalSurface, PyShape<CylindricalSurface>,
+        py::class_<CylindricalSurface, Shape, PyShape<CylindricalSurface>,
             boost::shared_ptr<CylindricalSurface>>(m, "CylindricalSurface")
             .def(py::init<const Real3&, const Real, const Real3&, const Real>())
             .def("distance", &CylindricalSurface::distance)
@@ -242,7 +242,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<PlanarSurface, PyShape<PlanarSurface>,
+        py::class_<PlanarSurface, Shape, PyShape<PlanarSurface>,
             boost::shared_ptr<PlanarSurface>>(m, "PlanarSurface")
             .def(py::init<const Real3&, const Real3&, const Real3&>())
             .def("origin", &PlanarSurface::origin)
@@ -266,7 +266,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<Rod, PyShape<Rod>, boost::shared_ptr<Rod>>(m, "Rod")
+        py::class_<Rod, Shape, PyShape<Rod>, boost::shared_ptr<Rod>>(m, "Rod")
             .def(py::init<const Real&, const Real&>())
             .def(py::init<const Real&, const Real&, const Real3&>())
             .def("distance", &Rod::distance)
@@ -292,7 +292,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<RodSurface, PyShape<RodSurface>, boost::shared_ptr<RodSurface>>(m, "RodSurface")
+        py::class_<RodSurface, Shape, PyShape<RodSurface>, boost::shared_ptr<RodSurface>>(m, "RodSurface")
             .def(py::init<const Real&, const Real&>())
             .def(py::init<const Real&, const Real&, const Real3&>())
             .def("distance", &RodSurface::distance)
@@ -317,7 +317,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<AABB, PyShape<AABB>, boost::shared_ptr<AABB>>(m, "AABB")
+        py::class_<AABB, Shape, PyShape<AABB>, boost::shared_ptr<AABB>>(m, "AABB")
             .def(py::init<const Real3&, const Real3&>())
             .def("distance", &AABB::distance)
             .def("upper", &AABB::upper)
@@ -339,7 +339,7 @@ namespace python_api
                 }
             ));
 
-        py::class_<MeshSurface, PyShape<MeshSurface>, boost::shared_ptr<MeshSurface>>(m, "MeshSurface")
+        py::class_<MeshSurface, Shape, PyShape<MeshSurface>, boost::shared_ptr<MeshSurface>>(m, "MeshSurface")
             .def(py::init<const std::string, const Real3&>())
             .def("filename", &MeshSurface::filename)
             .def("edge_lengths", &MeshSurface::edge_lengths)
