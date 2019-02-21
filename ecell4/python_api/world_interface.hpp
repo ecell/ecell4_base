@@ -138,38 +138,6 @@ namespace python_api
         }
     };
 
-    void define_world_interface(py::module& m)
-    {
-        py::class_<WorldInterface, PyWorldInterface<>>(m, "WorldInterface")
-            .def("t", &WorldInterface::t)
-            .def("set_t", &WorldInterface::set_t)
-            .def("save", &WorldInterface::save)
-            .def("load", &WorldInterface::load)
-            .def("volume", &WorldInterface::volume)
-            .def("has_species", &WorldInterface::has_species)
-            .def("list_species", &WorldInterface::list_species)
-            .def("num_molecules", &WorldInterface::num_molecules)
-            .def("num_molecules_exact", &WorldInterface::num_molecules_exact)
-            .def("get_value", &WorldInterface::get_value)
-            .def("get_value_exact", &WorldInterface::get_value_exact)
-            .def("edge_lengths", &WorldInterface::edge_lengths)
-            .def("num_particles",
-                (Integer (WorldInterface::*)() const) &WorldInterface::num_particles)
-            .def("num_particles",
-                (Integer (WorldInterface::*)(const Species&) const) &WorldInterface::num_particles)
-            .def("num_particles_exact", &WorldInterface::num_particles_exact)
-            .def("has_particle", &WorldInterface::has_particle)
-            .def("get_particle", &WorldInterface::get_particle)
-            .def("list_particles",
-                (std::vector<std::pair<ParticleID, Particle>> (WorldInterface::*)() const)
-                &WorldInterface::list_particles)
-            .def("list_particles",
-                (std::vector<std::pair<ParticleID, Particle>> (WorldInterface::*)(const Species&) const)
-                &WorldInterface::list_particles)
-            .def("list_particles_exact", &WorldInterface::list_particles_exact)
-            ;
-    }
-
 }
 
 }

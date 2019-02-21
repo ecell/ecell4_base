@@ -2,6 +2,7 @@
 #define ECELL4_BDML_WRITER_HPP
 
 #include <cstring>
+#include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <sstream>

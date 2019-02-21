@@ -72,68 +72,6 @@ namespace python_api
         std::string name_;
     };
 
-    void define_reaction_rule_descriptor(py::module& m)
-    {
-        py::class_<ReactionRuleDescriptor, PyReactionRuleDescriptor<>,
-            boost::shared_ptr<ReactionRuleDescriptor>>(m, "ReactionRuleDescriptor")
-            .def("propensity", &ReactionRuleDescriptor::propensity)
-            .def("reactant_coefficients", &ReactionRuleDescriptor::reactant_coefficients)
-            .def("product_coefficients", &ReactionRuleDescriptor::product_coefficients)
-            .def("set_reactant_coefficient", &ReactionRuleDescriptor::set_reactant_coefficient)
-            .def("set_product_coefficient", &ReactionRuleDescriptor::set_product_coefficient)
-            .def("set_reactant_coefficients", &ReactionRuleDescriptor::set_reactant_coefficients)
-            .def("set_product_coefficients", &ReactionRuleDescriptor::set_product_coefficients);
-
-        py::class_<ReactionRuleDescriptorMassAction, ReactionRuleDescriptor,
-            PyReactionRuleDescriptor<ReactionRuleDescriptorMassAction>,
-            boost::shared_ptr<ReactionRuleDescriptorMassAction>>(m, "ReactionRuleDescriptorMassAction")
-            .def(py::init<const Real>())
-            .def(py::init<const Quantity<Real>&>())
-            .def("k", &ReactionRuleDescriptorMassAction::k)
-            .def("get_k", &ReactionRuleDescriptorMassAction::get_k)
-            .def("set_k", (void (ReactionRuleDescriptorMassAction::*)(const Real)) &ReactionRuleDescriptorMassAction::set_k)
-            .def("set_k", (void (ReactionRuleDescriptorMassAction::*)(const Quantity<Real>&)) &ReactionRuleDescriptorMassAction::set_k)
-            .def(py::pickle(
-                [](const ReactionRuleDescriptorMassAction& self)
-                {
-                    return py::make_tuple(self.reactant_coefficients(), self.product_coefficients(), self.get_k());
-                },
-                [](py::tuple t)
-                {
-                    if (t.size() != 3)
-                        throw std::runtime_error("Invalid state");
-                    ReactionRuleDescriptorMassAction ret(t[2].cast<Quantity<Real>>());
-                    ret.set_reactant_coefficients(t[0].cast<ReactionRuleDescriptor::coefficient_container_type>());
-                    ret.set_product_coefficients(t[1].cast<ReactionRuleDescriptor::coefficient_container_type>());
-                    return ret;
-                }
-            ));
-
-        py::class_<ReactionRuleDescriptorPyfunc, ReactionRuleDescriptor,
-            PyReactionRuleDescriptor<ReactionRuleDescriptorPyfunc>,
-            boost::shared_ptr<ReactionRuleDescriptorPyfunc>>(m, "ReactionRuleDescriptorPyfunc")
-            .def(py::init<ReactionRuleDescriptorPyfunc::callback_t, const std::string&>())
-            .def("get", &ReactionRuleDescriptorPyfunc::get)
-            .def("set_name", &ReactionRuleDescriptorPyfunc::set_name)
-            .def("as_string", &ReactionRuleDescriptorPyfunc::as_string)
-            .def(py::pickle(
-                [](const ReactionRuleDescriptorPyfunc& self)
-                {
-                    return py::make_tuple(self.get(), self.as_string(), self.reactant_coefficients(), self.product_coefficients());
-                },
-                [](py::tuple t)
-                {
-                    if (t.size() != 4)
-                        throw std::runtime_error("Invalid state");
-                    return ReactionRuleDescriptorPyfunc(
-                        t[0].cast<ReactionRuleDescriptorPyfunc::callback_t>(),
-                        t[1].cast<std::string>(),
-                        t[2].cast<ReactionRuleDescriptorPyfunc::coefficient_container_type>(),
-                        t[3].cast<ReactionRuleDescriptorPyfunc::coefficient_container_type>()
-                    );
-                }
-            ));
-    }
 }
 
 }
