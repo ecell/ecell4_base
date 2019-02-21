@@ -1132,6 +1132,7 @@ protected:
     void decrement_molecules(const Species& sp, const coordinate_type& c);
     void increment(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c);
     void decrement(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c);
+    void check_model(void);
 
 protected:
 

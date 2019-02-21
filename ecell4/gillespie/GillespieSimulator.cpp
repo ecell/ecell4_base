@@ -289,36 +289,6 @@ void GillespieSimulator::initialize(void)
 
         if (rr.has_descriptor())
         {
-            const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
-
-            if (not desc->is_available())
-            {
-                throw NotSupported(
-                    "The given reaction rule descriptor is not available.");
-            }
-            else if ((rr.reactants().size() != desc->reactant_coefficients().size())
-                    || (rr.products().size() != desc->product_coefficients().size()))
-            {
-                throw NotSupported(
-                    "Mismatch between the number of stoichiometry coefficients and of reactants.");
-            }
-            else
-            {
-                for (ReactionRuleDescriptor::coefficient_container_type::const_iterator
-                    it(desc->reactant_coefficients().begin()); it != desc->reactant_coefficients().end();
-                    it++)
-                {
-                    if ((*it) < 0)
-                    {
-                        throw NotSupported("A stoichiometric coefficient must be non-negative.");
-                    }
-                    else if (abs((*it) - round(*it)) > 1e-10 * (*it))
-                    {
-                        throw NotSupported("A stoichiometric coefficient must be an integer.");
-                    }
-                }
-            }
-
             events_.push_back(new DescriptorReactionRuleEvent(this, rr));
         }
         else if (rr.reactants().size() == 0)
