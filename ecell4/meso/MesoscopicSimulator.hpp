@@ -820,6 +820,61 @@ protected:
             return ret;
         }
 
+        virtual void fire(const Real t, const coordinate_type& src)
+        {
+            const std::pair<ReactionRule, coordinate_type>
+                retval = this->draw(src);
+
+            const ReactionRule& nextr = retval.first;
+            // const coordinate_type& dst = retval.second;
+            const ReactionRule::reactant_container_type& reactants(nextr.reactants());
+            const ReactionRule::product_container_type& products(nextr.products());
+
+            assert(retval.second == src);
+
+            for (ReactionRule::product_container_type::const_iterator
+                    it(products.begin()); it != products.end(); ++it)
+            {
+                const Species& sp(*it);
+
+                if (!sim_->world()->on_structure(sp, src))
+                {
+                    ; // do nothing except for update()
+                    return;
+                }
+            }
+
+            const boost::shared_ptr<ReactionRuleDescriptor>& desc = nextr.get_descriptor();
+            assert(desc->is_available());
+
+            const ReactionRuleDescriptor::coefficient_container_type&
+                reactant_coefficients(desc->reactant_coefficients());
+            assert(reactants.size() == reactant_coefficients.size());
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                assert(reactant_coefficients[i] >= 0);
+                for (std::size_t j = 0; j < (std::size_t)round(reactant_coefficients[i]); ++j)
+                {
+                    sim_->decrement_molecules(reactants[i], src);
+                }
+            }
+
+            const ReactionRuleDescriptor::coefficient_container_type&
+                product_coefficients(desc->product_coefficients());
+            assert(products.size() == product_coefficients.size());
+            for (std::size_t i = 0; i < products.size(); ++i)
+            {
+                assert(product_coefficients[i] >= 0);
+                for (std::size_t j = 0; j < (std::size_t)round(product_coefficients[i]); ++j)
+                {
+                    sim_->increment_molecules(products[i], src);
+                }
+            }
+
+            sim_->add_last_reaction(
+                nextr, reaction_info_type(t, reactants, products, src));
+        }
+
     protected:
 
         std::vector<state_container_type> num_reactants_, num_products_;
