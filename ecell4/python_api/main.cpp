@@ -15,6 +15,7 @@ PYBIND11_MODULE(ecell4, m) {
     py::module m_spatiocyte = m.def_submodule("spatiocyte", "A submodule of ecell4");
 
     setup_module(m);
+    setup_bd_module(m_bd);
     setup_gillespie_module(m_gillespie);
     setup_spatiocyte_module(m_spatiocyte);
 }
