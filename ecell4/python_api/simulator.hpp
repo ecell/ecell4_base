@@ -102,6 +102,26 @@ public:
     }
 };
 
+template<class S, class... Others>
+static inline
+void define_simulator_functions(py::class_<S, Others...>& simulator)
+{
+    simulator
+        .def("last_reactions", &S::last_reactions)
+        .def("model", &S::model)
+        .def("world", &S::world)
+        .def("run",
+            (void (S::*)(const Real&, const bool)) &S::run,
+            py::arg("duration"), py::arg("is_dirty") = true)
+        .def("run",
+            (void (S::*)(const Real&, const boost::shared_ptr<Observer>&, const bool)) &S::run,
+            py::arg("duration"), py::arg("observer"), py::arg("is_dirty") = true)
+        .def("run",
+            (void (S::*)(const Real&, std::vector<boost::shared_ptr<Observer>>, const bool)) &S::run,
+            py::arg("duration"), py::arg("observers"), py::arg("is_dirty") = true)
+        ;
+}
+
 }
 
 }

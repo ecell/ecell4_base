@@ -990,7 +990,7 @@ void define_shape(py::module& m)
 
 void define_simulator(py::module& m)
 {
-    py::class_<Simulator, PySimulator<>>(m, "Simulator")
+    py::class_<Simulator, PySimulator<>, boost::shared_ptr<Simulator>>(m, "Simulator")
         .def("initialize", &Simulator::initialize)
         .def("t", &Simulator::t)
         .def("dt", &Simulator::dt)

@@ -54,9 +54,6 @@ void define_reaction_info(py::module& m)
 static inline
 void define_spatiocyte_factory(py::module& m)
 {
-    using world_type = SpatiocyteFactory::world_type;
-    using simulator_type = SpatiocyteFactory::simulator_type;
-
     py::class_<SpatiocyteFactory> factory(m, "SpatiocyteFactory");
     factory
         .def(py::init<>())
@@ -68,22 +65,12 @@ void define_spatiocyte_factory(py::module& m)
 static inline
 void define_spatiocyte_simulator(py::module& m)
 {
-    py::class_<SpatiocyteSimulator, Simulator, PySimulator<SpatiocyteSimulator>>(m, "SpatiocyteSimulator")
+    py::class_<SpatiocyteSimulator, Simulator, PySimulator<SpatiocyteSimulator>,
+        boost::shared_ptr<SpatiocyteSimulator>> simulator(m, "SpatiocyteSimulator");
+    simulator
         .def(py::init<boost::shared_ptr<SpatiocyteWorld>>())
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>())
-        .def("last_reactions", &SpatiocyteSimulator::last_reactions)
-        .def("model", &SpatiocyteSimulator::model)
-        .def("world", &SpatiocyteSimulator::world)
-        .def("run",
-            (void (SpatiocyteSimulator::*)(const Real&, const bool)) &SpatiocyteSimulator::run,
-            py::arg("duration"), py::arg("is_dirty") = true)
-        .def("run",
-            (void (SpatiocyteSimulator::*)(const Real&, const boost::shared_ptr<Observer>&, const bool)) &SpatiocyteSimulator::run,
-            py::arg("duration"), py::arg("observer"), py::arg("is_dirty") = true)
-        .def("run",
-            (void (SpatiocyteSimulator::*)(const Real&, std::vector<boost::shared_ptr<Observer>>, const bool)) &SpatiocyteSimulator::run,
-            py::arg("duration"), py::arg("observers"), py::arg("is_dirty") = true)
-        ;
+        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>());
+    define_simulator_functions(simulator);
 }
 
 static inline

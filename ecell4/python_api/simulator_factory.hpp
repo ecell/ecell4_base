@@ -2,7 +2,6 @@
 #define ECELL4_PYTHON_API_SIMULATOR_FACTORY_HPP
 
 #include <pybind11/pybind11.h>
-#include <ecell4/core/SimulatorFactory.hpp>
 
 namespace py = pybind11;
 
@@ -21,22 +20,40 @@ void define_factory_functions(py::class_<Factory>& factory)
 
     factory
         .def("world",
-            (world_type* (Factory::*)(const Real3&) const) &Factory::world,
+            [](const Factory& self, const Real3& edge_lengths)
+            {
+                return boost::shared_ptr<world_type>(self.world(edge_lengths));
+            },
             py::arg("edge_lengths") = ones())
         .def("world",
-            (world_type* (Factory::*)(const Real) const) &Factory::world,
+            [](const Factory& self, const Real volume)
+            {
+                return boost::shared_ptr<world_type>(self.world(volume));
+            },
             py::arg("volume"))
         .def("world",
-            (world_type* (Factory::*)(const std::string&) const) &Factory::world,
+            [](const Factory& self, const std::string& filename)
+            {
+                return boost::shared_ptr<world_type>(self.world(filename));
+            },
             py::arg("filename"))
         .def("world",
-            (world_type* (Factory::*)(const boost::shared_ptr<Model>&) const) &Factory::world,
+            [](const Factory& self, const boost::shared_ptr<Model>& model)
+            {
+                return boost::shared_ptr<world_type>(self.world(model));
+            },
             py::arg("model"))
         .def("simulator",
-            (simulator_type* (Factory::*)(const boost::shared_ptr<world_type>&) const) &Factory::simulator,
+            [](const Factory& self, const boost::shared_ptr<world_type>& world)
+            {
+                return boost::shared_ptr<simulator_type>(self.simulator(world));
+            },
             py::arg("world"))
         .def("simulator",
-            (simulator_type* (Factory::*)(const boost::shared_ptr<world_type>&, const boost::shared_ptr<Model>&) const) &Factory::simulator,
+            [](const Factory& self, const boost::shared_ptr<world_type>& world, const boost::shared_ptr<Model>& model)
+            {
+                return boost::shared_ptr<simulator_type>(self.simulator(world, model));
+            },
             py::arg("world"), py::arg("model"));
 }
 
