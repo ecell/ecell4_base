@@ -3,6 +3,7 @@
 
 #include <boost/variant.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/optional.hpp>
 #include <pybind11/stl.h>
 // #include <pybind11/stl_bind.h>
 
@@ -14,6 +15,11 @@ namespace pybind11
     {
         template<typename... Ts>
         struct type_caster<boost::variant<Ts...>> : variant_caster<boost::variant<Ts...>>
+        {
+        };
+
+        template<typename T>
+        struct type_caster<boost::optional<T>> : optional_caster<boost::optional<T>>
         {
         };
 
