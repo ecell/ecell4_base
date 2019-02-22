@@ -73,7 +73,7 @@ namespace python_api
 
         const Real3& edge_lengths() const override
         {
-            PYBIND11_OVERLOAD(Real3, Base, edge_lengths,);
+            PYBIND11_OVERLOAD(const Real3&, Base, edge_lengths,);
         }
 
         Integer num_particles() const override
