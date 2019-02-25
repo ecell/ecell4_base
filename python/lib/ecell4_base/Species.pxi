@@ -91,10 +91,10 @@ cdef class Species:
                     "radius must be float. '{}' was given [{}].".format(type(radius).__name__, radius))
             if not isinstance(D, (numbers.Real, Quantity)):
                 raise TypeError("D must be float. '{}' was given [{}].".format(type(D).__name__, D))
-            if not type(radius) is type(D):
-                raise TypeError(
-                    "radius [{}] and D [{}] must have a same type ['{}' != '{}'].".format(
-                        radius, D, type(radius).__name__, type(D).__name__))
+            # if not type(radius) is type(D):
+            #     raise TypeError(
+            #         "radius [{}] and D [{}] must have a same type ['{}' != '{}'].".format(
+            #             radius, D, type(radius).__name__, type(D).__name__))
             if location is not None and not isinstance(location, (str, bytes)):
                 raise TypeError(
                     'location must be string.'

@@ -496,7 +496,7 @@ cdef class SpatiocyteWorld:
     # Particle Manipulation
 
     def new_particle(self, arg1, Real3 arg2=None):
-        """new_particle(arg1, arg2=None) -> (ParticleID, Particle)
+        """new_particle(arg1, arg2=None) -> ParticleID
 
         Create a new particle.
 
