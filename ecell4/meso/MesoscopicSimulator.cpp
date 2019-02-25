@@ -214,8 +214,6 @@ void MesoscopicSimulator::check_model(void)
     const Model::reaction_rule_container_type&
         reaction_rules(model_->reaction_rules());
 
-    check_model();
-
     for (Model::reaction_rule_container_type::const_iterator
         i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
     {
