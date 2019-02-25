@@ -30,13 +30,13 @@ public:
     BDSimulator(
         boost::shared_ptr<BDWorld> world, boost::shared_ptr<Model> model,
         Real bd_dt_factor = 1e-5)
-        : base_type(world, model), dt_(0), bd_dt_factor_(bd_dt_factor)
+        : base_type(world, model), dt_(0), bd_dt_factor_(bd_dt_factor), dt_set_by_user_(false)
     {
         initialize();
     }
 
     BDSimulator(boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
-        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor)
+        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor), dt_set_by_user_(false)
     {
         initialize();
     }
@@ -46,7 +46,10 @@ public:
     void initialize()
     {
         last_reactions_.clear();
-        dt_ = determine_dt();
+        if (not dt_set_by_user_)
+        {
+            dt_ = determine_dt();
+        }
     }
 
     Real determine_dt() const
@@ -104,6 +107,7 @@ public:
             throw std::invalid_argument("The step size must be positive.");
         }
         dt_ = dt;
+        dt_set_by_user_ = true;
     }
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()
@@ -119,6 +123,7 @@ protected:
      */
     Real dt_;
     const Real bd_dt_factor_;
+    bool dt_set_by_user_;
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
 };
 

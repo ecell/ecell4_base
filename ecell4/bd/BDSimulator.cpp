@@ -42,9 +42,9 @@ bool BDSimulator::step(const Real& upto)
     }
     else
     {
-        set_dt(upto - t0);
+        dt_ = upto - t0;
         step();
-        set_dt(dt0);
+        dt_ = dt0;
         return false;
     }
 }
