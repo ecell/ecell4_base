@@ -129,7 +129,9 @@ class Multi
     bool add_shell(ShellID const& sid)
     {
         if(std::find(shells_.begin(), shells_.end(), sid) != shells_.end())
+        {
             return false;
+        }
         shells_.push_back(sid);
         return true;
     }
