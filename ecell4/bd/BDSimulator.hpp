@@ -54,14 +54,14 @@ public:
 
     Real determine_dt() const
     {
-        const std::vector<Species> splist(world_->list_species());
-
         Real rmin(inf), Dmax(0.0);
-        for (std::vector<Species>::const_iterator i(splist.begin());
-            i != splist.end(); ++i)
+
+        for (std::vector<Species>::const_iterator i(model_->species_attributes().begin());
+            i != model_->species_attributes().end(); ++i)
         {
             const BDWorld::molecule_info_type
                 info(world_->get_molecule_info(*i));
+
             if (rmin > info.radius)
             {
                 rmin = info.radius;
@@ -71,6 +71,23 @@ public:
                 Dmax = info.D;
             }
         }
+
+        // const std::vector<Species> splist(world_->list_species());
+
+        // for (std::vector<Species>::const_iterator i(splist.begin());
+        //     i != splist.end(); ++i)
+        // {
+        //     const BDWorld::molecule_info_type
+        //         info(world_->get_molecule_info(*i));
+        //     if (rmin > info.radius)
+        //     {
+        //         rmin = info.radius;
+        //     }
+        //     if (Dmax < info.D)
+        //     {
+        //         Dmax = info.D;
+        //     }
+        // }
 
         const Real dt(rmin < inf && Dmax > 0.0
             ? 4.0 * rmin * rmin / (2.0 * Dmax) * bd_dt_factor_
@@ -114,6 +131,10 @@ public:
     {
         return (*world_).rng();
     }
+
+protected:
+
+    void attempt_synthetic_reaction(const ReactionRule& rr);
 
 protected:
 
