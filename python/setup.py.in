@@ -236,9 +236,6 @@ setup(
     name = "ecell4_base",
     version = "${PROJECT_VERSION}",
     package_dir = {"": convert_path(python_dir)},
-    package_data = {"ecell4_base.util": [
-        "templates/init_ipynb.js", "templates/init_cyjs.js", "templates/template.html",
-        "templates/*.tmpl", "templates/ecelllogo/*.png"]},
     data_files = [('ecell4-licenses', glob.glob(os.path.join(convert_path(source_dir), 'licenses/*')))],
     packages = ["ecell4_base"],
     cmdclass = {'build_ext': my_build_ext, 'test': run_tests},

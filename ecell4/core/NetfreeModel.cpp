@@ -382,8 +382,19 @@ std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_m
     const std::map<Species, Integer>& max_stoich)
 {
     std::vector<ReactionRule> reactions;
-    std::vector<Species> seeds1(seeds);
+    std::vector<Species> seeds1;
     std::vector<Species> seeds2;
+
+    for (std::vector<Species>::const_iterator i(seeds.begin());
+        i != seeds.end(); ++i)
+    {
+        const Species sp(format_species(*i));
+        if (std::find(seeds1.begin(), seeds1.end(), sp)
+            == seeds1.end())
+        {
+            seeds1.push_back(sp);
+        }
+    }
 
     for (NetfreeModel::reaction_rule_container_type::const_iterator
         i(nfm.reaction_rules().begin()); i != nfm.reaction_rules().end(); ++i)

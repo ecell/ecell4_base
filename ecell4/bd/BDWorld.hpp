@@ -356,7 +356,7 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
-        const std::string required = "ecell4-bd-4.1.0";
+        const std::string required = "ecell4-bd-1.0.0";
         try
         {
             const std::string version = extras::load_version_information(*fin);

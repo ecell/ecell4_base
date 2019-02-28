@@ -108,7 +108,7 @@ VersionInformation parse_version_information(const std::string& version)
 #else /* WIN32_MSC */
     using namespace std::tr1;
 #endif /* HAVE_BOOST_REGEX */
-    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.([0123456789]+)$");
+    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.(dev|)([0123456789]+)$");
     smatch result;
     if (!regex_match(version, result, reg))
     {
@@ -119,13 +119,13 @@ VersionInformation parse_version_information(const std::string& version)
     const std::string header = result.str(1);
     const int majorno = mystoi(result.str(2));
     const int minorno = mystoi(result.str(3));
-    const int patchno = mystoi(result.str(4));
+    const int patchno = mystoi(result.str(5));
 
     return VersionInformation(header, majorno, minorno, patchno);
 #else /* regex.h */
     regex_t reg;
     int errcode = regcomp(
-        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.([0123456789]+)$",
+        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.(dev|)([0123456789]+)$",
         REG_EXTENDED);
     if (errcode != 0)
     {
@@ -136,8 +136,8 @@ VersionInformation parse_version_information(const std::string& version)
         throw IllegalState("regcompile error.");
     }
 
-    regmatch_t match[5];
-    errcode = regexec(&reg, version.c_str(), 5, match, 0);
+    regmatch_t match[6];
+    errcode = regexec(&reg, version.c_str(), 6, match, 0);
     if (errcode != 0)
     {
         char errbuf[100];
@@ -150,7 +150,7 @@ VersionInformation parse_version_information(const std::string& version)
     const std::string header = version.substr(match[1].rm_so, match[1].rm_eo - match[1].rm_so);
     const int majorno = mystoi(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
     const int minorno = mystoi(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
-    const int patchno = mystoi(version.substr(match[4].rm_so, match[4].rm_eo - match[4].rm_so));
+    const int patchno = mystoi(version.substr(match[4].rm_so, match[5].rm_eo - match[5].rm_so));
 
     regfree(&reg);
     return VersionInformation(header, majorno, minorno, patchno);
