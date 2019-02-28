@@ -223,7 +223,7 @@ void MesoscopicSimulator::check_model(void)
         {
             const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
 
-            if (not desc->is_available())
+            if (!desc->is_available())
             {
                 throw NotSupported(
                     "The given reaction rule descriptor is not available.");

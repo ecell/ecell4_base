@@ -46,7 +46,7 @@ public:
     void initialize()
     {
         last_reactions_.clear();
-        if (not dt_set_by_user_)
+        if (!dt_set_by_user_)
         {
             dt_ = determine_dt();
         }
