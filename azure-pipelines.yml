@@ -12,7 +12,7 @@ steps:
 
 - script: |
     brew update && brew upgrade cmake python
-    brew install gsl hdf5
+    brew install boost gsl hdf5
     /usr/local/bin/python3 -m pip install -U pip wheel delocate cython
     git clone git://github.com/ecell/ecell4-base && cd ecell4-base
     git submodule init && git submodule update && cmake -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 -DNO_SHARED:BOOL=1 . && make
