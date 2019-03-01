@@ -122,7 +122,7 @@ VersionInformation parse_version_information(const std::string& version)
     const int patchno = (result.str(4).size() > 1 ? mystoi(result.str(4).substr(1)) : -1);
     const int devno = (result.str(5).size() > 4 ? mystoi(result.str(5).substr(4)) : -1);
 
-    return VersionInformation(header, majorno, minorno, patchno);
+    return VersionInformation(header, majorno, minorno, patchno, devno);
 #else /* regex.h */
     regex_t reg;
     int errcode = regcomp(
