@@ -108,7 +108,7 @@ VersionInformation parse_version_information(const std::string& version)
 #else /* WIN32_MSC */
     using namespace std::tr1;
 #endif /* HAVE_BOOST_REGEX */
-    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.(dev|)([0123456789]+)$");
+    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(\\.dev[0123456789]+|)$");
     smatch result;
     if (!regex_match(version, result, reg))
     {
@@ -119,13 +119,14 @@ VersionInformation parse_version_information(const std::string& version)
     const std::string header = result.str(1);
     const int majorno = mystoi(result.str(2));
     const int minorno = mystoi(result.str(3));
-    const int patchno = mystoi(result.str(5));
+    const int patchno = (result.str(4) > 0 ? mystoi(result.str(4).substr(1)) : -1);
+    const int devno = (result.str(5) > 0 ? mystoi(result.str(5).substr(4)) : -1);
 
     return VersionInformation(header, majorno, minorno, patchno);
 #else /* regex.h */
     regex_t reg;
     int errcode = regcomp(
-        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)\\.(dev|)([0123456789]+)$",
+        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(\\.dev[0123456789]+|)$",
         REG_EXTENDED);
     if (errcode != 0)
     {
@@ -150,10 +151,11 @@ VersionInformation parse_version_information(const std::string& version)
     const std::string header = version.substr(match[1].rm_so, match[1].rm_eo - match[1].rm_so);
     const int majorno = mystoi(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
     const int minorno = mystoi(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
-    const int patchno = mystoi(version.substr(match[4].rm_so, match[5].rm_eo - match[5].rm_so));
+    const int patchno = (match[4].rm_eo - match[4].rm_so > 0 ? mystoi(version.substr(match[4].rm_so + 1)) : -1);
+    const int devno = (match[5].rm_eo - match[5].rm_so > 0 ? mystoi(version.substr(match[5].rm_so + 4)) : -1);
 
     regfree(&reg);
-    return VersionInformation(header, majorno, minorno, patchno);
+    return VersionInformation(header, majorno, minorno, patchno, devno);
 #endif /* HAVE_BOOST_REGEX */
 }
 
@@ -161,10 +163,24 @@ bool check_version_information(const std::string& version, const std::string& re
 {
     const VersionInformation vinfo1(parse_version_information(version));
     const VersionInformation vinfo2(parse_version_information(required));
-    return (vinfo1.header == vinfo2.header
-        && vinfo1.majorno >= vinfo2.majorno
-        && vinfo1.minorno >= vinfo2.minorno
-        && vinfo1.patchno >= vinfo2.patchno);
+
+    if (vinfo1.header != vinfo2.header)
+    {
+        return false;
+    }
+    else if (vinfo1.majorno != vinfo2.majorno)
+    {
+        return (vinfo1.majorno >= vinfo2.majorno);
+    }
+    else if (vinfo1.minorno != vinfo2.minorno)
+    {
+        return (vinfo1.minorno >= vinfo2.minorno);
+    }
+    else if (vinfo1.patchno != vinfo2.patchno)
+    {
+        return (vinfo1.patchno == -1 || (vinfo2.patchno != -1 && vinfo1.patchno >= vinfo2.patchno));
+    }
+    return (vinfo1.devno == -1 || (vinfo2.devno != -1 && vinfo1.devno >= vinfo2.devno));
 }
 
 } // extras
