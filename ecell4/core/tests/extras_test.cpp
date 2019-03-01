@@ -37,3 +37,45 @@ BOOST_AUTO_TEST_CASE(DimensionAttributeTest)
     BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("D"), model), Shape::TWO);
     BOOST_CHECK_THROW(extras::get_dimension_from_model(Species("E"), model), NotFound);
 }
+
+BOOST_AUTO_TEST_CASE(VersionInformationTest)
+{
+    {
+        const extras::VersionInformation vinfo1 = extras::parse_version_information("ecell4-test-1.2.3");
+        BOOST_CHECK_EQUAL(vinfo1.header, "ecell4-test-");
+        BOOST_CHECK_EQUAL(vinfo1.majorno, 1);
+        BOOST_CHECK_EQUAL(vinfo1.minorno, 2);
+        BOOST_CHECK_EQUAL(vinfo1.patchno, 3);
+        BOOST_CHECK_EQUAL(vinfo1.devno, -1);
+    }
+    {
+        const extras::VersionInformation vinfo1 = extras::parse_version_information("ecell4-test-1.2");
+        BOOST_CHECK_EQUAL(vinfo1.header, "ecell4-test-");
+        BOOST_CHECK_EQUAL(vinfo1.majorno, 1);
+        BOOST_CHECK_EQUAL(vinfo1.minorno, 2);
+        BOOST_CHECK_EQUAL(vinfo1.patchno, -1);
+        BOOST_CHECK_EQUAL(vinfo1.devno, -1);
+    }
+    {
+        const extras::VersionInformation vinfo1 = extras::parse_version_information("ecell4-test-1.2.dev4");
+        BOOST_CHECK_EQUAL(vinfo1.header, "ecell4-test-");
+        BOOST_CHECK_EQUAL(vinfo1.majorno, 1);
+        BOOST_CHECK_EQUAL(vinfo1.minorno, 2);
+        BOOST_CHECK_EQUAL(vinfo1.patchno, -1);
+        BOOST_CHECK_EQUAL(vinfo1.devno, 4);
+    }
+
+    {
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0", "ecell4-test-1.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.1", "ecell4-test-1.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-2.0.0", "ecell4-test-1.0"));
+        BOOST_CHECK(!extras::check_version_information("ecell4-test-1.0.0", "ecell4-test-1.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0.0", "ecell4-test-1.0.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0.1", "ecell4-test-1.0.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0", "ecell4-test-1.0.0"));
+        BOOST_CHECK(!extras::check_version_information("ecell4-test-1.0.dev1", "ecell4-test-1.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.1.dev1", "ecell4-test-1.0"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0.dev1", "ecell4-test-1.0.dev1"));
+        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0.dev2", "ecell4-test-1.0.dev1"));
+    }
+}
