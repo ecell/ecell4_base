@@ -293,7 +293,7 @@ bool SGFRDWorld::check_no_overlap(
             if(dist < radius) {return false;}
         }
     }
-    return false;
+    return true;
 }
 
 }// sgfrd
