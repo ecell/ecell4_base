@@ -679,9 +679,13 @@ SGFRDSimulator::form_pair(
         pair_shell_size = std::min(pair_shell_size, iter->second);
     }
 
+    const Real effective_pair_shell_size =
+        (pair_shell_size * single_circular_shell_mergin -
+         std::max(p.radius(), partner.radius()));
+
     // maximum available pair shell size determined!
-    if(pair_shell_size >= sh_minim && // pair shell size should be large enough
-       Pair::calc_R_ipv(pair_shell_size, p, partner) > len_ipv)// ipv must be inside
+    if(effective_pair_shell_size >= sh_minim && // pair shell size should be large enough
+       Pair::calc_R_ipv(effective_pair_shell_size, p, partner) > len_ipv)// ipv must be inside
     {
         SGFRD_TRACE(tracer_.write("pair shell size is larger than the minimum. "
                                   "pair can be formed"))
