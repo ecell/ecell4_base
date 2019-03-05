@@ -65,6 +65,25 @@ class BDSimulator :
     {
         return;
     }
+    void finalize(const Real t)
+    {
+        SGFRD_SCOPE(us, finalize(t), tracer_);
+
+        this->world_->set_t(t);
+        BDPropagator<world_type, volume_clearer> propagator(
+                *(this->model_), *(this->world_),
+                *(this->world_->polygon()), this->rng_,
+                t - this->world_->t(), this->reaction_length_,
+                this->last_reactions_,
+                volume_clearer(*(this->world_), this->tracer_));
+
+        while(propagator())
+        {
+            // do nothing
+        }
+        return;
+    }
+
     void step()
     {
         SGFRD_SCOPE(us, step, tracer_);
@@ -102,6 +121,11 @@ class BDSimulator :
 
     std::vector<std::pair<ReactionRule, reaction_info_type> > const&
     last_reactions() const {return last_reactions_;}
+
+    Real next_event_time() const
+    {
+        return this->world_->t() + this->dt_;
+    }
 
     struct volume_clearer
     {
