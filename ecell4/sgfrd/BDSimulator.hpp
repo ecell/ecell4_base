@@ -16,9 +16,10 @@ namespace sgfrd
 {
 
 class BDSimulator :
-    public ecell4::SimulatorBase<ecell4::Model, SGFRDWorld>
+    public ecell4::SimulatorBase<SGFRDWorld, ecell4::Model>
 {
   public:
+    typedef BDSimulator self_type;
 
     // polygon
     typedef ecell4::Polygon  polygon_type;
@@ -27,7 +28,7 @@ class BDSimulator :
     typedef polygon_type::VertexID VertexID;
 
     // world & particles
-    typedef ecell4::SimulatorBase<ecell4::Model, SGFRDWorld> base_type;
+    typedef ecell4::SimulatorBase<SGFRDWorld, ecell4::Model> base_type;
     typedef base_type::world_type world_type;
     typedef base_type::model_type model_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair_type;
@@ -43,7 +44,7 @@ class BDSimulator :
                 const boost::shared_ptr<model_type>& model,
                 Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
                 const std::string& trace_fname = "bd_trace.log")
-        : base_type(model, world), dt_(bd_dt_factor/*TODO*/),
+        : base_type(world, model), dt_(bd_dt_factor/*TODO*/),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), tracer_(trace_fname)
     {}
