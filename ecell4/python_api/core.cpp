@@ -35,12 +35,29 @@ void define_real3(py::module& m)
         .def(py::self - py::self)
         .def(py::self *= Real3::value_type())
         .def(py::self * Real3::value_type())
-        .def("__mul__", [](Real3::value_type y, const Real3& x) { return x * y; })
+        .def("__mul__", [](Real3::value_type y, const Real3& x) { return x * y; }, py::is_operator())
         .def(py::self /= Real3::value_type())
         .def(py::self / Real3::value_type())
-        .def("__setitem__", [](Real3 &x, std::size_t i, Real3::value_type value) { x[i] = value; })
-        .def("__getitem__", [](const Real3 &x, std::size_t i) { return x[i]; })
-        .def("__abs__", [](const Real3& x) { return abs(x); })
+        .def("__setitem__",
+            [](Real3 &x, std::size_t i, Real3::value_type value)
+            {
+                if (i >= 3) throw std::out_of_range("");
+                x.at(i) = value;
+            },
+            py::is_operator())
+        .def("__getitem__",
+            [](const Real3 &x, std::size_t i)
+            {
+                if (i >= 3) throw std::out_of_range("");
+                return x.at(i);
+            },
+            py::is_operator())
+        .def("__abs__", [](const Real3& x) { return abs(x); }, py::is_operator())
+        .def("__eq__", [](const Real3& x, const Real3& y)
+            {
+                return x[0] == y[0] && x[1] == y[1] && x[2] == y[2];
+            },
+            py::is_operator())
         .def(py::pickle(
             [](const Real3& x)
             {
@@ -87,16 +104,17 @@ void define_integer3(py::module& m)
         .def_readwrite("col", &Integer3::col)
         .def_readwrite("row", &Integer3::row)
         .def_readwrite("layer", &Integer3::layer)
+        .def(py::self == py::self)
         .def(py::self += py::self)
         .def(py::self + py::self)
         .def(py::self -= py::self)
         .def(py::self - py::self)
         .def(py::self *= Integer3::value_type())
-        .def("__mul__", [](const Integer3& x, Integer3::value_type y) { return multiply(x, y); })
-        .def("__mul__", [](Integer3::value_type y, const Integer3& x) { return multiply(x, y); })
-        .def("__setitem__", [](Integer3& x, Integer3::size_type i, Integer3::value_type value) { x[i] = value; })
-        .def("__getitem__", [](const Integer3& x, Integer3::size_type i) { return x[i]; })
-        .def("__abs__", [](const Integer3& x) { return abs(x); })
+        .def("__mul__", [](const Integer3& x, Integer3::value_type y) { return multiply(x, y); }, py::is_operator())
+        .def("__mul__", [](Integer3::value_type y, const Integer3& x) { return multiply(x, y); }, py::is_operator())
+        .def("__setitem__", [](Integer3& x, Integer3::size_type i, Integer3::value_type value) { x[i] = value; }, py::is_operator())
+        .def("__getitem__", [](const Integer3& x, Integer3::size_type i) { return x[i]; }, py::is_operator())
+        .def("__abs__", [](const Integer3& x) { return abs(x); }, py::is_operator())
         .def(py::pickle(
             [](const Integer3& x)
             {
@@ -156,16 +174,17 @@ void define_species(py::module& m)
     py::class_<UnitSpecies>(m, "UnitSpecies")
         .def(py::init<>())
         .def(py::init<const std::string&>())
+        .def("serial", &UnitSpecies::serial)
+        .def("name", &UnitSpecies::name)
+        .def("add_site", &UnitSpecies::add_site)
+        .def("deserialize", &UnitSpecies::deserialize)
+        .def(py::self == py::self)
         .def("__hash__",
             [](const UnitSpecies& self)
             {
                 return ECELL4_HASH_STRUCT<UnitSpecies>()(self);
             }
         )
-        .def("serial", &UnitSpecies::serial)
-        .def("name", &UnitSpecies::name)
-        .def("add_site", &UnitSpecies::add_site)
-        .def("deserialize", &UnitSpecies::deserialize)
         .def(py::pickle(
             [](const UnitSpecies& self)
             {
@@ -181,6 +200,7 @@ void define_species(py::module& m)
             }
         ));
     py::class_<Species>(m, "Species")
+        .def(py::init<>())
         .def(py::init<const Species::serial_type&>())
         .def(py::init<const Species::serial_type&, const Real&, const Real&>())
         .def(py::init<const Species::serial_type&, const Real&, const Real&, const std::string>())
@@ -188,12 +208,6 @@ void define_species(py::module& m)
         .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&>())
         .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&, const std::string>())
         .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&, const std::string, const Integer&>())
-        .def("__hash__",
-            [](const Species& self)
-            {
-                return ECELL4_HASH_STRUCT<Species>()(self);
-            }
-        )
         .def("serial", &Species::serial)
         .def("get_attribute", &Species::get_attribute)
         .def("set_attribute", &Species::set_attribute<std::string>)
@@ -212,6 +226,13 @@ void define_species(py::module& m)
         .def("radius", &Species::radius)
         .def("location", &Species::location)
         .def("dimension", &Species::dimension)
+        .def(py::self == py::self)
+        .def("__hash__",
+            [](const Species& self)
+            {
+                return ECELL4_HASH_STRUCT<Species>()(self);
+            }
+        )
         .def(py::pickle(
             [](const Species& species)
             {
@@ -312,7 +333,6 @@ void define_reaction_rule(py::module& m)
     py::class_<ReactionRule> reaction_rule(m, "ReactionRule");
     reaction_rule
         .def(py::init<>())
-        .def(py::init<const ReactionRule&>())
         .def(py::init<const Reactants&, const Products&>())
         .def(py::init<const Reactants&, const Products&, const Real&>())
         .def(py::init<const Reactants&, const Products&, const Quantity<Real>&>())
@@ -666,8 +686,7 @@ void define_shape(py::module& m)
 {
     py::class_<Shape, PyShape<>, boost::shared_ptr<Shape>>(m, "Shape")
         .def("dimension", [](const Shape& self) { return static_cast<Integer>(self.dimension()); })
-        .def("is_inside", &Shape::is_inside)
-        ;
+        .def("is_inside", &Shape::is_inside);
 
     py::class_<Surface, Shape, PyShapeImpl<Surface>, boost::shared_ptr<Surface>>(m, "Surface")
         .def("root", &Surface::root)
@@ -988,6 +1007,7 @@ void define_shape(py::module& m)
         });
 }
 
+static inline
 void define_simulator(py::module& m)
 {
     py::class_<Simulator, PySimulator<>, boost::shared_ptr<Simulator>>(m, "Simulator")
