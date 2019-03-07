@@ -8,6 +8,7 @@ import subprocess
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
+from setuptools.command.test import test
 from distutils.version import LooseVersion
 
 
@@ -64,6 +65,13 @@ class CMakeBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
 
+class CustomTestCommand(test):
+    def run(self):
+        super(CustomTestCommand, self).run()
+        build_py = self.get_finalized_command('build_ext')
+        subprocess.check_call(['ctest'], cwd=build_py.build_temp)
+
+
 setup(
     name='ecell',
     version = '4.2.0',
@@ -73,6 +81,6 @@ setup(
     url = "https://github.com/ecell/ecell4",
     data_files = [('ecell4-licenses', glob.glob('licenses/*'))],
     ext_modules=[CMakeExtension('ecell4')],
-    cmdclass=dict(build_ext=CMakeBuild),
+    cmdclass=dict(build_ext=CMakeBuild, test=CustomTestCommand),
     zip_safe=False,
 )
