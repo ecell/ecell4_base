@@ -99,13 +99,14 @@ struct VersionInformation
     } prerelease_type;
 
     std::string header;
-    int majorno, minorno, patchno;
+    unsigned int majorno, minorno, patchno;
     prerelease_type pre;
-    int preno, devno;
+    unsigned int preno;
+    int devno;
 
     VersionInformation(
-        const std::string& header, const int majorno, const int minorno, const int patchno,
-        const prerelease_type pre, const int preno, const int devno)
+        const std::string& header, const unsigned int majorno, const unsigned int minorno, const unsigned int patchno,
+        const prerelease_type pre, const unsigned int preno, const int devno)
         : header(header), majorno(majorno), minorno(minorno), patchno(patchno),
         pre(pre), preno(preno), devno(devno)
     {

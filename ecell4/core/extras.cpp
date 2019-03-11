@@ -91,36 +91,37 @@ std::string load_version_information(const std::string& filename)
 #endif
 }
 
-int mystoi(const std::string& s)
+template <typename T = int>
+T mystoi(const std::string& s)
 {
     std::stringstream ss;
     ss << s;
-    int retval;
+    T retval;
     ss >> retval;
     return retval;
 }
 
-std::pair<VersionInformation::prerelease_type, int> parse_prerelease(const std::string& prestr)
+std::pair<VersionInformation::prerelease_type, unsigned int> parse_prerelease(const std::string& prestr)
 {
     if (prestr.size() == 0)
     {
-        return std::make_pair(VersionInformation::prerelease_type::FINAL, -1);
+        return std::make_pair(VersionInformation::prerelease_type::FINAL, 0);
     }
     else if (prestr[0] == 'a')
     {
-        return std::make_pair(VersionInformation::prerelease_type::ALPHA, mystoi(prestr.substr(1)));
+        return std::make_pair(VersionInformation::prerelease_type::ALPHA, mystoi<unsigned int>(prestr.substr(1)));
     }
     else if (prestr[0] == 'b')
     {
-        return std::make_pair(VersionInformation::prerelease_type::BETA, mystoi(prestr.substr(1)));
+        return std::make_pair(VersionInformation::prerelease_type::BETA, mystoi<unsigned int>(prestr.substr(1)));
     }
     else if (prestr[0] == 'c')
     {
-        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi(prestr.substr(1)));
+        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi<unsigned int>(prestr.substr(1)));
     }
     else if (prestr.size() >= 2 && prestr[0] == 'r' && prestr[1] == 'c')
     {
-        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi(prestr.substr(2)));
+        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi<unsigned int>(prestr.substr(2)));
     }
     else
     {
@@ -146,11 +147,11 @@ VersionInformation parse_version_information(const std::string& version)
     }
 
     const std::string header = result.str(1);
-    const int majorno = mystoi(result.str(2));
-    const int minorno = mystoi(result.str(3));
-    const int patchno = (result.str(4).size() > 1 ? mystoi(result.str(4).substr(1)) : 0);
-    const std::pair<VersionInformation::prerelease_type, int> pre = parse_prerelease(result.str(5));
-    const int devno = (result.str(6).size() > 4 ? mystoi(result.str(6).substr(4)) : -1);
+    const unsigned int majorno = mystoi<unsigned int>(result.str(2));
+    const unsigned int minorno = mystoi<unsigned int>(result.str(3));
+    const unsigned int patchno = (result.str(4).size() > 1 ? mystoi<unsigned int>(result.str(4).substr(1)) : 0);
+    const std::pair<VersionInformation::prerelease_type, unsigned int> pre = parse_prerelease(result.str(5));
+    const int devno = (result.str(6).size() > 4 ? mystoi<int>(result.str(6).substr(4)) : -1);
 
     return VersionInformation(header, majorno, minorno, patchno, pre, pre.no, devno);
 #else /* regex.h */
@@ -179,14 +180,14 @@ VersionInformation parse_version_information(const std::string& version)
     }
 
     const std::string header = version.substr(match[1].rm_so, match[1].rm_eo - match[1].rm_so);
-    const int majorno = mystoi(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
-    const int minorno = mystoi(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
-    const int patchno = (match[4].rm_eo - match[4].rm_so > 0 ?
-            mystoi(version.substr(match[4].rm_so + 1, match[4].rm_eo - (match[4].rm_so + 1))) : 0);
-    const std::pair<VersionInformation::prerelease_type, int> pre = parse_prerelease(
+    const unsigned int majorno = mystoi<unsigned int>(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
+    const unsigned int minorno = mystoi<unsigned int>(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
+    const unsigned int patchno = (match[4].rm_eo - match[4].rm_so > 0 ?
+            mystoi<unsigned int>(version.substr(match[4].rm_so + 1, match[4].rm_eo - (match[4].rm_so + 1))) : 0);
+    const std::pair<VersionInformation::prerelease_type, unsigned int> pre = parse_prerelease(
             version.substr(match[5].rm_so, match[5].rm_eo - match[5].rm_so));
     const int devno = (match[6].rm_eo - match[6].rm_so > 0 ?
-            mystoi(version.substr(match[6].rm_so + 4, match[6].rm_eo - (match[6].rm_so + 4))) : -1);
+            mystoi<int>(version.substr(match[6].rm_so + 4, match[6].rm_eo - (match[6].rm_so + 4))) : -1);
 
     regfree(&reg);
 
