@@ -105,28 +105,28 @@ std::pair<VersionInformation::prerelease_type, unsigned int> parse_prerelease(co
 {
     if (prestr.size() == 0)
     {
-        return std::make_pair(VersionInformation::prerelease_type::FINAL, 0);
+        return std::make_pair(VersionInformation::FINAL, 0);
     }
     else if (prestr[0] == 'a')
     {
-        return std::make_pair(VersionInformation::prerelease_type::ALPHA, mystoi<unsigned int>(prestr.substr(1)));
+        return std::make_pair(VersionInformation::ALPHA, mystoi<unsigned int>(prestr.substr(1)));
     }
     else if (prestr[0] == 'b')
     {
-        return std::make_pair(VersionInformation::prerelease_type::BETA, mystoi<unsigned int>(prestr.substr(1)));
+        return std::make_pair(VersionInformation::BETA, mystoi<unsigned int>(prestr.substr(1)));
     }
     else if (prestr[0] == 'c')
     {
-        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi<unsigned int>(prestr.substr(1)));
+        return std::make_pair(VersionInformation::RC, mystoi<unsigned int>(prestr.substr(1)));
     }
     else if (prestr.size() >= 2 && prestr[0] == 'r' && prestr[1] == 'c')
     {
-        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi<unsigned int>(prestr.substr(2)));
+        return std::make_pair(VersionInformation::RC, mystoi<unsigned int>(prestr.substr(2)));
     }
     else
     {
         throw NotSupported("Unknown pre-release was given.");
-        return std::make_pair(VersionInformation::prerelease_type::NONE, 0);
+        return std::make_pair(VersionInformation::NONE, 0);
     }
 }
 
@@ -153,7 +153,7 @@ VersionInformation parse_version_information(const std::string& version)
     const std::pair<VersionInformation::prerelease_type, unsigned int> pre = parse_prerelease(result.str(5));
     const int devno = (result.str(6).size() > 4 ? mystoi<int>(result.str(6).substr(4)) : -1);
 
-    return VersionInformation(header, majorno, minorno, patchno, pre, pre.no, devno);
+    return VersionInformation(header, majorno, minorno, patchno, pre.first, pre.second, devno);
 #else /* regex.h */
     regex_t reg;
     int errcode = regcomp(
