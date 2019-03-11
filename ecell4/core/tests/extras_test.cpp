@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(VersionInformationTest)
         BOOST_CHECK_EQUAL(vinfo1.majorno, 1);
         BOOST_CHECK_EQUAL(vinfo1.minorno, 2);
         BOOST_CHECK_EQUAL(vinfo1.patchno, 3);
-        BOOST_CHECK_EQUAL(vinfo1.pre, extras::VersionInformation::prerelease_type::RC);
+        BOOST_CHECK_EQUAL(vinfo1.pre, extras::VersionInformation::RC);
         BOOST_CHECK_EQUAL(vinfo1.preno, 4);
         BOOST_CHECK_EQUAL(vinfo1.devno, 5);
     }
