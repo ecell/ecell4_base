@@ -89,12 +89,25 @@ get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>&
 
 struct VersionInformation
 {
+    typedef enum PreRelease
+    {
+        NONE = 0,
+        ALPHA = 1,
+        BETA = 2,
+        RC = 3,
+        FINAL = 4
+    } prerelease_type;
+
     std::string header;
-    int majorno, minorno, patchno, devno;
+    int majorno, minorno, patchno;
+    prerelease_type pre;
+    int preno, devno;
 
     VersionInformation(
-        const std::string& header, const int majorno, const int minorno, const int patchno, const int devno)
-        : header(header), majorno(majorno), minorno(minorno), patchno(patchno), devno(devno)
+        const std::string& header, const int majorno, const int minorno, const int patchno,
+        const prerelease_type pre, const int preno, const int devno)
+        : header(header), majorno(majorno), minorno(minorno), patchno(patchno),
+        pre(pre), preno(preno), devno(devno)
     {
         ;
     }

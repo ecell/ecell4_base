@@ -100,6 +100,35 @@ int mystoi(const std::string& s)
     return retval;
 }
 
+std::pair<VersionInformation::prerelease_type, int> parse_prerelease(const std::string& prestr)
+{
+    if (prestr.size() == 0)
+    {
+        return std::make_pair(VersionInformation::prerelease_type::FINAL, -1);
+    }
+    else if (prestr[0] == 'a')
+    {
+        return std::make_pair(VersionInformation::prerelease_type::ALPHA, mystoi(prestr.substr(1)));
+    }
+    else if (prestr[0] == 'b')
+    {
+        return std::make_pair(VersionInformation::prerelease_type::BETA, mystoi(prestr.substr(1)));
+    }
+    else if (prestr[0] == 'c')
+    {
+        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi(prestr.substr(1)));
+    }
+    else if (prestr.size() >= 2 && prestr[0] == 'r' && prestr[1] == 'c')
+    {
+        return std::make_pair(VersionInformation::prerelease_type::RC, mystoi(prestr.substr(2)));
+    }
+    else
+    {
+        throw NotSupported("Unknown pre-release was given.");
+        return std::make_pair(VersionInformation::prerelease_type::NONE, 0);
+    }
+}
+
 VersionInformation parse_version_information(const std::string& version)
 {
 #if defined(HAVE_BOOST_REGEX) || defined(WIN32_MSC)
@@ -108,7 +137,7 @@ VersionInformation parse_version_information(const std::string& version)
 #else /* WIN32_MSC */
     using namespace std::tr1;
 #endif /* HAVE_BOOST_REGEX */
-    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(\\.dev[0123456789]+|)$");
+    regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(a[0123456789]+|b[0123456789]+|rc[0123456789]+|c[0123456789]+|)(\\.dev[0123456789]+|)$");
     smatch result;
     if (!regex_match(version, result, reg))
     {
@@ -119,14 +148,15 @@ VersionInformation parse_version_information(const std::string& version)
     const std::string header = result.str(1);
     const int majorno = mystoi(result.str(2));
     const int minorno = mystoi(result.str(3));
-    const int patchno = (result.str(4).size() > 1 ? mystoi(result.str(4).substr(1)) : -1);
-    const int devno = (result.str(5).size() > 4 ? mystoi(result.str(5).substr(4)) : -1);
+    const int patchno = (result.str(4).size() > 1 ? mystoi(result.str(4).substr(1)) : 0);
+    const std::pair<VersionInformation::prerelease_type, int> pre = parse_prerelease(result.str(5));
+    const int devno = (result.str(6).size() > 4 ? mystoi(result.str(6).substr(4)) : -1);
 
-    return VersionInformation(header, majorno, minorno, patchno, devno);
+    return VersionInformation(header, majorno, minorno, patchno, pre, pre.no, devno);
 #else /* regex.h */
     regex_t reg;
     int errcode = regcomp(
-        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(\\.dev[0123456789]+|)$",
+        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(a[0123456789]+|b[0123456789]+|rc[0123456789]+|c[0123456789]+|)(\\.dev[0123456789]+|)$",
         REG_EXTENDED);
     if (errcode != 0)
     {
@@ -137,8 +167,8 @@ VersionInformation parse_version_information(const std::string& version)
         throw IllegalState("regcompile error.");
     }
 
-    regmatch_t match[6];
-    errcode = regexec(&reg, version.c_str(), 6, match, 0);
+    regmatch_t match[7];
+    errcode = regexec(&reg, version.c_str(), 7, match, 0);
     if (errcode != 0)
     {
         char errbuf[100];
@@ -151,11 +181,16 @@ VersionInformation parse_version_information(const std::string& version)
     const std::string header = version.substr(match[1].rm_so, match[1].rm_eo - match[1].rm_so);
     const int majorno = mystoi(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
     const int minorno = mystoi(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
-    const int patchno = (match[4].rm_eo - match[4].rm_so > 0 ? mystoi(version.substr(match[4].rm_so + 1)) : -1);
-    const int devno = (match[5].rm_eo - match[5].rm_so > 0 ? mystoi(version.substr(match[5].rm_so + 4)) : -1);
+    const int patchno = (match[4].rm_eo - match[4].rm_so > 0 ?
+            mystoi(version.substr(match[4].rm_so + 1, match[4].rm_eo - (match[4].rm_so + 1))) : 0);
+    const std::pair<VersionInformation::prerelease_type, int> pre = parse_prerelease(
+            version.substr(match[5].rm_so, match[5].rm_eo - match[5].rm_so));
+    const int devno = (match[6].rm_eo - match[6].rm_so > 0 ?
+            mystoi(version.substr(match[6].rm_so + 4, match[6].rm_eo - (match[6].rm_so + 4))) : -1);
 
     regfree(&reg);
-    return VersionInformation(header, majorno, minorno, patchno, devno);
+
+    return VersionInformation(header, majorno, minorno, patchno, pre.first, pre.second, devno);
 #endif /* HAVE_BOOST_REGEX */
 }
 
@@ -170,15 +205,23 @@ bool check_version_information(const std::string& version, const std::string& re
     }
     else if (vinfo1.majorno != vinfo2.majorno)
     {
-        return (vinfo1.majorno >= vinfo2.majorno);
+        return (vinfo1.majorno > vinfo2.majorno);
     }
     else if (vinfo1.minorno != vinfo2.minorno)
     {
-        return (vinfo1.minorno >= vinfo2.minorno);
+        return (vinfo1.minorno > vinfo2.minorno);
     }
     else if (vinfo1.patchno != vinfo2.patchno)
     {
-        return (vinfo1.patchno == -1 || (vinfo2.patchno != -1 && vinfo1.patchno >= vinfo2.patchno));
+        return (vinfo1.patchno > vinfo2.patchno);
+    }
+    else if (vinfo1.pre != vinfo2.pre)
+    {
+        return (vinfo1.pre > vinfo2.pre);
+    }
+    else if (vinfo1.preno != vinfo2.preno)
+    {
+        return (vinfo1.preno > vinfo2.preno);
     }
     return (vinfo1.devno == -1 || (vinfo2.devno != -1 && vinfo1.devno >= vinfo2.devno));
 }
