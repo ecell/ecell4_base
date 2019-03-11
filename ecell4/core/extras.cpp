@@ -91,7 +91,7 @@ std::string load_version_information(const std::string& filename)
 #endif
 }
 
-template <typename T = int>
+template <typename T>
 T mystoi(const std::string& s)
 {
     std::stringstream ss;
