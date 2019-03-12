@@ -78,6 +78,9 @@ public:
         BOOST_AUTO(displacement, draw_displacement(p, fid));
         this->propagate(position, displacement);
 
+        SGFRD_TRACE(this->vc_.access_tracer().write(
+                    "particle %1% propagated", pid));
+
         // check escapement and clear volume if needed
         {
             // update local copy of particle
@@ -193,6 +196,8 @@ public:
             typename boost::iterator_value<Iterator>::type,
             std::pair<std::pair<ParticleID, Particle>, Real> >::value);
 
+        SGFRD_SCOPE(ns, BD_attempt_pair_reaction, this->vc_.access_tracer())
+
         const Real rnd(rng_.uniform(0., 1.));
         Real acc_prob = 0.;
 
@@ -227,6 +232,8 @@ public:
                 {
                     case 0: // 2->0 reaction
                     {
+                        SGFRD_TRACE(this->vc_.access_tracer().write("particle "
+                                    "%1% and %2% degradated", pid1, pid2));
                         remove_particle(pid1);
                         remove_particle(pid2);
                         last_reactions_.push_back(std::make_pair(rule,
@@ -242,6 +249,8 @@ public:
                                 init_reaction_info(pid1, p1, pid2, p2)));
                         if(reacted)
                         {
+                            SGFRD_TRACE(this->vc_.access_tracer().write("particle "
+                                        "%1% and %2% bound", pid1, pid2));
                             return true;
                         }
                         else
