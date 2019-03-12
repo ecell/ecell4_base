@@ -312,7 +312,13 @@ int main(int argc, char **argv)
     const std::size_t  num_step = boost::lexical_cast<std::size_t>(input["gfrd_step"]);
     for(std::size_t i=0; i<num_step; ++i)
     {
-        while(sim.next_event_time() <= i * dt){sim.step();}
+        while(sim.next_event_time() <= i * dt)
+        {
+            sim.step();
+            if(world->num_molecules(sp1) == 0) {break;}
+        }
+        if(world->num_molecules(sp1) == 0) {break;}
+
         assert(sim.next_event_time() > i * dt);
         sim.finalize(i * dt);
 
@@ -323,8 +329,6 @@ int main(int argc, char **argv)
         reac.close();
         reac.open(input["reaction"].c_str(), std::ios::trunc);
         reaction_output(reac, sim);
-
-        if(world->num_molecules(sp1) == 0) {break;}
 
         sim.initialize();
     }
