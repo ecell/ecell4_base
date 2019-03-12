@@ -67,7 +67,7 @@ class BDSimulator :
     }
     void finalize(const Real t)
     {
-        SGFRD_SCOPE(us, finalize(t), tracer_);
+        SGFRD_SCOPE(us, finalize, tracer_);
 
         this->world_->set_t(t);
         BDPropagator<world_type, volume_clearer> propagator(
