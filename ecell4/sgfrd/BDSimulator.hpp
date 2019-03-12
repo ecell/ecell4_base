@@ -59,6 +59,7 @@ class BDSimulator :
 
     void initialize()
     {
+        assert(this->diagnosis());
         return;
     }
     void finalize()
@@ -156,6 +157,62 @@ class BDSimulator :
         const world_type& world_;
         tracer& tracer_;
     };
+
+    bool diagnosis()
+    {
+        SGFRD_SCOPE(us, diagnosis, tracer_);
+        bool result = true;
+        BOOST_AUTO(particles, this->world_->list_particles());
+
+        ParticleID pid; Particle p;
+        BOOST_FOREACH(boost::tie(pid, p), particles)
+        {
+            const FaceID fid = this->world_->get_face_id(pid);
+            std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+
+            ParticleID _pid; Particle _p;
+            BOOST_FOREACH(boost::tie(_pid, _p), particles)
+            {
+                if(pid == _pid) {continue;}
+                const FaceID _fid = this->world_->get_face_id(_pid);
+                const Real dist = this->world_->distance(pos,
+                                      std::make_pair(_p.position(), _fid));
+                if(dist < p.radius() + _p.radius())
+                {
+                    result = false;
+                    std::cerr << "ERROR: particle " << pid << " and " << _pid
+                              << "overlaps!\n";
+                    std::cerr << "     : distance = " << dist << " < sum of radii = "
+                              << p.radius() + _p.radius() << '\n';
+                    std::cerr << "     : particle " << pid << " has radius "
+                              << p.radius() << " at " << p.position() << " on "
+                              << fid << '\n';
+                    std::cerr << "     : particle " << _pid << " has radius "
+                              << _p.radius() << " at " << _p.position() << " on "
+                              << _fid << '\n';
+                }
+            }
+
+            if(!this->world_->polygon()->is_inside_of_boundary(p.position()))
+            {
+                std::cerr << "ERROR: particle " << pid << " is outside of the boundary!\n";
+                std::cerr << "     : position = " << p.position()
+                          << ", boundary = " << this->world_->polygon()->edge_lengths() << "\n";
+                result = false;
+            }
+
+            const Triangle&   tri  = this->world_->polygon()->triangle_at(fid);
+            const Barycentric bary = ::ecell4::to_barycentric(p.position(), tri);
+            if(!is_inside(bary))
+            {
+                std::cerr << "ERROR: particle " << pid << " is not on the face " << fid << "\n";
+                std::cerr << "     : position    = " << p.position() << ", face = " << tri << "\n";
+                std::cerr << "     : barycentric = " << bary << ", face = " << tri << "\n";
+                result = false;
+            }
+        }
+        return result;
+    }
 
   private:
     // from SimulatorBase
