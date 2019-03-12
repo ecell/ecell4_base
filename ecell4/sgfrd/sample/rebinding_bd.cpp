@@ -207,12 +207,17 @@ int main(int argc, char **argv)
         (face.vertex_at(0) + face.vertex_at(1) + face.vertex_at(2)) / 3.0;
 
     // XXX assuming planer surface along 0,0 to 10,10
-    const ecell4::Real safety = 1.0 + 1e-10;
+    const ecell4::Real safety = 1.0 + 1e-6;
     const ecell4::Real distA_safety = RA * safety * std::sqrt(0.5);
     const ecell4::Real distB_safety = RB * safety * std::sqrt(0.5);
 
+    polygon_type::FaceID fid_A = fids.front();
+    polygon_type::FaceID fid_B = fids.front();
     ecell4::Real3 pos_A = com + ecell4::Real3(distA_safety, distA_safety, 0);
     ecell4::Real3 pos_B = com - ecell4::Real3(distB_safety, distB_safety, 0);
+
+    std::cout << std::setprecision(17) << ecell4::length(pos_A - pos_B) << " > " << RA+RB << std::endl;
+
 
     // move particle once to remove the effect of reaction volume.
     // here, assuming the polygon is planer surface.
@@ -247,9 +252,10 @@ int main(int argc, char **argv)
         const ecell4::Real  sqrt2Dt = std::sqrt(2 * DA * dt);
         const ecell4::Real3 disp(rng->gaussian(sqrt2Dt), rng->gaussian(sqrt2Dt), 0.0);
 
-        if(length(pos_A + disp - pos_B) > RA + RB)
+        if(length(pos_A + disp - pos_B) > (RA + RB) * safety)
         {
-            pos_A += disp;
+            std::tie(pos_A, fid_A) = ecell4::polygon::travel(
+                    *polygon, std::make_pair(pos_A, fid_A), disp);
         }
     }
     else // move_B
@@ -257,15 +263,16 @@ int main(int argc, char **argv)
         const ecell4::Real  sqrt2Dt = std::sqrt(2 * DB * dt);
         const ecell4::Real3 disp(rng->gaussian(sqrt2Dt), rng->gaussian(sqrt2Dt), 0.0);
 
-        if(length(pos_B + disp - pos_A) > RA + RB)
+        if(length(pos_B + disp - pos_A) > (RA + RB) * safety)
         {
-            pos_B += disp;
+            std::tie(pos_B, fid_B) = ecell4::polygon::travel(
+                    *polygon, std::make_pair(pos_B, fid_B), disp);
         }
     }
 
     // assign particle
-    world->new_particle(ecell4::Particle(sp1, pos_A, RA, DA), fids.front());
-    world->new_particle(ecell4::Particle(sp2, pos_B, RB, DB), fids.front());
+    world->new_particle(ecell4::Particle(sp1, pos_A, RA, DA), fid_A);
+    world->new_particle(ecell4::Particle(sp2, pos_B, RB, DB), fid_B);
 
     // -----------------------------------------------------------------
     // open and clear output files
