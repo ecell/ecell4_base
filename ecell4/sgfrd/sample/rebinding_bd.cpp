@@ -16,10 +16,10 @@
 // output_dt = 0.002
 // seed      = 123456789
 //
-// rajectory = rebinding_bd_trajectory.dat
-// species   = rebinding_bd_species.dat
-// reaction  = rebinding_bd_reaction_record.dat
-// log_file  = rebinding_bd_trace.log
+// trajectory = rebinding_bd_trajectory.dat
+// species    = rebinding_bd_species.dat
+// reaction   = rebinding_bd_reaction_record.dat
+// log_file   = rebinding_bd_trace.log
 //
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -234,6 +234,7 @@ int main(int argc, char **argv)
     {
         move_A = (rng->uniform_int(0, 1) == 0);
     }
+
 
     // read dt
     if(key_missing(input, "output_dt")){return 1;}
