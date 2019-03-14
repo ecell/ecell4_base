@@ -128,7 +128,7 @@ public:
         sidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group> group(new H5::Group(fout->createGroup("LatticeSpace")));
         get_root()->save_hdf5(group.get()); // TODO
-        extras::save_version_information(fout.get(), std::string("ecell4-spatiocyte-") + std::string(ECELL4_VERSION));
+        extras::save_version_information(fout.get(), std::string("ecell4-spatiocyte-") + std::string(VERSION_INFO));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
