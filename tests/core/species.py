@@ -1,5 +1,5 @@
 import unittest
-from ecell4 import *
+from ecell4_base import *
 
 class UnitSpeciesTest(unittest.TestCase):
     def test_constructor(self):

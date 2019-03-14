@@ -72,15 +72,27 @@ class CustomTestCommand(test):
         subprocess.check_call(['ctest'], cwd=build_py.build_temp)
 
 
+DESCRIPTION = (
+    "A software platform for modeling, simulation and analysis of complex, "
+    "heterogeneous and multi-scale systems like the cell. E-Cell has "
+    "multi-algorithm, multi-timescale and multi-spatial-representation as "
+    "its central feature."
+)
+
+LONG_DESCRIPTION = open("README.md").read()
+
+
 setup(
-    name='ecell',
+    name='ecell4_base',
     version = '4.2.0',
     license = "the GNU General Public License v2",
     author = "Kazunari Kaizu",
     author_email = "kaizu@riken.jp",
-    url = "https://github.com/ecell/ecell4",
+    url = "https://github.com/ecell/ecell4-base",
+    description = DESCRIPTION,
+    long_description = LONG_DESCRIPTION,
     data_files = [('ecell4-licenses', glob.glob('licenses/*'))],
-    ext_modules=[CMakeExtension('ecell4')],
+    ext_modules=[CMakeExtension('ecell4_base')],
     cmdclass=dict(build_ext=CMakeBuild, test=CustomTestCommand),
     zip_safe=False,
 )

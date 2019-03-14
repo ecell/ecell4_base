@@ -1,4 +1,4 @@
-from ecell4 import *
+from ecell4_base import *
 
 def setUpEqualities(self):
     self.addTypeEqualityFunc(Quantity_Real, _assertEqualsQuantity(self))

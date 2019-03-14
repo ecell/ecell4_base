@@ -6,13 +6,13 @@
 namespace py = pybind11;
 using namespace ecell4::python_api;
 
-PYBIND11_MODULE(ecell4, m) {
-    py::module m_bd         = m.def_submodule("bd",         "A submodule of ecell4");
-    py::module m_egfrd      = m.def_submodule("egfrd",      "A submodule of ecell4");
-    py::module m_gillespie  = m.def_submodule("gillespie",  "A submodule of ecell4");
-    py::module m_meso       = m.def_submodule("meso",       "A submodule of ecell4");
-    py::module m_ode        = m.def_submodule("ode",        "A submodule of ecell4");
-    py::module m_spatiocyte = m.def_submodule("spatiocyte", "A submodule of ecell4");
+PYBIND11_MODULE(ecell4_base, m) {
+    py::module m_bd         = m.def_submodule("bd",         "A submodule of ecell4_base");
+    py::module m_egfrd      = m.def_submodule("egfrd",      "A submodule of ecell4_base");
+    py::module m_gillespie  = m.def_submodule("gillespie",  "A submodule of ecell4_base");
+    py::module m_meso       = m.def_submodule("meso",       "A submodule of ecell4_base");
+    py::module m_ode        = m.def_submodule("ode",        "A submodule of ecell4_base");
+    py::module m_spatiocyte = m.def_submodule("spatiocyte", "A submodule of ecell4_base");
 
     setup_module(m);
     setup_bd_module(m_bd);

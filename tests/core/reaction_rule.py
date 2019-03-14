@@ -1,5 +1,5 @@
 import unittest
-from ecell4 import *
+from ecell4_base import *
 from . import setUpEqualities
 
 class ReactionRuleDescriptor(unittest.TestCase):

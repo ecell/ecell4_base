@@ -1,4 +1,4 @@
-pybind11_add_module(ecell4
+pybind11_add_module(ecell4_base
     main.cpp
     core.cpp
     bd.cpp
@@ -7,7 +7,7 @@ pybind11_add_module(ecell4
     meso.cpp
     ode.cpp
     spatiocyte.cpp)
-target_link_libraries(ecell4 PRIVATE
+target_link_libraries(ecell4_base PRIVATE
     ecell4-core
     ecell4-bd
     ecell4-egfrd
@@ -16,10 +16,10 @@ target_link_libraries(ecell4 PRIVATE
     ecell4-ode
     ecell4-spatiocyte)
 
-set_target_properties(ecell4 PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
+set_target_properties(ecell4_base PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)
 
 if (UNIX AND NOT APPLE)
-    set_target_properties(ecell4 PROPERTIES INSTALL_RPATH "$ORIGIN")
+    set_target_properties(ecell4_base PROPERTIES INSTALL_RPATH "$ORIGIN")
 elseif (APPLE)
-    set_target_properties(ecell4 PROPERTIES INSTALL_RPATH "@loader_path")
+    set_target_properties(ecell4_base PROPERTIES INSTALL_RPATH "@loader_path")
 endif ()
