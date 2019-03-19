@@ -611,8 +611,14 @@ public:
     Real calc_acceptance_coef(const Particle& p1, const Particle& p2) const
     {
         const Real reaction_area = calc_reaction_area(p1.radius() + p2.radius());
-        const bool double_count  = ((p1.D()==0) || (p2.D()==0));
-        return double_count ? (dt_ / reaction_area) : (0.5 * dt_ / reaction_area);
+        if((p1.D() == 0) || (p2.D() == 0))
+        {
+            return dt_ / reaction_area;
+        }
+        else
+        {
+            return 0.5 * dt_ / reaction_area;
+        }
     }
 
     Real calc_k_total(const std::vector<reaction_rule_type>& rules) const noexcept
