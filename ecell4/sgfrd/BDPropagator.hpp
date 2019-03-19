@@ -74,8 +74,8 @@ public:
         if(p.D() == 0.0)                       {return true;}
 
         // no 1st kind reaction occured & particle is movable.
-        BOOST_AUTO(position,     std::make_pair(p.position(), fid));
-        BOOST_AUTO(displacement, draw_displacement(p, fid));
+        auto position     = std::make_pair(p.position(), fid);
+        auto displacement = this->draw_displacement(p, fid);
         this->propagate(position, displacement);
 
         SGFRD_TRACE(this->vc_.access_tracer().write(
@@ -96,12 +96,13 @@ public:
         }
 
         // retrieve possible reactants (within r1+r2+reaction_length)
-        BOOST_AUTO(overlapped, this->list_reaction_overlap(pid, p, fid));
+        auto overlapped = this->list_reaction_overlap(pid, p, fid);
 
         // check core-overlap
         std::pair<ParticleID, Particle> pp; Real d;
-        BOOST_FOREACH(boost::tie(pp, d), overlapped)
+        for(const auto& ppd : overlapped)
         {
+            std::tie(pp, d) = ppd;
             if(d < p.radius() + pp.second.radius())
             {
                 // core overlap!
@@ -142,7 +143,7 @@ public:
     {
         SGFRD_SCOPE(ns, BD_attempt_single_reaction, this->vc_.access_tracer())
 
-        BOOST_AUTO(const& rules, this->model_.query_reaction_rules(p.species()));
+        const auto& rules = this->model_.query_reaction_rules(p.species());
         SGFRD_TRACE(this->vc_.access_tracer().write(
                     "%1% rules found for particle %2%", rules.size(), pid))
         if(rules.empty()){return false;}
@@ -151,7 +152,7 @@ public:
         SGFRD_TRACE(this->vc_.access_tracer().write(
                     "drawn probability = %1%", rnd))
         Real prob = 0.;
-        BOOST_FOREACH(reaction_rule_type const& rule, rules)
+        for(const auto& rule : rules)
         {
             SGFRD_TRACE(this->vc_.access_tracer().write("k * dt = %1%",
                         rule.k() * dt_))
@@ -206,8 +207,8 @@ public:
             const ParticleID& pid2 = iter->first.first;
             const Particle&   p2   = iter->first.second;
 
-            BOOST_AUTO(const& rules,
-                this->model_.query_reaction_rules(p1.species(), p2.species()));
+            const auto& rules =
+                this->model_.query_reaction_rules(p1.species(), p2.species());
             if(rules.empty())
             {
                 // no reaction can occur because there is no rule.
@@ -216,7 +217,7 @@ public:
 
             Real acc_prob_local_increase(0.0);
             const Real acceptance_coef = calc_acceptance_coef(p1, p2);
-            BOOST_FOREACH(reaction_rule_type const& rule, rules)
+            for(const auto& rule : rules)
             {
                 const Real inc = rule.k() * acceptance_coef;
                 acc_prob_local_increase += inc;
@@ -393,8 +394,8 @@ public:
 
         const bool update_result = this->container_.update_particle(
                 pid, particles_new[0], newpfs[0].second);
-        BOOST_AUTO(pp2,
-            this->container_.new_particle(particles_new[1], newpfs[1].second));
+        auto pp2 =
+            this->container_.new_particle(particles_new[1], newpfs[1].second);
         const ParticleID pid2(pp2.first.first);
 
         assert(update_result == false); // no particle generation occured
