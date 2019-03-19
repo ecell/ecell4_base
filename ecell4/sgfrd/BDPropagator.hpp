@@ -215,58 +215,52 @@ public:
                 continue;
             }
 
-            Real acc_prob_local_increase(0.0);
-            const Real acceptance_coef = calc_acceptance_coef(p1, p2);
-            for(const auto& rule : rules)
+            const Real k_tot = this->calc_k_total(rules);
+            acc_prob += k_tot * calc_acceptance_coef(p1, p2);
+
+            if(acc_prob <= rnd)
             {
-                const Real inc = rule.k() * acceptance_coef;
-                acc_prob_local_increase += inc;
+                continue;
+            }
+            else if(1.0 < acc_prob)
+            {
+                std::cerr << "WARNING: reaction probability exceeds 1\n";
+            }
 
-                acc_prob += inc;
-                if(acc_prob <= rnd){continue;}
-                if(acc_prob > 1.0)
+            const auto& rule = this->determine_reaction_rule_from(rules, k_tot);
+            switch(rule.products().size())
+            {
+                case 0: // 2->0 reaction
                 {
-                    std::cerr << "WARNING: reaction probability exceeds 1\n";
+                    SGFRD_TRACE(this->vc_.access_tracer().write("particle "
+                                "%1% and %2% degradated", pid1, pid2));
+                    this->remove_particle(pid1);
+                    this->remove_particle(pid2);
+                    this->last_reactions_.push_back(std::make_pair(rule,
+                         init_reaction_info(pid1, p1, pid2, p2)));
+                    return true;
                 }
-
-                switch(rule.products().size())
+                case 1:
                 {
-                    case 0: // 2->0 reaction
+                    const FaceID& f2 = this->container_.get_face_id(pid2);
+                    const bool reacted = this->attempt_reaction_2_to_1(
+                        pid1, p1, f1, pid2, p2, f2, std::make_pair(rule,
+                            init_reaction_info(pid1, p1, pid2, p2)));
+                    if(reacted)
                     {
                         SGFRD_TRACE(this->vc_.access_tracer().write("particle "
-                                    "%1% and %2% degradated", pid1, pid2));
-                        remove_particle(pid1);
-                        remove_particle(pid2);
-                        last_reactions_.push_back(std::make_pair(rule,
-                             init_reaction_info(pid1, p1, pid2, p2)));
+                                    "%1% and %2% bound", pid1, pid2));
                         return true;
                     }
-                    case 1:
+                    else
                     {
-                        const FaceID& f2 =
-                            this->container_.get_face_id(pid2);
-                        const bool reacted = attempt_reaction_2_to_1(
-                            pid1, p1, f1, pid2, p2, f2, std::make_pair(rule,
-                                init_reaction_info(pid1, p1, pid2, p2)));
-                        if(reacted)
-                        {
-                            SGFRD_TRACE(this->vc_.access_tracer().write("particle "
-                                        "%1% and %2% bound", pid1, pid2));
-                            return true;
-                        }
-                        else
-                        {
-                            // try next partner
-                            // after restoring acceptance probability
-                            acc_prob -= acc_prob_local_increase;
-                            break;
-                        }
+                        return false;
                     }
-                    default:
-                    {
-                        throw NotSupported("BDPropagator: 2 -> N (N>1) "
-                                           "reaction is not allowed");
-                    }
+                }
+                default:
+                {
+                    throw NotSupported("BDPropagator: 2 -> N (N>1) "
+                                       "reaction is not allowed");
                 }
             }
         }
@@ -607,6 +601,46 @@ public:
         const Real reaction_area = calc_reaction_area(p1.radius() + p2.radius());
         const bool double_count  = ((p1.D()==0) || (p2.D()==0));
         return double_count ? (dt_ / reaction_area) : (0.5 * dt_ / reaction_area);
+    }
+
+    Real calc_k_total(const std::vector<reaction_rule_type>& rules) const noexcept
+    {
+        Real k_tot(0.0);
+        if(rules.empty())
+        {
+            return k_tot;
+        }
+        if(rules.size() == 1)
+        {
+            return rules.front().k();
+        }
+        for(const auto& rule : rules)
+        {
+            k_tot += rule.k();
+        }
+        return k_tot;
+    }
+
+    reaction_rule_type const&
+    determine_reaction_rule_from(const std::vector<reaction_rule_type>& rules,
+                                 const Real k_tot) const noexcept
+    {
+        assert(!rules.empty());
+        if(rules.size() == 1)
+        {
+            return rules.front();
+        }
+        const Real rnd(rng_.uniform(0.0, 1.0) * k_tot);
+        Real k_cumm(0.0);
+        for(const auto& rule : rules)
+        {
+            k_cumm += rule.k();
+            if(rnd < k_cumm)
+            {
+                return rule;
+            }
+        }
+        return rules.back();
     }
 
     reaction_info_type init_reaction_info(const ParticleID& pid, const Particle& p)
