@@ -457,11 +457,23 @@ public:
         const Real D12(D1 + D2);
 
         // this calculates the center position weighted by Diffusion coef.
-        Real3 dp = ecell4::polygon::direction(this->polygon_,
-            std::make_pair(pos1, fid1), std::make_pair(pos2, fid2)) * (D1 / D12);
 
-        std::pair<Real3, FaceID> pf1(pos1, fid1);
-        this->propagate(pf1, dp);
+        std::pair<Real3, FaceID> pf1;
+        if(D1 == 0.0)
+        {
+            pf1 = std::make_pair(pos1, fid1);
+        }
+        else if(D2 == 0.0)
+        {
+            pf1 = std::make_pair(pos2, fid2);
+        }
+        else
+        {
+            Real3 dp = ecell4::polygon::direction(this->polygon_,
+                std::make_pair(pos1, fid1), std::make_pair(pos2, fid2)) * (D1 / D12);
+            pf1 = std::make_pair(pos1, fid1);
+            this->propagate(pf1, dp);
+        }
 
         if(is_overlapping(pf1, radius_new, pid1, pid2)){return false;}
 
