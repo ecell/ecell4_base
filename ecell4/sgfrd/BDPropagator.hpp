@@ -85,7 +85,7 @@ public:
         {
             // update local copy of particle
             boost::tie(p.position(), fid) = position;
-            if(false == clear_volume(p, fid, pid))
+            if(!clear_volume(p, fid, pid))
             {
                 // rejected. restore position. previous position does not cause
                 // overlap because position and species are kept intact.
@@ -193,9 +193,9 @@ public:
         const Iterator first, const Iterator last)
     {
         // Iterator::value_type == pair<pair<ParticleID, Particle>, Real>;
-        BOOST_STATIC_ASSERT(boost::is_same<
+        static_assert(boost::is_same<
             typename boost::iterator_value<Iterator>::type,
-            std::pair<std::pair<ParticleID, Particle>, Real> >::value);
+            std::pair<std::pair<ParticleID, Particle>, Real> >::value, "");
 
         SGFRD_SCOPE(ns, BD_attempt_pair_reaction, this->vc_.access_tracer())
 
@@ -478,7 +478,7 @@ public:
         if(is_overlapping(pf1, radius_new, pid1, pid2)){return false;}
 
         const Particle particle_new(sp_new, pf1.first, radius_new, D_new);
-        if(false == clear_volume(particle_new, pf1.second, pid1, pid2))
+        if(!clear_volume(particle_new, pf1.second, pid1, pid2))
         {
             return false;
         }
