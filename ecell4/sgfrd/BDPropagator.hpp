@@ -73,7 +73,7 @@ public:
         if(this->attempt_reaction(pid, p, fid)){return true;}
         if(p.D() == 0.0)                       {return true;}
 
-        // no 1st kind reaction occured & particle is movable.
+        // no 1st order reaction occured & particle is movable.
         auto position     = std::make_pair(p.position(), fid);
         auto displacement = this->draw_displacement(p, fid);
         this->propagate(position, displacement);
@@ -613,10 +613,17 @@ public:
         const Real reaction_area = calc_reaction_area(p1.radius() + p2.radius());
         if((p1.D() == 0) || (p2.D() == 0))
         {
+            // immovable particles immediately return after attempting 1st order
+            // reaction.
+            // to attempt 2nd order reaction with them, we need to double the
+            // acceptance coefficient.
             return dt_ / reaction_area;
         }
         else
         {
+            // movable particles checks 2nd order reaction. If the both reactants
+            // are movable, both particle attempts reaction. So here it halves
+            // the acceptance coefficient to avoid double-counting.
             return 0.5 * dt_ / reaction_area;
         }
     }
