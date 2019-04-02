@@ -484,11 +484,18 @@ public:
             this->propagate(pf1, dp);
         }
 
-        if(is_overlapping(pf1, radius_new, pid1, pid2)){return false;}
+        if(is_overlapping(pf1, radius_new, pid1, pid2))
+        {
+            std::cout << "ERROR: the new particle (A+B->B) overlaps!" << std::endl;
+            assert(false);
+            return false;
+        }
 
         const Particle particle_new(sp_new, pf1.first, radius_new, D_new);
         if(!clear_volume(particle_new, pf1.second, pid1, pid2))
         {
+            std::cout << "ERROR: the new particle (A+B->B) overlaps!" << std::endl;
+            assert(false);
             return false;
         }
 
