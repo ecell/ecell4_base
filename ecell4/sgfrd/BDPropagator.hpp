@@ -100,6 +100,7 @@ public:
 
         // check core-overlap
         std::pair<ParticleID, Particle> pp; Real d;
+        bool core_overlapped = false;
         for(const auto& ppd : overlapped)
         {
             std::tie(pp, d) = ppd;
@@ -109,15 +110,23 @@ public:
                 // restore position and re-collect overlapped particles
                 p.position() = prev_pos;
                 fid          = prev_fid;
-                overlapped   = this->list_reaction_overlap(pid, p, fid);
+                core_overlapped = true;
                 break;
             }
+        }
+
+        if(core_overlapped)
+        {
+            overlapped = this->list_reaction_overlap(pid, p, fid);
+        }
+        else
+        {
+            this->container_.update_particle(pid, p, fid);
         }
 
         if(overlapped.empty())
         {
             // no reaction-partner exists. overlaps are already cleared. update.
-            this->container_.update_particle(pid, p, fid);
             return true;
         }
 
