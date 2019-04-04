@@ -81,7 +81,8 @@ static inline
 void define_spatiocyte_world(py::module& m)
 {
     py::class_<SpatiocyteWorld, ecell4::WorldInterface, PyWorldImpl<SpatiocyteWorld>,
-        boost::shared_ptr<SpatiocyteWorld>>(m, "SpatiocyteWorld")
+        boost::shared_ptr<SpatiocyteWorld>> world(m, "SpatiocyteWorld");
+    world
         .def(py::init<>())
         .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Particle&)) &SpatiocyteWorld::new_particle)
         .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Real3&)) &SpatiocyteWorld::new_particle)
@@ -118,6 +119,8 @@ void define_spatiocyte_world(py::module& m)
     m.def("create_spatiocyte_world_cell_list_impl", &create_spatiocyte_world_cell_list_impl_alias);
     m.def("create_spatiocyte_world_vector_impl", &create_spatiocyte_world_vector_impl_alias);
     m.def("create_spatiocyte_world_square_offlattice_impl", &allocate_spatiocyte_world_square_offlattice_impl);
+
+    m.attr("World") = world;
 }
 
 static inline

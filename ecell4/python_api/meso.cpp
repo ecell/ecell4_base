@@ -50,7 +50,8 @@ void define_meso_world(py::module& m)
     using coordinate_type = MesoscopicWorld::coordinate_type;
 
     py::class_<MesoscopicWorld, WorldInterface, PyWorldImpl<MesoscopicWorld>,
-        boost::shared_ptr<MesoscopicWorld>>(m, "MesoscopicWorld")
+        boost::shared_ptr<MesoscopicWorld>> world(m, "MesoscopicWorld");
+    world
         .def(py::init<>())
         .def(py::init<const Real3&>())
         .def(py::init<const Real3&, const Integer3&>())
@@ -114,6 +115,7 @@ void define_meso_world(py::module& m)
         .def("bind_to", &MesoscopicWorld::bind_to)
         .def("rng", &MesoscopicWorld::rng);
 
+    m.attr("World") = world;
 }
 
 static inline

@@ -46,7 +46,8 @@ static inline
 void define_gillespie_world(py::module& m)
 {
     py::class_<GillespieWorld, WorldInterface, PyWorldImpl<GillespieWorld>,
-        boost::shared_ptr<GillespieWorld>>(m, "GillespieWorld")
+        boost::shared_ptr<GillespieWorld>> world(m, "GillespieWorld");
+    world
         .def(py::init<>())
         .def(py::init<const Real3&>())
         .def(py::init<const Real3&, boost::shared_ptr<RandomNumberGenerator>>())
@@ -67,6 +68,8 @@ void define_gillespie_world(py::module& m)
             &GillespieWorld::new_particle)
         .def("bind_to", &GillespieWorld::bind_to)
         .def("rng", &GillespieWorld::rng);
+
+    m.attr("World") = world;
 }
 
 static inline

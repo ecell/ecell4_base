@@ -50,7 +50,8 @@ static inline
 void define_bd_world(py::module& m)
 {
     py::class_<BDWorld, WorldInterface, PyWorldImpl<BDWorld>,
-        boost::shared_ptr<BDWorld>>(m, "BDWorld")
+        boost::shared_ptr<BDWorld>> world(m, "BDWorld");
+    world
         .def(py::init<>())
         .def(py::init<const Real3&>())
         .def(py::init<const Real3&, const Integer3&>())
@@ -86,8 +87,9 @@ void define_bd_world(py::module& m)
             (void (BDWorld::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>)) &BDWorld::add_molecules)
         .def("remove_molecules", &BDWorld::remove_molecules)
         .def("bind_to", &BDWorld::bind_to)
-        .def("rng", &BDWorld::rng)
-        ;
+        .def("rng", &BDWorld::rng);
+
+    m.attr("World") = world;
 }
 
 static inline

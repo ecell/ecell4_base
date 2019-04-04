@@ -55,7 +55,8 @@ static inline
 void define_ode_world(py::module& m)
 {
     py::class_<ODEWorld, WorldInterface, PyWorldImpl<ODEWorld>,
-        boost::shared_ptr<ODEWorld>>(m, "ODEWorld")
+        boost::shared_ptr<ODEWorld>> world(m, "ODEWorld");
+    world
         .def(py::init<>())
         .def(py::init<const Real3&>())
         .def(py::init<const std::string&>())
@@ -76,6 +77,8 @@ void define_ode_world(py::module& m)
         .def("release_species", &ODEWorld::release_species)
         .def("bind_to", &ODEWorld::bind_to)
         .def("evaluate", &ODEWorld::evaluate);
+
+    m.attr("World") = world;
 }
 
 void setup_ode_module(py::module& m)

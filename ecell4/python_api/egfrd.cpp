@@ -111,7 +111,8 @@ void define_egfrd_world(py::module& m)
     using rng_type = EGFRDWorld::rng_type;
 
     py::class_<EGFRDWorld, WorldInterface, PyWorldImpl<EGFRDWorld>,
-        boost::shared_ptr<EGFRDWorld>>(m, "EGFRDWorld")
+        boost::shared_ptr<EGFRDWorld>> world(m, "EGFRDWorld");
+    world
         .def(py::init<>())
         .def(py::init<const position_type&>())
         .def(py::init<const position_type&, const matrix_sizes_type&>())
@@ -149,6 +150,8 @@ void define_egfrd_world(py::module& m)
         .def("remove_molecules", &EGFRDWorld::remove_molecules)
         .def("bind_to", &EGFRDWorld::bind_to)
         .def("rng", &EGFRDWorld::rng);
+
+    m.attr("World") = world;
 }
 
 static inline
