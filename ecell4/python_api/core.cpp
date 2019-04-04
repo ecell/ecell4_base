@@ -372,7 +372,7 @@ void define_reaction_rule(py::module& m)
             }
         ));
 
-    py::enum_<ReactionRule::policy_type>(reaction_rule, "Policy")
+    py::enum_<ReactionRule::policy_type>(m, "ReactionRulePolicy")
         .value("STRICT", ReactionRule::policy_type::STRICT)
         .value("IMPLICIT", ReactionRule::policy_type::IMPLICIT)
         .value("DESTROY", ReactionRule::policy_type::DESTROY)
