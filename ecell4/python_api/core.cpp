@@ -11,6 +11,7 @@
 
 #include "model.hpp"
 #include "observers.hpp"
+#include "random_number_generator.hpp"
 #include "reaction_rule_descriptor.hpp"
 #include "shape.hpp"
 #include "world_interface.hpp"
@@ -315,19 +316,25 @@ void define_particle(py::module& m)
 static inline
 void define_rng(py::module& m)
 {
-    py::class_<GSLRandomNumberGenerator>(m, "GSLRandomNumberGenerator")
+    py::class_<RandomNumberGenerator, PyRandomNumberGenerator<>,
+        boost::shared_ptr<RandomNumberGenerator>>(m, "RandomNumberGenerator")
+        .def("uniform", &RandomNumberGenerator::uniform)
+        .def("uniform", &RandomNumberGenerator::uniform)
+        .def("uniform_int", &RandomNumberGenerator::uniform_int)
+        .def("gaussian", &RandomNumberGenerator::gaussian,
+            py::arg("sigma"), py::arg("mean") = 0.0)
+        .def("binomial", &RandomNumberGenerator::binomial)
+        .def("seed", (void (RandomNumberGenerator::*)()) &RandomNumberGenerator::seed)
+        .def("seed", (void (RandomNumberGenerator::*)(Integer)) &RandomNumberGenerator::seed)
+        .def("save", (void (RandomNumberGenerator::*)(const std::string&) const) &RandomNumberGenerator::save)
+        .def("load", (void (RandomNumberGenerator::*)(const std::string&)) &RandomNumberGenerator::load);
+
+    py::class_<GSLRandomNumberGenerator, RandomNumberGenerator,
+        PyRandomNumberGeneratorImpl<GSLRandomNumberGenerator>,
+        boost::shared_ptr<GSLRandomNumberGenerator>>(m, "GSLRandomNumberGenerator")
         .def(py::init<>())
         .def(py::init<const Integer>(), py::arg("seed"))
-        .def(py::init<const std::string&>(), py::arg("filename"))
-        .def("uniform", &GSLRandomNumberGenerator::uniform)
-        .def("uniform_int", &GSLRandomNumberGenerator::uniform_int)
-        .def("gaussian", &GSLRandomNumberGenerator::gaussian,
-            py::arg("sigma"), py::arg("mean") = 0.0)
-        .def("binomial", &GSLRandomNumberGenerator::binomial)
-        .def("seed", (void (GSLRandomNumberGenerator::*)()) &GSLRandomNumberGenerator::seed)
-        .def("seed", (void (GSLRandomNumberGenerator::*)(Integer)) &GSLRandomNumberGenerator::seed)
-        .def("save", (void (GSLRandomNumberGenerator::*)(const std::string&) const) &GSLRandomNumberGenerator::save)
-        .def("load", (void (GSLRandomNumberGenerator::*)(const std::string&)) &GSLRandomNumberGenerator::load);
+        .def(py::init<const std::string&>(), py::arg("filename"));
 }
 
 static inline
