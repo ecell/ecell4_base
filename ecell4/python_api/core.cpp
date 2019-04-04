@@ -28,7 +28,8 @@ static inline
 void define_real3(py::module& m)
 {
     py::class_<Real3>(m, "Real3")
-        .def(py::init<Real3::value_type, Real3::value_type, Real3::value_type>())
+        .def(py::init<Real3::value_type, Real3::value_type, Real3::value_type>(),
+                py::arg("x"), py::arg("y"), py::arg("z"))
         .def(py::self += py::self)
         .def(py::self + py::self)
         .def(py::self -= py::self)
@@ -100,7 +101,8 @@ static inline
 void define_integer3(py::module& m)
 {
     py::class_<Integer3>(m, "Integer3")
-        .def(py::init<Integer3::value_type, Integer3::value_type, Integer3::value_type>())
+        .def(py::init<Integer3::value_type, Integer3::value_type, Integer3::value_type>(),
+                py::arg("col"), py::arg("row"), py::arg("layer"))
         .def_readwrite("col", &Integer3::col)
         .def_readwrite("row", &Integer3::row)
         .def_readwrite("layer", &Integer3::layer)
@@ -162,8 +164,9 @@ void define_quantity(py::module& m, const std::string& name)
 {
     using Q = Quantity<T>;
     py::class_<Q>(m, name.c_str())
-        .def(py::init<>())
-        .def(py::init<const T&, const typename Q::units_type&>())
+        .def(py::init<const T&, const typename Q::units_type&>(),
+                py::arg("magnitude"),
+                py::arg("units") = "")
         .def_readwrite("magnitude", &Q::magnitude)
         .def_readwrite("units", &Q::units);
 }
@@ -173,7 +176,7 @@ void define_species(py::module& m)
 {
     py::class_<UnitSpecies>(m, "UnitSpecies")
         .def(py::init<>())
-        .def(py::init<const std::string&>())
+        .def(py::init<const std::string&>(), py::arg("name"))
         .def("serial", &UnitSpecies::serial)
         .def("name", &UnitSpecies::name)
         .def("add_site", &UnitSpecies::add_site)
@@ -201,13 +204,15 @@ void define_species(py::module& m)
         ));
     py::class_<Species>(m, "Species")
         .def(py::init<>())
-        .def(py::init<const Species::serial_type&>())
-        .def(py::init<const Species::serial_type&, const Real&, const Real&>())
-        .def(py::init<const Species::serial_type&, const Real&, const Real&, const std::string>())
-        .def(py::init<const Species::serial_type&, const Real&, const Real&, const std::string, const Integer&>())
-        .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&>())
-        .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&, const std::string>())
-        .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&, const std::string, const Integer&>())
+        .def(py::init<const Species::serial_type&>(), py::arg("serial"))
+        .def(py::init<const Species::serial_type&, const Real&, const Real&, const std::string, const Integer&>(),
+                py::arg("serial"), py::arg("radius"), py::arg("D"),
+                py::arg("location") = "",
+                py::arg("dimension") = 0)
+        .def(py::init<const Species::serial_type&, const Quantity<Real>&, const Quantity<Real>&, const std::string, const Integer&>(),
+                py::arg("serial"), py::arg("radius"), py::arg("D"),
+                py::arg("location") = "",
+                py::arg("dimension") = 0)
         .def("serial", &Species::serial)
         .def("get_attribute", &Species::get_attribute)
         .def("set_attribute", &Species::set_attribute<std::string>)
@@ -263,7 +268,7 @@ void define_particle(py::module& m)
 {
     py::class_<ParticleID>(m, "ParticleID")
         .def(py::init<>())
-        .def(py::init<const ParticleID::value_type>())
+        .def(py::init<const ParticleID::value_type>(), py::arg("value"))
         .def("lot", (const ParticleID::lot_type& (ParticleID::*)() const) &ParticleID::lot)
         .def("serial", (const ParticleID::serial_type& (ParticleID::*)() const) &ParticleID::serial)
         .def(py::pickle(
@@ -282,7 +287,8 @@ void define_particle(py::module& m)
             }
         ));
     py::class_<Particle>(m, "Particle")
-        .def(py::init<const Species&, const Real3&, const Real&, const Real&>())
+        .def(py::init<const Species&, const Real3&, const Real&, const Real&>(),
+                py::arg("sp"), py::arg("pos"), py::arg("radius"), py::arg("D"))
         .def("position", (const Real3& (Particle::*)() const) &Particle::position)
         .def("radius", (const Real& (Particle::*)() const) &Particle::radius)
         .def("D", (const Real& (Particle::*)() const) &Particle::D)
@@ -311,8 +317,8 @@ void define_rng(py::module& m)
 {
     py::class_<GSLRandomNumberGenerator>(m, "GSLRandomNumberGenerator")
         .def(py::init<>())
-        .def(py::init<const Integer>())
-        .def(py::init<const std::string&>())
+        .def(py::init<const Integer>(), py::arg("seed"))
+        .def(py::init<const std::string&>(), py::arg("filename"))
         .def("uniform", &GSLRandomNumberGenerator::uniform)
         .def("uniform_int", &GSLRandomNumberGenerator::uniform_int)
         .def("gaussian", &GSLRandomNumberGenerator::gaussian,
@@ -333,9 +339,12 @@ void define_reaction_rule(py::module& m)
     py::class_<ReactionRule> reaction_rule(m, "ReactionRule");
     reaction_rule
         .def(py::init<>())
-        .def(py::init<const Reactants&, const Products&>())
-        .def(py::init<const Reactants&, const Products&, const Real&>())
-        .def(py::init<const Reactants&, const Products&, const Quantity<Real>&>())
+        .def(py::init<const Reactants&, const Products&>(),
+                py::arg("reactants"), py::arg("products"))
+        .def(py::init<const Reactants&, const Products&, const Real&>(),
+                py::arg("reactants"), py::arg("products"), py::arg("k"))
+        .def(py::init<const Reactants&, const Products&, const Quantity<Real>&>(),
+                py::arg("reactants"), py::arg("products"), py::arg("k"))
         .def("k", &ReactionRule::k)
         .def("set_k", (void (ReactionRule::*)(const Real&)) &ReactionRule::set_k)
         .def("set_k", (void (ReactionRule::*)(const Quantity<Real>&)) &ReactionRule::set_k)
@@ -389,8 +398,9 @@ static inline
 void define_particle_voxel(py::module& m)
 {
     py::class_<ParticleVoxel>(m, "ParticleVoxel")
-        .def(py::init<Species, Integer, Real, Real>())
-        .def(py::init<Species, Integer, Real, Real, std::string>())
+        .def(py::init<Species, Integer, Real, Real, std::string>(),
+                py::arg("sp"), py::arg("coord"), py::arg("radius"), py::arg("D"),
+                py::arg("loc") = "")
         .def("coordinate", [](const ParticleVoxel &self) { return self.coordinate; })
         .def("D", [](const ParticleVoxel &self) { return self.D; })
         .def("radius", [](const ParticleVoxel &self) { return self.radius; })
@@ -533,8 +543,8 @@ void define_reaction_rule_descriptor(py::module& m)
     py::class_<ReactionRuleDescriptorMassAction, ReactionRuleDescriptor,
         PyReactionRuleDescriptor<ReactionRuleDescriptorMassAction>,
         boost::shared_ptr<ReactionRuleDescriptorMassAction>>(m, "ReactionRuleDescriptorMassAction")
-        .def(py::init<const Real>())
-        .def(py::init<const Quantity<Real>&>())
+        .def(py::init<const Real>(), py::arg("k"))
+        .def(py::init<const Quantity<Real>&>(), py::arg("k"))
         .def("k", &ReactionRuleDescriptorMassAction::k)
         .def("get_k", &ReactionRuleDescriptorMassAction::get_k)
         .def("set_k", (void (ReactionRuleDescriptorMassAction::*)(const Real)) &ReactionRuleDescriptorMassAction::set_k)
@@ -558,7 +568,8 @@ void define_reaction_rule_descriptor(py::module& m)
     py::class_<ReactionRuleDescriptorPyfunc, ReactionRuleDescriptor,
         PyReactionRuleDescriptor<ReactionRuleDescriptorPyfunc>,
         boost::shared_ptr<ReactionRuleDescriptorPyfunc>>(m, "ReactionRuleDescriptorPyfunc")
-        .def(py::init<ReactionRuleDescriptorPyfunc::callback_t, const std::string&>())
+        .def(py::init<ReactionRuleDescriptorPyfunc::callback_t, const std::string&>(),
+                py::arg("pyfunc"), py::arg("name"))
         .def("get", &ReactionRuleDescriptorPyfunc::get)
         .def("set_name", &ReactionRuleDescriptorPyfunc::set_name)
         .def("as_string", &ReactionRuleDescriptorPyfunc::as_string)
@@ -591,12 +602,14 @@ void define_observers(py::module& m)
 
     py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
         boost::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
-        .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>());
+        .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>(),
+                py::arg("dt"), py::arg("pyfunc"));
 
     py::class_<FixedIntervalNumberObserver, Observer, PyObserver<FixedIntervalNumberObserver>,
         boost::shared_ptr<FixedIntervalNumberObserver>>(m, "FixedIntervalNumberObserver")
-        .def(py::init<const Real&>())
-        .def(py::init<const Real&, const std::vector<std::string>&>())
+        .def(py::init<const Real&>(), py::arg("dt"))
+        .def(py::init<const Real&, const std::vector<std::string>&>(),
+                py::arg("dt"), py::arg("species"))
         .def("data", &FixedIntervalNumberObserver::data)
         .def("targets", &FixedIntervalNumberObserver::targets)
         .def("save", &FixedIntervalNumberObserver::save);
@@ -604,38 +617,43 @@ void define_observers(py::module& m)
     py::class_<NumberObserver, Observer, PyObserver<NumberObserver>,
         boost::shared_ptr<NumberObserver>>(m, "NumberObserver")
         .def(py::init<>())
-        .def(py::init<const std::vector<std::string>&>())
+        .def(py::init<const std::vector<std::string>&>(), py::arg("species"))
         .def("data", &NumberObserver::data)
         .def("targets", &NumberObserver::targets)
         .def("save", &NumberObserver::save);
 
     py::class_<TimingNumberObserver, Observer, PyObserver<TimingNumberObserver>,
         boost::shared_ptr<TimingNumberObserver>>(m, "TimingNumberObserver")
-        .def(py::init<const std::vector<Real>&>())
-        .def(py::init<const std::vector<Real>&, const std::vector<std::string>&>())
+        .def(py::init<const std::vector<Real>&>(), py::arg("t"))
+        .def(py::init<const std::vector<Real>&, const std::vector<std::string>&>(),
+                py::arg("t"), py::arg("species"))
         .def("data", &TimingNumberObserver::data)
         .def("targets", &TimingNumberObserver::targets)
         .def("save", &TimingNumberObserver::save);
 
     py::class_<FixedIntervalHDF5Observer, Observer, PyObserver<FixedIntervalHDF5Observer>,
         boost::shared_ptr<FixedIntervalHDF5Observer>>(m, "FixedIntervalHDF5Observer")
-        .def(py::init<const Real&, const std::string&>())
+        .def(py::init<const Real&, const std::string&>(),
+                py::arg("dt"), py::arg("filename"))
         .def("prefix", &FixedIntervalHDF5Observer::prefix)
         .def("filename", (const std::string (FixedIntervalHDF5Observer::*)() const) &FixedIntervalHDF5Observer::filename)
         .def("filename", (const std::string (FixedIntervalHDF5Observer::*)(const Integer) const) &FixedIntervalHDF5Observer::filename);
 
     py::class_<FixedIntervalCSVObserver, Observer, PyObserver<FixedIntervalCSVObserver>,
         boost::shared_ptr<FixedIntervalCSVObserver>>(m, "FixedIntervalCSVObserver")
-        .def(py::init<const Real&, const std::string&>())
-        .def(py::init<const Real&, const std::string&, std::vector<std::string>&>())
+        .def(py::init<const Real&, const std::string&>(),
+                py::arg("dt"), py::arg("filename"))
+        .def(py::init<const Real&, const std::string&, std::vector<std::string>&>(),
+                py::arg("dt"), py::arg("filename"), py::arg("species"))
         .def("log", &FixedIntervalCSVObserver::log)
         .def("filename", &FixedIntervalCSVObserver::filename)
         .def("set_header", &FixedIntervalCSVObserver::set_header)
         .def("set_formatter", &FixedIntervalCSVObserver::set_formatter);
 
     py::class_<CSVObserver, Observer, PyObserver<CSVObserver>, boost::shared_ptr<CSVObserver>>(m, "CSVObserver")
-        .def(py::init<const std::string&>())
-        .def(py::init<const std::string&, std::vector<std::string>&>())
+        .def(py::init<const std::string&>(), py::arg("filename"))
+        .def(py::init<const std::string&, std::vector<std::string>&>(),
+                py::arg("filename"), py::arg("species"))
         .def("log", &CSVObserver::log)
         .def("filename", &CSVObserver::filename)
         .def("set_header", &CSVObserver::set_header)
@@ -643,39 +661,46 @@ void define_observers(py::module& m)
 
     py::class_<FixedIntervalTrajectoryObserver, Observer, PyObserver<FixedIntervalTrajectoryObserver>,
         boost::shared_ptr<FixedIntervalTrajectoryObserver>>(m, "FixedIntervalTrajectoryObserver")
-        .def(py::init<const Real&, const std::vector<ParticleID>&>())
-        .def(py::init<const Real&, const std::vector<ParticleID>&, const bool>())
-        .def(py::init<const Real&, const std::vector<ParticleID>&, const bool, const Real>())
-        .def(py::init<const Real&, const bool>())
-        .def(py::init<const Real&, const bool, const Real>())
+        .def(py::init<const Real&, const std::vector<ParticleID>&, const bool, const Real>(),
+                py::arg("dt"), py::arg("pids"),
+                py::arg("resolve_boundary") = FixedIntervalTrajectoryObserver::default_resolve_boundary(),
+                py::arg("subdt") = FixedIntervalTrajectoryObserver::default_subdt())
+        .def(py::init<const Real&, const bool, const Real>(),
+                py::arg("dt"),
+                py::arg("resolve_boundary") = FixedIntervalTrajectoryObserver::default_resolve_boundary(),
+                py::arg("subdt") = FixedIntervalTrajectoryObserver::default_subdt())
         .def("data", &FixedIntervalTrajectoryObserver::data)
         .def("num_tracers", &FixedIntervalTrajectoryObserver::num_tracers)
         .def("t", &FixedIntervalTrajectoryObserver::t);
 
     py::class_<TimingTrajectoryObserver, Observer, PyObserver<TimingTrajectoryObserver>,
         boost::shared_ptr<TimingTrajectoryObserver>>(m, "TimingTrajectoryObserver")
-        .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&>())
-        .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&, const bool>())
-        .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&, const bool, const Real>())
-        .def(py::init<const std::vector<Real>&, const bool>())
-        .def(py::init<const std::vector<Real>&, const bool, const Real>())
+        .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&, const bool, const Real>(),
+                py::arg("t"), py::arg("pids"),
+                py::arg("resolve_boundary") = TimingTrajectoryObserver::default_resolve_boundary(),
+                py::arg("subdt") = TimingTrajectoryObserver::default_subdt())
+        .def(py::init<const std::vector<Real>&, const bool, const Real>(),
+                py::arg("t"),
+                py::arg("resolve_boundary") = TimingTrajectoryObserver::default_resolve_boundary(),
+                py::arg("subdt") = TimingTrajectoryObserver::default_subdt())
         .def("data", &TimingTrajectoryObserver::data)
         .def("num_tracers", &TimingTrajectoryObserver::num_tracers)
         .def("t", &TimingTrajectoryObserver::t);
 
     py::class_<FixedIntervalTrackingObserver, Observer, PyObserver<FixedIntervalTrackingObserver>,
         boost::shared_ptr<FixedIntervalTrackingObserver>>(m, "FixedIntervalTrackingObserver")
-        .def(py::init<const Real&, const std::vector<Species>&>())
-        .def(py::init<const Real&, const std::vector<Species>&, const bool&>())
-        .def(py::init<const Real&, const std::vector<Species>&, const bool&, const Real>())
-        .def(py::init<const Real&, const std::vector<Species>&, const bool&, const Real, const Real>())
+        .def(py::init<const Real&, const std::vector<Species>&, const bool&, const Real, const Real>(),
+                py::arg("dt"), py::arg("species"),
+                py::arg("resolve_boundary") = FixedIntervalTrackingObserver::default_resolve_boundary(),
+                py::arg("subdt") = FixedIntervalTrackingObserver::default_subdt(),
+                py::arg("threshold") = FixedIntervalTrackingObserver::default_threshold())
         .def("data", &FixedIntervalTrackingObserver::data)
         .def("num_tracers", &FixedIntervalTrackingObserver::num_tracers)
         .def("t", &FixedIntervalTrackingObserver::t);
 
     py::class_<TimeoutObserver, Observer, PyObserver<TimeoutObserver>, boost::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
         .def(py::init<>())
-        .def(py::init<const Real>())
+        .def(py::init<const Real>(), py::arg("interval"))
         .def("interval", &TimeoutObserver::interval)
         .def("duration", &TimeoutObserver::duration)
         .def("accumulation", &TimeoutObserver::accumulation);
@@ -704,7 +729,8 @@ void define_shape(py::module& m)
         ));
 
     py::class_<Union, Shape, PyShapeImpl<Union>, boost::shared_ptr<Union>>(m, "Union")
-        .def(py::init<const boost::shared_ptr<Shape>&, const boost::shared_ptr<Shape>&>())
+        .def(py::init<const boost::shared_ptr<Shape>&, const boost::shared_ptr<Shape>&>(),
+                py::arg("a"), py::arg("b"))
         .def("surface", &Union::surface)
         .def("one", &Union::one)
         .def("another", &Union::another)
@@ -725,7 +751,8 @@ void define_shape(py::module& m)
         ));
 
     py::class_<Complement, Shape, PyShapeImpl<Complement>, boost::shared_ptr<Complement>>(m, "Complement")
-        .def(py::init<const boost::shared_ptr<Shape>&, const boost::shared_ptr<Shape>&>())
+        .def(py::init<const boost::shared_ptr<Shape>&, const boost::shared_ptr<Shape>&>(),
+                py::arg("a"), py::arg("b"))
         .def("surface", &Complement::surface)
         .def("one", &Complement::one)
         .def("another", &Complement::another)
@@ -748,8 +775,9 @@ void define_shape(py::module& m)
     py::class_<AffineTransformation, Shape, PyShapeImpl<AffineTransformation>,
         boost::shared_ptr<AffineTransformation>>(m, "AffineTransformation")
         .def(py::init<>())
-        .def(py::init<const boost::shared_ptr<Shape>&>())
-        .def(py::init<const boost::shared_ptr<Shape>&, const Real3&, const Real3&, const Real3&, const Real3&>())
+        .def(py::init<const boost::shared_ptr<Shape>&>(), py::arg("root"))
+        .def(py::init<const boost::shared_ptr<Shape>&, const Real3&, const Real3&, const Real3&, const Real3&>(),
+                py::arg("root"), py::arg("first"), py::arg("second"), py::arg("third"), py::arg("shift"))
         .def("translate", &AffineTransformation::translate)
         .def("rescale", &AffineTransformation::rescale)
         .def("xroll", &AffineTransformation::xroll)
@@ -781,7 +809,7 @@ void define_shape(py::module& m)
         ));
 
     py::class_<Sphere, Shape, PyShapeImpl<Sphere>, boost::shared_ptr<Sphere>>(m, "Sphere")
-        .def(py::init<const Real3&, const Real>())
+        .def(py::init<const Real3&, const Real>(), py::arg("center"), py::arg("radius"))
         .def("distance", &Sphere::distance)
         .def("surface", &Sphere::surface)
         .def("center", &Sphere::center)
@@ -801,7 +829,7 @@ void define_shape(py::module& m)
 
     py::class_<SphericalSurface, Shape, PyShapeImpl<SphericalSurface>,
         boost::shared_ptr<SphericalSurface>>(m, "SphericalSurface")
-        .def(py::init<const Real3&, const Real>())
+        .def(py::init<const Real3&, const Real>(), py::arg("center"), py::arg("radius"))
         .def("distance", &SphericalSurface::distance)
         .def("inside", &SphericalSurface::inside)
         .def("center", &SphericalSurface::center)
@@ -820,7 +848,8 @@ void define_shape(py::module& m)
         ));
 
     py::class_<Cylinder, Shape, PyShapeImpl<Cylinder>, boost::shared_ptr<Cylinder>>(m, "Cylinder")
-        .def(py::init<const Real3&, const Real, const Real3&, const Real>())
+        .def(py::init<const Real3&, const Real, const Real3&, const Real>(),
+                py::arg("center"), py::arg("radius"), py::arg("axis"), py::arg("half_height"))
         .def("distance", &Cylinder::distance)
         .def("surface", &Cylinder::surface)
         .def("center", &Cylinder::center)
@@ -846,7 +875,8 @@ void define_shape(py::module& m)
 
     py::class_<CylindricalSurface, Shape, PyShapeImpl<CylindricalSurface>,
         boost::shared_ptr<CylindricalSurface>>(m, "CylindricalSurface")
-        .def(py::init<const Real3&, const Real, const Real3&, const Real>())
+        .def(py::init<const Real3&, const Real, const Real3&, const Real>(),
+                py::arg("center"), py::arg("radius"), py::arg("axis"), py::arg("half_height"))
         .def("distance", &CylindricalSurface::distance)
         .def("inside", &CylindricalSurface::inside)
         .def("center", &CylindricalSurface::center)
@@ -873,7 +903,8 @@ void define_shape(py::module& m)
 
     py::class_<PlanarSurface, Shape, PyShapeImpl<PlanarSurface>,
         boost::shared_ptr<PlanarSurface>>(m, "PlanarSurface")
-        .def(py::init<const Real3&, const Real3&, const Real3&>())
+        .def(py::init<const Real3&, const Real3&, const Real3&>(),
+                py::arg("origin"), py::arg("e0"), py::arg("e1"))
         .def("origin", &PlanarSurface::origin)
         .def("e0", &PlanarSurface::e0)
         .def("e1", &PlanarSurface::e1)
@@ -896,8 +927,9 @@ void define_shape(py::module& m)
         ));
 
     py::class_<Rod, Shape, PyShapeImpl<Rod>, boost::shared_ptr<Rod>>(m, "Rod")
-        .def(py::init<const Real&, const Real&>())
-        .def(py::init<const Real&, const Real&, const Real3&>())
+        .def(py::init<const Real&, const Real&, const Real3&>(),
+                py::arg("length"), py::arg("radius"),
+                py::arg("origin") = Real3())
         .def("distance", &Rod::distance)
         .def("origin", &Rod::origin)
         .def("length", &Rod::length)
@@ -922,8 +954,9 @@ void define_shape(py::module& m)
         ));
 
     py::class_<RodSurface, Shape, PyShapeImpl<RodSurface>, boost::shared_ptr<RodSurface>>(m, "RodSurface")
-        .def(py::init<const Real&, const Real&>())
-        .def(py::init<const Real&, const Real&, const Real3&>())
+        .def(py::init<const Real&, const Real&, const Real3&>(),
+                py::arg("length"), py::arg("radius"),
+                py::arg("origin") = Real3())
         .def("distance", &RodSurface::distance)
         .def("origin", &RodSurface::origin)
         .def("length", &RodSurface::length)
@@ -947,7 +980,7 @@ void define_shape(py::module& m)
         ));
 
     py::class_<AABB, Shape, PyShapeImpl<AABB>, boost::shared_ptr<AABB>>(m, "AABB")
-        .def(py::init<const Real3&, const Real3&>())
+        .def(py::init<const Real3&, const Real3&>(), py::arg("lower"), py::arg("upper"))
         .def("distance", &AABB::distance)
         .def("upper", &AABB::upper)
         .def("lower", &AABB::lower)
@@ -969,7 +1002,7 @@ void define_shape(py::module& m)
         ));
 
     py::class_<MeshSurface, Shape, PyShapeImpl<MeshSurface>, boost::shared_ptr<MeshSurface>>(m, "MeshSurface")
-        .def(py::init<const std::string, const Real3&>())
+        .def(py::init<const std::string, const Real3&>(), py::arg("filename"), py::arg("edge_lengths"))
         .def("filename", &MeshSurface::filename)
         .def("edge_lengths", &MeshSurface::edge_lengths)
         .def(py::pickle(

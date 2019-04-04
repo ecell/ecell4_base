@@ -22,9 +22,9 @@ void define_bd_factory(py::module& m)
 {
     py::class_<BDFactory> factory(m, "BDFactory");
     factory
-        .def(py::init<>())
-        .def(py::init<const Integer3&>())
-        .def(py::init<const Integer3&, Real>())
+        .def(py::init<const Integer3&, Real>(),
+                py::arg("matrix_sizes") = BDFactory::default_matrix_sizes(),
+                py::arg("bd_dt_factor") = BDFactory::default_bd_dt_factor())
         .def("rng", &BDFactory::rng);
     define_factory_functions(factory);
 
@@ -37,10 +37,10 @@ void define_bd_simulator(py::module& m)
     py::class_<BDSimulator, Simulator, PySimulator<BDSimulator>,
         boost::shared_ptr<BDSimulator>> simulator(m, "BDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<BDWorld>>())
-        .def(py::init<boost::shared_ptr<BDWorld>, Real>())
-        .def(py::init<boost::shared_ptr<BDWorld>, boost::shared_ptr<Model>>())
-        .def(py::init<boost::shared_ptr<BDWorld>, boost::shared_ptr<Model>, Real>())
+        .def(py::init<boost::shared_ptr<BDWorld>, Real>(),
+                py::arg("w"), py::arg("bd_dt_factor") = 1e-5)
+        .def(py::init<boost::shared_ptr<BDWorld>, boost::shared_ptr<Model>, Real>(),
+                py::arg("w"), py::arg("m"), py::arg("bd_dt_factor") = 1e-5)
         .def("last_reactions", &BDSimulator::last_reactions)
         .def("set_t", &BDSimulator::set_t);
     define_simulator_functions(simulator);
@@ -52,11 +52,13 @@ void define_bd_world(py::module& m)
     py::class_<BDWorld, WorldInterface, PyWorldImpl<BDWorld>,
         boost::shared_ptr<BDWorld>> world(m, "BDWorld");
     world
-        .def(py::init<>())
-        .def(py::init<const Real3&>())
-        .def(py::init<const Real3&, const Integer3&>())
-        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>>())
-        .def(py::init<const std::string&>())
+        .def(py::init<const Real3&, const Integer3&>(),
+                py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0),
+                py::arg("matrix_sizes") = Integer3(1, 1, 1))
+        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>>(),
+                py::arg("edge_lengths"), py::arg("matrix_sizes"), py::arg("rng"))
+        .def(py::init<const std::string&>(), py::arg("filename"))
+
         .def("new_particle",
             (std::pair<std::pair<ParticleID, Particle>, bool> (BDWorld::*)(const Particle&))
             &BDWorld::new_particle)
@@ -98,7 +100,8 @@ void define_reaction_info(py::module& m)
     using container_type = ReactionInfo::container_type;
 
     py::class_<ReactionInfo>(m, "ReactionInfo")
-        .def(py::init<const Real, const container_type, const container_type>())
+        .def(py::init<const Real, const container_type, const container_type>(),
+                py::arg("t"), py::arg("reactants"), py::arg("products"))
         .def("t", &ReactionInfo::t)
         .def("reactants", &ReactionInfo::reactants)
         .def("products", &ReactionInfo::products)

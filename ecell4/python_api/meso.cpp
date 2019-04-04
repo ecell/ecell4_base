@@ -37,8 +37,9 @@ void define_meso_simulator(py::module& m)
     py::class_<MesoscopicSimulator, Simulator, PySimulator<MesoscopicSimulator>,
         boost::shared_ptr<MesoscopicSimulator>> simulator(m, "MesoscopicSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<MesoscopicWorld>>())
-        .def(py::init<boost::shared_ptr<MesoscopicWorld>, boost::shared_ptr<Model>>())
+        .def(py::init<boost::shared_ptr<MesoscopicWorld>>(), py::arg("w"))
+        .def(py::init<boost::shared_ptr<MesoscopicWorld>, boost::shared_ptr<Model>>(),
+                py::arg("w"), py::arg("m"))
         .def("last_reactions", &MesoscopicSimulator::last_reactions)
         .def("set_t", &MesoscopicSimulator::set_t);
     define_simulator_functions(simulator);
@@ -52,13 +53,16 @@ void define_meso_world(py::module& m)
     py::class_<MesoscopicWorld, WorldInterface, PyWorldImpl<MesoscopicWorld>,
         boost::shared_ptr<MesoscopicWorld>> world(m, "MesoscopicWorld");
     world
-        .def(py::init<>())
-        .def(py::init<const Real3&>())
-        .def(py::init<const Real3&, const Integer3&>())
-        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>>())
-        .def(py::init<const Real3&, const Real>())
-        .def(py::init<const Real3&, const Real, boost::shared_ptr<RandomNumberGenerator>>())
-        .def(py::init<const std::string&>())
+        .def(py::init<const Real3&>(), py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0))
+        .def(py::init<const Real3&, const Integer3&>(),
+                py::arg("edge_lengths"), py::arg("matrix_sizes"))
+        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>>(),
+                py::arg("edge_lengths"), py::arg("matrix_sizes"), py::arg("rng"))
+        .def(py::init<const Real3&, const Real>(),
+                py::arg("edge_lengths"), py::arg("subvlume_length"))
+        .def(py::init<const Real3&, const Real, boost::shared_ptr<RandomNumberGenerator>>(),
+                py::arg("edge_lengths"), py::arg("subvlume_length"), py::arg("rng"))
+        .def(py::init<const std::string&>(), py::arg("filename"))
         .def("matrix_sizes", &MesoscopicWorld::matrix_sizes)
         .def("subvolume", &MesoscopicWorld::subvolume)
         .def("set_value", &MesoscopicWorld::set_value)
@@ -125,7 +129,8 @@ void define_reaction_info(py::module& m)
     using coordinate_type = ReactionInfo::coordinate_type;
 
     py::class_<ReactionInfo>(m, "ReactionInfo")
-        .def(py::init<const Real, const container_type, const container_type, const coordinate_type>())
+        .def(py::init<const Real, const container_type, const container_type, const coordinate_type>(),
+                py::arg("t"), py::arg("reactants"), py::arg("products"), py::arg("coord"))
         .def("t", &ReactionInfo::t)
         .def("coordinate", &ReactionInfo::coordinate)
         .def("reactants", &ReactionInfo::reactants)

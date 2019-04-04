@@ -24,7 +24,8 @@ void define_reaction_info(py::module& m)
 {
     using container_type = ReactionInfo::container_type;
     py::class_<ReactionInfo>(m, "ReactionInfo")
-        .def(py::init<const Real, const container_type&, const container_type&>())
+        .def(py::init<const Real, const container_type&, const container_type&>(),
+                py::arg("t"), py::arg("reactants"), py::arg("products"))
         .def("t", &ReactionInfo::t)
         .def("reactants", &ReactionInfo::reactants)
         .def("products", &ReactionInfo::products)
@@ -56,8 +57,8 @@ void define_spatiocyte_factory(py::module& m)
 {
     py::class_<SpatiocyteFactory> factory(m, "SpatiocyteFactory");
     factory
-        .def(py::init<>())
-        .def(py::init<const Real>())
+        .def(py::init<const Real>(),
+                py::arg("voxel_radius") = SpatiocyteFactory::default_voxel_radius())
         .def("rng", &SpatiocyteFactory::rng);
     define_factory_functions(factory);
 
@@ -70,8 +71,9 @@ void define_spatiocyte_simulator(py::module& m)
     py::class_<SpatiocyteSimulator, Simulator, PySimulator<SpatiocyteSimulator>,
         boost::shared_ptr<SpatiocyteSimulator>> simulator(m, "SpatiocyteSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>>())
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>())
+        .def(py::init<boost::shared_ptr<SpatiocyteWorld>>(), py::arg("w"))
+        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>(),
+                py::arg("w"), py::arg("m"))
         .def("last_reactions", &SpatiocyteSimulator::last_reactions)
         .def("set_t", &SpatiocyteSimulator::set_t);
     define_simulator_functions(simulator);
@@ -83,7 +85,16 @@ void define_spatiocyte_world(py::module& m)
     py::class_<SpatiocyteWorld, ecell4::WorldInterface, PyWorldImpl<SpatiocyteWorld>,
         boost::shared_ptr<SpatiocyteWorld>> world(m, "SpatiocyteWorld");
     world
-        .def(py::init<>())
+        .def(py::init<const Real3&>(),
+                py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0))
+        .def(py::init<const Real3&, const Real&>(),
+                py::arg("edge_lengths"), py::arg("voxel_radius"))
+        .def(py::init<const Real3&, const Real&, const boost::shared_ptr<RandomNumberGenerator>&>(),
+                py::arg("edge_lengths"),
+                py::arg("voxel_radius"),
+                py::arg("rng"))
+        .def(py::init<const std::string>(), py::arg("filename"))
+
         .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Particle&)) &SpatiocyteWorld::new_particle)
         .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Real3&)) &SpatiocyteWorld::new_particle)
         .def("remove_particle", &SpatiocyteWorld::remove_particle)

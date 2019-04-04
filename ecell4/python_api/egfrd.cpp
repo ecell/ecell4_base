@@ -40,12 +40,14 @@ void define_bd_simulator(py::module& m)
     py::class_<BDSimulator, Simulator, PySimulator<BDSimulator>,
         boost::shared_ptr<BDSimulator>> simulator(m, "BDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<world_type>>())
-        .def(py::init<boost::shared_ptr<world_type>, Real>())
-        .def(py::init<boost::shared_ptr<world_type>, Real, int>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int>())
+        .def(py::init<boost::shared_ptr<world_type>, Real, int>(),
+                py::arg("w"),
+                py::arg("bd_dt_factor") = 1.0,
+                py::arg("dissociation_retry_moves") = 1)
+        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int>(),
+                py::arg("w"), py::arg("m"),
+                py::arg("bd_dt_factor") = 1.0,
+                py::arg("dissociation_retry_moves") = 1)
         .def("last_reactions", &BDSimulator::last_reactions)
         .def("set_t", &BDSimulator::set_t)
         .def("dt_factor", &BDSimulator::dt_factor)
@@ -87,14 +89,16 @@ void define_egfrd_simulator(py::module& m)
     py::class_<EGFRDSimulator, Simulator, PySimulator<EGFRDSimulator>,
         boost::shared_ptr<EGFRDSimulator>> simulator(m, "EGFRDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<world_type>>())
-        .def(py::init<boost::shared_ptr<world_type>, Real>())
-        .def(py::init<boost::shared_ptr<world_type>, Real, int>())
-        .def(py::init<boost::shared_ptr<world_type>, Real, int, length_type>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int>())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int, length_type>())
+        .def(py::init<boost::shared_ptr<world_type>, Real, int, length_type>(),
+                py::arg("w"),
+                py::arg("bd_dt_factor") = 1e-5,
+                py::arg("dissociation_retry_moves") = 1,
+                py::arg("user_max_shell_size") = std::numeric_limits<length_type>::infinity())
+        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int, length_type>(),
+                py::arg("w"), py::arg("m"),
+                py::arg("bd_dt_factor") = 1e-5,
+                py::arg("dissociation_retry_moves") = 1,
+                py::arg("user_max_shell_size") = std::numeric_limits<length_type>::infinity())
         .def("set_t", &EGFRDSimulator::set_t)
         .def("set_paranoiac", &EGFRDSimulator::set_paranoiac);
     define_simulator_functions(simulator);
@@ -113,11 +117,14 @@ void define_egfrd_world(py::module& m)
     py::class_<EGFRDWorld, WorldInterface, PyWorldImpl<EGFRDWorld>,
         boost::shared_ptr<EGFRDWorld>> world(m, "EGFRDWorld");
     world
-        .def(py::init<>())
-        .def(py::init<const position_type&>())
-        .def(py::init<const position_type&, const matrix_sizes_type&>())
-        .def(py::init<const position_type&, const matrix_sizes_type&, const boost::shared_ptr<rng_type>&>())
-        .def(py::init<const std::string>())
+        .def(py::init<const position_type&, const matrix_sizes_type&>(),
+                py::arg("edge_lengths") = position_type(1.0, 1.0, 1.0),
+                py::arg("matrix_sizes") = matrix_sizes_type(3, 3, 3))
+        .def(py::init<const position_type&, const matrix_sizes_type&, const boost::shared_ptr<rng_type>&>(),
+                py::arg("edge_lengths"),
+                py::arg("matrix_sizes"),
+                py::arg("rng"))
+        .def(py::init<const std::string>(), py::arg("filename"))
         .def("new_particle",
             (std::pair<std::pair<particle_id_type, particle_type>, bool> (EGFRDWorld::*)(const particle_type&))
             &EGFRDWorld::new_particle)
@@ -160,7 +167,8 @@ void define_reaction_info(py::module& m)
     using container_type = ReactionInfo::container_type;
 
     py::class_<ReactionInfo>(m, "ReactionInfo")
-        .def(py::init<const Real, const container_type, const container_type>())
+        .def(py::init<const Real, const container_type, const container_type>(),
+                py::arg("t"), py::arg("reactants"), py::arg("products"))
         .def("t", &ReactionInfo::t)
         .def("reactants", &ReactionInfo::reactants)
         .def("products", &ReactionInfo::products)
