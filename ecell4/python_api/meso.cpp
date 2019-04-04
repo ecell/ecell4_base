@@ -76,6 +76,8 @@ void define_meso_world(py::module& m)
         .def("position2global", &MesoscopicWorld::position2global)
         .def("position2coordinate", &MesoscopicWorld::position2coordinate)
         .def("num_molecules",
+            (Integer (MesoscopicWorld::*)(const Species&) const) &MesoscopicWorld::num_molecules)
+        .def("num_molecules",
             (Integer (MesoscopicWorld::*)(const Species&, const coordinate_type&) const) &MesoscopicWorld::num_molecules)
         .def("num_molecules",
             (Integer (MesoscopicWorld::*)(const Species&, const Integer3&) const) &MesoscopicWorld::num_molecules)
