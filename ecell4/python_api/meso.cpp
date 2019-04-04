@@ -43,6 +43,8 @@ void define_meso_simulator(py::module& m)
         .def("last_reactions", &MesoscopicSimulator::last_reactions)
         .def("set_t", &MesoscopicSimulator::set_t);
     define_simulator_functions(simulator);
+
+    m.attr("Simulator") = simulator;
 }
 
 static inline

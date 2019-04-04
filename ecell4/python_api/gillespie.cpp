@@ -41,6 +41,8 @@ void define_gillespie_simulator(py::module& m)
         .def("last_reactions", &GillespieSimulator::last_reactions)
         .def("set_t", &GillespieSimulator::set_t);
     define_simulator_functions(simulator);
+
+    m.attr("Simulator") = simulator;
 }
 
 static inline

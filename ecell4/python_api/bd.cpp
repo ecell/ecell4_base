@@ -44,6 +44,8 @@ void define_bd_simulator(py::module& m)
         .def("last_reactions", &BDSimulator::last_reactions)
         .def("set_t", &BDSimulator::set_t);
     define_simulator_functions(simulator);
+
+    m.attr("Simulator") = simulator;
 }
 
 static inline

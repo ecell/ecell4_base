@@ -51,6 +51,8 @@ void define_ode_simulator(py::module& m)
         .def("relative_tolerance", &ODESimulator::relative_tolerance)
         .def("set_absolute_tolerance", &ODESimulator::set_absolute_tolerance);
     define_simulator_functions(simulator);
+
+    m.attr("Simulator") = simulator;
 }
 
 static inline

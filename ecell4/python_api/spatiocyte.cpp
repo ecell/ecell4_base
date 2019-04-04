@@ -77,6 +77,8 @@ void define_spatiocyte_simulator(py::module& m)
         .def("last_reactions", &SpatiocyteSimulator::last_reactions)
         .def("set_t", &SpatiocyteSimulator::set_t);
     define_simulator_functions(simulator);
+
+    m.attr("Simulator") = simulator;
 }
 
 static inline

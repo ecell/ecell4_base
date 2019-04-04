@@ -102,6 +102,8 @@ void define_egfrd_simulator(py::module& m)
         .def("set_t", &EGFRDSimulator::set_t)
         .def("set_paranoiac", &EGFRDSimulator::set_paranoiac);
     define_simulator_functions(simulator);
+
+    m.attr("Simulator") = simulator;
 }
 
 static inline
