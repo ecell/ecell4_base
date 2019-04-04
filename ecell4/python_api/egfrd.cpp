@@ -72,6 +72,8 @@ void define_egfrd_factory(py::module& m)
             py::arg("user_max_shell_size") = EGFRDFactory::default_user_max_shell_size())
         .def("rng", &EGFRDFactory::rng);
     define_factory_functions(factory);
+
+    m.attr("Factory") = factory;
 }
 
 static inline

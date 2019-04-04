@@ -60,6 +60,8 @@ void define_spatiocyte_factory(py::module& m)
         .def(py::init<const Real>())
         .def("rng", &SpatiocyteFactory::rng);
     define_factory_functions(factory);
+
+    m.attr("Factory") = factory;
 }
 
 static inline

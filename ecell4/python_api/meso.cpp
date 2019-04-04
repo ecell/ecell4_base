@@ -27,6 +27,8 @@ void define_meso_factory(py::module& m)
             py::arg("subvolume_length") = MesoscopicFactory::default_subvolume_length())
         .def("rng", &MesoscopicFactory::rng);
     define_factory_functions(factory);
+
+    m.attr("Factory") = factory;
 }
 
 static inline

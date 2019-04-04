@@ -27,6 +27,8 @@ void define_bd_factory(py::module& m)
         .def(py::init<const Integer3&, Real>())
         .def("rng", &BDFactory::rng);
     define_factory_functions(factory);
+
+    m.attr("Factory") = factory;
 }
 
 static inline

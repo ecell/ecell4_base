@@ -29,6 +29,8 @@ void define_ode_factory(py::module& m)
             py::arg("rel_tol") = ODEFactory::default_rel_tol())
         .def("rng", &ODEFactory::rng);
     define_factory_functions(factory);
+
+    m.attr("Factory") = factory;
 }
 
 static inline
