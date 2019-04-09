@@ -326,6 +326,12 @@ public:
             return false;
         }
 
+        // check after tightening potentially-overlapping domains
+        if(is_overlapping(std::make_pair(p.position(), fid), radius_new, pid))
+        {
+            return false;
+        }
+
         SGFRD_TRACE(this->vc_.access_tracer().write("1->1 reaction occured"))
         this->container_.update_particle(pid, particle_new, fid);
         rlog.second.add_product(std::make_pair(pid, particle_new));
@@ -386,7 +392,14 @@ public:
             {
                 newpfs[0] = std::make_pair(p.position(), fid); //rollback
                 newpfs[1] = std::make_pair(p.position(), fid);
-                continue;
+                if(separation_count == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    continue;
+                }
             }
 
             if(is_overlapping(newpfs[0], r1, pid) ||
@@ -415,6 +428,14 @@ public:
             return false;
         }
 
+        // check after tightening potentially-overlapping domains
+        if(is_overlapping(newpfs[0], r1, pid) ||
+           is_overlapping(newpfs[1], r2, pid))
+        {
+            return false;
+        }
+
+        // this updates the old particle -> new particle
         const bool update_result = this->container_.update_particle(
                 pid, particles_new[0], newpfs[0].second);
         // this adds new particle
@@ -512,18 +533,17 @@ public:
             this->propagate(pf1, dp);
         }
 
-        if(is_overlapping(pf1, radius_new, pid1, pid2))
-        {
-            std::cout << "ERROR: the new particle (A+B->B) overlaps!" << std::endl;
-            assert(false);
-            return false;
-        }
-
         const Particle particle_new(sp_new, pf1.first, radius_new, D_new);
         if(!clear_volume(particle_new, pf1.second, pid1, pid2))
         {
-            std::cout << "ERROR: the new particle (A+B->B) overlaps!" << std::endl;
-            assert(false);
+            // the new particle locates at the CoM of the two particles
+            // collides with others, return without reaction.
+            return false;
+        }
+
+        // check after tightening potentially-overlapping domains
+        if(is_overlapping(pf1, radius_new, pid1, pid2))
+        {
             return false;
         }
 
@@ -531,6 +551,14 @@ public:
         remove_particle(pid1);
         const std::pair<std::pair<ParticleID, Particle>, bool> pp_new =
             this->container_.new_particle(particle_new, pf1.second);
+
+        if(!pp_new.second)
+        {
+            // this should not fail. because we already cleared the volume.
+            std::cout << "pid1 = " << pid1 << std::endl;
+            std::cout << "pid2 = " << pid2 << std::endl;
+            assert(pp_new.second);
+        }
 
         rlog.second.add_product(pp_new.first);
         last_reactions_.push_back(rlog);
