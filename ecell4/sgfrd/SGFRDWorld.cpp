@@ -67,34 +67,33 @@ std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld::list_particles_within_radius(
         const std::pair<Real3, FaceID>& pos, const Real& radius) const
 {
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> retval;
 
-    {// same face
-        const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
-        for(std::vector<ParticleID>::const_iterator
-            i(ids.begin()), e(ids.end()); i != e; ++i)
+    // look particles on the same face
+    for(const auto& pid : this->list_particleIDs(pos.second))
+    {
+        const std::pair<ParticleID, Particle> pp = ps_->get_particle(pid);
+        const Real dist = length(pos.first - pp.second.position()) -
+                          pp.second.radius();
+        if(dist < radius)
         {
-            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
-            const Real dist = length(pos.first - pp.second.position()) -
-                              pp.second.radius();
-            if(dist < radius) retval.push_back(std::make_pair(pp, dist));
+            retval.push_back(std::make_pair(pp, dist));
         }
     }
 
-    std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces_of(pos.second);
-    for(std::vector<FaceID>::const_iterator
-        iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    // look particles around
+    for(const auto& fid : polygon_->neighbor_faces_of(pos.second))
     {
-        const std::vector<ParticleID>& ids = registrator_.elements_over(*iter);
-        for(std::vector<ParticleID>::const_iterator
-                i(ids.begin()), e(ids.end()); i != e; ++i)
+        for(const auto& pid : this->list_particleIDs(fid))
         {
-            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
-            const Real dist = ecell4::polygon::distance(*polygon_, pos,
-                std::make_pair(pp.second.position(), get_face_id(pp.first))) -
-                pp.second.radius();
-            if(dist < radius) retval.push_back(std::make_pair(pp, dist));
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(pid);
+            const Real dist = ecell4::polygon::distance(*polygon_,
+                pos, std::make_pair(pp.second.position(), get_face_id(pp.first))
+                ) - pp.second.radius();
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(pp, dist));
+            }
         }
     }
     std::sort(retval.begin(), retval.end(),
@@ -108,35 +107,41 @@ SGFRDWorld::list_particles_within_radius(
         const std::pair<Real3, FaceID>& pos, const Real& radius,
         const ParticleID& ignore) const
 {
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    {// same face
-        const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
-        for(std::vector<ParticleID>::const_iterator
-            i(ids.begin()), e(ids.end()); i != e; ++i)
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> retval;
+
+    // look particles on the same face
+    for(const auto& pid : this->list_particleIDs(pos.second))
+    {
+        if(pid == ignore)
         {
-            if(*i == ignore) continue;
-            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
-            const Real dist = length(pos.first - pp.second.position()) -
-                              pp.second.radius();
-            if(dist < radius) retval.push_back(std::make_pair(pp, dist));
+            continue;
+        }
+        const std::pair<ParticleID, Particle> pp = ps_->get_particle(pid);
+        const Real dist = length(pos.first - pp.second.position()) -
+                          pp.second.radius();
+
+        if(dist < radius)
+        {
+            retval.push_back(std::make_pair(pp, dist));
         }
     }
 
-    std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces_of(pos.second);
-    for(std::vector<FaceID>::const_iterator
-        iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    for(const auto& fid : polygon_->neighbor_faces_of(pos.second))
     {
-        const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
-        for(std::vector<ParticleID>::const_iterator
-                i(ids.begin()), e(ids.end()); i != e; ++i)
+        for(const auto& pid : this->list_particleIDs(fid))
         {
-            if(*i == ignore) continue;
-            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
-            const Real dist = ecell4::polygon::distance(*polygon_, pos,
-                std::make_pair(pp.second.position(), get_face_id(pp.first))) -
-                pp.second.radius();
-            if(dist < radius) retval.push_back(std::make_pair(pp, dist));
+            if(pid == ignore)
+            {
+                continue;
+            }
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(pid);
+            const Real dist = ecell4::polygon::distance(*polygon_,
+                pos, std::make_pair(pp.second.position(), get_face_id(pp.first))
+                ) - pp.second.radius();
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(pp, dist));
+            }
         }
     }
     std::sort(retval.begin(), retval.end(),
@@ -151,34 +156,40 @@ SGFRDWorld::list_particles_within_radius(
         const ParticleID& ignore1, const ParticleID& ignore2) const
 {
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
+
     {// same face
-        const std::vector<ParticleID>& ids = this->list_particleIDs(pos.second);
-        for(std::vector<ParticleID>::const_iterator
-            i(ids.begin()), e(ids.end()); i != e; ++i)
+        for(const auto& pid : this->list_particleIDs(pos.second))
         {
-            if(*i == ignore1 || *i == ignore2) continue;
-            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
+            if(pid == ignore1 || pid == ignore2)
+            {
+                continue;
+            }
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(pid);
             const Real dist = length(pos.first - pp.second.position()) -
                               pp.second.radius();
-            if(dist < radius) retval.push_back(std::make_pair(pp, dist));
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(pp, dist));
+            }
         }
     }
 
-    std::vector<FaceID> const& neighbors =
-        polygon_->neighbor_faces_of(pos.second);
-    for(std::vector<FaceID>::const_iterator
-        iter = neighbors.begin(); iter != neighbors.end(); ++iter)
+    for(const auto& fid : polygon_->neighbor_faces_of(pos.second))
     {
-        const std::vector<ParticleID>& ids = this->list_particleIDs(*iter);
-        for(std::vector<ParticleID>::const_iterator
-                i(ids.begin()), e(ids.end()); i != e; ++i)
+        for(const auto& pid : this->list_particleIDs(fid))
         {
-            if(*i == ignore1 || *i == ignore2) continue;
-            const std::pair<ParticleID, Particle> pp = ps_->get_particle(*i);
-            const Real dist = ecell4::polygon::distance(*polygon_, pos,
-                std::make_pair(pp.second.position(), get_face_id(pp.first))) -
-                pp.second.radius();
-            if(dist < radius) retval.push_back(std::make_pair(pp, dist));
+            if(pid == ignore1 || pid == ignore2)
+            {
+                continue;
+            }
+            const std::pair<ParticleID, Particle> pp = ps_->get_particle(pid);
+            const Real dist = ecell4::polygon::distance(*polygon_,
+                pos, std::make_pair(pp.second.position(), get_face_id(pp.first))
+                ) - pp.second.radius();
+            if(dist < radius)
+            {
+                retval.push_back(std::make_pair(pp, dist));
+            }
         }
     }
     std::sort(retval.begin(), retval.end(),
