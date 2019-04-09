@@ -59,7 +59,10 @@ public:
     bool operator()()
     {
         SGFRD_SCOPE(ns, BDPropagator, this->vc_.access_tracer())
-        if(queue_.empty()){return false;}
+        if(queue_.empty())
+        {
+            return false;
+        }
 
         // make copy of the next particle
         ParticleID pid; Particle p;
@@ -70,8 +73,14 @@ public:
         const Real3  prev_pos(p.position());
         const FaceID prev_fid(fid);
 
-        if(this->attempt_reaction(pid, p, fid)){return true;}
-        if(p.D() == 0.0)                       {return true;}
+        if(this->attempt_reaction(pid, p, fid))
+        {
+            return true;
+        }
+        if(p.D() == 0.0)
+        {
+            return true;
+        }
 
         // no 1st order reaction occured & particle is movable.
         auto position     = std::make_pair(p.position(), fid);
@@ -155,18 +164,26 @@ public:
         const auto& rules = this->model_.query_reaction_rules(p.species());
         SGFRD_TRACE(this->vc_.access_tracer().write(
                     "%1% rules found for particle %2%", rules.size(), pid))
-        if(rules.empty()){return false;}
+        if(rules.empty())
+        {
+            return false;
+        }
 
         const Real rnd(this->rng_.uniform(0., 1.));
-        SGFRD_TRACE(this->vc_.access_tracer().write(
-                    "drawn probability = %1%", rnd))
+        SGFRD_TRACE(this->vc_.access_tracer().write("drawn probability = %1%", rnd))
         Real prob = 0.;
         for(const auto& rule : rules)
         {
             SGFRD_TRACE(this->vc_.access_tracer().write("k * dt = %1%",
                         rule.k() * dt_))
-            if((prob += rule.k() * dt_) <= rnd){continue;}
-            if(prob >= 1.){std::cerr << "reaction prob exceeds 1" << std::endl;}
+            if((prob += rule.k() * dt_) <= rnd)
+            {
+                continue;
+            }
+            if(prob >= 1.0)
+            {
+                std::cerr << "reaction prob exceeds 1" << std::endl;
+            }
 
             switch(rule.products().size())
             {
