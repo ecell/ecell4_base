@@ -24,6 +24,9 @@ namespace sgfrd
 template<typename containerT, typename volume_clearerT>
 class BDPropagator
 {
+    // XXX clear_volume just determines the positions of potentially-overlapping
+    //     particles.
+
 public:
     typedef containerT container_type;
     typedef volume_clearerT volume_clearer_type;
@@ -128,7 +131,7 @@ public:
         {
             overlapped = this->list_reaction_overlap(pid, p, fid);
         }
-        else
+        else // if there is no core-overlapping, update the particle anyway
         {
             this->container_.update_particle(pid, p, fid);
         }
@@ -414,12 +417,20 @@ public:
 
         const bool update_result = this->container_.update_particle(
                 pid, particles_new[0], newpfs[0].second);
-        auto pp2 =
-            this->container_.new_particle(particles_new[1], newpfs[1].second);
+        // this adds new particle
+        auto pp2 = this->container_.new_particle(particles_new[1], newpfs[1].second);
         const ParticleID pid2(pp2.first.first);
 
-        assert(update_result == false); // no particle generation occured
-        assert(pp2.second    == true);  // new particle is generated
+        assert(!update_result); // no particle generation occured while updation
+        if(!pp2.second)         // new particle should be inserted
+        {
+            std::cout << "BDPropagator::attempt_reaction_1_to_2: "
+                      << "attempting particle " << pid << " at "
+                      << p.position() << " into species " << sp1 << "+" << sp2
+                      << " locating " << particles_new[0] << " and "
+                      << particles_new[1] << std::endl;
+        }
+        assert(pp2.second);
 
         SGFRD_TRACE(this->vc_.access_tracer().write("1->2 reaction occured"))
 
