@@ -1,5 +1,5 @@
 import unittest
-from ecell4_base import *
+from ecell4_base.core import *
 from . import setUpEqualities
 
 class ReactionRuleDescriptor(unittest.TestCase):
@@ -45,7 +45,7 @@ class ReactionRuleTest(unittest.TestCase):
         rr = ReactionRule()
         rr = ReactionRule([reactant], [product])
         rr = ReactionRule([reactant], [product], 1.0)
-        rr = ReactionRule([reactant], [product], Quantity_Real())
+        rr = ReactionRule([reactant], [product], Quantity_Real(1.0))
         rr = ReactionRule([reactant], [product], Quantity_Real(1.0, "/s"))
 
     def test_getters(self):
@@ -67,13 +67,13 @@ class ReactionRuleTest(unittest.TestCase):
 
     def test_policy(self):
         rr = ReactionRule()
-        self.assertEqual(rr.policy(), ReactionRule.STRICT)
+        self.assertEqual(rr.policy(), ReactionRulePolicy.STRICT)
 
-        rr.set_policy(ReactionRule.IMPLICIT)
-        self.assertEqual(rr.policy(), ReactionRule.IMPLICIT)
+        rr.set_policy(ReactionRulePolicy.IMPLICIT)
+        self.assertEqual(rr.policy(), ReactionRulePolicy.IMPLICIT)
 
-        rr.set_policy(ReactionRule.DESTROY)
-        self.assertEqual(rr.policy(), ReactionRule.DESTROY)
+        rr.set_policy(ReactionRulePolicy.DESTROY)
+        self.assertEqual(rr.policy(), ReactionRulePolicy.DESTROY)
 
 
     def test_descriptor(self):

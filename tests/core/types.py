@@ -1,5 +1,5 @@
 import unittest
-from ecell4_base import *
+from ecell4_base.core import *
 import math
 
 class Real3Test(unittest.TestCase):
@@ -81,7 +81,7 @@ class Integer3Test(unittest.TestCase):
 
 class QuantityTest(unittest.TestCase):
     def test_quantity_real(self):
-        q = Quantity_Real()
+        q = Quantity_Real(0.0)
         self.assertEqual(q.magnitude, 0.0)
         self.assertEqual(q.units, "")
 
@@ -95,7 +95,7 @@ class QuantityTest(unittest.TestCase):
         self.assertEqual(q.units, "m/s")
 
     def test_quantity_integer(self):
-        q = Quantity_Integer()
+        q = Quantity_Integer(0)
         self.assertEqual(q.magnitude, 0)
         self.assertEqual(q.units, "")
 

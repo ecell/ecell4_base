@@ -1,5 +1,5 @@
 import unittest
-from ecell4_base import *
+from ecell4_base.core import *
 
 class NetowrkModelTest(unittest.TestCase):
 
