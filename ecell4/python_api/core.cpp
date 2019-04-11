@@ -161,15 +161,17 @@ void set_attribute_as(Species& species, const std::pair<std::string, Species::at
 
 template<typename T>
 static inline
-void define_quantity(py::module& m, const std::string& name)
+py::class_<Quantity<T>> define_quantity(py::module& m, const std::string& name)
 {
     using Q = Quantity<T>;
-    py::class_<Q>(m, name.c_str())
+    py::class_<Q> quantity(m, name.c_str());
+    quantity
         .def(py::init<const T&, const typename Q::units_type&>(),
                 py::arg("magnitude"),
                 py::arg("units") = "")
         .def_readwrite("magnitude", &Q::magnitude)
         .def_readwrite("units", &Q::units);
+    return quantity;
 }
 
 static inline
@@ -1066,8 +1068,9 @@ void setup_module(py::module& m)
 {
     define_real3(m);
     define_integer3(m);
-    define_quantity<Real>(m, "Quantity_Real");
+    const auto quantity_real = define_quantity<Real>(m, "Quantity_Real");
     define_quantity<Integer>(m, "Quantity_Integer");
+    m.attr("Quantity") = quantity_real;
     define_species(m);
     define_particle(m);
     define_rng(m);
