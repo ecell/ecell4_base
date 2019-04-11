@@ -67,6 +67,12 @@ namespace python_api
             return name_;
         }
 
+        ReactionRuleDescriptor* clone() const
+        {
+            return new ReactionRuleDescriptorPyfunc(callback_, name_,
+                    reactant_coefficients(), product_coefficients());
+        }
+
     private:
         callback_t callback_;
         std::string name_;
