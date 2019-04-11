@@ -5,6 +5,8 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/optional.hpp>
+
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
@@ -126,13 +128,13 @@ protected:
             inc(sp, -1);
         }
 
-        ReactionRule draw()
+        boost::optional<ReactionRule> draw()
         {
             const std::pair<ReactionRule::reactant_container_type, Integer>
                 retval(__draw());
             if (retval.second == 0)
             {
-                return ReactionRule();
+                return boost::none;
             }
 
             const std::vector<ReactionRule> reactions(generate(retval.first));
@@ -142,7 +144,7 @@ protected:
 
             if (reactions.size() == 0)
             {
-                return ReactionRule();
+                return boost::none;
             }
             else if (retval.second == 1)
             {
@@ -156,7 +158,7 @@ protected:
                         rng()->uniform_int(0, retval.second - 1)));
                 if (rnd2 >= reactions.size())
                 {
-                    return ReactionRule();
+                    return boost::none;
                 }
                 return reactions[rnd2];
             }
@@ -222,7 +224,6 @@ protected:
             return rr_.k() * sim_->world()->volume();
         }
     };
-
 
     class FirstOrderReactionRuleEvent
         : public ReactionRuleEvent
@@ -422,6 +423,133 @@ protected:
         Integer num_tot1_, num_tot2_, num_tot12_;
     };
 
+    class DescriptorReactionRuleEvent
+        : public ReactionRuleEvent
+    {
+    public:
+
+        typedef ReactionRuleEvent base_type;
+        typedef ReactionRuleDescriptor::state_container_type state_container_type;
+
+        DescriptorReactionRuleEvent()
+            : base_type(), num_reactants_(), num_products_()
+        {
+            ;
+        }
+
+        DescriptorReactionRuleEvent(GillespieSimulator* sim, const ReactionRule& rr)
+            : base_type(sim, rr), num_reactants_(), num_products_()
+        {
+            ;
+        }
+
+        void inc(const Species& sp, const Integer val = +1)
+        {
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                const Integer coef(get_coef(reactants[i], sp));
+                if (coef > 0)
+                {
+                    num_reactants_[i] += coef * val;
+                }
+            }
+
+            const ReactionRule::product_container_type& products(rr_.products());
+            for (std::size_t i = 0; i < products.size(); ++i)
+            {
+                const Integer coef(get_coef(products[i], sp));
+                if (coef > 0)
+                {
+                    num_products_[i] += coef * val;
+                }
+            }
+        }
+
+        void initialize()
+        {
+            const std::vector<Species>& species(world().list_species());
+
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            std::fill(num_reactants_.begin(), num_reactants_.end(), 0);
+            num_reactants_.resize(reactants.size(), 0);
+            const ReactionRule::product_container_type& products(rr_.products());
+            std::fill(num_products_.begin(), num_products_.end(), 0);
+            num_products_.resize(products.size(), 0);
+            for (std::vector<Species>::const_iterator it(species.begin());
+                it != species.end(); ++it)
+            {
+                const Species& sp(*it);
+
+                for (std::size_t i = 0; i < reactants.size(); ++i)
+                {
+                    const Integer coef(get_coef(reactants[i], sp));
+                    if (coef > 0)
+                    {
+                        num_reactants_[i] += coef * world().num_molecules_exact(sp);
+                    }
+                }
+
+                for (std::size_t i = 0; i < products.size(); ++i)
+                {
+                    const Integer coef(get_coef(products[i], sp));
+                    if (coef > 0)
+                    {
+                        num_products_[i] += coef * world().num_molecules_exact(sp);
+                    }
+                }
+            }
+        }
+
+        std::pair<ReactionRule::reactant_container_type, Integer> __draw()
+        {
+            const std::vector<Species>& species(world().list_species());
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+
+            std::pair<ReactionRule::reactant_container_type, Integer> ret;
+            ret.second = 1;
+
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                assert(num_reactants_[i] > 0);
+                const Real rnd(rng()->uniform(0.0, num_reactants_[i]));
+                Integer num_tot(0);
+                for (std::vector<Species>::const_iterator it(species.begin());
+                    it != species.end(); ++it)
+                {
+                    const Species& sp(*it);
+                    const Integer coef(get_coef(reactants[i], sp));
+                    if (coef > 0)
+                    {
+                        num_tot += coef * world().num_molecules_exact(sp);
+                        if (num_tot >= rnd)
+                        {
+                            ret.first.push_back(sp);
+                            ret.second *= coef;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            assert(ret.first.size() == reactants.size());
+            return ret;
+        }
+
+        const Real propensity() const
+        {
+            assert(rr_.has_descriptor());
+            const boost::shared_ptr<ReactionRuleDescriptor>& ratelaw = rr_.get_descriptor();
+            assert(ratelaw->is_available());
+            const Real ret = ratelaw->propensity(num_reactants_, num_products_, world().volume(), world().t());
+            return ret;
+        }
+
+    protected:
+
+        state_container_type num_reactants_, num_products_;
+    };
+
 public:
 
     GillespieSimulator(
@@ -472,6 +600,7 @@ protected:
     void draw_next_reaction(void);
     void increment_molecules(const Species& sp);
     void decrement_molecules(const Species& sp);
+    void check_model(void);
 
 protected:
 

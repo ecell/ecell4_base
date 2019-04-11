@@ -63,6 +63,7 @@ public:
         virtual void add_molecules(const Integer num, const coordinate_type& i) = 0;
         virtual void remove_molecules(const Integer num, const coordinate_type& i) = 0;
         virtual std::vector<coordinate_type> list_coordinates() const = 0;
+        virtual const std::vector<Integer> get_data() const = 0;
 
     protected:
 
@@ -239,6 +240,8 @@ public:
     virtual const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const = 0;
     virtual const boost::shared_ptr<PoolBase> reserve_pool(const Species& sp, const Real D, const Species::serial_type& loc) = 0;
 
+    virtual std::vector<Integer> get_data(const Species& sp) const = 0;
+
 protected:
 
     double t_;
@@ -309,6 +312,11 @@ public:
                 }
             }
             return coords;
+        }
+
+        const std::vector<Integer> get_data() const
+        {
+            return data_;
         }
 
     protected:
@@ -558,6 +566,11 @@ public:
     const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const;
     const boost::shared_ptr<PoolBase> reserve_pool(
         const Species& sp, const Real D, const Species::serial_type& loc);
+
+    virtual std::vector<Integer> get_data(const Species& sp) const
+    {
+        return get_pool(sp)->get_data();
+    }
 
 protected:
 

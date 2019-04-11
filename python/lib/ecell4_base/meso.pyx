@@ -3,7 +3,7 @@ import numbers
 
 from cython cimport address
 from cython.operator cimport dereference as deref, preincrement as inc
-from ecell4.core cimport *
+from ecell4_base.core cimport *
 
 from deprecated import deprecated
 
@@ -719,6 +719,24 @@ cdef class MesoscopicWorld:
                      <Cpp_Particle*>(address(deref(it).second)))))
             inc(it)
         return retval
+
+    def get_data(self, Species sp):
+        """get_data(sp) -> [Integer]
+
+        Return the numbers of particle in subvolumes.
+
+        Parameters
+        ----------
+        sp : Species
+            The species of particles to list up.
+
+        Returns
+        -------
+        list:
+            A list of the number of particles (of the given species)
+
+        """
+        return self.thisptr.get().get_data(deref(sp.thisptr))
 
     def save(self, filename):
         """save(filename)

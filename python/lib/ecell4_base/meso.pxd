@@ -60,6 +60,7 @@ cdef extern from "ecell4/meso/MesoscopicWorld.hpp" namespace "ecell4::meso":
         vector[Cpp_Species] list_species()
         vector[Integer] list_coordinates(Cpp_Species&)
         vector[Integer] list_coordinates_exact(Cpp_Species&)
+        vector[Integer] get_data(Cpp_Species& sp) except +
         void add_molecules(Cpp_Species &sp, Integer &num, Integer)
         void remove_molecules(Cpp_Species &sp, Integer &num, Integer)
         void add_molecules(Cpp_Species &sp, Integer &num, Cpp_Integer3)

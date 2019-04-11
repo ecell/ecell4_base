@@ -209,10 +209,61 @@ MesoscopicSimulator::create_diffusion_proxy(const Species& sp)
     return proxy;
 }
 
+void MesoscopicSimulator::check_model(void)
+{
+    const Model::reaction_rule_container_type&
+        reaction_rules(model_->reaction_rules());
+
+    for (Model::reaction_rule_container_type::const_iterator
+        i(reaction_rules.begin()); i != reaction_rules.end(); ++i)
+    {
+        const ReactionRule& rr(*i);
+
+        if (rr.has_descriptor())
+        {
+            const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
+
+            if (!desc->is_available())
+            {
+                throw NotSupported(
+                    "The given reaction rule descriptor is not available.");
+            }
+            else if ((rr.reactants().size() != desc->reactant_coefficients().size())
+                    || (rr.products().size() != desc->product_coefficients().size()))
+            {
+                throw NotSupported(
+                    "Mismatch between the number of stoichiometry coefficients and of reactants.");
+            }
+            else
+            {
+                for (ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                    it(desc->reactant_coefficients().begin()); it != desc->reactant_coefficients().end();
+                    it++)
+                {
+                    if ((*it) < 0)
+                    {
+                        throw NotSupported("A stoichiometric coefficient must be non-negative.");
+                    }
+                    else if (abs((*it) - round(*it)) > 1e-10 * (*it))
+                    {
+                        throw NotSupported("A stoichiometric coefficient must be an integer.");
+                    }
+                }
+            }
+        }
+        else if (rr.reactants().size() > 2)
+        {
+            throw NotSupported("No more than 2 reactants are supported.");
+        }
+    }
+}
+
 void MesoscopicSimulator::initialize(void)
 {
     const Model::reaction_rule_container_type&
         reaction_rules(model_->reaction_rules());
+
+    check_model();
 
     proxies_.clear();
     for (Model::reaction_rule_container_type::const_iterator
@@ -220,7 +271,11 @@ void MesoscopicSimulator::initialize(void)
     {
         const ReactionRule& rr(*i);
 
-        if (rr.reactants().size() == 0)
+        if (rr.has_descriptor())
+        {
+            proxies_.push_back(new DescriptorReactionRuleProxy(this, rr));
+        }
+        else if (rr.reactants().size() == 0)
         {
             proxies_.push_back(new ZerothOrderReactionRuleProxy(this, rr));
         }
@@ -245,7 +300,7 @@ void MesoscopicSimulator::initialize(void)
         }
         else
         {
-            throw NotSupported("not supported yet.");
+            throw IllegalState("Never get here");
         }
 
         proxies_.back().initialize();

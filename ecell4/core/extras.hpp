@@ -90,11 +90,11 @@ get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>&
 struct VersionInformation
 {
     std::string header;
-    int majorno, minorno, patchno;
+    int majorno, minorno, patchno, devno;
 
     VersionInformation(
-        const std::string& header, const int majorno, const int minorno, const int patchno)
-        : header(header), majorno(majorno), minorno(minorno), patchno(patchno)
+        const std::string& header, const int majorno, const int minorno, const int patchno, const int devno)
+        : header(header), majorno(majorno), minorno(minorno), patchno(patchno), devno(devno)
     {
         ;
     }

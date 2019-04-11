@@ -53,6 +53,7 @@ before_install:
     curl -LO https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2;
     tar xf hdf5-1.10.4.tar.bz2;
     cd hdf5-1.10.4;
+<<<<<<< HEAD
     ./configure --enable-cxx --prefix=/opt/hdf5 && make && sudo make install;
     export PATH=/opt/hdf5/bin:${PATH};
     export LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH};
@@ -72,6 +73,7 @@ script:
 - python3 setup.py build
 - python3 setup.py install
 - python3 -c 'import ecell4'
+
 
 cache: false
 notifications:

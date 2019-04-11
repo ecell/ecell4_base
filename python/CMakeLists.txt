@@ -42,8 +42,8 @@ if (PYTHONINTERP_FOUND)
 
     set(SETUP_PY_IN ${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in)
     set(SETUP_PY    ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
-    set(INIT_PY_IN  ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py.in)
-    set(INIT_PY     ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4/__init__.py)
+    set(INIT_PY_IN  ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4_base/__init__.py.in)
+    set(INIT_PY     ${CMAKE_CURRENT_SOURCE_DIR}/lib/ecell4_base/__init__.py)
     set(TIMESTAMP   ${CMAKE_CURRENT_BINARY_DIR}/build/timestamp)
 
     configure_file(${SETUP_PY_IN} ${SETUP_PY})
