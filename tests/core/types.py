@@ -20,7 +20,7 @@ class Real3Test(unittest.TestCase):
         self.assertEqual(x + y, Real3(8, 7, 12))
         self.assertEqual(x - y, Real3(6, 2, 6))
         self.assertEqual(x * 2, Real3(14, 8, 18))
-        # self.assertEqual(2.0 * x, Real3(14, 8, 18))
+        self.assertEqual(2 * x, Real3(14, 8, 18))
         self.assertEqual(x / 3, Real3(3.5, 2, 4.5))
 
     def test_abs(self):
