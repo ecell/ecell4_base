@@ -99,6 +99,7 @@ void define_egfrd_simulator(py::module& m)
                 py::arg("bd_dt_factor") = 1e-5,
                 py::arg("dissociation_retry_moves") = 1,
                 py::arg("user_max_shell_size") = std::numeric_limits<length_type>::infinity())
+        .def("last_reactions", &EGFRDSimulator::last_reactions)
         .def("set_t", &EGFRDSimulator::set_t)
         .def("set_paranoiac", &EGFRDSimulator::set_paranoiac);
     define_simulator_functions(simulator);
