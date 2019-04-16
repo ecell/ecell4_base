@@ -1453,10 +1453,9 @@ class SGFRDSimulator :
 
 // -----------------------------------------------------------------------------
 
-    // XXX: second value of element of result_type is not a mere distance.
-    //      - in Multi case, it is just a distance.
-    //      - in bursted Single case, it become a distance between centers minus
-    //        min_circular_shell of the particle
+    // XXX: Note that the second element, distance to the domain, is
+    //      - a distance to the Multi domains that ware not bursted or
+    //      - a distance to the min-shell of particles that were bursted.
     std::vector<std::pair<DomainID, Real> >
     burst_and_shrink_non_multis(
             const ParticleID& pid, const Particle& p, const FaceID& fid,
@@ -1486,14 +1485,22 @@ class SGFRDSimulator :
                           burst_event(std::make_pair(did, ev), tm))
             {
                 SGFRD_TRACE(tracer_.write(
-                    "add closely-fitted domain to bursted particle %1%", pid_))
+                    "add tight domain to bursted particle %1%", pid_))
                 did_ = add_event(create_tight_domain(
                     create_tight_shell(pid_, p_, fid_), pid_, p_));
-                results.push_back(std::make_pair(did_,
-                    ecell4::polygon::distance(this->polygon(),
+
+                // distance between the nearest one
+                const auto dist = ecell4::polygon::distance(this->polygon(),
                         std::make_pair(p.position(), fid),
-                        std::make_pair(p_.position(), fid_)) -
-                    (calc_min_single_circular_shell_radius(p_) * 1.1)));
+                        std::make_pair(p_.position(), fid_));
+
+                // min shell radius of the nearest one
+                const auto min_shell_rad =
+                    calc_min_single_circular_shell_radius(p_) *
+                    single_circular_shell_factor;
+
+                // calculate distance as if the nearest one has a minimum shell
+                results.emplace_back(did_, dist - min_shell_rad);
             }
             remove_event(did);
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))
@@ -1540,10 +1547,15 @@ class SGFRDSimulator :
 
                 did_ = add_event(create_tight_domain(
                     create_tight_shell(pid_, p_, fid_), pid_, p_));
-                results.push_back(std::make_pair(did_,
-                    ecell4::polygon::distance(this->polygon(),
-                        vpos, std::make_pair(p_.position(), fid_)) -
-                    (calc_min_single_circular_shell_radius(p_) * 1.1)));
+
+                const auto dist = ecell4::polygon::distance(this->polygon(),
+                    vpos, std::make_pair(p_.position(), fid_));
+
+                const auto min_shell_rad =
+                    calc_min_single_circular_shell_radius(p_) *
+                    single_circular_shell_factor;
+
+                results.emplace_back(did_, dist - min_shell_rad);
             }
             remove_event(did);
             SGFRD_TRACE(tracer_.write("domain %1% is bursted and shrinked", did))

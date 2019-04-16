@@ -64,7 +64,8 @@ SGFRDSimulator::propagate_single_circular(
     assert(// check particle is still inside of the shell after this propagation
         p.radius() + ecell4::polygon::distance(this->polygon(),
                 state.first, std::make_pair(sh.position(), sh.structure_id()))
-        <= sh.size() * (1.0+1e-8) /* <- tolerance */);
+        <= sh.size() * (1.0 + minimum_separation_factor)
+        );
 
     return boost::make_tuple(pid, p, state.first.second);
 }
@@ -115,7 +116,8 @@ SGFRDSimulator::propagate_single_conical(
 
     assert(// check particle is still inside of the shell after this propagation
         length(polygon().periodic_transpose(p.position(), sh.shape().apex()) -
-               sh.shape().apex()) + p.radius() <= sh.size() * (1.0+1e-8)
+               sh.shape().apex()) + p.radius()
+        <= sh.size() * (1.0 + minimum_separation_factor)
     );
 
     return boost::make_tuple(pid, p, state.second);
@@ -246,7 +248,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 
     bool rejected = false;
-    Real separation_factor = r12 * 1e-7;
+    Real separation_factor = r12 * minimum_separation_factor;
     std::size_t separation_count = 10;
     while(separation_count != 0)
     {
@@ -381,7 +383,7 @@ SGFRDSimulator::escape_single_circular(
     assert(// check particle is still inside of the shell after this propagation
         p.radius() + ecell4::polygon::distance(this->polygon(),
                 state.first, std::make_pair(sh.position(), sh.structure_id()))
-        <= sh.size() * (1.0+1e-8) /* <- tolerance */);
+        <= sh.size() * (1.0+minimum_separation_factor));
 
     return boost::make_tuple(pid, p, state.first.second);
 }
@@ -419,7 +421,8 @@ SGFRDSimulator::escape_single_conical(
 
     assert(// check particle is still inside of the shell after this propagation
         length(polygon().periodic_transpose(p.position(), sh.shape().apex()) -
-               sh.shape().apex()) + p.radius() <= sh.size() * (1.0+1e-8)
+               sh.shape().apex()) + p.radius()
+        <= sh.size() * (1.0 + minimum_separation_factor)
     );
 
     return boost::make_tuple(pid, p, state.second);
@@ -1427,7 +1430,7 @@ bool SGFRDSimulator::diagnosis() const
 
                 const Real dist = boost::apply_visitor(dist_calc, found_s->second) +
                                   found_p->second.radius();
-                if(dist > 1e-8)
+                if(dist > minimum_separation_factor)
                 {
                     result = false;
                     std::cerr << "ERROR: particle is not inside of the Single (ID="
