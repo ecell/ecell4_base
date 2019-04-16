@@ -5,6 +5,7 @@
 #include <functional>
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/comparators.hpp>
+#include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/Triangle.hpp>
 #include <ecell4/core/geometry.hpp>
@@ -144,12 +145,52 @@ class Polygon : public Shape
 
   public:
 
-    Polygon(const Real3& edge_length)
-        : total_area_(0.0), edge_length_(edge_length)
-    {}
     Polygon(const Real3& edge_length, const std::vector<Triangle>& ts)
         : total_area_(0.0), edge_length_(edge_length)
     {
+        this->assign(ts);
+    }
+
+    // generate default polygon (XY-plane)
+    Polygon(const Real3& edge_length,
+            const Integer3& matrix_size = Integer3(3, 3, 3))
+        : total_area_(0.0), edge_length_(edge_length)
+    {
+        // default polygon: XY-plane at the middle of the Z axis.
+
+        const std::size_t x_size = matrix_size[0];
+        const std::size_t y_size = matrix_size[1];
+
+        assert(x_size != 0);
+        assert(y_size != 0);
+
+        const Real dx = edge_length[0] / x_size;
+        const Real dy = edge_length[1] / y_size;
+        const Real z  = edge_length[2] / 2.0;    // at the middle of Z-axis
+
+        std::vector<Triangle> ts;
+        ts.reserve(x_size * y_size * 2);
+
+        for(std::size_t yi = 0; yi < y_size; ++yi)
+        {
+            for(std::size_t xi = 0; xi < x_size; ++xi)
+            {
+                //   4___ 3
+                // y  | /|  upper left  = {1, 3, 4}
+                // ^  |/_|  lower right = {1, 2, 3}
+                // | 1    2
+                // |
+                // --> x
+
+                const Real3 v1(dx *  xi   , dy *  yi   , z);
+                const Real3 v2(dx * (xi+1), dy *  yi   , z);
+                const Real3 v3(dx * (xi+1), dy * (yi+1), z);
+                const Real3 v4(dx *  xi   , dy * (yi+1), z);
+
+                ts.push_back(Triangle(v1, v3, v4));
+                ts.push_back(Triangle(v1, v2, v3));
+            }
+        }
         this->assign(ts);
     }
     ~Polygon(){}
