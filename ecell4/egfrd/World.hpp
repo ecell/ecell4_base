@@ -441,7 +441,7 @@ public:
             };
         attr_sizes.write(sizes_type, data);
 
-        ecell4::extras::save_version_information(fout.get(), std::string("ecell4-egfrd-") + std::string(ECELL4_VERSION));
+        ecell4::extras::save_version_information(fout.get(), std::string("ecell4-egfrd-") + std::string(VERSION_INFO));
 #else
         throw ecell4::NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
