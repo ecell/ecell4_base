@@ -112,7 +112,6 @@ void define_spatiocyte_world(py::module& m)
         .def("remove_molecules", &SpatiocyteWorld::remove_molecules)
         .def("voxel_volume", &SpatiocyteWorld::voxel_volume)
         .def("get_volume", &SpatiocyteWorld::get_volume)
-        .def("get_voxel", &SpatiocyteWorld::find_voxel)
         .def("get_voxel_at", &SpatiocyteWorld::get_voxel_at)
         .def("set_value", &SpatiocyteWorld::set_value)
         .def("new_voxel", &SpatiocyteWorld::new_voxel)
@@ -141,6 +140,9 @@ void define_voxel(py::module& m)
 {
     py::class_<Voxel>(m, "Voxel")
         .def("position", &Voxel::position)
+#ifndef NDEBUG
+        .def_readonly("coordinate", &Voxel::coordinate)
+#endif
         .def("list_neighbors",
             [](const Voxel& self)
             {

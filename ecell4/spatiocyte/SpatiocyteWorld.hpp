@@ -453,20 +453,6 @@ public:
         return list;
     }
 
-    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const
-    {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if (boost::optional<ParticleVoxel> voxel = (*itr)->find_voxel(pid))
-            {
-                return voxel;
-            }
-        }
-
-        return boost::none;
-    }
-
     std::pair<ParticleID, Species> get_voxel_at(const Voxel& voxel) const
     {
         std::pair<ParticleID, ParticleVoxel> id_voxel_pair(
