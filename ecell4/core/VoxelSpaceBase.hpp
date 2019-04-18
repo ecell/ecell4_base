@@ -250,16 +250,27 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        if (boost::optional<ParticleVoxel> v = find_voxel(pid))
+        for (const auto &key_value : molecule_pools_)
         {
-            ParticleVoxel voxel(v.get());
-            return std::make_pair(pid, Particle(
-                voxel.species, coordinate2position(voxel.coordinate), voxel.radius, voxel.D));
+            const auto &species(key_value.first);
+            const auto &pool(key_value.second);
+
+            const auto j(pool->find(pid));
+            if (j != pool->end())
+            {
+                return std::make_pair(
+                    pid,
+                    Particle(
+                        species,
+                        coordinate2position(j->coordinate),
+                        pool->radius(),
+                        pool->D()
+                    )
+                );
+            }
         }
-        else
-        {
-            throw NotFound("");
-        }
+
+        throw NotFound("");
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
@@ -310,7 +321,6 @@ public:
     virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
     virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const;
     virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);

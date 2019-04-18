@@ -65,12 +65,6 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
         BOOST_CHECK_EQUAL(voxel.first, id);
         BOOST_CHECK_EQUAL(voxel.second.species, sp);
     }
-
-    {
-        boost::optional<ParticleVoxel> voxel(space.find_voxel(id));
-        BOOST_ASSERT(voxel);
-        BOOST_CHECK_EQUAL(voxel->species, sp);
-    }
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_species)
