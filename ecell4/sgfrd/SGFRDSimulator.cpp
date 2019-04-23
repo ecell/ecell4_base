@@ -1,4 +1,5 @@
 #include "SGFRDSimulator.hpp"
+#include <boost/math/constants/constants.hpp>
 
 namespace ecell4
 {
@@ -899,7 +900,7 @@ SGFRDSimulator::form_single_conical_event(
 
     const VertexID& vid  = intrusive_vertices.front().first;
 
-    if(this->polygon().apex_angle_at(vid) > 2 * boost::math::constant::pi<Real>())
+    if(this->polygon().apex_angle_at(vid) > boost::math::constants::two_pi<Real>())
     {
         // the apex locates around a saddle point or something like that.
         // use Multi as a callback.
