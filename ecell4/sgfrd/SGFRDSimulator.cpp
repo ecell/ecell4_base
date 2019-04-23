@@ -898,9 +898,16 @@ SGFRDSimulator::form_single_conical_event(
             get_intrusive_vertices(pos, std::numeric_limits<Real>::infinity()));
 
     const VertexID& vid  = intrusive_vertices.front().first;
+
+    if(this->polygon().apex_angle_at(vid) > 2 * boost::math::constant::pi<Real>())
+    {
+        // the apex locates around a saddle point or something like that.
+        // use Multi as a callback.
+        return err(std::vector<std::pair<DomainID, Real> >(0));
+    }
+
     const Real dist_to_v = intrusive_vertices.front().second;
     SGFRD_TRACE(tracer_.write("vertex id = %1%, distance = %2%", vid, dist_to_v));
-
 
     const Real min_cone_size = (p.radius() + dist_to_v) *
                                single_conical_surface_shell_factor;
