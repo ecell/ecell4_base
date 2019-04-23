@@ -4,9 +4,9 @@ namespace ecell4
 {
 namespace sgfrd
 {
-const Real SGFRDSimulator::single_circular_shell_factor        = 1.1;
+const Real SGFRDSimulator::single_circular_shell_factor        = 1.2;
 const Real SGFRDSimulator::single_circular_shell_mergin        = 1.0 - 1e-7;
-const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.1;
+const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.2;
 const Real SGFRDSimulator::single_conical_surface_shell_mergin = 1.0 - 1e-7;
 const Real SGFRDSimulator::minimum_separation_factor           = 1e-7;
 
