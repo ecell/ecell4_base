@@ -120,7 +120,7 @@ class MultiContainer
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
-            BOOST_AUTO(fid, registrator_.structure_on(pid));
+            auto fid = registrator_.structure_on(pid);
             const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
             if(d <= (radius + p.radius()))
             {
@@ -142,7 +142,7 @@ class MultiContainer
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
             if(pid == ignore){continue;}
-            BOOST_AUTO(fid, registrator_.structure_on(pid));
+            auto fid = registrator_.structure_on(pid);
             const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
             if(d <= (radius + p.radius()))
             {
@@ -164,7 +164,7 @@ class MultiContainer
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
             if(pid == ignore1 || pid == ignore2){continue;}
-            BOOST_AUTO(fid, registrator_.structure_on(pid));
+            auto fid = registrator_.structure_on(pid);
             const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
             if(d <= (radius + p.radius()))
             {
@@ -185,7 +185,7 @@ class MultiContainer
         Particle p; ParticleID pid;
         BOOST_FOREACH(boost::tie(pid, p), pcon_)
         {
-            BOOST_AUTO(fid, registrator_.structure_on(pid));
+            auto fid = registrator_.structure_on(pid);
             const Real dist =
                 this->world_.distance(std::make_pair(p.position(), fid), pos);
             if(dist <= radius + p.radius())
@@ -204,7 +204,7 @@ class MultiContainer
         {
             if(pid == ignore){continue;}
 
-            BOOST_AUTO(fid, registrator_.structure_on(pid));
+            auto fid = registrator_.structure_on(pid);
             const Real dist =
                 this->world_.distance(std::make_pair(p.position(), fid), pos);
             if(dist <= radius + p.radius())
@@ -224,7 +224,7 @@ class MultiContainer
         {
             if(pid == ignore1 || pid == ignore2){continue;}
 
-            BOOST_AUTO(fid, registrator_.structure_on(pid));
+            auto fid = registrator_.structure_on(pid);
             const Real dist =
                 this->world_.distance(std::make_pair(p.position(), fid), pos);
             if(dist <= radius + p.radius())

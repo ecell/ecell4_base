@@ -162,7 +162,7 @@ class BDSimulator :
     {
         SGFRD_SCOPE(us, diagnosis, tracer_);
         bool result = true;
-        BOOST_AUTO(particles, this->world_->list_particles());
+        auto particles = this->world_->list_particles();
 
         ParticleID pid; Particle p;
         BOOST_FOREACH(boost::tie(pid, p), particles)
