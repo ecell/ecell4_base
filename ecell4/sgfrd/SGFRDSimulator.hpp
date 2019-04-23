@@ -593,9 +593,9 @@ class SGFRDSimulator :
                 const std::size_t ridx = *reactant_index;
                 SGFRD_TRACE(tracer_.write("reactant_index = %1%", ridx));
 
-                BOOST_AUTO(results, this->attempt_reaction_single(
+                auto results = this->attempt_reaction_single(
                            this->get_shell(sids[ridx]), dids[ridx], doms[ridx],
-                           pids[ridx], ps[ridx], fids[ridx]));
+                           pids[ridx], ps[ridx], fids[ridx]);
 
                 if(results.size() != 1 || boost::get<0>(results.front()) != pids[ridx])
                 {
@@ -1061,8 +1061,8 @@ class SGFRDSimulator :
         const FaceID fid1 = this->get_face_id(pid1);
         const FaceID fid2 = this->get_face_id(pid2);
 
-        BOOST_AUTO(const& rules, this->model_->query_reaction_rules(
-                    p1.species(), p2.species()));
+        const auto& rules = this->model_->query_reaction_rules(
+                    p1.species(), p2.species());
         assert(!rules.empty());
 
         const Real k_tot = this->calc_k_tot(rules);
@@ -1426,7 +1426,7 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(ns, burst_multi, tracer_);
 
-        BOOST_AUTO(did, get_domain_id(dom));
+        auto did = get_domain_id(dom);
         volume_clearer vc(did, dom, *this, this->imm_sh_vis_applier);
         dom.step(vc, tm - dom.begin_time());
 
@@ -1471,7 +1471,7 @@ class SGFRDSimulator :
         {
             SGFRD_SCOPE(ns, loop_for_intruders, tracer_)
 
-            BOOST_AUTO(const& ev, get_event(did));
+            const auto& ev = get_event(did);
             if(ev->which_domain() == event_type::multi_domain)
             {
                 SGFRD_TRACE(tracer_.write("domain %1% is multi", did))
@@ -1529,7 +1529,7 @@ class SGFRDSimulator :
         {
             SGFRD_SCOPE(ns, loop_for_intruders, tracer_)
 
-            BOOST_AUTO(const& ev, get_event(did));
+            const auto& ev = get_event(did);
             if(ev->which_domain() == event_type::multi_domain)
             {
                 SGFRD_TRACE(tracer_.write("domain %1% is multi", did))
@@ -1584,7 +1584,7 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, merge_multi, tracer_)
 
-        BOOST_AUTO(const id_of_from, get_domain_id(from));
+        const auto id_of_from = get_domain_id(from);
         remove_event(id_of_from);
         SGFRD_TRACE(tracer_.write("remove domain from(%1%)", id_of_from))
 
@@ -1708,7 +1708,7 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("the domain has dt = %1%, begin_time = %2%",
                     dom.dt(), dom.begin_time()))
 
-        BOOST_AUTO(ev, boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom));
+        auto ev = boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom);
         const DomainID did = scheduler_.add(ev);
 
         SGFRD_TRACE(tracer_.write("event_time = %1%, domain ID = %2%", ev->time(), did))

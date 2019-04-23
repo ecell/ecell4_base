@@ -143,7 +143,7 @@ SGFRDSimulator::attempt_reaction_single(
 {
     SGFRD_SCOPE(us, attempt_reaction_single, tracer_)
 
-    BOOST_AUTO(const rules, this->model_->query_reaction_rules(p.species()));
+    const auto rules = this->model_->query_reaction_rules(p.species());
     if(rules.empty())
     {
         SGFRD_TRACE(tracer_.write("rule is empty. return particle kept intact"))
@@ -477,8 +477,7 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
             SGFRD_SCOPE(us, single_reaction, tracer_);
             const ParticleID old_pid = dom.particle_id();
 
-            BOOST_AUTO(results,
-                       this->reaction_single(this->get_shell(sid), dom, did));
+            auto results = this->reaction_single(this->get_shell(sid), dom, did);
             this->remove_shell(sid);
 
             if(results.size() != 1 || boost::get<0>(results.front()) != old_pid)
@@ -520,8 +519,9 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
     // So it has no ID.
     SGFRD_SCOPE(us, burst_and_shrink_overlaps, tracer_);
     const Real tm = this->time();
-    BOOST_AUTO(intruders, this->get_intrusive_domains(
-               std::make_pair(p.position(), fid), p.radius()));
+    auto intruders = this->get_intrusive_domains(
+            std::make_pair(p.position(), fid), p.radius());
+
     SGFRD_TRACE(tracer_.write("there are %1% intruders", intruders.size()))
 
     bool no_overlap = true;
@@ -735,7 +735,7 @@ DomainID SGFRDSimulator::form_multi(
 
     const domain_id_setter didset(formed_multi_id);
 
-    BOOST_AUTO(minsh, create_minimum_single_shell(pid, p, fid));
+    auto minsh = create_minimum_single_shell(pid, p, fid);
     const Real new_shell_radius = minsh.second.size();
     formed_multi.add_particle(pid);
     formed_multi.add_shell(minsh.first);
@@ -751,7 +751,7 @@ DomainID SGFRDSimulator::form_multi(
 
         if(dist < new_shell_radius) // add the domain to new multi
         {
-            BOOST_AUTO(ev, get_event(did));
+            auto ev = get_event(did);
             if(ev->which_domain() == event_type::multi_domain)
             {
                 SGFRD_TRACE(tracer_.write("domain (%1%) is multi. merging it...", did))
@@ -814,11 +814,12 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
     BOOST_FOREACH(ShellID sid, multi_to_join.shell_ids())
     {
         // assuming multi has only a circular_shell...
-        BOOST_AUTO(const& sh, boost::get<circular_shell_type>(get_shell(sid)));
-        BOOST_AUTO(sh_pos, std::make_pair(sh.position(), sh.structure_id()));
-        BOOST_AUTO(const intruder, get_intrusive_domains(
-                   std::make_pair(sh.position(), sh.structure_id()), sh.size()));
-        SGFRD_TRACE(tracer_.write("intrusive domains on shell(%1%) are collected(size = %2%)",
+        const auto&      sh = boost::get<circular_shell_type>(get_shell(sid));
+        auto         sh_pos = std::make_pair(sh.position(), sh.structure_id());
+        const auto intruder = get_intrusive_domains(
+                   std::make_pair(sh.position(), sh.structure_id()), sh.size());
+        SGFRD_TRACE(tracer_.write(
+                    "intrusive domains on shell(%1%) are collected(size = %2%)",
                     sid, intruder.size()));
 
         DomainID did;
@@ -827,7 +828,7 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
             if(did == multi_to_join_id){continue;}
 
             SGFRD_TRACE(tracer_.write("bursting domain(%1%)", did));
-            BOOST_AUTO(ev, get_event(did));
+            auto ev = get_event(did);
 
             if(ev->which_domain() == event_type::multi_domain)
             {
@@ -852,7 +853,7 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                         SGFRD_TRACE(tracer_.write("add the particle to multi"))
 
                         // assign new shell to shell_container and return its ID.
-                        BOOST_AUTO(minsh, create_minimum_single_shell(pid, p, fid));
+                        auto minsh = create_minimum_single_shell(pid, p, fid);
 
                         multi_to_join.add_particle(pid);
                         multi_to_join.add_shell(minsh.first);
@@ -1259,8 +1260,8 @@ bool SGFRDSimulator::diagnosis() const
     // 2. check overlap between shells
     // 3. check all the particles are inside of its shell
 
-    BOOST_AUTO(particles, this->world_->list_particles());
-    BOOST_AUTO(shells,    this->shell_container_.list_shells());
+    auto particles = this->world_->list_particles();
+    auto shells    = this->shell_container_.list_shells();
 
     // 1.
     ParticleID pid; Particle p;
@@ -1395,9 +1396,9 @@ bool SGFRDSimulator::diagnosis() const
                 if(pid2evid.count(_pid)  == 0){pid2evid[_pid]  = evid;}
                 if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
 
-                BOOST_AUTO(found_p, std::find_if(particles.begin(), particles.end(),
+                auto found_p = std::find_if(particles.begin(), particles.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                        ParticleID, Particle>(_pid)));
+                        ParticleID, Particle>(_pid));
                 if(found_p == particles.end())
                 {
                     result = false;
@@ -1412,9 +1413,9 @@ bool SGFRDSimulator::diagnosis() const
                     }
                     break;
                 }
-                BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                auto found_s = std::find_if(shells.begin(), shells.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                        ShellID, shell_type>(_shid)));
+                        ShellID, shell_type>(_shid));
                 if(found_s == shells.end())
                 {
                     result = false;
@@ -1469,9 +1470,9 @@ bool SGFRDSimulator::diagnosis() const
                 if(pid2evid.count(_pid1) == 0){pid2evid[_pid1] = evid;}
                 if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
 
-                BOOST_AUTO(found_p0, std::find_if(particles.begin(), particles.end(),
+                auto found_p0 = std::find_if(particles.begin(), particles.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                        ParticleID, Particle>(_pid0)));
+                        ParticleID, Particle>(_pid0));
                 if(found_p0 == particles.end())
                 {
                     result = false;
@@ -1486,9 +1487,9 @@ bool SGFRDSimulator::diagnosis() const
                     }
                     break;
                 }
-                BOOST_AUTO(found_p1, std::find_if(particles.begin(), particles.end(),
+                auto found_p1 = std::find_if(particles.begin(), particles.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                        ParticleID, Particle>(_pid1)));
+                        ParticleID, Particle>(_pid1));
                 if(found_p1 == particles.end())
                 {
                     result = false;
@@ -1503,9 +1504,9 @@ bool SGFRDSimulator::diagnosis() const
                     }
                     break;
                 }
-                BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                auto found_s = std::find_if(shells.begin(), shells.end(),
                     ecell4::utils::pair_first_element_unary_predicator<
-                        ShellID, shell_type>(_shid)));
+                        ShellID, shell_type>(_shid));
                 if(found_s == shells.end())
                 {
                     result = false;
@@ -1578,9 +1579,9 @@ bool SGFRDSimulator::diagnosis() const
                 {
                     if(pid2evid.count(_pid) == 0){pid2evid[_pid] = evid;}
                     bool within = false;
-                    BOOST_AUTO(found_p, std::find_if(particles.begin(), particles.end(),
+                    auto found_p = std::find_if(particles.begin(), particles.end(),
                         ecell4::utils::pair_first_element_unary_predicator<
-                            ParticleID, Particle>(_pid)));
+                            ParticleID, Particle>(_pid));
                     if(found_p == particles.end())
                     {
                         result = false;
@@ -1602,9 +1603,9 @@ bool SGFRDSimulator::diagnosis() const
 
                     BOOST_FOREACH(_shid, mul.shell_ids())
                     {
-                        BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                        auto found_s = std::find_if(shells.begin(), shells.end(),
                             ecell4::utils::pair_first_element_unary_predicator<
-                                ShellID, shell_type>(_shid)));
+                                ShellID, shell_type>(_shid));
                         if(found_s == shells.end())
                         {
                             result = false;
@@ -1635,9 +1636,9 @@ bool SGFRDSimulator::diagnosis() const
                 {
                     if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
 
-                    BOOST_AUTO(found_s, std::find_if(shells.begin(), shells.end(),
+                    auto found_s = std::find_if(shells.begin(), shells.end(),
                         ecell4::utils::pair_first_element_unary_predicator<
-                            ShellID, shell_type>(_shid)));
+                            ShellID, shell_type>(_shid));
                     if(found_s == shells.end())
                     {
                         result = false;
