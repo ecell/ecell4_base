@@ -666,7 +666,7 @@ public:
         if (voxel.get_voxel_pool()->species().serial() != minfo.loc)
             return boost::none;
 
-        if (boost::optional<ParticleID> pid = new_voxel(p.species(), voxel))
+        if (boost::optional<ParticleID> pid = new_particle(p.species(), voxel))
             return *pid;
 
         return boost::none;
@@ -715,7 +715,7 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    boost::optional<ParticleID> new_voxel(const Species& sp, const Voxel& voxel)
+    boost::optional<ParticleID> new_particle(const Species& sp, const Voxel& voxel)
     {
         boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))

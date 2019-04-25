@@ -159,7 +159,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
         {
             continue;
         }
-        else if (new_voxel(sp, voxel))
+        else if (new_particle(sp, voxel))
         {
             ++count;
         }
@@ -187,7 +187,7 @@ bool SpatiocyteWorld::add_molecules(
         {
             continue;
         }
-        else if (new_voxel(sp, voxel))
+        else if (new_particle(sp, voxel))
         {
             ++count;
         }
