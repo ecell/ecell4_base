@@ -117,7 +117,13 @@ void define_spatiocyte_world(py::module& m)
         .def("has_particle_at", &SpatiocyteWorld::has_particle_at)
         .def("set_value", &SpatiocyteWorld::set_value)
         .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle)
-        .def("new_voxel", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle) // Deprecated
+        .def("new_voxel",
+            (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle,
+            R"pbdoc(
+                .. deprecated::3.0
+                   Use :func:`new_particle` instead.
+            )pbdoc"
+        )
         .def("new_voxel_structure", &SpatiocyteWorld::new_voxel_structure)
         .def("voxel_radius", &SpatiocyteWorld::voxel_radius)
         .def("size", &SpatiocyteWorld::size)
@@ -125,8 +131,19 @@ void define_spatiocyte_world(py::module& m)
         .def("bind_to", &SpatiocyteWorld::bind_to)
         .def("get_voxel", &SpatiocyteWorld::get_voxel)
         .def("get_voxel_nearby", &SpatiocyteWorld::get_voxel_nearby)
-        .def("get_voxel_near_by", &SpatiocyteWorld::get_voxel_nearby) // Deprecated
+        .def("get_voxel_near_by", &SpatiocyteWorld::get_voxel_nearby, R"pbdoc(
+            .. deprecated:: 3.0
+               Use :func:`get_voxel_nearby` instead.
+        )pbdoc")
         .def("add_structure", &SpatiocyteWorld::add_structure)
+        .def("remove_voxel", &SpatiocyteWorld::remove_particle, R"pbdoc(
+            .. deprecated:: 3.0
+               Use :func:`remove_particle` instead.
+        )pbdoc")
+        .def("has_voxel", &SpatiocyteWorld::has_particle, R"pbdoc(
+            .. deprecated:: 3.0
+               Use :func:`has_particle` instead.
+        )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
         .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
         .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)
