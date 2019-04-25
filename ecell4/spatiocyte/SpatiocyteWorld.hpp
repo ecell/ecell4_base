@@ -272,6 +272,16 @@ public:
         return total;
     }
 
+    boost::optional<Voxel> get_voxel(const ParticleID& pid) const
+    {
+        for (const auto& space : spaces_)
+        {
+            if (const auto coordinate = space->get_coordinate(pid))
+                return Voxel(space, *coordinate);
+        }
+        return boost::none;
+    }
+
     bool has_particle(const ParticleID& pid) const
     {
         for (space_container_type::const_iterator itr(spaces_.begin());

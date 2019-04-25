@@ -312,6 +312,18 @@ public:
         return vacant_;
     }
 
+    boost::optional<coordinate_type> get_coordinate(const ParticleID& pid) const
+    {
+        for (const auto& key_value : molecule_pools_)
+        {
+            const auto& pool(key_value.second);
+            const auto itr(pool->find(pid));
+            if (itr != pool->end())
+                return itr->coordinate;
+        }
+        return boost::none;
+    }
+
     bool has_voxel(const ParticleID& pid) const;
     Integer num_voxels_exact(const Species& sp) const;
     Integer num_voxels(const Species& sp) const;
