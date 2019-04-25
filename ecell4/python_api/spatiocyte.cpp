@@ -114,6 +114,7 @@ void define_spatiocyte_world(py::module& m)
         .def("get_volume", &SpatiocyteWorld::get_volume)
         .def("get_voxel_at", &SpatiocyteWorld::get_voxel_at)
         .def("get_species_at", &SpatiocyteWorld::get_species_at)
+        .def("has_particle_at", &SpatiocyteWorld::has_particle_at)
         .def("set_value", &SpatiocyteWorld::set_value)
         .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle)
         .def("new_voxel", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle) // Deprecated

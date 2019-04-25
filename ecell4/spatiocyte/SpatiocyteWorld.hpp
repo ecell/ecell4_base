@@ -468,6 +468,11 @@ public:
         return voxel.get_voxel_pool()->species();
     }
 
+    bool has_particle_at(const Voxel& voxel) const
+    {
+        return !voxel.get_voxel_pool()->is_vacant();
+    }
+
     std::pair<ParticleID, Species> get_voxel_at(const Voxel& voxel) const
     {
         std::pair<ParticleID, ParticleVoxel> id_voxel_pair(
