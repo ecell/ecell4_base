@@ -181,7 +181,7 @@ bool SpatiocyteWorld::add_molecules(
     while (count < num)
     {
         const Real3 pos(shape->draw_position(rng_));
-        const Voxel voxel(position2voxel(pos));
+        const Voxel voxel(get_voxel_nearby(pos));
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {

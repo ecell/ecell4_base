@@ -520,7 +520,7 @@ public:
     /*
      * Coordinate Transformation
      */
-    Voxel position2voxel(const Real3& pos) const
+    Voxel get_voxel_nearby(const Real3& pos) const
     {
         return Voxel(get_root(), get_root()->position2coordinate(pos));
     }
@@ -661,7 +661,7 @@ public:
         // const bool is_succeeded(update_particle(pid, p));
         // return std::make_pair(get_particle(pid), is_succeeded);
         const molecule_info_type minfo(get_molecule_info(p.species()));
-        const Voxel voxel(position2voxel(p.position()));
+        const Voxel voxel(get_voxel_nearby(p.position()));
 
         if (voxel.get_voxel_pool()->species().serial() != minfo.loc)
             return boost::none;
@@ -695,7 +695,7 @@ public:
         const molecule_info_type minfo(get_molecule_info(p.species()));
         return update_voxel(pid,
                 ParticleVoxel(p.species(),
-                              position2voxel(p.position()).coordinate,
+                              get_voxel_nearby(p.position()).coordinate,
                               p.radius(), p.D(), minfo.loc));
     }
 
