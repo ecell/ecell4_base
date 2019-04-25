@@ -463,6 +463,11 @@ public:
         return list;
     }
 
+    Species get_species_at(const Voxel& voxel) const
+    {
+        return voxel.get_voxel_pool()->species();
+    }
+
     std::pair<ParticleID, Species> get_voxel_at(const Voxel& voxel) const
     {
         std::pair<ParticleID, ParticleVoxel> id_voxel_pair(
