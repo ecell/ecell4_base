@@ -1,24 +1,26 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-pool:
-  vmImage: 'macOS-10.13'
-
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    brew update && brew upgrade cmake python
-    brew install boost gsl hdf5
-    /usr/local/bin/python3 -m pip install -U pip wheel delocate cython
-    git clone git://github.com/ecell/ecell4-base && cd ecell4-base
-    git submodule init && git submodule update && cmake -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 -DNO_SHARED:BOOL=1 . && make
-    delocate-listdeps python/dist/*.whl
-    delocate-wheel python/dist/*.whl
-    delocate-listdeps python/dist/*.whl
-    delocate-addplat --rm-orig -x 10_9 -x 10_10 python/dist/*.whl
-  displayName: 'Run a multi-line script'
-
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - script: echo hello from Linux
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.14'
+  steps:
+  - script: echo hello from macOS
+  - bash: |
+      brew update && brew upgrade cmake python
+      brew install boost gsl hdf5
+      /usr/local/bin/python3 -m pip install -U pip wheel delocate cython
+      git clone git://github.com/ecell/ecell4-base && cd ecell4-base
+      git submodule init && git submodule update && cmake -DPYTHON_EXECUTABLE:FILEPATH=/usr/local/bin/python3 -DNO_SHARED:BOOL=1 . && make
+      delocate-listdeps python/dist/*.whl
+      delocate-wheel python/dist/*.whl
+      delocate-listdeps python/dist/*.whl
+      delocate-addplat --rm-orig -x 10_9 -x 10_10 python/dist/*.whl
+- job: Windows
+  pool:
+    vmImage: 'windows-2019'
+  steps:
+  - script: echo hello from Windows
