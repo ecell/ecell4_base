@@ -34,4 +34,4 @@ jobs:
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'artifactName'
-      targetPath: 'ecell4-base/dist'
+      targetPath: 'dist'
