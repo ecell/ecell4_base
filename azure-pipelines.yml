@@ -19,10 +19,12 @@ jobs:
       delocate-wheel python/dist/*.whl
       delocate-listdeps python/dist/*.whl
       delocate-addplat --rm-orig -x 10_9 -x 10_10 python/dist/*.whl
+      ls -lah
+      pwd
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'artifactName'
-      targetPath: 'python/dist'
+      targetPath: 'ecell4-base/python/dist'
 - job: Windows
   pool:
     vmImage: 'windows-2019'
