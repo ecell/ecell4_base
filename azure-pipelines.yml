@@ -19,7 +19,6 @@ jobs:
       delocate-wheel python/dist/*.whl
       delocate-listdeps python/dist/*.whl
       delocate-addplat --rm-orig -x 10_9 -x 10_10 python/dist/*.whl
-  steps:
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'artifactName'
