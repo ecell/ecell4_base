@@ -19,3 +19,23 @@ jobs:
       sudo python3 setup.py install
       cd && pwd
       python3 -c "from ecell4_base import core"
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.14'
+  steps:
+  - script: echo hello from macOS
+  - bash: |
+      git submodule init && git submodule update
+      brew update && brew install boost gsl hdf5 cmake python      
+      /usr/local/bin/python3 -m pip install -U pip wheel delocate
+      /usr/local/bin/python3 setup.py bdist_wheel      
+      delocate-listdeps python/dist/*.whl
+      delocate-wheel python/dist/*.whl
+      delocate-listdeps python/dist/*.whl
+      delocate-addplat --rm-orig -x 10_9 -x 10_10 python/dist/*.whl
+      ls -lah
+      pwd
+  - task: PublishPipelineArtifact@0
+    inputs:
+      artifactName: 'artifactName'
+      targetPath: 'ecell4-base/python/dist'
