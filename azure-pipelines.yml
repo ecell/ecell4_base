@@ -7,3 +7,5 @@ jobs:
   - bash: |
       ls -alh
       pwd
+      ls -alh greens_functions
+      ls -alh pybind11
