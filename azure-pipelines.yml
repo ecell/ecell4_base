@@ -6,4 +6,5 @@ jobs:
   - script: echo hello from Windows
   - powershell: |
       vcpkg install gsl:x64-windows-static
+      python setup.py build_ext
       
