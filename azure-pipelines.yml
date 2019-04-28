@@ -1,53 +1,10 @@
 jobs:
-- job: Linux
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - script: echo hello from Linux
-  - bash: |
-      git submodule init && git submodule update
-      sudo apt-get update && sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake
-      sudo python3 -m pip install -U pip setuptools
-      wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2
-      tar xf hdf5-1.10.4.tar.bz2 && cd hdf5-1.10.4
-      ./configure --enable-cxx --prefix=/opt/hdf5 && make && sudo make install
-      cd ..
-      export PATH=/opt/hdf5/bin:${PATH}
-      export LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH}
-      export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH}
-      python3 setup.py build
-      sudo python3 setup.py install
-      cd && pwd
-      python3 -c "from ecell4_base import core"
-      echo "##vso[task.prependpath]$CONDA/bin"
-- job: macOS1014
-  pool:
-    vmImage: 'macOS-10.14'
-  steps:
-  - script: echo hello from macOS 10.14
-  - bash: |
-      git submodule init && git submodule update
-      brew update && brew install boost gsl hdf5 cmake python
-      /usr/local/bin/python3 -m pip install -U pip wheel
-      /usr/local/bin/python3 setup.py bdist_wheel
-      echo "##vso[task.prependpath]$CONDA/bin"
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'artifact for macOS10.14'
-      targetPath: 'dist'
-- job: macOS1013
-  pool:
-    vmImage: 'macOS-10.13'
-  steps:
-  - script: echo hello from macOS 10.13
-  - bash: |
-      echo "##vso[task.prependpath]$CONDA/bin"
-      sudo chown -R $USER $CONDA
-      conda info      
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
   steps:
   - script: echo hello from Windows
-  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-  
+  - powershell: |
+      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+      conda --version
+      
