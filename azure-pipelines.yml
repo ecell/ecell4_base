@@ -5,6 +5,5 @@ jobs:
   steps:
   - script: echo hello from Windows
   - powershell: |
-      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-      Get-Command conda.exe
+      vcpkg install gsl:x64-windows-static
       
