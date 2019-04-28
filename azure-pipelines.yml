@@ -55,5 +55,7 @@ jobs:
   steps:
   - script: echo hello from Windows
   - powershell: |
-      Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
-      conda install hdf5 gsl boost
+      C:\ProgramData\Miniconda3\Scripts\conda.exe create --yes --quiet --name myEnvironment
+      C:\ProgramData\Miniconda3\Scripts\conda.exe activate myEnvironment
+      conda install --yes --quiet --name myEnvironment hdf5 gsl boost
+      
