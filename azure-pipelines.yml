@@ -19,6 +19,7 @@ jobs:
       sudo python3 setup.py install
       cd && pwd
       python3 -c "from ecell4_base import core"
+      echo "##vso[task.prependpath]$CONDA/bin"
 - job: macOS1014
   pool:
     vmImage: 'macOS-10.14'
@@ -29,10 +30,7 @@ jobs:
       brew update && brew install boost gsl hdf5 cmake python
       /usr/local/bin/python3 -m pip install -U pip wheel
       /usr/local/bin/python3 setup.py bdist_wheel
-      ls -hla
-      ls -hla ..
-      ls -hla ../..
-      ls -hla ../../..
+      echo "##vso[task.prependpath]$CONDA/bin"
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'artifact for macOS10.14'
@@ -43,18 +41,13 @@ jobs:
   steps:
   - script: echo hello from macOS 10.13
   - bash: |
-      git submodule init && git submodule update
-      brew update && brew install boost gsl hdf5 cmake python
-      /usr/local/bin/python3 -m pip install -U pip wheel
-      /usr/local/bin/python3 setup.py bdist_wheel
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'artifact for macOS10.13'
-      targetPath: 'dist'
+      echo "##vso[task.prependpath]$CONDA/bin"
+      sudo chown -R $USER $CONDA
+      conda info      
 - job: Windows
   pool:
     vmImage: 'vs2017-win2016'
   steps:
   - script: echo hello from Windows
-  - powershell: ls ..
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
   
