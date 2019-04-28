@@ -29,7 +29,10 @@ jobs:
       brew update && brew install boost gsl hdf5 cmake python
       /usr/local/bin/python3 -m pip install -U pip wheel
       /usr/local/bin/python3 setup.py bdist_wheel
-      conda info
+      ls -hla
+      ls -hla ..
+      ls -hla ../..
+      ls -hla ../../..
   - task: PublishPipelineArtifact@0
     inputs:
       artifactName: 'artifact for macOS10.14'
@@ -53,5 +56,5 @@ jobs:
     vmImage: 'vs2017-win2016'
   steps:
   - script: echo hello from Windows
-  - powershell: ls
+  - powershell: ls ..
   
