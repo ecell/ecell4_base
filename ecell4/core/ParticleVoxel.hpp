@@ -1,6 +1,9 @@
 #ifndef ECELL4_VOXEL_HPP
 #define ECELL4_VOXEL_HPP
 
+#include "Species.hpp"
+#include "types.hpp"
+
 namespace ecell4
 {
 

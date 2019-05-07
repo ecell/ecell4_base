@@ -65,7 +65,7 @@ struct Integer3
         case 2:
             return this->layer;
         }
-        throw NotSupported("out of range");
+        throw std::out_of_range("");
     }
 
     const value_type& operator[](size_type i) const
@@ -79,7 +79,7 @@ struct Integer3
         case 2:
             return this->layer;
         }
-        throw NotSupported("out of range");
+        throw std::out_of_range("");
     }
 };
 

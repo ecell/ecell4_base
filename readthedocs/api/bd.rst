@@ -1,5 +1,7 @@
 E-Cell4 bd API
 ================
 
-.. automodule:: ecell4.bd
+.. automodule:: ecell4_base.bd
    :members:
+   :undoc-members:
+   :show-inheritance:

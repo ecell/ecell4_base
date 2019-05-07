@@ -578,8 +578,8 @@ public:
         pidgen_.save(fout.get());
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
-        ps3d_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(ECELL4_VERSION));
+        ps_->save_hdf5(group.get());
+        extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(VERSION_INFO));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
