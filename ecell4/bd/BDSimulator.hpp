@@ -9,7 +9,6 @@
 
 #include "BDWorld.hpp"
 #include "BDPropagator.hpp"
-#include "BDPropagator2D.hpp"
 
 
 namespace ecell4
@@ -132,21 +131,6 @@ public:
     {
         return (*world_).rng();
     }
-private:
-
-    Real min_sigma()
-    {
-        std::vector<Species> sps(world_->list_species());
-        Real minimum(std::numeric_limits<Real>::max());
-        for(std::vector<Species>::const_iterator
-                iter = sps.begin(); iter != sps.end(); ++iter)
-        {
-            const BDWorld::molecule_info_type mol(
-                    world_->get_molecule_info(*iter));
-            if(minimum > mol.radius) minimum = mol.radius;
-        }
-        return minimum;
-    }
 
 protected:
 
@@ -159,7 +143,6 @@ protected:
      * they are needed to be saved/loaded with Visitor pattern.
      */
     Real dt_;
-    Real reaction_length_;
     const Real bd_dt_factor_;
     bool dt_set_by_user_;
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
