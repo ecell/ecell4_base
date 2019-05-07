@@ -31,13 +31,13 @@ public:
     BDSimulator(
         boost::shared_ptr<BDWorld> world, boost::shared_ptr<Model> model,
         Real bd_dt_factor = 1e-5)
-        : base_type(world, model), dt_(0), bd_dt_factor_(bd_dt_factor)
+        : base_type(world, model), dt_(0), bd_dt_factor_(bd_dt_factor), dt_set_by_user_(false)
     {
         initialize();
     }
 
     BDSimulator(boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
-        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor)
+        : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor), dt_set_by_user_(false)
     {
         initialize();
     }
@@ -47,22 +47,22 @@ public:
     void initialize()
     {
         last_reactions_.clear();
-        dt_ = determine_dt();
-
-        // XXX: refine determine_reaction_length!
-        reaction_length_ = this->min_sigma() * 1e-2;
+        if (!dt_set_by_user_)
+        {
+            dt_ = determine_dt();
+        }
     }
 
     Real determine_dt() const
     {
-        const std::vector<Species> splist(world_->list_species());
-
         Real rmin(inf), Dmax(0.0);
-        for (std::vector<Species>::const_iterator i(splist.begin());
-            i != splist.end(); ++i)
+
+        for (std::vector<Species>::const_iterator i(model_->species_attributes().begin());
+            i != model_->species_attributes().end(); ++i)
         {
             const BDWorld::molecule_info_type
                 info(world_->get_molecule_info(*i));
+
             if (rmin > info.radius)
             {
                 rmin = info.radius;
@@ -72,6 +72,23 @@ public:
                 Dmax = info.D;
             }
         }
+
+        // const std::vector<Species> splist(world_->list_species());
+
+        // for (std::vector<Species>::const_iterator i(splist.begin());
+        //     i != splist.end(); ++i)
+        // {
+        //     const BDWorld::molecule_info_type
+        //         info(world_->get_molecule_info(*i));
+        //     if (rmin > info.radius)
+        //     {
+        //         rmin = info.radius;
+        //     }
+        //     if (Dmax < info.D)
+        //     {
+        //         Dmax = info.D;
+        //     }
+        // }
 
         const Real dt(rmin < inf && Dmax > 0.0
             ? 4.0 * rmin * rmin / (2.0 * Dmax) * bd_dt_factor_
@@ -108,6 +125,7 @@ public:
             throw std::invalid_argument("The step size must be positive.");
         }
         dt_ = dt;
+        dt_set_by_user_ = true;
     }
 
     inline boost::shared_ptr<RandomNumberGenerator> rng()
@@ -132,6 +150,10 @@ private:
 
 protected:
 
+    void attempt_synthetic_reaction(const ReactionRule& rr);
+
+protected:
+
     /**
      * the protected internal state of BDSimulator.
      * they are needed to be saved/loaded with Visitor pattern.
@@ -139,6 +161,7 @@ protected:
     Real dt_;
     Real reaction_length_;
     const Real bd_dt_factor_;
+    bool dt_set_by_user_;
     std::vector<std::pair<ReactionRule, reaction_info_type> > last_reactions_;
 };
 
