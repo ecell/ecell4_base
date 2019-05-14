@@ -454,13 +454,6 @@ class Polygon : public Shape
         throw NotImplemented("ecell4::Polygon::test_AABB");
     }
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
-    {
-        FaceID fid; // will be discarded
-        const Real3 retval = this->draw_position(rng, fid);
-        return retval;
-    }
-
     void bounding_box(
             const Real3& edge_lengths, Real3& lower, Real3& upper) const
     {
@@ -482,6 +475,16 @@ class Polygon : public Shape
         return;
     }
 
+    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    {
+        FaceID fid; // will be discarded
+        const Real3 retval = this->draw_position(rng, fid);
+        return retval;
+    }
+
+    //XXX This function randomly choose a face and does not consider the
+    //    initial value of `fid`. An ID of randomly-chosen face will be
+    //    written in `fid` when it returns.
     Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng,
                         FaceID& fid) const
     {
@@ -502,6 +505,13 @@ class Polygon : public Shape
         // maybe because of numerical error, put it on the last face.
         fid = FaceID(faces_.size() - 1);
         return faces_.back().triangle.draw_position(rng);
+    }
+
+    // XXX This function considers `fid`.
+    Real3 draw_position_on_face(boost::shared_ptr<RandomNumberGenerator>& rng,
+                                const FaceID& fid) const
+    {
+        return this->triangle_at(fid).draw_position(rng);
     }
 
     // Boundary condition stuff ----------------------------------------------//
