@@ -179,9 +179,9 @@ int main(int argc, char **argv)
     if(key_missing(input, "num_A")){return 1;}
     if(key_missing(input, "num_B")){return 1;}
     if(key_missing(input, "num_C")){return 1;}
-    world->add_molecule(sp1, boost::lexical_cast<std::size_t>(input["num_A"]));
-    world->add_molecule(sp2, boost::lexical_cast<std::size_t>(input["num_B"]));
-    world->add_molecule(sp3, boost::lexical_cast<std::size_t>(input["num_C"]));
+    world->add_molecules(sp1, boost::lexical_cast<std::size_t>(input["num_A"]));
+    world->add_molecules(sp2, boost::lexical_cast<std::size_t>(input["num_B"]));
+    world->add_molecules(sp3, boost::lexical_cast<std::size_t>(input["num_C"]));
 
     if(key_missing(input, "trajectory")){return 1;}
     if(key_missing(input, "species"))   {return 1;}

@@ -187,7 +187,7 @@ class SGFRDWorld
     std::pair<std::pair<ParticleID, Particle>, bool>
     throw_in_particle(const Species& sp);
 
-    void add_molecule(const Species& sp, const std::size_t N);
+    bool add_molecules(const Species& sp, const Integer& num);
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {

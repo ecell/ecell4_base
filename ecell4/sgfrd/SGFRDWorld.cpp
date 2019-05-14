@@ -55,16 +55,20 @@ SGFRDWorld::throw_in_particle(const Species& sp)
     return this->new_particle(p, fid);
 }
 
-void SGFRDWorld::add_molecule(const Species& sp, const std::size_t N)
+bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
 {
-    for(std::size_t i=0; i<N; ++i)
+    if (num < 0)
+    {
+        throw std::invalid_argument("The number of molecules must be positive.");
+    }
+    for(Integer i=0; i<num; ++i)
     {
         while(this->throw_in_particle(sp).second == false)
         {
             /*do nothing*/
         }
     }
-    return;
+    return true;
 }
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
