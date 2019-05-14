@@ -9,6 +9,8 @@ namespace sgfrd
 std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::new_particle(const Particle& p)
 {
+    std::cerr << "[warning] SGFRDWorld::new_particle: "
+                 "assigning particle without FaceID" << std::endl;
     const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         overlap3 = list_particles_within_radius(p.position(), p.radius());
     if(!overlap3.empty())

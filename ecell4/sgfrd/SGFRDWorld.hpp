@@ -194,6 +194,8 @@ class SGFRDWorld
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
+        std::cerr << "[warning] SGFRDWorld::update_particle: "
+                     "updating particle without FaceID" << std::endl;
         return ps_->update_particle(pid, p);
     }
     bool update_particle(const ParticleID& pid, const Particle& p,
@@ -260,14 +262,17 @@ class SGFRDWorld
         return registrator_.structure_on(pid);
     }
 
-
     //TODO: consider periodic transpose in the same way as ParticleSpaceCellListImpl
     Real distance_sq(const Real3& lhs, const Real3& rhs)
     {
+        std::cerr << "[warning] SGFRDWorld::distance_sq: "
+                     "calculating 3D distance" << std::endl;
         return length_sq(lhs - rhs);
     }
     Real distance(const Real3& lhs, const Real3& rhs)
     {
+        std::cerr << "[warning] SGFRDWorld::distance_sq: "
+                     "calculating 3D distance" << std::endl;
         return length(lhs - rhs);
     }
 
@@ -288,6 +293,8 @@ class SGFRDWorld
         list_particles_within_radius(
             const Real3& pos, const Real& radius) const
     {
+        std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
+                     "listing based on 3D distance" << std::endl;
         return ps_->list_particles_within_radius(pos, radius);
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -295,6 +302,8 @@ class SGFRDWorld
             const Real3& pos, const Real& radius,
             const ParticleID& ignore) const
     {
+        std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
+                     "listing based on 3D distance" << std::endl;
         return ps_->list_particles_within_radius(pos, radius, ignore);
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
@@ -302,6 +311,8 @@ class SGFRDWorld
             const Real3& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const
     {
+        std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
+                     "listing based on 3D distance" << std::endl;
         return ps_->list_particles_within_radius(pos, radius, ignore1, ignore2);
     }
 
@@ -344,16 +355,25 @@ class SGFRDWorld
     // return false if overlap exists. for 3D. FIXME: speedup
     bool check_no_overlap(const Real3& pos, const Real& radius) const
     {
+        std::cerr << "[warning] SGFRDWorld::check_no_overlap: "
+                     "checking based on 3D distance" << std::endl;
+
         return ps_->list_particles_within_radius(pos, radius).empty();
     }
     bool check_no_overlap(const Real3& pos, const Real& radius,
             const ParticleID& ignore) const
     {
+        std::cerr << "[warning] SGFRDWorld::check_no_overlap: "
+                     "checking based on 3D distance" << std::endl;
+
         return ps_->list_particles_within_radius(pos, radius, ignore).empty();
     }
     bool check_no_overlap(const Real3& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const
     {
+        std::cerr << "[warning] SGFRDWorld::check_no_overlap: "
+                     "checking based on 3D distance" << std::endl;
+
         return ps_->list_particles_within_radius(pos, radius, ignore1, ignore2
                 ).empty();
     }
