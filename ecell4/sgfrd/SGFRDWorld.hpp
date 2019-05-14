@@ -9,6 +9,7 @@
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Segment.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/collision.hpp>
 #include <boost/container/flat_map.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
@@ -395,6 +396,25 @@ class SGFRDWorld
     }
 
   private:
+
+    // the tolerance is relative to edge_lengths.
+    boost::optional<std::pair<Real3, FaceID>>
+    find_face(const Real3& pos, const Real tolerance = 1e-6) const
+    {
+        const auto& width = this->edge_lengths();
+        const auto tol = tolerance * std::min(width[0], std::min(width[1], width[2]));
+        const auto tol2 = tol * tol;
+
+        for(const auto& fid : this->polygon_->list_face_ids())
+        {
+            const auto& tri = this->polygon_->triangle_at(fid);
+            if(ecell4::collision::distance_sq_point_triangle(pos, tri) <= tol2)
+            {
+                return std::make_pair(pos, fid);
+            }
+        }
+        return boost::none;
+    }
 
     inline static Real3 normalize(const Real3& v) throw()
     {
