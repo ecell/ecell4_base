@@ -188,6 +188,8 @@ class SGFRDWorld
     throw_in_particle(const Species& sp);
 
     bool add_molecules(const Species& sp, const Integer& num);
+    bool add_molecules(const Species& sp, const Integer& num,
+                       const boost::shared_ptr<const Shape>& shape);
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {

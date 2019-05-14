@@ -1,4 +1,5 @@
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
+#include <boost/container/static_vector.hpp>
 
 namespace ecell4
 {
@@ -70,6 +71,122 @@ bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
     }
     return true;
 }
+
+bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
+                               const boost::shared_ptr<const Shape>& shape)
+{
+    if (num < 0)
+    {
+        throw std::invalid_argument("The number of molecules must be positive.");
+    }
+    else if (num == 0)
+    {
+        return true;
+    }
+
+    // XXX: this implementation is not only inefficient, but also unsafe because
+    //      it may not stop. Since `shape` is a base class, here the concrete
+    //      representation of a shape cannot be obtained (except dynamic_cast).
+    //      There is no way to predict the precise area of the overlapped
+    //      region. If the overlapped region is just a point or a line without
+    //      area, no particle can be inside it. If the overlapped region is too
+    //      small to place `num` number of particles, it also does not finish.
+    //      But still some faces overlap with the shape, and there is no way to
+    //      make it sure that this function never ends, we need to continue
+    //      searching.
+
+    const auto& width = this->edge_lengths();
+    const auto  transpose_direction = [&width](const Triangle& triangle)
+        noexcept -> boost::container::static_vector<Real3, 3> {
+            const auto& v1 = triangle.vertices()[0];
+            const auto& v2 = triangle.vertices()[1];
+            const auto& v3 = triangle.vertices()[2];
+
+            boost::container::static_vector<Real3, 3> retval;
+            for(std::size_t i=0; i<3; ++i)
+            {
+                Real3 disp(0.0, 0.0, 0.0);
+                if(v1[i] < 0.0 || v2[i] < 0.0 || v3[i] < 0.0)
+                {
+                    disp[i] = width[i];
+                    retval.push_back(disp);
+                }
+                else if(v1[i] >= width[i] || v2[i] >= width[i] || v3[i] >= width[i])
+                {
+                    disp[i] = -width[i];
+                    retval.push_back(disp);
+                }
+            }
+            return retval;
+        };
+
+    std::vector<FaceID> potentially_overlapping_fids;
+
+    for(auto&& fid : this->polygon_->list_face_ids())
+    {
+        const auto& triangle = this->polygon_->triangle_at(fid);
+
+        Real3 lower(0,0,0), upper(width);
+        triangle.bounding_box(width, lower, upper);
+
+        if(shape->test_AABB(lower, upper))
+        {
+            potentially_overlapping_fids.push_back(fid);
+            continue;
+        }
+
+        const auto transposes = transpose_direction(triangle);
+        for(const auto& transpose : transposes)
+        {
+            auto vertices = triangle.vertices();
+            for(auto& vertex : vertices)
+            {
+                vertex += transpose;
+            }
+            const Triangle transposed(vertices);
+
+            transposed.bounding_box(width, lower, upper);
+            if(shape->test_AABB(lower, upper))
+            {
+                potentially_overlapping_fids.push_back(fid);
+                break;
+            }
+        }
+    }
+
+    const auto& candidate_faces  = potentially_overlapping_fids;
+    const Integer num_candidates = candidate_faces.size();
+    if(num_candidates == 0)
+    {
+        throw std::invalid_argument("The shape does not overlap with polygon.");
+    }
+
+    const Real r = sp.get_attribute_as<Real>("radius");
+    const Real D = sp.get_attribute_as<Real>("D");
+    for(Integer i=0; i<num; ++i)
+    {
+        bool particle_inserted = false;
+        while(!particle_inserted)
+        {
+            const auto& face_id = candidate_faces.at(
+                    this->rng_->uniform_int(0, num_candidates-1)
+                );
+            const Real3 pos = this->polygon_->draw_position_on_face(
+                    this->rng_, face_id
+                );
+
+            if(shape->is_inside(pos))
+            {
+                const Particle p(sp, pos, r, D);
+                std::tie(std::ignore, particle_inserted) =
+                    this->new_particle(p, face_id);
+            }
+            // otherwise, particle_inserted is kept false.
+        }
+    }
+    return true;
+}
+
 
 std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
 SGFRDWorld::list_particles_within_radius(
