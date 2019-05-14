@@ -93,7 +93,18 @@ struct Triangle : public Shape
     void bounding_box(
             const Real3& edge_lengths, Real3& lower, Real3& upper) const
     {
-        throw NotImplemented("Triangle::bounding_box(edge_length, lower, upper)");
+        const auto& v1 = this->vertices_[0];
+        const auto& v2 = this->vertices_[1];
+        const auto& v3 = this->vertices_[2];
+
+        lower[0] = std::max(0.0, std::min(std::min(v1[0], v2[0]), v3[0]));
+        lower[1] = std::max(0.0, std::min(std::min(v1[1], v2[1]), v3[1]));
+        lower[2] = std::max(0.0, std::min(std::min(v1[2], v2[2]), v3[2]));
+
+        upper[0] = std::min(edge_lengths[0], std::max(std::max(v1[0], v2[0]), v3[0]));
+        upper[1] = std::min(edge_lengths[1], std::max(std::max(v1[1], v2[1]), v3[1]));
+        upper[2] = std::min(edge_lengths[2], std::max(std::max(v1[2], v2[2]), v3[2]));
+        return;
     }
 
   private:
