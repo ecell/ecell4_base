@@ -213,7 +213,10 @@ class SGFRDWorld
     // this also removes particle if it is on surface
     void remove_particle(const ParticleID& pid)
     {
-        if(registrator_.have(pid)) registrator_.remove(pid);
+        if(registrator_.have(pid))
+        {
+            registrator_.remove(pid);
+        }
         return ps_->remove_particle(pid);
     }
     void remove_particle(const ParticleID& pid, const FaceID& fid)
