@@ -159,7 +159,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
         {
             continue;
         }
-        else if (new_voxel(sp, voxel))
+        else if (new_particle(sp, voxel))
         {
             ++count;
         }
@@ -181,13 +181,13 @@ bool SpatiocyteWorld::add_molecules(
     while (count < num)
     {
         const Real3 pos(shape->draw_position(rng_));
-        const Voxel voxel(position2voxel(pos));
+        const Voxel voxel(get_voxel_nearby(pos));
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
             continue;
         }
-        else if (new_voxel(sp, voxel))
+        else if (new_particle(sp, voxel))
         {
             ++count;
         }
