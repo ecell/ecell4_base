@@ -91,6 +91,7 @@ setup(
     url = "https://github.com/ecell/ecell4-base",
     description = DESCRIPTION,
     long_description = LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     data_files = [('ecell4-licenses', glob.glob('licenses/*'))],
     ext_modules=[CMakeExtension('ecell4_base')],
     cmdclass=dict(build_ext=CMakeBuild, test=CustomTestCommand),
