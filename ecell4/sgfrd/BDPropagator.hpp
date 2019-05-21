@@ -8,7 +8,6 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/foreach.hpp>
-#include <boost/static_assert.hpp>
 #include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 #include <array>

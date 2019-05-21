@@ -14,7 +14,6 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <boost/lexical_cast.hpp>
 #include <array>
 
 namespace ecell4
