@@ -114,8 +114,9 @@ class SGFRDSimulator :
     void initialize()
     {
         ParticleID pid; Particle p;
-        BOOST_FOREACH(std::tie(pid, p), this->world_->list_particles())
+        for(const auto& pidp : this->world_->list_particles())
         {
+            std::tie(pid, p) = pidp;
             add_event(create_tight_domain(create_tight_shell(
                       pid, p, this->get_face_id(pid)), pid, p));
         }
@@ -614,8 +615,9 @@ class SGFRDSimulator :
 
                 // add domain to each reactant
                 ParticleID pid; Particle p; FaceID fid;
-                BOOST_FOREACH(std::tie(pid, p, fid), results)
+                for(const auto& pidpf : results)
                 {
+                    std::tie(pid, p, fid) = pidpf;
                     SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
                     add_event(create_tight_domain(
                               create_tight_shell(pid, p, fid), pid, p));
@@ -635,8 +637,9 @@ class SGFRDSimulator :
                 SGFRD_TRACE(tracer_.write("shell %1% removed", sid));
 
                 ParticleID pid; Particle p; FaceID fid;
-                BOOST_FOREACH(std::tie(pid, p, fid), escaped)
+                for(const auto& pidpf : escaped)
                 {
+                    std::tie(pid, p, fid) = pidpf;
                     SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
                     add_event(create_tight_domain(
                                 create_tight_shell(pid, p, fid), pid, p));
@@ -657,8 +660,9 @@ class SGFRDSimulator :
                 if(!products.empty())
                 {
                     ParticleID pid; Particle p; FaceID fid;
-                    BOOST_FOREACH(std::tie(pid, p, fid), products)
+                    for(const auto& pidpf : products)
                     {
+                        std::tie(pid, p, fid) = pidpf;
                         SGFRD_TRACE(tracer_.write("adding next event for %1%", pid));
                         add_event(create_tight_domain(
                                 create_tight_shell(pid, p, fid), pid, p));
@@ -1069,7 +1073,7 @@ class SGFRDSimulator :
         if(rules.size() != 1)
         {
             Real rndr = this->uniform_real() * k_tot;
-            BOOST_FOREACH(ReactionRule const& rl, rules)
+            for(const auto& rl : rules)
             {
                 rndr -= rl.k();
                 if(rndr < 0.0)
@@ -1367,8 +1371,9 @@ class SGFRDSimulator :
                 }
 
                 ParticleID pid; Particle p; FaceID fid;
-                BOOST_FOREACH(std::tie(pid, p, fid), this->remove_multi(dom))
+                for(const auto& pidpf : this->remove_multi(dom))
                 {
+                    std::tie(pid, p, fid) = pidpf;
                     this->add_event(this->create_tight_domain(
                         this->create_tight_shell(pid, p, fid), pid, p));
                 }
@@ -1380,9 +1385,9 @@ class SGFRDSimulator :
                 SGFRD_TRACE(tracer_.write("escape occurs"))
                 /* burst this domain! */
                 ParticleID pid; Particle p; FaceID fid;
-                BOOST_FOREACH(std::tie(pid, p, fid),
-                              this->remove_multi(dom))
+                for(const auto& pidpf : this->remove_multi(dom))
                 {
+                    std::tie(pid, p, fid) = pidpf;
                     this->add_event(this->create_tight_domain(
                         this->create_tight_shell(pid, p, fid), pid, p));
                 }
@@ -1405,14 +1410,15 @@ class SGFRDSimulator :
         SGFRD_SCOPE(ns, remove_multi, tracer_);
         bursted_type results;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(std::tie(pid, p), dom.particles())
+        for(const auto& pidp : dom.particles())
         {
+            std::tie(pid, p) = pidp;
             results.push_back(std::make_tuple(pid, p, this->get_face_id(pid)));
         }
 
         SGFRD_TRACE(tracer_.write("particles are collected"))
 
-        BOOST_FOREACH(ShellID sid, dom.shell_ids())
+        for(const ShellID& sid : dom.shell_ids())
         {
             this->remove_shell(sid);
         }
@@ -1466,10 +1472,11 @@ class SGFRDSimulator :
         std::vector<std::pair<DomainID, Real> > results;
 
         DomainID did; Real dist;
-        BOOST_FOREACH(std::tie(did, dist), intruders)
+        for(const auto& didd : intruders)
         {
             SGFRD_SCOPE(ns, loop_for_intruders, tracer_)
 
+            std::tie(did, dist) = didd;
             const auto& ev = get_event(did);
             if(ev->which_domain() == event_type::multi_domain)
             {
@@ -1480,9 +1487,10 @@ class SGFRDSimulator :
             SGFRD_TRACE(tracer_.write("domain %1% is not a multi", did))
 
             DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
-            BOOST_FOREACH(std::tie(pid_, p_, fid_),
-                          burst_event(std::make_pair(did, ev), tm))
+            for(const auto& pidpf : burst_event(std::make_pair(did, ev), tm))
             {
+                std::tie(pid_, p_, fid_) = pidpf;
+
                 SGFRD_TRACE(tracer_.write(
                     "add tight domain to bursted particle %1%", pid_))
                 did_ = add_event(create_tight_domain(
@@ -1524,9 +1532,10 @@ class SGFRDSimulator :
         std::vector<std::pair<DomainID, Real> > results;
 
         DomainID did; Real dist;
-        BOOST_FOREACH(std::tie(did, dist), intruders)
+        for(const auto& didd : intruders)
         {
             SGFRD_SCOPE(ns, loop_for_intruders, tracer_)
+            std::tie(did, dist) = didd;
 
             const auto& ev = get_event(did);
             if(ev->which_domain() == event_type::multi_domain)
@@ -1538,9 +1547,9 @@ class SGFRDSimulator :
             SGFRD_TRACE(tracer_.write("domain %1% is not a multi", did))
 
             DomainID did_; ParticleID pid_; Particle p_; FaceID fid_;
-            BOOST_FOREACH(std::tie(pid_, p_, fid_),
-                          burst_event(std::make_pair(did, ev), tm))
+            for(const auto& pidpf : burst_event(std::make_pair(did, ev), tm))
             {
+                std::tie(pid_, p_, fid_) = pidpf;
                 SGFRD_TRACE(tracer_.write(
                     "add closely-fitted domain to bursted particle %1%", pid_))
 
@@ -1595,13 +1604,14 @@ class SGFRDSimulator :
 
         // move particle
         ParticleID pid; Particle p;
-        BOOST_FOREACH(std::tie(pid, p), from.particles())
+        for(const auto& pidp : from.particles())
         {
+            std::tie(pid, p) = pidp;
             const bool addp_result = to.add_particle(pid);
             assert(addp_result);
         }
         // move shell
-        BOOST_FOREACH(ShellID sid, from.shell_ids())
+        for(const ShellID& sid : from.shell_ids())
         {
             const bool adds_result = to.add_shell(sid);
             SGFRD_TRACE(tracer_.write("Shell(%1%).domain_id = %2%", sid,
@@ -2013,7 +2023,7 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(ns, calc_k_tot, tracer_)
         Real k_tot = 0;
-        BOOST_FOREACH(ReactionRule const& rule, rules)
+        for(const auto& rule : rules)
         {
             SGFRD_TRACE(tracer_.write("reaction rule found: k = %1%", rule.k()));
             k_tot += rule.k();
@@ -2050,7 +2060,7 @@ class SGFRDSimulator :
         const Real ktot = calc_k_tot(rules);
         const Real thrs = ktot * this->uniform_real();
         Real a = 0.0;
-        BOOST_FOREACH(ReactionRule const& rule, rules)
+        for(const auto& rule : rules)
         {
             a += rule.k();
             if(a > thrs) return rule;

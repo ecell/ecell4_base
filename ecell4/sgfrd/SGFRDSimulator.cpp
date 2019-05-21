@@ -490,8 +490,9 @@ void SGFRDSimulator::fire_single(const Single& dom, DomainID did)
             }
 
             ParticleID pid; Particle p; FaceID fid;
-            BOOST_FOREACH(std::tie(pid, p, fid), results)
+            for(const auto& pidpf : results)
             {
+                std::tie(pid, p, fid) = pidpf;
                 SGFRD_TRACE(tracer_.write("adding next event for %1%", pid))
                 // here, by calling create_event, the first domain might include
                 // the other particle that is one of the result of 1->2 reaction
@@ -526,9 +527,10 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
 
     bool no_overlap = true;
     DomainID did_;
-    BOOST_FOREACH(std::tie(did_, std::ignore), intruders)
+    for(const auto& didd : intruders)
     {
         SGFRD_SCOPE(ms, intruders, tracer_)
+        std::tie(did_, std::ignore) = didd;
         SGFRD_TRACE(tracer_.write("burst domain %1%", did_))
 
         if(did == did_)
@@ -554,9 +556,9 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
         }
 
         ParticleID pid_; Particle p_; FaceID fid_;
-        BOOST_FOREACH(std::tie(pid_, p_, fid_),
-                      burst_event(std::make_pair(did_, ev_), tm))
+        for(const auto& pidpf : burst_event(std::make_pair(did_, ev_), tm))
         {
+            std::tie(pid_, p_, fid_) = pidpf;
             const Real dist = ecell4::polygon::distance(this->polygon(),
                 std::make_pair(p.position(), fid),
                 std::make_pair(p_.position(), fid_));
@@ -744,8 +746,10 @@ DomainID SGFRDSimulator::form_multi(
                 pid, minsh.first));
 
     DomainID did; Real dist;
-    BOOST_FOREACH(std::tie(did, dist), doms)
+    for(const auto& didd : doms)
     {
+        std::tie(did, dist) = didd;
+
         SGFRD_SCOPE(us, intruder_domain, tracer_);
         SGFRD_TRACE(tracer_.write("for domain %1%", did));
 
@@ -811,7 +815,7 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
 
     SGFRD_TRACE(tracer_.write("add domain to multi %1% ", multi_to_join_id));
 
-    BOOST_FOREACH(ShellID sid, multi_to_join.shell_ids())
+    for(const ShellID& sid : multi_to_join.shell_ids())
     {
         // assuming multi has only a circular_shell...
         const auto&      sh = boost::get<circular_shell_type>(get_shell(sid));
@@ -823,8 +827,9 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
                     sid, intruder.size()));
 
         DomainID did;
-        BOOST_FOREACH(std::tie(did, std::ignore), intruder)
+        for(const auto& didd : intruder)
         {
+            std::tie(did, std::ignore) = didd;
             if(did == multi_to_join_id){continue;}
 
             SGFRD_TRACE(tracer_.write("bursting domain(%1%)", did));
@@ -840,9 +845,9 @@ void SGFRDSimulator::add_to_multi_recursive(Multi& multi_to_join)
             {
                 SGFRD_TRACE(tracer_.write("intruder is not multi. burst."))
                 ParticleID pid; Particle p; FaceID fid;
-                BOOST_FOREACH(std::tie(pid, p, fid),
-                              burst_event(std::make_pair(did, ev), tm))
+                for(const auto& pidpf : burst_event(std::make_pair(did, ev), tm))
                 {
+                    std::tie(pid, p, fid) = pidpf;
                     const Real dist = ecell4::polygon::distance(this->polygon(),
                             sh_pos, std::make_pair(p.position(), fid)
                             ) - sh.size() - p.radius();
@@ -1265,14 +1270,16 @@ bool SGFRDSimulator::diagnosis() const
 
     // 1.
     ParticleID pid; Particle p;
-    BOOST_FOREACH(std::tie(pid, p), particles)
+    for(const auto& pidp : particles)
     {
+        std::tie(pid, p) = pidp;
         const FaceID fid = this->get_face_id(pid);
         std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
 
         ParticleID _pid; Particle _p;
-        BOOST_FOREACH(std::tie(_pid, _p), particles)
+        for(const auto& _pidp : particles)
         {
+            std::tie(_pid, _p) = _pidp;
             if(pid == _pid) {continue;}
             const FaceID _fid = this->get_face_id(_pid);
             const Real dist = this->world_->distance(pos,
@@ -1313,8 +1320,9 @@ bool SGFRDSimulator::diagnosis() const
 
     // 2.
     ShellID shid; shell_type sh;
-    BOOST_FOREACH(std::tie(shid, sh), shells)
+    for(const auto& shidsh : shells)
     {
+        std::tie(shid, sh) = shidsh;
         ShellID _shid; shell_type _sh;
         switch(sh.which())
         {
@@ -1324,8 +1332,9 @@ bool SGFRDSimulator::diagnosis() const
                 distance_calculator_on_surface<FaceID>
                     dist_calc(ccl.get_surface_position(), this->polygon());
 
-                BOOST_FOREACH(std::tie(_shid, _sh), shells)
+                for(const auto& _shidsh : shells)
                 {
+                    std::tie(_shid, _sh) = _shidsh;
                     if(_shid == shid){continue;}
                     const Real dist = boost::apply_visitor(dist_calc, _sh);
                     const DomainID _did = boost::apply_visitor(domain_id_getter(), _sh);
@@ -1349,8 +1358,9 @@ bool SGFRDSimulator::diagnosis() const
                 distance_calculator_on_surface<VertexID>
                     dist_calc(con.get_surface_position(), this->polygon());
 
-                BOOST_FOREACH(std::tie(_shid, _sh), shells)
+                for(const auto& _shidsh : shells)
                 {
+                    std::tie(_shid, _sh) = _shidsh;
                     if(_shid == shid){continue;}
                     const Real dist = boost::apply_visitor(dist_calc, _sh);
                     const DomainID _did = boost::apply_visitor(
@@ -1382,8 +1392,9 @@ bool SGFRDSimulator::diagnosis() const
     std::map<ParticleID, EventID> pid2evid;
     std::map<ShellID,    EventID> sid2evid;
     EventID evid; boost::shared_ptr<event_type> ev_ptr;
-    BOOST_FOREACH(std::tie(evid, ev_ptr), this->scheduler_.events())
+    for(const auto& evidptr : this->scheduler_.events())
     {
+        std::tie(evid, ev_ptr) = evidptr;
         SGFRDEvent::domain_type const& dom = ev_ptr->domain();
         switch(ev_ptr->which_domain())
         {
@@ -1575,8 +1586,9 @@ bool SGFRDSimulator::diagnosis() const
                 const Multi& mul = boost::get<Multi>(dom);
                 ShellID _shid;
                 ParticleID _pid; Particle _p;
-                BOOST_FOREACH(std::tie(_pid, _p), mul.particles())
+                for(const auto& pidp : mul.particles())
                 {
+                    std::tie(_pid, _p) = pidp;
                     if(pid2evid.count(_pid) == 0){pid2evid[_pid] = evid;}
                     bool within = false;
                     auto found_p = std::find_if(particles.begin(), particles.end(),
@@ -1601,7 +1613,7 @@ bool SGFRDSimulator::diagnosis() const
                         dist_calc(std::make_pair(found_p->second.position(), fid_p),
                                   this->polygon());
 
-                    BOOST_FOREACH(_shid, mul.shell_ids())
+                    for(const auto& _shid : mul.shell_ids())
                     {
                         auto found_s = std::find_if(shells.begin(), shells.end(),
                             ecell4::utils::pair_first_element_unary_predicator<
@@ -1632,7 +1644,7 @@ bool SGFRDSimulator::diagnosis() const
                     }
                     particles.erase(found_p);
                 }
-                BOOST_FOREACH(_shid, mul.shell_ids())
+                for(const auto& _shid : mul.shell_ids())
                 {
                     if(sid2evid.count(_shid) == 0){sid2evid[_shid] = evid;}
 
@@ -1677,8 +1689,9 @@ bool SGFRDSimulator::diagnosis() const
     {
         result = false;
         std::cerr << "ERROR: some of particles are not assigned to Domain\n";
-        BOOST_FOREACH(std::tie(pid, p), particles)
+        for(const auto& pidp : particles)
         {
+            std::tie(pid, p) = pidp;
             std::cerr << "     : particle id " << pid
                       << " is not assigned to any Domain\n";
         }
@@ -1687,8 +1700,9 @@ bool SGFRDSimulator::diagnosis() const
     {
         result = false;
         std::cerr << "ERROR: some of shells are not assigned to Domain\n";
-        BOOST_FOREACH(std::tie(shid, sh), shells)
+        for(const auto& shidsh : shells)
         {
+            std::tie(shid, sh) = shidsh;
             std::cerr << "     : shell id " << shid
                       << " is not assigned to any Domain\n";
             const DomainID _did = boost::apply_visitor(domain_id_getter(), sh);
