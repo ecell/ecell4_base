@@ -15,6 +15,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/lexical_cast.hpp>
+#include <array>
 
 namespace ecell4
 {
@@ -442,7 +443,7 @@ class SGFRDWorld
         return model_.lock();
     }
 
-    boost::array<ecell4::Segment, 6> const& barrier_at(const FaceID& fid) const
+    std::array<ecell4::Segment, 6> const& barrier_at(const FaceID& fid) const
     {
         return this->barriers_.at(fid);
     }
@@ -497,10 +498,10 @@ class SGFRDWorld
             const FaceID fid = *iter;
             const Triangle& tri = polygon_->triangle_at(fid);
 
-            boost::array<Segment, 6> segments;
+            std::array<Segment, 6> segments;
             segments.fill(Segment(Real3(0,0,0), Real3(0,0,0)));
 
-            boost::array<EdgeID, 3> const& edges = polygon_->edges_of(fid);
+            const boost::array<EdgeID, 3>& edges = polygon_->edges_of(fid);
             for(std::size_t i=0; i<3; ++i)
             {
                 const EdgeID eid = edges[i];
@@ -581,7 +582,7 @@ class SGFRDWorld
     //      /\* /\
     //   > /__\/__\ < these edges
     //      ^    ^
-    boost::container::flat_map<FaceID, boost::array<ecell4::Segment, 6> > barriers_;
+    boost::container::flat_map<FaceID, std::array<ecell4::Segment, 6> > barriers_;
 };
 
 

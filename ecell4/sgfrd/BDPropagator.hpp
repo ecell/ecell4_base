@@ -11,6 +11,7 @@
 #include <boost/static_assert.hpp>
 #include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
+#include <array>
 
 namespace ecell4
 {
@@ -366,7 +367,7 @@ public:
 
         const Real3 n = polygon_.triangle_at(fid).normal();
 
-        boost::array<std::pair<Real3, FaceID>, 2> newpfs;
+        std::array<std::pair<Real3, FaceID>, 2> newpfs;
         newpfs[0] = std::make_pair(p.position(), fid);
         newpfs[1] = std::make_pair(p.position(), fid);
 
@@ -410,7 +411,7 @@ public:
             }
         }
 
-        boost::array<Particle, 2> particles_new;
+        std::array<Particle, 2> particles_new;
         particles_new[0] = Particle(sp1, newpfs[0].first, r1, D1);
         particles_new[1] = Particle(sp2, newpfs[1].first, r2, D2);
 

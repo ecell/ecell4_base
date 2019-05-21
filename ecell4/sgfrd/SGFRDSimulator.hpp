@@ -24,6 +24,7 @@
 #include <boost/container/static_vector.hpp>
 #include <boost/container/small_vector.hpp>
 #include <tuple>
+#include <array>
 
 #include <iostream>
 
@@ -561,7 +562,7 @@ class SGFRDSimulator :
                 }
 
                 // first, update 2 particles
-                boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+                std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
                     propagated = this->propagate_pair(
                         this->get_shell(sid), dom, this->time());
                 SGFRD_TRACE(tracer_.write("particles are propagated"));
@@ -569,12 +570,12 @@ class SGFRDSimulator :
                 this->remove_shell(sid);
                 SGFRD_TRACE(tracer_.write("shell %1% removed", sid));
 
-                boost::array<ShellID,    2> sids;
-                boost::array<DomainID,   2> dids;
-                boost::array<Single,     2> doms;
-                boost::array<ParticleID, 2> pids;
-                boost::array<Particle,   2> ps;
-                boost::array<FaceID,     2> fids;
+                std::array<ShellID,    2> sids;
+                std::array<DomainID,   2> dids;
+                std::array<Single,     2> doms;
+                std::array<ParticleID, 2> pids;
+                std::array<Particle,   2> ps;
+                std::array<FaceID,     2> fids;
 
                 // add tight-domain for them to detect overlap
                 for(std::size_t i=0; i<2; ++i)
@@ -625,7 +626,7 @@ class SGFRDSimulator :
             case Pair::IV_ESCAPE:
             {
                 SGFRD_SCOPE(ns, case_COM_OR_IV_ESCAPE, tracer_);
-                boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+                std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
                     escaped = this->escape_pair( // dispatch com/ipv here
                         this->get_shell(sid), dom, this->time());
                 SGFRD_TRACE(tracer_.write("particles escaped"));
@@ -680,7 +681,7 @@ class SGFRDSimulator :
 
         // no reaction occurs because `burst` occurs before any other event.
         bursted_type results;
-        boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+        std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
             propagated(this->propagate_pair(this->get_shell(sid), dom, tm));
         results.push_back(propagated[0]);
         results.push_back(propagated[1]);
@@ -693,7 +694,7 @@ class SGFRDSimulator :
         return results;
     }
 
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     propagate_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, propagate_pair, tracer_);
@@ -713,7 +714,7 @@ class SGFRDSimulator :
         }
     }
 
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     propagate_circular_pair(const circular_shell_type& sh,
             const Pair& dom, const Real tm)
     {
@@ -771,7 +772,7 @@ class SGFRDSimulator :
         this->update_particle(pid1, p1, pos_p1.second);
         this->update_particle(pid2, p2, pos_p2.second);
 
-        boost::array<std::tuple<ParticleID, Particle, FaceID>, 2> results;
+        std::array<std::tuple<ParticleID, Particle, FaceID>, 2> results;
         results[0] = std::make_tuple(pid1, p1, pos_p1.second);
         results[1] = std::make_tuple(pid2, p2, pos_p2.second);
 
@@ -789,7 +790,7 @@ class SGFRDSimulator :
         return results;
     }
 
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     escape_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_pair, tracer_);
@@ -810,7 +811,7 @@ class SGFRDSimulator :
         }
     }
     // center of mass escapes from inner-domain
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     escape_com_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_com_pair, tracer_);
@@ -830,7 +831,7 @@ class SGFRDSimulator :
         }
     }
     // inter particle vector become too long to react each other
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     escape_com_circular_pair(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
@@ -896,7 +897,7 @@ class SGFRDSimulator :
         this->update_particle(pid1, p1, pos_p1.second);
         this->update_particle(pid2, p2, pos_p2.second);
 
-        boost::array<std::tuple<ParticleID, Particle, FaceID>, 2> results;
+        std::array<std::tuple<ParticleID, Particle, FaceID>, 2> results;
         results[0] = std::make_tuple(pid1, p1, pos_p1.second);
         results[1] = std::make_tuple(pid2, p2, pos_p2.second);
 
@@ -915,7 +916,7 @@ class SGFRDSimulator :
         return results;
     }
 
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     escape_ipv_pair(const shell_type& sh, const Pair& dom, const Real tm)
     {
         SGFRD_SCOPE(us, escape_ipv_pair, tracer_);
@@ -934,7 +935,7 @@ class SGFRDSimulator :
             }
         }
     }
-    boost::array<std::tuple<ParticleID, Particle, FaceID>, 2>
+    std::array<std::tuple<ParticleID, Particle, FaceID>, 2>
     escape_ipv_circular_pair(
             const circular_shell_type& sh, const Pair& dom, const Real tm)
     {
@@ -1004,7 +1005,7 @@ class SGFRDSimulator :
         this->update_particle(pid1, p1, pos_p1.second);
         this->update_particle(pid2, p2, pos_p2.second);
 
-        boost::array<std::tuple<ParticleID, Particle, FaceID>, 2> results;
+        std::array<std::tuple<ParticleID, Particle, FaceID>, 2> results;
         results[0] = std::make_tuple(pid1, p1, pos_p1.second);
         results[1] = std::make_tuple(pid2, p2, pos_p2.second);
 
@@ -1973,7 +1974,7 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("position = %1%, %2%", pos.first, pos.second));
 
         Real lensq = std::numeric_limits<Real>::max();
-        const boost::array<ecell4::Segment, 6>& barrier =
+        const std::array<ecell4::Segment, 6>& barrier =
             world_->barrier_at(pos.second);
 
         for(std::size_t i=0; i<6; ++i)

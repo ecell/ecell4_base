@@ -2,6 +2,7 @@
 #define ECELL4_SGFRD_PAIR_DOMAIN
 #include <ecell4/sgfrd/ShellID.hpp>
 #include <ecell4/core/Particle.hpp>
+#include <array>
 
 namespace ecell4
 {
@@ -27,7 +28,7 @@ class Pair
     typedef Particle   particle_type;
     typedef ParticleID particle_id_type;
     typedef std::pair<ParticleID, Particle>   particle_id_pair;
-    typedef boost::array<particle_id_pair, 2> particle_array_type;
+    typedef std::array<particle_id_pair, 2> particle_array_type;
 
     static Real calc_D_ipv(const Real D1, const Real D2) throw()
     {

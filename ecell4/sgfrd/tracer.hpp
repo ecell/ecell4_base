@@ -1,10 +1,10 @@
 #ifndef ECELL4_SGFRD_TRACER
 #define ECELL4_SGFRD_TRACER
 #include <boost/format.hpp>
-#include <boost/array.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
 #include <string>
+#include <array>
 #include <fstream>
 
 namespace ecell4
@@ -127,7 +127,7 @@ class basic_tracer<char, std::char_traits<char> >
     std::size_t indent_size_;
     std::size_t indent_;
     std::size_t current;
-    boost::array<std::string, 2> fnames;
+    std::array<std::string, 2> fnames;
 };
 
 typedef basic_tracer<char, std::char_traits<char> > tracer;
