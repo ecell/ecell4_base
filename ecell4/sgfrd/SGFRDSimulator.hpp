@@ -110,7 +110,7 @@ class SGFRDSimulator :
           tracer_(trace_fname)
     {}
 
-    ~SGFRDSimulator(){}
+    ~SGFRDSimulator() override = default;
 
     void initialize()
     {
@@ -148,7 +148,7 @@ class SGFRDSimulator :
         return this->scheduler_.next_time();
     }
 
-    void step()
+    void step() override
     {
         SGFRD_SCOPE(us, step, tracer_);
 
@@ -165,7 +165,7 @@ class SGFRDSimulator :
 
         return;
     }
-    bool step(const Real& upto)
+    bool step(const Real& upto) override
     {
         this->step();
         return this->time() < upto;
