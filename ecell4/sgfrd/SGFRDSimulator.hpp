@@ -23,8 +23,6 @@
 #include <boost/make_shared.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/container/small_vector.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/lambda/bind.hpp>
 #include <tuple>
 
 #include <iostream>
