@@ -196,7 +196,18 @@ class SGFRDWorld
     {
         std::cerr << "[warning] SGFRDWorld::update_particle: "
                      "updating particle without FaceID" << std::endl;
-        return ps_->update_particle(pid, p);
+
+        // Note: condition in `if` statements can have a declarator.
+        //       cf. N3337 section 6.4 "Selection statements"
+        if(const auto pfid = this->find_face(p.position()))
+        {
+            Particle p_(p);
+            p_.position() = pfid->first;
+
+            return this->update_particle(pid, p_, pfid->second);
+        }
+        throw std::invalid_argument("[error] SGFRDWorld::update_particle: "
+                "particle locates distant from polygon");
     }
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const FaceID& fid)
@@ -262,18 +273,39 @@ class SGFRDWorld
         return registrator_.structure_on(pid);
     }
 
-    //TODO: consider periodic transpose in the same way as ParticleSpaceCellListImpl
     Real distance_sq(const Real3& lhs, const Real3& rhs)
     {
         std::cerr << "[warning] SGFRDWorld::distance_sq: "
                      "calculating 3D distance" << std::endl;
-        return length_sq(lhs - rhs);
+
+        const auto pf1 = this->find_face(lhs);
+        if(pf1)
+        {
+            const auto pf2 = this->find_face(rhs);
+            if(pf2)
+            {
+                return this->distance_sq(*pf1, *pf2);
+            }
+        }
+        throw std::invalid_argument("[error] SGFRDWorld::distance_sq: "
+                "particle locates distant from polygon");
     }
     Real distance(const Real3& lhs, const Real3& rhs)
     {
-        std::cerr << "[warning] SGFRDWorld::distance_sq: "
+        std::cerr << "[warning] SGFRDWorld::distance: "
                      "calculating 3D distance" << std::endl;
-        return length(lhs - rhs);
+
+        const auto pf1 = this->find_face(lhs);
+        if(pf1)
+        {
+            const auto pf2 = this->find_face(rhs);
+            if(pf2)
+            {
+                return this->distance(*pf1, *pf2);
+            }
+        }
+        throw std::invalid_argument("[error] SGFRDWorld::distance: "
+                "particle locates distant from polygon");
     }
 
     template<typename str1T, typename str2T>
@@ -295,7 +327,14 @@ class SGFRDWorld
     {
         std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
                      "listing based on 3D distance" << std::endl;
-        return ps_->list_particles_within_radius(pos, radius);
+
+        if(const auto pf = this->find_face(p.position()))
+        {
+            return this->list_particles_within_radius(*pf, radius);
+        }
+        throw std::invalid_argument("[error] "
+                "SGFRDWorld::list_particles_within_radius: "
+                "particle locates distant from polygon");
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
@@ -304,7 +343,14 @@ class SGFRDWorld
     {
         std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
                      "listing based on 3D distance" << std::endl;
-        return ps_->list_particles_within_radius(pos, radius, ignore);
+
+        if(const auto pf = this->find_face(p.position()))
+        {
+            return this->list_particles_within_radius(*pf, radius, ignore);
+        }
+        throw std::invalid_argument("[error] "
+                "SGFRDWorld::list_particles_within_radius: "
+                "particle locates distant from polygon");
     }
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
         list_particles_within_radius(
@@ -313,7 +359,15 @@ class SGFRDWorld
     {
         std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
                      "listing based on 3D distance" << std::endl;
-        return ps_->list_particles_within_radius(pos, radius, ignore1, ignore2);
+
+        if(const auto pf = this->find_face(p.position()))
+        {
+            return this->list_particles_within_radius(
+                    *pf, radius, ignore1, ignore2);
+        }
+        throw std::invalid_argument("[error] "
+                "SGFRDWorld::list_particles_within_radius: "
+                "particle locates distant from polygon");
     }
 
     // for 2D
@@ -358,7 +412,7 @@ class SGFRDWorld
         std::cerr << "[warning] SGFRDWorld::check_no_overlap: "
                      "checking based on 3D distance" << std::endl;
 
-        return ps_->list_particles_within_radius(pos, radius).empty();
+        return this->list_particles_within_radius(pos, radius).empty();
     }
     bool check_no_overlap(const Real3& pos, const Real& radius,
             const ParticleID& ignore) const
@@ -366,7 +420,7 @@ class SGFRDWorld
         std::cerr << "[warning] SGFRDWorld::check_no_overlap: "
                      "checking based on 3D distance" << std::endl;
 
-        return ps_->list_particles_within_radius(pos, radius, ignore).empty();
+        return this->list_particles_within_radius(pos, radius, ignore).empty();
     }
     bool check_no_overlap(const Real3& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const
@@ -374,7 +428,7 @@ class SGFRDWorld
         std::cerr << "[warning] SGFRDWorld::check_no_overlap: "
                      "checking based on 3D distance" << std::endl;
 
-        return ps_->list_particles_within_radius(pos, radius, ignore1, ignore2
+        return this->list_particles_within_radius(pos, radius, ignore1, ignore2
                 ).empty();
     }
 

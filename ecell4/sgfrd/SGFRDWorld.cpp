@@ -11,14 +11,15 @@ SGFRDWorld::new_particle(const Particle& p)
 {
     std::cerr << "[warning] SGFRDWorld::new_particle: "
                  "assigning particle without FaceID" << std::endl;
-    const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-        overlap3 = list_particles_within_radius(p.position(), p.radius());
-    if(!overlap3.empty())
+
+    if(const auto pfid = this->find_face(p.position()))
     {
-        return std::make_pair(std::make_pair(pidgen_(), p), false);
+        Particle p_(p);
+        p_.position() = pfid->first;
+        this->new_particle(p_, pfid->second);
     }
-    const ParticleID pid = pidgen_();
-    return std::make_pair(std::make_pair(pid, p), update_particle(pid, p));
+    throw std::invalid_argument("[error] SGFRDWorld::new_particle: "
+            "particle locates distant from polygon");
 }
 
 std::pair<std::pair<ParticleID, Particle>, bool>
