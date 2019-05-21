@@ -68,7 +68,7 @@ public:
 
         // make copy of the next particle
         ParticleID pid; Particle p;
-        boost::tie(pid, p) = queue_.back(); queue_.pop_back();
+        std::tie(pid, p) = queue_.back(); queue_.pop_back();
         FaceID fid = this->container_.get_face_id(pid);
 
         // to restore the position, copy previous state.
@@ -95,7 +95,7 @@ public:
         // check escapement and clear volume if needed
         {
             // update local copy of particle
-            boost::tie(p.position(), fid) = position;
+            std::tie(p.position(), fid) = position;
             if(!clear_volume(p, fid, pid))
             {
                 // rejected. restore position. previous position does not cause

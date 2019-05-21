@@ -32,7 +32,6 @@ class BDSimulator :
     typedef base_type::world_type world_type;
     typedef base_type::model_type model_type;
     typedef std::pair<ParticleID, Particle> particle_id_pair_type;
-    typedef boost::tuple<ParticleID, Particle, FaceID> pid_p_fid_tuple_type;
 
     // reaction
     typedef ecell4::ReactionRule           reaction_rule_type;
