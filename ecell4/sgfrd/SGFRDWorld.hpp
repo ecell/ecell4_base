@@ -476,21 +476,29 @@ class SGFRDWorld
 
     // the tolerance is relative to edge_lengths.
     boost::optional<std::pair<Real3, FaceID>>
-    find_face(const Real3& pos, const Real tolerance = 1e-6) const
+    find_face(const Real3& pos, const Real tolerance = 1e-3) const
     {
         const auto& width = this->edge_lengths();
         const auto tol = tolerance * std::min(width[0], std::min(width[1], width[2]));
         const auto tol2 = tol * tol;
 
+        Real min_distance = std::numeric_limits<Real>::infinity();
+        boost::optional<std::pair<Real3, FaceID>> nearest = boost::none;
         for(const auto& fid : this->polygon_->list_face_ids())
         {
             const auto& tri = this->polygon_->triangle_at(fid);
-            if(ecell4::collision::distance_sq_point_triangle(pos, tri) <= tol2)
+            const auto dist =
+                ecell4::collision::distance_sq_point_triangle(pos, tri);
+            if(dist <= tol2)
             {
-                return std::make_pair(pos, fid);
+                if(!nearest || dist < min_distance)
+                {
+                    min_distance = dist;
+                    nearest      = std::make_pair(pos, fid);
+                }
             }
         }
-        return boost::none;
+        return nearest;
     }
 
     inline static Real3 normalize(const Real3& v) throw()
