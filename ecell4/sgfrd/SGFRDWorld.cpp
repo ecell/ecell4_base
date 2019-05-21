@@ -9,9 +9,6 @@ namespace sgfrd
 std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::new_particle(const Particle& p)
 {
-    std::cerr << "[warning] SGFRDWorld::new_particle: "
-                 "assigning particle without FaceID" << std::endl;
-
     if(const auto pfid = this->find_face(p.position()))
     {
         Particle p_(p);
