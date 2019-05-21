@@ -1,7 +1,6 @@
 #ifndef ECELL4_SGFRD_MULTI_CONTAINER
 #define ECELL4_SGFRD_MULTI_CONTAINER
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
-#include <boost/foreach.hpp>
 #include <algorithm>
 
 namespace ecell4
@@ -101,8 +100,9 @@ class MultiContainer
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(boost::tie(pid, p), pcon_)
+        for(const auto& pidp : this->pcon_)
         {
+            std::tie(pid, p) = pidp;
             auto fid = registrator_.structure_on(pid);
             const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
             if(d <= (radius + p.radius()))
@@ -122,8 +122,9 @@ class MultiContainer
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(boost::tie(pid, p), pcon_)
+        for(const auto& pidp : this->pcon_)
         {
+            std::tie(pid, p) = pidp;
             if(pid == ignore){continue;}
             auto fid = registrator_.structure_on(pid);
             const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
@@ -144,8 +145,9 @@ class MultiContainer
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(boost::tie(pid, p), pcon_)
+        for(const auto& pidp : this->pcon_)
         {
+            std::tie(pid, p) = pidp;
             if(pid == ignore1 || pid == ignore2){continue;}
             auto fid = registrator_.structure_on(pid);
             const Real d = world_.distance(std::make_pair(p.position(), fid), pos);
@@ -166,8 +168,9 @@ class MultiContainer
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(boost::tie(pid, p), pcon_)
+        for(const auto& pidp : this->pcon_)
         {
+            std::tie(pid, p) = pidp;
             auto fid = registrator_.structure_on(pid);
             const Real dist =
                 this->world_.distance(std::make_pair(p.position(), fid), pos);
@@ -183,8 +186,9 @@ class MultiContainer
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(boost::tie(pid, p), pcon_)
+        for(const auto& pidp : this->pcon_)
         {
+            std::tie(pid, p) = pidp;
             if(pid == ignore){continue;}
 
             auto fid = registrator_.structure_on(pid);
@@ -203,8 +207,9 @@ class MultiContainer
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
         Particle p; ParticleID pid;
-        BOOST_FOREACH(boost::tie(pid, p), pcon_)
+        for(const auto& pidp : this->pcon_)
         {
+            std::tie(pid, p) = pidp;
             if(pid == ignore1 || pid == ignore2){continue;}
 
             auto fid = registrator_.structure_on(pid);

@@ -165,14 +165,16 @@ class BDSimulator :
         auto particles = this->world_->list_particles();
 
         ParticleID pid; Particle p;
-        BOOST_FOREACH(boost::tie(pid, p), particles)
+        for(const auto& pidp : particles)
         {
+            std::tie(pid, p) = pidp;
             const FaceID fid = this->world_->get_face_id(pid);
             std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
 
             ParticleID _pid; Particle _p;
-            BOOST_FOREACH(boost::tie(_pid, _p), particles)
+            for(const auto& _pidp : particles)
             {
+                std::tie(_pid, _p) = _pidp;
                 if(pid == _pid) {continue;}
                 const FaceID _fid = this->world_->get_face_id(_pid);
                 const Real dist = this->world_->distance(pos,
