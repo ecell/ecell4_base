@@ -14,7 +14,6 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 
 namespace ecell4
@@ -248,10 +247,13 @@ class SGFRDWorld
     std::vector<std::pair<ParticleID, Particle> >
     list_particles(const FaceID& fid) const
     {
-        std::vector<ParticleID> const& pids = registrator_.elements_over(fid);
-        std::vector<std::pair<ParticleID, Particle> > retval(pids.size());
+        const std::vector<ParticleID>& pids = registrator_.elements_over(fid);
+        std::vector<std::pair<ParticleID, Particle>> retval(pids.size());
+
         std::transform(pids.begin(), pids.end(), retval.begin(),
-                       boost::bind(&SGFRDWorld::get_particle, this, _1));
+            [this](const ParticleID& pid) -> std::pair<ParticleID, Particle> {
+                return this->get_particle(pid);
+            });
         return retval;
     }
     std::vector<ParticleID> const&
