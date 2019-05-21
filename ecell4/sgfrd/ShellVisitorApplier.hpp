@@ -4,7 +4,6 @@
 #include "Single.hpp"
 #include "Pair.hpp"
 #include "Multi.hpp"
-#include <boost/foreach.hpp>
 
 namespace ecell4
 {
