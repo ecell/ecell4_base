@@ -5,6 +5,10 @@ namespace ecell4
 {
 namespace sgfrd
 {
+
+// Note that if `single_circular_shell_factor` is smaller than
+// `1 + reaciton_length_factor` in BD, it causes a strange results.
+// Please make sure that the value is sufficiently large.
 const Real SGFRDSimulator::single_circular_shell_factor        = 1.2;
 const Real SGFRDSimulator::single_circular_shell_mergin        = 1.0 - 1e-7;
 const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.2;
@@ -798,8 +802,7 @@ DomainID SGFRDSimulator::form_multi(
 
     // search intruders on the new multi, burst them all and add to multi if needed
     add_to_multi_recursive(formed_multi);
-    formed_multi.determine_reaction_length();
-    formed_multi.determine_delta_t();
+    formed_multi.determine_parameters();
 
     return formed_multi_id;
 }

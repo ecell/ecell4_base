@@ -90,25 +90,40 @@ class SGFRDSimulator :
 
     SGFRDSimulator(const boost::shared_ptr<world_type>& world,
                    const boost::shared_ptr<model_type>& model,
-                   Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
+                   Real bd_dt_factor = 0.01, Real reaction_length = 0.1,
                    const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world, model), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
           tracer_(trace_fname)
-    {}
+    {
+        if(1.0 + reaction_length >= single_circular_shell_factor)
+        {
+            // If this condition is satisfied, sGFRD allows a single shell that
+            // has a reactive range outside the shell. But single domain does
+            // not consider reactions outside the shell, so it causes an error.
+            throw std::invalid_argument("SGFRDSimulator: too large reaction length");
+        }
+    }
 
     SGFRDSimulator(boost::shared_ptr<world_type> world,
-                   Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
+                   Real bd_dt_factor = 0.01, Real reaction_length = 0.1,
                    const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(*(world->polygon())),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
           tracer_(trace_fname)
-    {}
-
+    {
+        if(1.0 + reaction_length >= single_circular_shell_factor)
+        {
+            // If this condition is satisfied, sGFRD allows a single shell that
+            // has a reactive range outside the shell. But single domain does
+            // not consider reactions outside the shell, so it causes an error.
+            throw std::invalid_argument("SGFRDSimulator: too large reaction length");
+        }
+    }
     ~SGFRDSimulator() override = default;
 
     void initialize()
@@ -1618,8 +1633,7 @@ class SGFRDSimulator :
                         boost::get<circular_shell_type>(this->get_shell(sid)).domain_id()))
             assert(adds_result);
         }
-        to.determine_reaction_length();
-        to.determine_delta_t();
+        to.determine_parameters();
 
         SGFRD_TRACE(tracer_.write("multi domain %1% is removed", id_of_from))
         return;
