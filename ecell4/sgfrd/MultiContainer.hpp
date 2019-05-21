@@ -47,11 +47,6 @@ class MultiContainer
     FaceID get_face_id(const ParticleID& pid) const
     {return world_.get_face_id(pid);}
 
-    bool update_particle(const ParticleID& pid, const Particle& p)
-    {
-        *(this->find_(pid)) = std::make_pair(pid, p);
-        return world_.update_particle(pid, p);
-    }
     bool update_particle(const ParticleID& pid, const Particle& p,
                          const FaceID fid)
     {
@@ -68,17 +63,6 @@ class MultiContainer
         return world_.update_particle(pid, p, fid);
     }
 
-    std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p)
-    {
-        const std::pair<std::pair<ParticleID, Particle>, bool> result =
-            world_.new_particle(p);
-        if(result.second)
-        {
-            this->pcon_.push_back(result.first);
-        }
-        return result;
-    }
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Particle& p, const FaceID& fid)
     {
