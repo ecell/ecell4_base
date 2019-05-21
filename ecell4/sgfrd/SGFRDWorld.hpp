@@ -328,7 +328,7 @@ class SGFRDWorld
         std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
                      "listing based on 3D distance" << std::endl;
 
-        if(const auto pf = this->find_face(p.position()))
+        if(const auto pf = this->find_face(pos))
         {
             return this->list_particles_within_radius(*pf, radius);
         }
@@ -344,7 +344,7 @@ class SGFRDWorld
         std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
                      "listing based on 3D distance" << std::endl;
 
-        if(const auto pf = this->find_face(p.position()))
+        if(const auto pf = this->find_face(pos))
         {
             return this->list_particles_within_radius(*pf, radius, ignore);
         }
@@ -360,7 +360,7 @@ class SGFRDWorld
         std::cerr << "[warning] SGFRDWorld::list_particles_within_radius: "
                      "listing based on 3D distance" << std::endl;
 
-        if(const auto pf = this->find_face(p.position()))
+        if(const auto pf = this->find_face(pos))
         {
             return this->list_particles_within_radius(
                     *pf, radius, ignore1, ignore2);
