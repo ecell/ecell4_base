@@ -272,6 +272,16 @@ public:
         return total;
     }
 
+    boost::optional<Voxel> get_voxel(const ParticleID& pid) const
+    {
+        for (const auto& space : spaces_)
+        {
+            if (const auto coordinate = space->get_coordinate(pid))
+                return Voxel(space, *coordinate);
+        }
+        return boost::none;
+    }
+
     bool has_particle(const ParticleID& pid) const
     {
         for (space_container_type::const_iterator itr(spaces_.begin());
@@ -453,18 +463,14 @@ public:
         return list;
     }
 
-    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const
+    Species get_species_at(const Voxel& voxel) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if (boost::optional<ParticleVoxel> voxel = (*itr)->find_voxel(pid))
-            {
-                return voxel;
-            }
-        }
+        return voxel.get_voxel_pool()->species();
+    }
 
-        return boost::none;
+    bool has_particle_at(const Voxel& voxel) const
+    {
+        return !voxel.get_voxel_pool()->is_vacant();
     }
 
     std::pair<ParticleID, Species> get_voxel_at(const Voxel& voxel) const
@@ -534,7 +540,7 @@ public:
     /*
      * Coordinate Transformation
      */
-    Voxel position2voxel(const Real3& pos) const
+    Voxel get_voxel_nearby(const Real3& pos) const
     {
         return Voxel(get_root(), get_root()->position2coordinate(pos));
     }
@@ -675,12 +681,12 @@ public:
         // const bool is_succeeded(update_particle(pid, p));
         // return std::make_pair(get_particle(pid), is_succeeded);
         const molecule_info_type minfo(get_molecule_info(p.species()));
-        const Voxel voxel(position2voxel(p.position()));
+        const Voxel voxel(get_voxel_nearby(p.position()));
 
         if (voxel.get_voxel_pool()->species().serial() != minfo.loc)
             return boost::none;
 
-        if (boost::optional<ParticleID> pid = new_voxel(p.species(), voxel))
+        if (boost::optional<ParticleID> pid = new_particle(p.species(), voxel))
             return *pid;
 
         return boost::none;
@@ -709,7 +715,7 @@ public:
         const molecule_info_type minfo(get_molecule_info(p.species()));
         return update_voxel(pid,
                 ParticleVoxel(p.species(),
-                              position2voxel(p.position()).coordinate,
+                              get_voxel_nearby(p.position()).coordinate,
                               p.radius(), p.D(), minfo.loc));
     }
 
@@ -729,7 +735,7 @@ public:
     std::vector<Species> list_structure_species() const;
     // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
-    boost::optional<ParticleID> new_voxel(const Species& sp, const Voxel& voxel)
+    boost::optional<ParticleID> new_particle(const Species& sp, const Voxel& voxel)
     {
         boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
