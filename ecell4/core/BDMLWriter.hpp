@@ -2,6 +2,7 @@
 #define ECELL4_BDML_WRITER_HPP
 
 #include <cstring>
+#include <boost/scoped_array.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <sstream>
@@ -144,7 +145,7 @@ void save_bd5(
 
     assert(group_index >= 0);
     const std::string group_name
-        = static_cast<std::ostringstream&>(std::ostringstream() << std::dec << group_index).str();
+        = static_cast<const std::ostringstream&>(std::ostringstream() << std::dec << group_index).str();
 
     H5E_auto2_t func;
     void* client_data;
@@ -258,7 +259,7 @@ void save_bd5(
 
                 // std::strcpy(data_table[i].ID, "1");
                 std::strcpy(data_table[i].ID,
-                    static_cast<std::ostringstream&>(
+                    static_cast<const std::ostringstream&>(
                         std::ostringstream() << std::dec << group_name << ":" << i
                             << ":" << pid.lot() << ":" << pid.serial()).str().c_str());
                 data_table[i].t = world.t();
@@ -289,7 +290,7 @@ void save_bd5(
 
                 // std::strcpy(data_table[i].ID, "1");
                 std::strcpy(data_table[i].ID,
-                    static_cast<std::ostringstream&>(
+                    static_cast<const std::ostringstream&>(
                         std::ostringstream() << std::dec << group_name << ":" << i
                             << ":" << pid.lot() << ":" << pid.serial()).str().c_str());
                 data_table[i].t = world.t();

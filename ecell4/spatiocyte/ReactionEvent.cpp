@@ -41,7 +41,7 @@ void ZerothOrderReactionEvent::fire_()
                     continue;
                 }
 
-                if (boost::optional<ParticleID> pid = world_->new_voxel(sp, voxel))
+                if (boost::optional<ParticleID> pid = world_->new_particle(sp, voxel))
                 {
                     rinfo.add_product(ReactionInfo::Item(*pid, sp, voxel));
                     break;

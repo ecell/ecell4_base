@@ -45,7 +45,7 @@ make_product(boost::shared_ptr<SpatiocyteWorld> world,
     }
     else
     {
-        if (boost::optional<ParticleID> new_pid = world->new_voxel(species, voxel))
+        if (boost::optional<ParticleID> new_pid = world->new_particle(species, voxel))
         {
             rinfo.add_product(ReactionInfo::Item(*new_pid, species, voxel));
         }

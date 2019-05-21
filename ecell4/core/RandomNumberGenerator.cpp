@@ -42,7 +42,7 @@ void GSLRandomNumberGenerator::save(const std::string& filename) const
     boost::scoped_ptr<H5::H5File>
         fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
     this->save(fout.get());
-    extras::save_version_information(fout.get(), std::string("ecell4-gsl_number_generator-") + std::string(ECELL4_VERSION));
+    extras::save_version_information(fout.get(), std::string("ecell4-gsl_number_generator-") + std::string(VERSION_INFO));
 }
 
 void GSLRandomNumberGenerator::load(const std::string& filename)

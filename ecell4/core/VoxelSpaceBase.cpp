@@ -239,29 +239,6 @@ VoxelSpaceBase::list_voxels_exact(const Species& sp) const
     return retval;
 }
 
-boost::optional<ParticleVoxel>
-VoxelSpaceBase::find_voxel(const ParticleID& pid) const
-{
-    for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
-    {
-        const Species& species((*itr).first);
-        const boost::shared_ptr<MoleculePool>& pool((*itr).second);
-
-        MoleculePool::container_type::const_iterator j(pool->find(pid));
-        if (j != pool->end())
-        {
-            return ParticleVoxel(species,
-                                 (*j).coordinate,
-                                 pool->radius(),
-                                 pool->D(),
-                                 get_location_serial(pool));
-        }
-    }
-
-    return boost::none;
-}
-
 boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species& sp)
 {
     if (sp.serial() == "")

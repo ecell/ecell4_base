@@ -127,9 +127,9 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     sp.set_attribute("radius", 2.5e-9);
     sp.set_attribute("D", 1e-12);
 
-    const Voxel voxel(world.position2voxel(edge_lengths / 2.0));
+    const Voxel voxel(world.get_voxel_nearby(edge_lengths / 2.0));
     // BOOST_CHECK(world.place_voxel(sp, coord).second);
-    BOOST_CHECK(world.new_voxel(sp, voxel));
+    BOOST_CHECK(world.new_particle(sp, voxel));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
     boost::shared_ptr<const VoxelPool> mt(voxel.get_voxel_pool());
@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
         rng(new GSLRandomNumberGenerator());
     SpatiocyteWorld world(edge_lengths, voxel_radius, rng);
 
-    const Voxel voxel(world.position2voxel(edge_lengths / 2.0));
+    const Voxel voxel(world.get_voxel_nearby(edge_lengths / 2.0));
     const Real3 cp(voxel.position());
 
     Species sp(std::string("TEST"));
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_neighbor)
     sp.set_attribute("D", 1e-12);
     for (Integer i(0); i < voxel.num_neighbors(); ++i)
     {
-        world.new_voxel(sp, voxel.get_neighbor(i));
+        world.new_particle(sp, voxel.get_neighbor(i));
     }
     std::vector<std::pair<ParticleID, Particle> > particles(world.list_particles());
     for (std::vector<std::pair<ParticleID, Particle> >::iterator itr(
@@ -219,10 +219,10 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     sp.set_attribute("radius", 2.5e-9);
     sp.set_attribute("D", 1e-12);
 
-    const Voxel from(world.position2voxel(Real3(0.3e-6, 0.5e-6, 0.5e-6)));
-    const Voxel to(world.position2voxel(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
+    const Voxel from(world.get_voxel_nearby(Real3(0.3e-6, 0.5e-6, 0.5e-6)));
+    const Voxel to(world.get_voxel_nearby(Real3(0.5e-6, 0.5e-6, 0.5e-6)));
 
-    BOOST_CHECK(world.new_voxel(sp, from));
+    BOOST_CHECK(world.new_particle(sp, from));
     BOOST_CHECK(world.move(from, to));
 
     boost::shared_ptr<const VoxelPool> mt(to.get_voxel_pool());
