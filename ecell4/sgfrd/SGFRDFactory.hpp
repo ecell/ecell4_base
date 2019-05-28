@@ -73,7 +73,8 @@ class SGFRDFactory :
 
     virtual world_type* create_world(const Real3& edge_lengths) const
     {
-        if (!polygon_)
+        auto poly = this->polygon_;
+        if (!poly)
         {
             // generate default polygon: XY-plane at the middle of the Z axis.
 
@@ -110,16 +111,16 @@ class SGFRDFactory :
                     ts.push_back(Triangle(v1, v2, v3));
                 }
             }
-            this->polygon_ = boost::make_shared<Polygon>(edge_lengths, ts);
+            poly = boost::make_shared<Polygon>(edge_lengths, ts);
         }
 
         if (rng_)
         {
-            return new world_type(edge_lengths, matrix_sizes_, polygon_, rng_);
+            return new world_type(edge_lengths, matrix_sizes_, poly, rng_);
         }
         else
         {
-            return new world_type(edge_lengths, matrix_sizes_, polygon_);
+            return new world_type(edge_lengths, matrix_sizes_, poly);
         }
     }
 
