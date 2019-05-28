@@ -63,6 +63,15 @@ class SGFRDWorld
           rng_(rng), polygon_(polygon), registrator_(*polygon)
     {this->prepair_barriers();}
 
+    SGFRDDWorld(const std::string& filename)
+        : ps_(new particle_space_type(Real3(1, 1, 1)))
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        this->load(filename);
+    }
+
+
     ~SGFRDWorld() override = default;
 
     boost::shared_ptr<RandomNumberGenerator> const& rng() {return this->rng_;}
