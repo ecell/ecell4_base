@@ -14,6 +14,7 @@
 #include <boost/container/flat_map.hpp>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr/make_shared.hpp>
 #include <boost/weak_ptr.hpp>
 #include <array>
 
@@ -47,7 +48,7 @@ class SGFRDWorld
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                const boost::shared_ptr<polygon_type>& polygon)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(polygon), registrator_(*polygon)
+          polygon_(polygon), registrator_(*polygon_)
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -60,11 +61,13 @@ class SGFRDWorld
                const boost::shared_ptr<polygon_type>& polygon,
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          rng_(rng), polygon_(polygon), registrator_(*polygon)
+          rng_(rng), polygon_(polygon), registrator_(*polygon_)
     {this->prepair_barriers();}
 
-    SGFRDDWorld(const std::string& filename)
-        : ps_(new particle_space_type(Real3(1, 1, 1)))
+    SGFRDWorld(const std::string& filename)
+        : ps_(new default_particle_space_type(Real3(1, 1, 1))),
+          polygon_(boost::make_shared<Polygon>(Real3(1, 1, 1))),
+          registrator_(*polygon_)
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
