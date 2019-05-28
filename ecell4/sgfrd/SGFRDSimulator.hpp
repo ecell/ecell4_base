@@ -186,6 +186,8 @@ class SGFRDSimulator :
         return this->time() < upto;
     }
 
+    void set_t(const Real t) {return this->world_->set_t(t);}
+
     Real dt() const {return dt_;}
     Real reaction_length() const {return reaction_length_;}
 
@@ -270,7 +272,6 @@ class SGFRDSimulator :
     {return this->world_->get_particle(pid);}
 
     Real time() const {return this->world_->t();}
-    void set_t(const Real t) {return this->world_->set_t(t);}
 
     bool event_exists(const event_id_type& id)
     {
