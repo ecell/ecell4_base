@@ -733,8 +733,11 @@ DomainID SGFRDSimulator::form_multi(
 {
     SGFRD_SCOPE(us, form_multi, tracer_);
 
+    // here, `new_multi` is not initialized with particles yet, so the delta_t
+    // is negative. we need to update it after determine dt and reaction_length.
     Multi new_multi(create_empty_multi());
     const DomainID formed_multi_id = this->add_event(new_multi);
+
     Multi& formed_multi =
         boost::get<Multi>(get_event(formed_multi_id)->domain());
     SGFRD_TRACE(tracer_.write("new multi(%1%) created", formed_multi_id))
@@ -803,6 +806,12 @@ DomainID SGFRDSimulator::form_multi(
     // search intruders on the new multi, burst them all and add to multi if needed
     add_to_multi_recursive(formed_multi);
     formed_multi.determine_parameters();
+
+    // update multi domain assigned in scheduler;
+    // when the multi domain is assigned, it had a negative delta t.
+    // we need to update the data after determining delta_t and reaction_length.
+    this->scheduler_.update(std::make_pair(formed_multi_id,
+        boost::make_shared<event_type>(this->time() + formed_multi.dt(), formed_multi)));
 
     return formed_multi_id;
 }
