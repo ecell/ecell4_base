@@ -188,6 +188,8 @@ class SGFRDSimulator :
 
     void set_t(const Real t) {return this->world_->set_t(t);}
 
+    world_type const& world() const {return *(this->world_);}
+
     Real dt() const {return dt_;}
     Real reaction_length() const {return reaction_length_;}
 
@@ -202,7 +204,6 @@ class SGFRDSimulator :
     // simple wrappers to call member's member-method (e.g. world_->t()) {{{
     Real uniform_real(){return this->rng_.random();}
 
-    world_type   const& world()   const {return *(this->world_);}
     polygon_type const& polygon() const {return *(this->world_->polygon());}
 
     bool update_particle(const ParticleID& pid, const Particle& p,
