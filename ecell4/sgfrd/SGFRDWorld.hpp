@@ -83,18 +83,18 @@ class SGFRDWorld
     void save(const std::string& filename) const override
     {
 #ifdef WITH_HDF5
-        // TODO Save polygon structure or not ?
-        // currently, the shape of the polygon embedded in this world does not
-        // change. Thus saving the same, static polygon every time step seems to
-        // be a waste of bytes.
         boost::scoped_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         pidgen_.save(fout.get());
 
         boost::scoped_ptr<H5::Group>
-            group(new H5::Group(fout->createGroup("ParticleSpace")));
-        ps_->save_hdf5(group.get());
+            group1(new H5::Group(fout->createGroup("ParticleSpace")));
+        ps_->save_hdf5(group1.get());
+
+        boost::scoped_ptr<H5::Group>
+            group2(new H5::Group(fout->createGroup("Polygon")));
+        this->polygon_->save_hdf5(group2.get());
 
         extras::save_version_information(
             fout.get(), std::string("ecell4-sgfrd-") + std::string(VERSION_INFO));
@@ -128,12 +128,16 @@ class SGFRDWorld
             throw NotFound("No version information was found.");
         }
 
-        const H5::Group group(fin->openGroup("ParticleSpace"));
-        ps_->load_hdf5(group);
+        const H5::Group group1(fin->openGroup("ParticleSpace"));
+        ps_->load_hdf5(group1);
+
+        const H5::Group group2(fin->openGroup("Polygon"));
+        polygon_->load_hdf5(group2);
+
         pidgen_.load(*fin);
         rng_->load(*fin);
 
-        // restore polygon information.
+        // restore polygon-particle relationships.
         // --------------------------------------------------------------------
         // The above code reads 3D positions of particles. But the information
         // about which particle is on which face are not restored.
