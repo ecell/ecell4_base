@@ -243,6 +243,14 @@ class SGFRDWorld
     new_particle(const Particle& p, const FaceID& fid);
 
     std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Species& sp, const Real3& pos)
+    {
+        const Real r = sp.get_attribute_as<Real>("radius");
+        const Real D = sp.get_attribute_as<Real>("D");
+        return this->new_particle(Particle(sp, pos, r, D));
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool>
     throw_in_particle(const Species& sp);
 
     bool add_molecules(const Species& sp, const Integer& num);
