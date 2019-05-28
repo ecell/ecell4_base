@@ -460,7 +460,7 @@ class Polygon : public Shape
 
     void load_hdf5(const H5::Group& root)
     {
-        save_triangles_polygon(root, this);
+        load_triangles_polygon(root, this);
     }
 #endif
 
