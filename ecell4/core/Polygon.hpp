@@ -151,10 +151,10 @@ class Polygon : public Shape
 
     Polygon(const Real3&    edge_lengths =    Real3(1, 1, 1),
             const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : total_area_(0.0), edge_length_(edge_length)
+        : total_area_(0.0), edge_length_(edge_lengths)
     {
-        const std::size_t x_size = matrix_sizes_[0];
-        const std::size_t y_size = matrix_sizes_[1];
+        const std::size_t x_size = matrix_sizes[0];
+        const std::size_t y_size = matrix_sizes[1];
 
         assert(x_size != 0);
         assert(y_size != 0);
