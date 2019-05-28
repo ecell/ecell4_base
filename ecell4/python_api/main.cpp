@@ -22,6 +22,6 @@ PYBIND11_MODULE(ecell4_base, m) {
     setup_gillespie_module(m_gillespie);
     setup_meso_module(m_meso);
     setup_ode_module(m_ode);
-    setup_sgfrd_module(m_spatiocyte);
+    setup_sgfrd_module(m_sgfrd);
     setup_spatiocyte_module(m_spatiocyte);
 }
