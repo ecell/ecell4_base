@@ -166,7 +166,7 @@ int main(int argc, char **argv)
     rng->seed(boost::lexical_cast<unsigned int>(input["seed"]));
 
     boost::shared_ptr<world_type> world =
-        boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
+        boost::make_shared<world_type>(edge_lengths, matrix_sizes, rng, polygon);
 
     if(key_missing(input, "num_A")){return 1;}
     if(key_missing(input, "num_B")){return 1;}

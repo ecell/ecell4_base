@@ -45,6 +45,29 @@ class SGFRDWorld
 
   public:
 
+    SGFRDWorld(const Real3&    edge_lengths =    Real3(1, 1, 1),
+               const Integer3& matrix_sizes = Integer3(3, 3, 3))
+        : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
+          polygon_(boost::make_shared<Polygon>(edge_lengths, matrix_sizes)),
+          registrator_(*polygon_)
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        rng_->seed();
+
+        this->prepair_barriers();
+    }
+
+    SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
+               boost::shared_ptr<RandomNumberGenerator> rng)
+        : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
+          rng_(rng),
+          polygon_(boost::make_shared<Polygon>(edge_lengths, matrix_sizes)),
+          registrator_(*polygon_)
+    {
+        this->prepair_barriers();
+    }
+
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                const boost::shared_ptr<polygon_type>& polygon)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
@@ -58,11 +81,13 @@ class SGFRDWorld
     }
 
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               const boost::shared_ptr<polygon_type>& polygon,
-               boost::shared_ptr<RandomNumberGenerator> rng)
+               boost::shared_ptr<RandomNumberGenerator> rng,
+               const boost::shared_ptr<polygon_type>& polygon)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(polygon), registrator_(*polygon_)
-    {this->prepair_barriers();}
+    {
+        this->prepair_barriers();
+    }
 
     SGFRDWorld(const std::string& filename)
         : ps_(new default_particle_space_type(Real3(1, 1, 1))),

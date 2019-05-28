@@ -82,7 +82,7 @@ class SGFRDFactory :
 
         if (rng_)
         {
-            return new world_type(edge_lengths, matrix_sizes_, poly, rng_);
+            return new world_type(edge_lengths, matrix_sizes_, rng_, poly);
         }
         else
         {
