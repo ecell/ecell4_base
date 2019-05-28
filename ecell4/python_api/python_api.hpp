@@ -17,6 +17,7 @@ void setup_egfrd_module(pybind11::module& m);
 void setup_gillespie_module(pybind11::module& m);
 void setup_meso_module(pybind11::module& m);
 void setup_ode_module(pybind11::module& m);
+void setup_sgfrd_module(pybind11::module& m);
 void setup_spatiocyte_module(pybind11::module& m);
 
 }
