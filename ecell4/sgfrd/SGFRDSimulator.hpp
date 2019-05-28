@@ -150,7 +150,7 @@ class SGFRDSimulator :
     {
         assert(t < this->next_event_time());
         const Real tm(t);
-        this->set_time(t);
+        this->set_t(t);
         while(this->scheduler_.size() != 0)
         {
             this->burst_event(this->scheduler_.pop(), tm);
@@ -167,7 +167,7 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, step, tracer_);
 
-        this->set_time(this->scheduler_.next_time());
+        this->set_t(this->scheduler_.next_time());
         SGFRD_TRACE(tracer_.write("now t = %1%", this->time()))
 
         // fire event executes `create_event` inside.
@@ -270,7 +270,7 @@ class SGFRDSimulator :
     {return this->world_->get_particle(pid);}
 
     Real time() const {return this->world_->t();}
-    void set_time(const Real t) {return this->world_->set_t(t);}
+    void set_t(const Real t) {return this->world_->set_t(t);}
 
     bool event_exists(const event_id_type& id)
     {
