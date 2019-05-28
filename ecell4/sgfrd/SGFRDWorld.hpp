@@ -257,6 +257,30 @@ class SGFRDWorld
     void add_molecules(const Species& sp, const Integer& num,
                        const boost::shared_ptr<Shape> shape);
 
+    void remove_molecules(const Species& sp, const Integer& num)
+    {
+        if (num < 0)
+        {
+            throw std::invalid_argument(
+                "The number of molecules must be positive.");
+        }
+
+        auto particles(list_particles(sp));
+        const Integer num_particles(particles.size());
+        if (num_particles < num)
+        {
+            throw std::invalid_argument(
+                "The number of molecules cannot be negative.");
+        }
+
+        shuffle((*rng_), particles);
+        for (auto i(particles.begin()); i != particles.begin() + num; ++i)
+        {
+            remove_particle((*i).first);
+        }
+        return;
+    }
+
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
         // Note: condition in `if` statements can have a declarator.
