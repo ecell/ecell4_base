@@ -3,6 +3,7 @@
 
 namespace ecell4
 {
+#ifdef WITH_HDF5
 
 void save_triangles_polygon(const Polygon& p, H5::Group* root)
 {
@@ -93,4 +94,5 @@ void load_triangles_polygon(const H5::Group& root, Polygon* p)
     return;
 }
 
+#endif // WITH_HDF5
 } // ecell4
