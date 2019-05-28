@@ -429,6 +429,18 @@ class Polygon : public Shape
         return this->triangle_at(fid).draw_position(rng);
     }
 
+    // to save/load the shape ...
+    std::vector<Triangle> triangles() const
+    {
+        std::vector<Triangle> retval;
+        retval.reserve(this->faces_.size());
+        for(const auto& f : this->faces_)
+        {
+            retval.push_back(f.triangle);
+        }
+        return retval;
+    }
+
     // Boundary condition stuff ----------------------------------------------//
 
     Real3 const& edge_lengths() const throw() {return this->edge_length_;}
