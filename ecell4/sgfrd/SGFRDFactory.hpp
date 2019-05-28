@@ -23,8 +23,8 @@ class SGFRDFactory :
 
   public:
 
-    SGFRDFactory(const Integer3& matrix_sizes = default_matrix_sizes(),
-                 Real bd_dt_factor = default_bd_dt_factor(),
+    SGFRDFactory(const Integer3& matrix_sizes   = default_matrix_sizes(),
+                 Real bd_dt_factor              = default_bd_dt_factor(),
                  Real bd_reaction_length_factor = default_bd_reaction_length_factor())
         : base_type(), rng_(nullptr), polygon_(nullptr), matrix_sizes_(matrix_sizes),
           bd_dt_factor_(bd_dt_factor), bd_reaction_length_factor_(bd_reaction_length_factor)
