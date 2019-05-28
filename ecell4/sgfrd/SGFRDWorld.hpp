@@ -2,6 +2,7 @@
 #define ECELL4_SGFRD_WORLD
 #include "StructureRegistrator.hpp"
 #include "ReactionInfo.hpp"
+#include <ecell4/core/extras.hpp>
 #include <ecell4/core/WorldInterface.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -79,26 +80,83 @@ class SGFRDWorld
         return ps_->set_t(t);
     }
 
-    void save(const std::string& fname) const override
+    void save(const std::string& filename) const override
     {
-        throw NotImplemented("SGFRDWorld::save");
-    }
-    void load(const std::string& fname)       override
-    {
-        throw NotImplemented("SGFRDWorld::load");
-    }
-
 #ifdef WITH_HDF5
-    void save_hdf5(H5::Group* root) const
-    {
-        throw NotImplemented("SGFRDWorld::save_hdf5");
+        // TODO Save polygon structure or not ?
+        // currently, the shape of the polygon embedded in this world does not
+        // change. Thus saving the same, static polygon every time step seems to
+        // be a waste of bytes.
+        boost::scoped_ptr<H5::H5File>
+            fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+        rng_->save(fout.get());
+        pidgen_.save(fout.get());
+
+        boost::scoped_ptr<H5::Group>
+            group(new H5::Group(fout->createGroup("ParticleSpace")));
+        ps_->save_hdf5(group.get());
+
+        extras::save_version_information(
+            fout.get(), std::string("ecell4-sgfrd-") + std::string(VERSION_INFO));
+        return;
+#else
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
+#endif
     }
 
-    void load_hdf5(const H5::Group& root)
+    void load(const std::string& filename) override
     {
-        throw NotImplemented("SGFRDWorld::load_hdf5");
-    }
+#ifdef WITH_HDF5
+        boost::scoped_ptr<H5::H5File>
+            fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
+
+        const std::string required = "ecell4-sgfrd-0.0";
+        try
+        {
+            const std::string version = extras::load_version_information(*fin);
+            if (!extras::check_version_information(version, required))
+            {
+                std::stringstream ss;
+                ss << "The version of the given file [" << version
+                    << "] is too old. [" << required << "] or later is required.";
+                throw NotSupported(ss.str());
+            }
+        }
+        catch(H5::GroupIException not_found_error)
+        {
+            throw NotFound("No version information was found.");
+        }
+
+        const H5::Group group(fin->openGroup("ParticleSpace"));
+        ps_->load_hdf5(group);
+        pidgen_.load(*fin);
+        rng_->load(*fin);
+
+        // restore polygon information.
+        // --------------------------------------------------------------------
+        // The above code reads 3D positions of particles. But the information
+        // about which particle is on which face are not restored.
+        // The nice thing is that all the restored particles locate precisely
+        // (within the limit of numerical error) on the faces unless the polygon
+        // shape was changed by restoring.
+
+        for(auto pidp : this->list_particles())
+        {
+            const auto& fp = this->find_face(pidp.second.position());
+            if(!fp)
+            {
+                throw std::invalid_argument("Particle does not locate on any face");
+            }
+            pidp.second.position() = fp->first;
+            this->update_particle(pidp.first, pidp.second, fp->second);
+        }
+        return;
+#else
+        throw NotSupported(
+            "This method requires HDF5. The HDF5 support is turned off.");
 #endif
+    }
 
     const Real volume() const override
     {
