@@ -56,7 +56,7 @@ SGFRDWorld::throw_in_particle(const Species& sp)
     return this->new_particle(p, fid);
 }
 
-bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
+void SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
 {
     if (num < 0)
     {
@@ -69,11 +69,11 @@ bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
             /*do nothing*/
         }
     }
-    return true;
+    return;
 }
 
-bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
-                               const boost::shared_ptr<const Shape>& shape)
+void SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
+                               const boost::shared_ptr<Shape> shape)
 {
     if (num < 0)
     {
@@ -81,7 +81,7 @@ bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
     }
     else if (num == 0)
     {
-        return true;
+        return;
     }
 
     // XXX: this implementation is not only inefficient, but also unsafe because
@@ -184,7 +184,7 @@ bool SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
             // otherwise, particle_inserted is kept false.
         }
     }
-    return true;
+    return;
 }
 
 
