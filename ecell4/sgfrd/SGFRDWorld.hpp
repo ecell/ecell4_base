@@ -489,6 +489,10 @@ class SGFRDWorld
     {
         return this->polygon_->periodic_transpose(pos1, pos2);
     }
+    Real3 apply_boundary(const Real3& pos) const
+    {
+        return this->ps_->apply_boundary(pos);
+    }
 
     void bind_to(boost::shared_ptr<model_type> model)
     {
