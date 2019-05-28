@@ -76,42 +76,8 @@ class SGFRDFactory :
         auto poly = this->polygon_;
         if (!poly)
         {
-            // generate default polygon: XY-plane at the middle of the Z axis.
-
-            const std::size_t x_size = matrix_sizes_[0];
-            const std::size_t y_size = matrix_sizes_[1];
-
-            assert(x_size != 0);
-            assert(y_size != 0);
-
-            const Real dx = edge_lengths[0] / x_size;
-            const Real dy = edge_lengths[1] / y_size;
-            const Real z  = edge_lengths[2] / 2.0; // at the middle of Z-axis
-
-            std::vector<Triangle> ts;
-            ts.reserve(x_size * y_size * 2);
-
-            for(std::size_t yi = 0; yi < y_size; ++yi)
-            {
-                for(std::size_t xi = 0; xi < x_size; ++xi)
-                {
-                    //   4___ 3
-                    // y  | /|  upper left  = {1, 3, 4}
-                    // ^  |/_|  lower right = {1, 2, 3}
-                    // | 1    2
-                    // |
-                    // --> x
-
-                    const Real3 v1(dx *  xi   , dy *  yi   , z);
-                    const Real3 v2(dx * (xi+1), dy *  yi   , z);
-                    const Real3 v3(dx * (xi+1), dy * (yi+1), z);
-                    const Real3 v4(dx *  xi   , dy * (yi+1), z);
-
-                    ts.push_back(Triangle(v1, v3, v4));
-                    ts.push_back(Triangle(v1, v2, v3));
-                }
-            }
-            poly = boost::make_shared<Polygon>(edge_lengths, ts);
+            // re-assign default-constructed polygon and use it
+            poly = boost::make_shared<Polygon>(edge_lengths, this->matrix_sizes_);
         }
 
         if (rng_)
