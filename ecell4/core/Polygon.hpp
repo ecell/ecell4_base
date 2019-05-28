@@ -12,6 +12,10 @@
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
 
+#ifdef WITH_HDF5
+#include "PolygonHDF5Writer.hpp"
+#endif
+
 #include <boost/utility.hpp>
 #include <boost/type_traits.hpp>
 #include <boost/foreach.hpp>
@@ -429,7 +433,14 @@ class Polygon : public Shape
         return this->triangle_at(fid).draw_position(rng);
     }
 
-    // to save/load the shape ...
+    // to save/load the shape ------------------------------------------------//
+
+    void reset(const Real3& edge_lengths)
+    {
+        this->edge_length_ = edge_lengths;
+        return;
+    }
+
     std::vector<Triangle> triangles() const
     {
         std::vector<Triangle> retval;
@@ -440,6 +451,18 @@ class Polygon : public Shape
         }
         return retval;
     }
+
+#ifdef WITH_HDF5
+    void save_hdf5(H5::Group* root) const
+    {
+        save_triangles_polygon(*this, root);
+    }
+
+    void load_hdf5(const H5::Group& root)
+    {
+        save_triangles_polygon(root, this);
+    }
+#endif
 
     // Boundary condition stuff ----------------------------------------------//
 
