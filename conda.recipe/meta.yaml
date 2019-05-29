@@ -19,6 +19,7 @@ requirements:
     - setuptools
     - pybind11
     - cmake
+    - hdf5
 
   run:
     - python
