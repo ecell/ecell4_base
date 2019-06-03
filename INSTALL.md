@@ -5,10 +5,10 @@ Installation
 
 #### Minimum requirements
 
-**Note that we do NOT support Python2.7 and 32bit versions.**
+**We do NOT support Python2.7 and 32bit Python.**
 
-- Python (3.5, 3.6, 3.7 are supported [3.5 is supported only on Linux])
-- pip (8.1 or later)
+- Python 3.7 [3.6 is also supported only on Linux])
+- pip
 - HDF5 (required only on **Windows**.)
 
 #### Optional requirements
