@@ -31,7 +31,9 @@ class MultiContainer
 
         pcon_.push_back(world_.get_particle(pid));
         if(world_.is_on_face(pid))
+        {
             registrator_.emplace(pid, world_.get_face_id(pid));
+        }
         return true;
     }
 
