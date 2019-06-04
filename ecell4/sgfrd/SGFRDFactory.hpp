@@ -79,6 +79,13 @@ class SGFRDFactory :
             // re-assign default-constructed polygon and use it
             poly = boost::make_shared<Polygon>(edge_lengths, this->matrix_sizes_);
         }
+        // XXX: consider this carefully
+        else if (poly->edge_lengths()[0] != edge_lengths[0] ||
+                 poly->edge_lengths()[1] != edge_lengths[1] ||
+                 poly->edge_lengths()[2] != edge_lengths[2])
+        {
+            throw std::runtime_error("edge_lengths differ from that of polygon");
+        }
 
         if (rng_)
         {
