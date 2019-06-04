@@ -213,6 +213,11 @@ class SGFRDWorld
         return false;
     }
 
+    std::vector<Species> list_species() const
+    {
+        return ps_->list_species();
+    }
+
     Integer num_molecules(const Species& sp) const override
     {
         return ps_->num_molecules(sp);
