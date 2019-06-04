@@ -105,6 +105,9 @@ class SGFRDSimulator :
             // not consider reactions outside the shell, so it causes an error.
             throw std::invalid_argument("SGFRDSimulator: too large reaction length");
         }
+#ifndef ECELL4_SGFRD_NO_TRACE
+        tracer_.clear(); // create a file and clear the file if already exists
+#endif
     }
 
     SGFRDSimulator(boost::shared_ptr<world_type> world,
@@ -123,6 +126,9 @@ class SGFRDSimulator :
             // not consider reactions outside the shell, so it causes an error.
             throw std::invalid_argument("SGFRDSimulator: too large reaction length");
         }
+#ifndef ECELL4_SGFRD_NO_TRACE
+        tracer_.clear(); // create a file and clear the file if already exists
+#endif
     }
     ~SGFRDSimulator() override = default;
 
