@@ -47,8 +47,8 @@ public:
 
 public:
 
-    ShellContainer(const polygon_type& poly)
-        : polygon_(poly), face_registrator_(poly), vertex_registrator_(poly)
+    ShellContainer(const boost::shared_ptr<polygon_type>& poly)
+        : polygon_(poly), face_registrator_(*poly), vertex_registrator_(*poly)
     {}
     ~ShellContainer(){}
 
@@ -113,7 +113,7 @@ public:
 
 private:
 
-    const polygon_type&        polygon_;
+    boost::shared_ptr<const polygon_type> polygon_;
     container_type             container_;
     shell_id_to_index_map_type shell_id_to_index_map_;
     face_registrator_type      face_registrator_;
@@ -449,7 +449,7 @@ ShellContainer::list_shells_within_radius(
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<strID>
-        distance_on_surf(pos, this->polygon_);
+        distance_on_surf(pos, *polygon_);
 
     {
         const std::vector<ShellID>& shells = list_shells_on(pos.second);
@@ -466,8 +466,8 @@ ShellContainer::list_shells_within_radius(
         }
     }
 
-    const std::vector<FaceID>   neighborf(polygon_.neighbor_faces_of   (pos.second));
-    const std::vector<VertexID> neighborv(polygon_.neighbor_vertices_of(pos.second));
+    const std::vector<FaceID>   neighborf(polygon_->neighbor_faces_of   (pos.second));
+    const std::vector<VertexID> neighborv(polygon_->neighbor_vertices_of(pos.second));
 
     for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
@@ -563,7 +563,7 @@ ShellContainer::list_shells_within_radius(
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<strID>
-        distance_on_surf(pos, this->polygon_);
+        distance_on_surf(pos, *polygon_);
 
     {
         const std::vector<ShellID>& shells = list_shells_on(pos.second);
@@ -580,8 +580,8 @@ ShellContainer::list_shells_within_radius(
         }
     }
 
-    const std::vector<FaceID>   neighborf(polygon_.neighbor_faces_of   (pos.second));
-    const std::vector<VertexID> neighborv(polygon_.neighbor_vertices_of(pos.second));
+    const std::vector<FaceID>   neighborf(polygon_->neighbor_faces_of   (pos.second));
+    const std::vector<VertexID> neighborv(polygon_->neighbor_vertices_of(pos.second));
 
     for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)
@@ -678,7 +678,7 @@ ShellContainer::list_shells_within_radius(
 {
     std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
     const distance_calculator_on_surface<strID>
-        distance_on_surf(pos, this->polygon_);
+        distance_on_surf(pos, *polygon_);
 
     {
         const std::vector<ShellID>& shells = list_shells_on(pos.second);
@@ -695,8 +695,8 @@ ShellContainer::list_shells_within_radius(
         }
     }
 
-    const std::vector<FaceID>   neighborf(polygon_.neighbor_faces_of   (pos.second));
-    const std::vector<VertexID> neighborv(polygon_.neighbor_vertices_of(pos.second));
+    const std::vector<FaceID>   neighborf(polygon_->neighbor_faces_of   (pos.second));
+    const std::vector<VertexID> neighborv(polygon_->neighbor_vertices_of(pos.second));
 
     for(typename std::vector<FaceID>::const_iterator
         iter = neighborf.begin(); iter != neighborf.end(); ++iter)

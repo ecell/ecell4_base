@@ -94,7 +94,7 @@ class SGFRDSimulator :
                    const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world, model), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
-          rng_(*(world->rng())), shell_container_(*(world->polygon())),
+          rng_(*(world->rng())), shell_container_(world->polygon()),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
           tracer_(trace_fname)
     {
@@ -112,7 +112,7 @@ class SGFRDSimulator :
                    const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
-          rng_(*(world->rng())), shell_container_(*(world->polygon())),
+          rng_(*(world->rng())), shell_container_(world->polygon()),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
           tracer_(trace_fname)
     {
