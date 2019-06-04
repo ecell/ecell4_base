@@ -26,8 +26,9 @@ class SGFRDFactory :
     SGFRDFactory(const Integer3& matrix_sizes   = default_matrix_sizes(),
                  Real bd_dt_factor              = default_bd_dt_factor(),
                  Real bd_reaction_length_factor = default_bd_reaction_length_factor())
-        : base_type(), rng_(nullptr), polygon_(nullptr), matrix_sizes_(matrix_sizes),
-          bd_dt_factor_(bd_dt_factor), bd_reaction_length_factor_(bd_reaction_length_factor)
+        : base_type(), rng_(nullptr), polygon_("", STLFormat::Ascii),
+          matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor),
+          bd_reaction_length_factor_(bd_reaction_length_factor)
     {
         ; // do nothing
     }
@@ -59,41 +60,43 @@ class SGFRDFactory :
         return std::addressof(this->rng(rng));
     }
 
-    this_type& polygon(const boost::shared_ptr<Polygon>& poly)
+    this_type& polygon(const std::string& fname, const STLFormat fmt)
     {
-        this->polygon_ = poly;
+        this->polygon_ = std::make_pair(fname, fmt);
         return (*this);
     }
-    this_type* polygon_ptr(const boost::shared_ptr<Polygon>& poly)
+    this_type* polygon_ptr(const std::string& fname, const STLFormat fmt)
     {
-        return std::addressof(this->polygon(poly));
+        return std::addressof(this->polygon(fname, fmt));
     }
 
   protected:
 
     virtual world_type* create_world(const Real3& edge_lengths) const
     {
-        auto poly = this->polygon_;
-        if (!poly)
-        {
-            // re-assign default-constructed polygon and use it
-            poly = boost::make_shared<Polygon>(edge_lengths, this->matrix_sizes_);
-        }
-        // XXX: consider this carefully
-        else if (poly->edge_lengths()[0] != edge_lengths[0] ||
-                 poly->edge_lengths()[1] != edge_lengths[1] ||
-                 poly->edge_lengths()[2] != edge_lengths[2])
-        {
-            throw std::runtime_error("edge_lengths differ from that of polygon");
-        }
-
         if (rng_)
         {
-            return new world_type(edge_lengths, matrix_sizes_, rng_, poly);
+            if(this->polygon_.first.empty())
+            {
+                return new world_type(edge_lengths, matrix_sizes_, rng_);
+            }
+            else
+            {
+                return new world_type(edge_lengths, matrix_sizes_, rng_,
+                        this->polygon_.first, this->polygon_.second);
+            }
         }
         else
         {
-            return new world_type(edge_lengths, matrix_sizes_, poly);
+            if(this->polygon_.first.empty())
+            {
+                return new world_type(edge_lengths, matrix_sizes_);
+            }
+            else
+            {
+                return new world_type(edge_lengths, matrix_sizes_,
+                        this->polygon_.first, this->polygon_.second);
+            }
         }
     }
 
@@ -106,7 +109,7 @@ class SGFRDFactory :
   protected:
 
     boost::shared_ptr<RandomNumberGenerator> rng_;
-    boost::shared_ptr<Polygon>               polygon_;
+    std::pair<std::string, STLFormat>        polygon_;
     Integer3 matrix_sizes_;
     Real     bd_dt_factor_;
     Real     bd_reaction_length_factor_;

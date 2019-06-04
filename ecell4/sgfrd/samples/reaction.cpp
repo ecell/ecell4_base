@@ -132,9 +132,6 @@ int main(int argc, char **argv)
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real     volume(L * L * L);
 
-    if(key_missing(input, "polygon")){return 1;}
-    boost::shared_ptr<polygon_type> polygon = boost::make_shared<polygon_type>(
-        polygon_type(edge_lengths, ecell4::read_stl_format(input["polygon"], ecell4::STLFormat::Ascii)));
 
     boost::shared_ptr<ecell4::NetworkModel>
         model(new ecell4::NetworkModel());
@@ -165,8 +162,9 @@ int main(int argc, char **argv)
     if(key_missing(input, "seed")){return 1;}
     rng->seed(boost::lexical_cast<unsigned int>(input["seed"]));
 
-    boost::shared_ptr<world_type> world =
-        boost::make_shared<world_type>(edge_lengths, matrix_sizes, rng, polygon);
+    if(key_missing(input, "polygon")){return 1;}
+    boost::shared_ptr<world_type> world = boost::make_shared<world_type>(
+            edge_lengths, matrix_sizes, rng, input["polygon"], ecell4::STLFormat::Ascii);
 
     if(key_missing(input, "num_A")){return 1;}
     if(key_missing(input, "num_B")){return 1;}

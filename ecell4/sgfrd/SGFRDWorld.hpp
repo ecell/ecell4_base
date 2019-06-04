@@ -7,6 +7,7 @@
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/Polygon.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Segment.hpp>
 #include <ecell4/core/Model.hpp>
@@ -45,6 +46,7 @@ class SGFRDWorld
 
   public:
 
+    // !rng && !polygon
     SGFRDWorld(const Real3&    edge_lengths =    Real3(1, 1, 1),
                const Integer3& matrix_sizes = Integer3(3, 3, 3))
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
@@ -58,6 +60,7 @@ class SGFRDWorld
         this->prepair_barriers();
     }
 
+    // rng && !polygon
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
@@ -68,10 +71,13 @@ class SGFRDWorld
         this->prepair_barriers();
     }
 
+    // !rng && polygon
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               const boost::shared_ptr<polygon_type>& polygon)
+               const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(polygon), registrator_(*polygon_)
+          polygon_(boost::make_shared<Polygon>(
+                      read_polygon(polygon_file, fmt, edge_lengths))),
+          registrator_(*polygon_)
     {
         rng_ = boost::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -80,16 +86,19 @@ class SGFRDWorld
         this->prepair_barriers();
     }
 
+    // rng && polygon
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                boost::shared_ptr<RandomNumberGenerator> rng,
-               const boost::shared_ptr<polygon_type>& polygon)
+               const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          rng_(rng), polygon_(polygon), registrator_(*polygon_)
+          rng_(rng), polygon_(boost::make_shared<Polygon>(
+                      read_polygon(polygon_file, fmt, edge_lengths))),
+          registrator_(*polygon_)
     {
         this->prepair_barriers();
     }
 
-    SGFRDWorld(const std::string& filename)
+    SGFRDWorld(const std::string& filename) // from HDF5
         : ps_(new default_particle_space_type(Real3(1, 1, 1))),
           polygon_(boost::make_shared<Polygon>(Real3(1, 1, 1))),
           registrator_(*polygon_)
