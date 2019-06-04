@@ -1014,7 +1014,24 @@ void define_shape(py::module& m)
         {
             return PlanarSurface(Real3(0, 0, z), Real3(1, 0, 0), Real3(0, 1, 0));
         });
+
+    // =======================================================================
+    // sgfrd polygon related stuff
+
+    py::class_<Polygon, Shape, PyShapeImpl<Polygon>, boost::shared_ptr<Polygon>>(m, "Polygon")
+        .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))
+        .def("reset", &Polygon::reset);
+
+    py::enum_<ecell4::STLFormat>(m, "STLFormat", py::arithmetic())
+        .value("Ascii",  ecell4::STLFormat::Ascii)
+        .value("Binary", ecell4::STLFormat::Binary)
+        .export_values();
+
+    m.def("read_polygon",  &ecell4::read_polygon);
+    m.def("write_polygon", &ecell4::write_polygon);
 }
+
+
 
 static inline
 void define_simulator(py::module& m)
