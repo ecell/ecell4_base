@@ -1,9 +1,9 @@
 #include <ecell4/core/STLFileIO.hpp>
-#include <boost/cstdint.hpp>
+#include <ecell4/core/Polygon.hpp>
 #include <boost/format.hpp>
 #include <stdexcept>
 #include <sstream>
-#include <iostream>
+#include <fstream>
 #include <iomanip>
 
 namespace ecell4
@@ -117,8 +117,6 @@ static std::vector<Triangle> read_ascii_stl(const std::string& filename)
         iss >> prefix;
         if(prefix == "solid")
         {
-//             std::cerr << "found solid." << std::endl;
-//             std::cerr << line << std::endl;
             break;
         }
         ifs.peek();
@@ -181,11 +179,9 @@ read_binary_stl(const std::string& filename)
     char ch_header[81];
     ifs.read(ch_header, 80);
     ch_header[80] = '\0';
-//     std::cerr << "header   : " << ch_header << std::endl;
 
-    boost::uint32_t num_triangle = 0;
+    std::uint32_t num_triangle = 0;
     ifs.read(reinterpret_cast<char*>(&num_triangle), 4);
-//     std::cerr << "# of face: " << num_triangle << std::endl;
 
     if(50 * num_triangle + 84 != size_of_file)
     {
@@ -195,7 +191,7 @@ read_binary_stl(const std::string& filename)
     }
 
     std::vector<Triangle> retval(num_triangle);
-    for(boost::uint32_t i=0; i < num_triangle; ++i)
+    for(std::uint32_t i=0; i < num_triangle; ++i)
     {
         retval.at(i) = read_binary_stl_triangle(ifs);
     }
@@ -203,7 +199,7 @@ read_binary_stl(const std::string& filename)
 }
 
 std::vector<Triangle>
-read_stl_format(const std::string& filename, const STLFormat::Kind kind)
+read_stl_format(const std::string& filename, const STLFormat kind)
 {
     switch(kind)
     {
@@ -228,7 +224,7 @@ static void write_binary_stl(
     assert(header.size() == 80);
     ofs.write(header.c_str(), 80);
 
-    const boost::uint32_t num_triangle = tri.size();
+    const std::uint32_t num_triangle = tri.size();
     ofs.write(reinterpret_cast<const char*>(&num_triangle), 4);
 
     for(typename std::vector<Triangle>::const_iterator
@@ -260,7 +256,7 @@ static void write_binary_stl(
         ofs.write(reinterpret_cast<const char*>(&v2y), 4);
         ofs.write(reinterpret_cast<const char*>(&v2z), 4);
 
-        const boost::uint16_t attr(0);
+        const std::uint16_t attr(0);
         ofs.write(reinterpret_cast<const char*>(&attr), 2);
     }
     ofs.close();
@@ -300,8 +296,8 @@ static void write_ascii_stl(
     return;
 }
 
-void write_stl_format(const std::string& filename,
-        const std::vector<Triangle>& tri, const STLFormat::Kind kind)
+void write_stl_format(const std::string& filename, const STLFormat kind,
+                      const std::vector<Triangle>& tri)
 {
     switch(kind)
     {
@@ -309,6 +305,20 @@ void write_stl_format(const std::string& filename,
         case STLFormat::Binary: return write_binary_stl(filename, tri);
         default: throw std::invalid_argument("write_stl_format: unknown format");
     }
+}
+
+// =============================================================================
+
+Polygon read_polygon(const std::string& fname, const STLFormat fmt,
+                     const Real3& edge_lengths)
+{
+    return Polygon(edge_lengths, read_stl_format(fname, fmt));
+}
+void   write_polygon(const std::string& filename, const STLFormat fmt,
+                     const Polygon& polygon)
+{
+    write_stl_format(filename, fmt, polygon.triangles());
+    return;
 }
 
 }// ecell4

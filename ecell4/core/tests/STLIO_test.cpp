@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_io_ascii)
     }
 
     ecell4::write_stl_format(
-            "STLIO_test_asc.stl", triangles, ecell4::STLFormat::Ascii);
+            "STLIO_test_asc.stl", ecell4::STLFormat::Ascii, triangles);
 
     const std::vector<Triangle> after_io = ecell4::read_stl_format(
             "STLIO_test_asc.stl", ecell4::STLFormat::Ascii);
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_io_binary)
     }
 
     ecell4::write_stl_format(
-            "STLIO_test_bin.stl", triangles, ecell4::STLFormat::Binary);
+            "STLIO_test_bin.stl", ecell4::STLFormat::Binary, triangles);
 
     const std::vector<Triangle> after_io = ecell4::read_stl_format(
             "STLIO_test_bin.stl", ecell4::STLFormat::Binary);

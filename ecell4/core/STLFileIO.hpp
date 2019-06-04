@@ -3,19 +3,27 @@
 #include <ecell4/core/Triangle.hpp>
 #include <string>
 #include <vector>
-#include <fstream>
+#include <cstdint>
 
 namespace ecell4
 {
 
-struct STLFormat {enum Kind {Ascii, Binary};};
+class Polygon; // forward declaration
 
-std::vector<Triangle>
-read_stl_format(const std::string& filename, const STLFormat::Kind);
+enum class STLFormat : std::uint8_t
+{
+    Ascii  = 0,
+    Binary = 1,
+};
 
-void
-write_stl_format(const std::string& filename,
-                 const std::vector<Triangle>& triangles, const STLFormat::Kind);
+std::vector<Triangle> read_stl_format(const std::string& fname, const STLFormat);
+void                 write_stl_format(const std::string& fname, const STLFormat,
+                                      const std::vector<Triangle>& triangles);
+
+Polygon read_polygon(const std::string& filename, const STLFormat,
+                     const Real3& edge_lengths);
+void   write_polygon(const std::string& filename, const STLFormat,
+                     const Polygon&);
 
 }// ecell4
 #endif /* ECELL4_STL_FILE_READER */
