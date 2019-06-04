@@ -84,13 +84,14 @@ LONG_DESCRIPTION = open("README.md").read()
 
 setup(
     name='ecell4_base',
-    version = '1.0.0',
+    version = '2.0.0b1',
     license = "the GNU General Public License v2",
     author = "Kazunari Kaizu",
     author_email = "kaizu@riken.jp",
     url = "https://github.com/ecell/ecell4-base",
     description = DESCRIPTION,
     long_description = LONG_DESCRIPTION,
+    long_description_content_type='text/markdown',
     data_files = [('ecell4-licenses', glob.glob('licenses/*'))],
     ext_modules=[CMakeExtension('ecell4_base')],
     cmdclass=dict(build_ext=CMakeBuild, test=CustomTestCommand),
