@@ -77,8 +77,19 @@ void define_sgfrd_world(py::module& m)
                 py::arg("edge_lengths"),
                 py::arg("matrix_sizes"),
                 py::arg("rng"))
+        .def(py::init<const Real3&, const Integer3&, const std::string&, const STLFormat>(),
+                py::arg("edge_lengths"),
+                py::arg("matrix_sizes"),
+                py::arg("stl_file"),
+                py::arg("stl_format"))
+        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>,
+                      const std::string&, const STLFormat>(),
+                py::arg("edge_lengths"),
+                py::arg("matrix_sizes"),
+                py::arg("rng"),
+                py::arg("stl_file"),
+                py::arg("stl_format"))
         .def(py::init<const std::string&>(), py::arg("filename"))
-
         .def("new_particle",
             (std::pair<std::pair<ParticleID, Particle>, bool> (world_type::*)(const Particle&))
             &world_type::new_particle)
