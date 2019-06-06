@@ -828,12 +828,6 @@ public:
         return rng_;
     }
 
-    const MoleculeInfo get_molecule_info(boost::shared_ptr<const VoxelPool> mt) const
-    {
-        const MoleculeInfo info = {mt->radius(), mt->D(), get_location_serial(mt)};
-        return info;
-    }
-
     void bind_to(boost::shared_ptr<Model> model)
     {
         if (boost::shared_ptr<Model> bound_model = lock_model())
