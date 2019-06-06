@@ -850,7 +850,7 @@ public:
 
     boost::shared_ptr<Model> lock_model() const
     {
-        bound = model_.lock();
+        const auto bound = model_.lock();
         if (!bound)
         {
             std::cerr << "Warning: Manipulating SpatiocyteWorld without binding Model is deprecated." << std::endl;
