@@ -41,8 +41,6 @@ public:
 
     typedef LatticeSpaceVectorImpl default_root_type;
 
-    typedef MoleculeInfo molecule_info_type;
-
     typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
     typedef VoxelSpaceBase::coordinate_type coordinate_type;
 
@@ -680,7 +678,7 @@ public:
         // ParticleID pid(sidgen_());
         // const bool is_succeeded(update_particle(pid, p));
         // return std::make_pair(get_particle(pid), is_succeeded);
-        const molecule_info_type minfo(get_molecule_info(p.species()));
+        const MoleculeInfo minfo(get_molecule_info(p.species()));
         const Voxel voxel(get_voxel_nearby(p.position()));
 
         if (voxel.get_voxel_pool()->species().serial() != minfo.loc)
@@ -712,7 +710,7 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
-        const molecule_info_type minfo(get_molecule_info(p.species()));
+        const MoleculeInfo minfo(get_molecule_info(p.species()));
         return update_voxel(pid,
                 ParticleVoxel(p.species(),
                               get_voxel_nearby(p.position()).coordinate,
@@ -740,7 +738,7 @@ public:
         boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
-            const molecule_info_type minfo(get_molecule_info(sp));
+            const MoleculeInfo minfo(get_molecule_info(sp));
             space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
         }
 
@@ -758,7 +756,7 @@ public:
         boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
-            const molecule_info_type minfo(get_molecule_info(sp));
+            const MoleculeInfo minfo(get_molecule_info(sp));
             space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
         }
 
@@ -789,9 +787,9 @@ public:
         return rng_;
     }
 
-    const molecule_info_type get_molecule_info(boost::shared_ptr<const VoxelPool> mt) const
+    const MoleculeInfo get_molecule_info(boost::shared_ptr<const VoxelPool> mt) const
     {
-        const molecule_info_type info = {mt->radius(), mt->D(), get_location_serial(mt)};
+        const MoleculeInfo info = {mt->radius(), mt->D(), get_location_serial(mt)};
         return info;
     }
 
