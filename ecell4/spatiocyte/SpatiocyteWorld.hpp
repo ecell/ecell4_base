@@ -32,6 +32,7 @@ struct MoleculeInfo
     const Real radius;
     const Real D;
     const std::string loc;
+    const Shape::dimension_kind dimension;
 };
 
 class SpatiocyteWorld
@@ -612,6 +613,7 @@ public:
         boost::optional<Real> diffusion_coef;
         boost::optional<Real> radius;
         boost::optional<std::string> location;
+        Shape::dimension_kind dimension = Shape::THREE; // The default dimension is 3
 
         const auto itr = molecule_info_cache_.find(sp);
         if (itr != molecule_info_cache_.end())
@@ -622,6 +624,7 @@ public:
             diffusion_coef = itr->second.D;
             radius = itr->second.radius;
             location = itr->second.loc;
+            dimension = itr->second.dimension;
         }
         else if (const auto model = lock_model())
         {
@@ -641,6 +644,8 @@ public:
             {
                 location = species_from_model.get_attribute_as<std::string>("location");
             }
+
+            dimension = extras::get_dimension_from_model(sp, model);
         }
 
         if (sp.has_attribute("D"))
@@ -685,7 +690,7 @@ public:
             location = "";
         }
 
-        const MoleculeInfo info = {*radius, *diffusion_coef, *location};
+        const MoleculeInfo info = {*radius, *diffusion_coef, *location, dimension};
         molecule_info_cache_.insert(molecule_info_cache_t::value_type(sp, info));
         return info;
     }
@@ -855,13 +860,7 @@ public:
 
     Shape::dimension_kind get_dimension(const Species& species)
     {
-        const dim_map_t::const_iterator itr(dim_map_.find(species));
-        if (itr != dim_map_.end())
-            return itr->second;
-
-        const Shape::dimension_kind dim(extras::get_dimension_from_model(species, lock_model()));
-        dim_map_.insert(dim_map_t::value_type(species, dim));
-        return dim;
+        return get_molecule_info(species).dimension;
     }
 
     /**
@@ -927,7 +926,6 @@ public:
 
 protected:
 
-    typedef utils::get_mapper_mf<Species, Shape::dimension_kind>::type dim_map_t;
     typedef utils::get_mapper_mf<Species, MoleculeInfo>::type molecule_info_cache_t;
 
     std::size_t size_;
@@ -940,7 +938,6 @@ protected:
     SerialIDGenerator<ParticleID> sidgen_;
 
     boost::weak_ptr<Model> model_;
-    dim_map_t dim_map_;
     molecule_info_cache_t molecule_info_cache_;
 };
 
