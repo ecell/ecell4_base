@@ -850,7 +850,13 @@ public:
 
     boost::shared_ptr<Model> lock_model() const
     {
-        return model_.lock();
+        bound = model_.lock();
+        if (!bound)
+        {
+            std::cerr << "Warning: Manipulating SpatiocyteWorld without binding Model is deprecated." << std::endl;
+            std::cerr << "         In the future, calling this function before binding Model will throw an exception." << std::endl;
+        }
+        return bound;
     }
 
     Shape::dimension_kind get_dimension(const Species& species)
