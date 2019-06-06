@@ -607,13 +607,23 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    MoleculeInfo get_molecule_info(const Species& sp) const
+    const MoleculeInfo get_molecule_info(const Species& sp)
     {
         boost::optional<Real> diffusion_coef;
         boost::optional<Real> radius;
         boost::optional<std::string> location;
 
-        if (const auto model = lock_model())
+        const auto itr = molecule_info_cache_.find(sp);
+        if (itr != molecule_info_cache_.end())
+        {
+            // return itr->second;
+            // TODO: the below code is only for warning.
+            //       In the future, the value should be returned immediately.
+            diffusion_coef = itr->second.D;
+            radius = itr->second.radius;
+            location = itr->second.loc;
+        }
+        else if (const auto model = lock_model())
         {
             const auto species_from_model(model->apply_species_attributes(sp));
 
@@ -659,7 +669,7 @@ public:
             if (location && *location != new_value)
             {
                 warning("location");
-                radius = location;
+                location = new_value;
             }
         }
 
@@ -675,14 +685,16 @@ public:
             location = "";
         }
 
-        MoleculeInfo info = {*radius, *diffusion_coef, *location};
+        const MoleculeInfo info = {*radius, *diffusion_coef, *location};
+        molecule_info_cache_.insert(molecule_info_cache_t::value_type(sp, info));
         return info;
     }
 
     static inline void
     warning(const std::string attribute)
     {
-        std::cerr << "Warning: A given species has an attribute \"" << attribute << "\", but its value differs from that of the bound Model." << std::endl;
+        std::cerr << "Warning: A given species has an attribute \"" << attribute << "\"";
+        std::cerr << ", but its value differs from that of the bound Model or the value previously given." << std::endl;
         std::cerr << "         Giving the different value from a species attribute are deprecated." << std::endl;
         std::cerr << "         An attribute of a given species will be ignored in the future." << std::endl;
     }
@@ -916,6 +928,7 @@ public:
 protected:
 
     typedef utils::get_mapper_mf<Species, Shape::dimension_kind>::type dim_map_t;
+    typedef utils::get_mapper_mf<Species, MoleculeInfo>::type molecule_info_cache_t;
 
     std::size_t size_;
     space_container_type spaces_;
@@ -928,6 +941,7 @@ protected:
 
     boost::weak_ptr<Model> model_;
     dim_map_t dim_map_;
+    molecule_info_cache_t molecule_info_cache_;
 };
 
 inline
