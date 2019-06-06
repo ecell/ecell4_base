@@ -609,53 +609,82 @@ public:
      */
     MoleculeInfo get_molecule_info(const Species& sp) const
     {
-        const bool with_D(sp.has_attribute("D"));
-        const bool with_radius(sp.has_attribute("radius"));
-        const bool with_loc(sp.has_attribute("location"));
+        boost::optional<Real> diffusion_coef;
+        boost::optional<Real> radius;
+        boost::optional<std::string> location;
 
-        Real radius(voxel_radius()), D(0.0);
-        std::string loc("");
-
-        if (with_D)
+        if (const auto model = lock_model())
         {
-            D = sp.get_attribute_as<Real>("D");
-        }
+            const auto species_from_model(model->apply_species_attributes(sp));
 
-        if (with_radius)
-        {
-            radius = sp.get_attribute_as<Real>("radius");
-        }
-
-        if (with_loc)
-        {
-            loc = sp.get_attribute_as<std::string>("location");
-        }
-
-        if (!(with_D && with_radius))  //XXX: with_loc?
-        {
-            if (boost::shared_ptr<Model> bound_model = lock_model())
+            if (species_from_model.has_attribute("D"))
             {
-                Species newsp(bound_model->apply_species_attributes(sp));
+                diffusion_coef = species_from_model.get_attribute_as<Real>("D");
+            }
 
-                if (!with_D && newsp.has_attribute("D"))
-                {
-                    D = newsp.get_attribute_as<Real>("D");
-                }
+            if (species_from_model.has_attribute("radius"))
+            {
+                radius = species_from_model.get_attribute_as<Real>("radius");
+            }
 
-                if (!with_radius && newsp.has_attribute("radius"))
-                {
-                    radius = newsp.get_attribute_as<Real>("radius");
-                }
-
-                if (!with_loc && newsp.has_attribute("location"))
-                {
-                    loc = newsp.get_attribute_as<std::string>("location");
-                }
+            if (species_from_model.has_attribute("location"))
+            {
+                location = species_from_model.get_attribute_as<std::string>("location");
             }
         }
 
-        MoleculeInfo info = {radius, D, loc};
+        if (sp.has_attribute("D"))
+        {
+            const auto new_value = sp.get_attribute_as<Real>("D");
+            if (diffusion_coef && *diffusion_coef != new_value)
+            {
+                warning("D");
+                diffusion_coef = new_value;
+            }
+        }
+
+        if (sp.has_attribute("radius"))
+        {
+            const auto new_value = sp.get_attribute_as<Real>("radius");
+            if (radius && *radius != new_value)
+            {
+                warning("radius");
+                radius = new_value;
+            }
+        }
+
+        if (sp.has_attribute("location"))
+        {
+            const auto new_value = sp.get_attribute_as<std::string>("location");
+            if (location && *location != new_value)
+            {
+                warning("location");
+                radius = location;
+            }
+        }
+
+        if (diffusion_coef == boost::none) {
+            diffusion_coef = 0.0;
+        }
+
+        if (radius == boost::none) {
+            radius = voxel_radius();
+        }
+
+        if (location == boost::none) {
+            location = "";
+        }
+
+        MoleculeInfo info = {*radius, *diffusion_coef, *location};
         return info;
+    }
+
+    static inline void
+    warning(const std::string attribute)
+    {
+        std::cerr << "Warning: A given species has an attribute \"" << attribute << "\", but its value differs from that of the bound Model." << std::endl;
+        std::cerr << "         Giving the different value from a species attribute are deprecated." << std::endl;
+        std::cerr << "         An attribute of a given species will be ignored in the future." << std::endl;
     }
 
     // bool has_species_exact(const Species &sp) const
