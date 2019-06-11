@@ -358,7 +358,11 @@ class SGFRDWorld
 
         return this->new_particle(Particle(sp, pos, r, D), fid);
     }
-
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Species& sp, const std::pair<FaceID, Barycentric>& sfp)
+    {
+        return this->new_particle(sp, sfp.first, sfp.second);
+    }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
     throw_in_particle(const Species& sp);
