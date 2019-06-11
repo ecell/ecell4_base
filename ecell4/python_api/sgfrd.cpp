@@ -96,6 +96,14 @@ void define_sgfrd_world(py::module& m)
         .def("new_particle",
             (std::pair<std::pair<ParticleID, Particle>, bool> (world_type::*)(const Species&, const Real3&))
             &world_type::new_particle)
+        .def("new_particle",
+            (std::pair<std::pair<ParticleID, Particle>, bool>
+             (world_type::*)(const Species&, const Polygon::FaceID&, const Barycentric&))
+            &world_type::new_particle)
+        .def("new_particle",
+            (std::pair<std::pair<ParticleID, Particle>, bool>
+             (world_type::*)(const Species&, const std::pair<Polygon::FaceID, Barycentric>&))
+            &world_type::new_particle)
         .def("update_particle",
             (bool (world_type::*)(const ParticleID&, const Particle&))
             &world_type::update_particle)
@@ -129,6 +137,17 @@ void define_sgfrd_world(py::module& m)
             (void (world_type::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>))
             &world_type::add_molecules)
         .def("remove_molecules", &world_type::remove_molecules)
+
+        .def("get_surface_position", &world_type::get_surface_position)
+        .def("list_surface_positions",
+            (std::vector<std::pair<ParticleID, std::pair<Polygon::FaceID, Barycentric>>>
+             (world_type::*)() const)
+            &world_type::list_surface_positions)
+        .def("list_surface_positions",
+            (std::vector<std::pair<ParticleID, std::pair<Polygon::FaceID, Barycentric>>>
+             (world_type::*)(const Species&) const)
+            &world_type::list_surface_positions)
+        .def("list_surface_positions_exact", &world_type::list_surface_positions_exact)
         .def("bind_to", &world_type::bind_to)
         .def("rng", &world_type::rng);
     m.attr("World") = world;
