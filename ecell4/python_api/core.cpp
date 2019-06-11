@@ -6,6 +6,7 @@
 #include <ecell4/core/functions.hpp>
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/core/Barycentric.hpp>
 #include <ecell4/core/types.hpp>
 
 #include "model.hpp"
@@ -1017,6 +1018,13 @@ void define_shape(py::module& m)
 
     // =======================================================================
     // sgfrd polygon related stuff
+    py::class_<Barycentric>(m, "Barycentric")
+        .def(py::init<const Real, const Real, const Real>())
+        .def("__setitem__", [](Barycentric& x, Barycentric::size_type i, Barycentric::value_type value) { x.at(i) = value; }, py::is_operator())
+        .def("__getitem__", [](const Barycentric& x, Barycentric::size_type i) { return x.at(i); }, py::is_operator())
+        ;
+
+    py::class_<Polygon::FaceID>(m, "FaceID");
 
     py::class_<Polygon, Shape, PyShapeImpl<Polygon>, boost::shared_ptr<Polygon>>(m, "Polygon")
         .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))
