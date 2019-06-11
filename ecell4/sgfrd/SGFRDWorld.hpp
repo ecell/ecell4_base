@@ -273,6 +273,15 @@ class SGFRDWorld
         return ps_->get_particle(pid);
     }
 
+    std::pair<FaceID, Barycentric>
+    get_surface_position(const ParticleID& pid) const
+    {
+        const auto  fid = this->registrator_.structure_on(pid);
+        const auto& tri = this->polygon_->triangle_at(fid);
+        const auto  pos = this->ps_->get_particle(pid).second.position();
+        return std::make_pair(fid, to_barycentric(pos, tri));
+    }
+
     std::vector<std::pair<ParticleID, Particle> >
     list_particles() const override
     {
@@ -287,6 +296,40 @@ class SGFRDWorld
     list_particles_exact(const Species& sp) const override
     {
         return ps_->list_particles_exact(sp);
+    }
+
+    std::vector<std::pair<ParticleID, std::pair<FaceID, Barycentric>>>
+    list_surface_positions() const
+    {
+        std::vector<std::pair<ParticleID, std::pair<FaceID, Barycentric>>> v;
+        v.reserve(this->num_particles());
+        for(auto&& pp : this->list_particles())
+        {
+            v.empalce_back(pp.first, this->get_surface_position(pp.first));
+        }
+        return v;
+    }
+    std::vector<std::pair<ParticleID, std::pair<FaceID, Barycentric>>>
+    list_surface_positions(const Species& sp) const
+    {
+        std::vector<std::pair<ParticleID, std::pair<FaceID, Barycentric>>> v;
+        v.reserve(this->num_particles(sp));
+        for(auto&& pp : this->list_particles(sp))
+        {
+            v.empalce_back(pp.first, this->get_surface_position(pp.first));
+        }
+        return v;
+    }
+    std::vector<std::pair<ParticleID, std::pair<FaceID, Barycentric>>>
+    list_surface_positions_exact(const Species& sp) const
+    {
+        std::vector<std::pair<ParticleID, std::pair<FaceID, Barycentric>>> v;
+        v.reserve(this->num_particles_exact(sp));
+        for(auto&& pp : this->list_particles_exact(sp))
+        {
+            v.empalce_back(pp.first, this->get_surface_position(pp.first));
+        }
+        return v;
     }
 
     // -----------------------------------------------------------------------
@@ -304,6 +347,18 @@ class SGFRDWorld
         const Real D = sp.get_attribute_as<Real>("D");
         return this->new_particle(Particle(sp, pos, r, D));
     }
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    new_particle(const Species& sp, const FaceID& fid, const Barycentric& bary)
+    {
+        const auto r = sp.get_attribute_as<Real>("radius");
+        const auto D = sp.get_attribute_as<Real>("D");
+
+        const auto& tri = this->polygon_->triangle_at(fid);
+        const auto  pos = to_absolute(bary, tri);
+
+        return this->new_particle(Particle(sp, pos, r, D), fid);
+    }
+
 
     std::pair<std::pair<ParticleID, Particle>, bool>
     throw_in_particle(const Species& sp);
