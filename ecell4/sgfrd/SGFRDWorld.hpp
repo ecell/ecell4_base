@@ -305,7 +305,7 @@ class SGFRDWorld
         v.reserve(this->num_particles());
         for(auto&& pp : this->list_particles())
         {
-            v.empalce_back(pp.first, this->get_surface_position(pp.first));
+            v.emplace_back(pp.first, this->get_surface_position(pp.first));
         }
         return v;
     }
@@ -316,7 +316,7 @@ class SGFRDWorld
         v.reserve(this->num_particles(sp));
         for(auto&& pp : this->list_particles(sp))
         {
-            v.empalce_back(pp.first, this->get_surface_position(pp.first));
+            v.emplace_back(pp.first, this->get_surface_position(pp.first));
         }
         return v;
     }
@@ -327,7 +327,7 @@ class SGFRDWorld
         v.reserve(this->num_particles_exact(sp));
         for(auto&& pp : this->list_particles_exact(sp))
         {
-            v.empalce_back(pp.first, this->get_surface_position(pp.first));
+            v.emplace_back(pp.first, this->get_surface_position(pp.first));
         }
         return v;
     }
