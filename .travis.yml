@@ -1,34 +1,17 @@
-sudo: required
-dist: xenial
 language: cpp
-matrix:
-  include:
-  - os: osx
-    env: CONDA=3.6
+os: osx
 
 before_install:
-- if [ "$TRAVIS_OS_NAME" == "osx" ]; then
-    OS=MacOSX-x86_64
-    wget -O miniconda.sh https://repo.continuum.io/miniconda/Miniconda${CONDA:0:1}-latest-$OS.sh
-    bash miniconda.sh -b -p $HOME/miniconda
-    export PATH="$HOME/miniconda/bin:$PATH"
-    conda config --set always_yes yes --set changeps1 no
-    conda config --add channels conda-forge
-    conda update -q conda
-    conda install -q conda-build
-    conda create -q -n test-environment python=$CONDA
-    source activate test-environment
-  fi
-  
+  - wget -O miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - conda config --set always_yes yes --set changeps1 no
+  - conda config --add channels conda-forge
+  - conda update -q conda
+  - conda install -q conda-build
+  - conda create -q -n test-environment python=3.7
+  - source activate test-environment
+
 script:
 - conda build conda.recipe
-- conda install --user-local ecell4_base
-
-cache: false
-notifications:
-  webhooks:
-    urls:
-    - http://dev.e-cell.org/ecell-bot/travis/notification
-  slack:
-    secure: kCN8PCrinRfaDFKn93TMrYY5LberBt8GHDHOtSbR7B1Zmo9Pr/uHxxqoXlu1g9XYxgs2lud/AKo0gKMu8n+QHWeAXaOwe8GSccEqBdilXDVp4fzO96jT2R82RYljQ2wAR5ug1YIACRq06mtFn6U7GRZRnpRI4VsEUFLJPljZ+UM=
-    slack: ecell-project:LvsPrINO4bNonZNTNw3IqMhV
+- conda install --use-local ecell4_base

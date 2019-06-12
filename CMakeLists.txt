@@ -48,8 +48,8 @@ else()
   set(HAVE_BOOST_REGEX 0)
 endif()
 
-find_library(GSL_LIBRARIES gsl)
-find_library(GSL_CBLAS_LIBRARIES gslcblas)
+find_package(GSL REQUIRED)
+include_directories({${GSL_INCLUDE_DIRS})
 
 include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
