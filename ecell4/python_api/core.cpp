@@ -1050,6 +1050,7 @@ void setup_module(py::module& m)
     define_simulator(m);
 
     m.def("load_version_information", (std::string (*)(const std::string&)) &extras::load_version_information);
+    m.def("get_dimension_from_model", &extras::get_dimension_from_model);
     m.def("cbrt", &ecell4::cbrt);
     m.attr("N_A") = N_A;
     m.attr("epsilon") = epsilon;

@@ -29,14 +29,8 @@ Features
 Try online
 ----------
 
-You can try this package online from the following links:
-
-<a href="https://notebooks.azure.com/import/gh/ecell/ecell4-base"><img src="https://notebooks.azure.com/launch.png" /></a>
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/ecell/ecell4-base/master)
-
-- Code fragments that depend on ffmpeg will not work with Azure Notebooks. If you use movie export, please try Binder instead.
-- If you use Binder, please go down to `ecell4-base-master/readthedocs/tutorials`. or `ecell4-base-master/readthedocs/examples`
-- If you use Azure Notebooks, please go down to `readthedocs/tutorials` or `readthedocs/examples`.
+You can try this package online with Google Colaboratory.
+Please refer to the https://github.com/ecell/ecell4-docs
 
 Installation
 -------------
@@ -46,16 +40,6 @@ Basically you can install E-Cell4 on any OS just by running
 ```
 pip install ecell4
 ```
-
-Tutorials
-----------
-
-Please see [tutorials](https://github.com/ecell/ecell4-base/tree/master/readthedocs/tutorials).
-
-Examples
----------
-
-Please see [examples](https://github.com/ecell/ecell4-base/tree/master/readthedocs/examples).
 
 Simple examples
 ---------------
@@ -106,6 +90,10 @@ viz.plot_trajectory(obs, interactive=False)
 ```
 
 ![png](./readthedocs/images/hairball.png)
+
+Tutorials, Examples, and API (Static Site)
+==========================================
+https://ecell4.readthedocs.io/en/latest/
 
 Citation
 ========
