@@ -19,7 +19,7 @@ requirements:
     - setuptools
     - pybind11
     - cmake
-    - hdf5
+    - hdf5 1.10.4
     - gsl
 
   run:
