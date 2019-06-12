@@ -21,6 +21,7 @@ requirements:
     - cmake
     - hdf5 1.10.4
     - gsl
+    - boost
 
   run:
     - python
