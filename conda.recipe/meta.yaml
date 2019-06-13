@@ -19,7 +19,7 @@ requirements:
     - setuptools
     - pybind11
     - cmake
-    - hdf5 1.10.4
+    - hdf5
     - gsl
     - boost
     - blas
