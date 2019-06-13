@@ -16,5 +16,5 @@ script:
 - conda build conda.recipe
 - conda install --use-local ecell4_base
 - ls ~/build/ecell/ecell4-base/ecell4/core
-- find ~ -name "*core*"
+- find ~ -name "*config.h*"
 - anaconda -t $CONDA_UPLOAD_TOKEN upload /Users/travis/miniconda/conda-bld/osx-64/ecell4_base-v2.0.0b1-py37_*.tar.bz2
