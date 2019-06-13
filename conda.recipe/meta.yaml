@@ -21,6 +21,8 @@ requirements:
     - cmake
     - hdf5
     - gsl
+    - boost
+    - blas
 
   run:
     - python
