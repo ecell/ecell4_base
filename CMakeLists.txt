@@ -42,7 +42,11 @@ else()
     link_directories(${Boost_LIBRARY_DIRS})
 endif()
 
-set(HAVE_BOOST_REGEX 0)
+if(Boost_REGEX_FOUND)
+  set(HAVE_BOOST_REGEX 1)
+else()
+  set(HAVE_BOOST_REGEX 0)
+endif()
 
 find_package(GSL REQUIRED)
 include_directories({${GSL_INCLUDE_DIRS})
