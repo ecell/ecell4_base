@@ -6,7 +6,6 @@ set(TEST_NAMES
 
 set(test_library_dependencies)
 if (Boost_UNIT_TEST_FRAMEWORK_FOUND)
-    add_definitions(-DBOOST_TEST_DYN_LINK)
     add_definitions(-DUNITTEST_FRAMEWORK_LIBRARY_EXIST)
     set(test_library_dependencies ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 endif()
