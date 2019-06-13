@@ -32,7 +32,7 @@ else()
   set(WITH_HDF5 0)
 endif()
 
-find_package(Boost)
+find_package(Boost COMPONENTS regex unit_test_framework)
 if(NOT DEFINED Boost_VERSION)
     message(FATAL_ERROR
         "ecell4 requires Boost C++ Library. "
