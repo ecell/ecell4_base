@@ -219,6 +219,7 @@ void define_species(py::module& m)
         .def("get_attribute", &Species::get_attribute)
         .def("set_attribute", &Species::set_attribute<std::string>)
         .def("set_attribute", &Species::set_attribute<const char*>)
+        .def("set_attribute", &Species::set_attribute<bool>)  //XXX: This must be former than Integer's
         .def("set_attribute", &Species::set_attribute<Real>)
         .def("set_attribute", &Species::set_attribute<Integer>)
         .def("set_attribute", &Species::set_attribute<Quantity<Real>>)
