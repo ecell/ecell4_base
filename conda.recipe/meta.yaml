@@ -26,6 +26,8 @@ requirements:
 
   run:
     - python
+    - notebook
+    - ffmpeg
     - vs2015_runtime  # [win]
 
 about:
