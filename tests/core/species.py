@@ -79,6 +79,34 @@ class SpeciesTest(unittest.TestCase):
                 (key == 'foo' and value == 'bar')
                 or (key == 'hoge' and value == 'hage'))
 
+    def test_attribute_types(self):
+        sp = Species('A')
+
+        sp.set_attribute('key', 'value')
+        self.assertTrue(isinstance(sp.get_attribute('key'), str))
+        sp.set_attribute('key', True)
+        self.assertTrue(isinstance(sp.get_attribute('key'), bool))
+        sp.set_attribute('key', Quantity_Integer(2, 'dimensionless'))
+        self.assertTrue(isinstance(sp.get_attribute('key'), Quantity_Integer))
+        sp.set_attribute('key', Quantity_Real(1.5, 'm**2/s'))
+        self.assertTrue(isinstance(sp.get_attribute('key'), Quantity_Real))
+
+        sp.set_attribute('key', 2)
+        self.assertTrue(isinstance(sp.get_attribute('key'), Quantity_Integer))
+        sp.set_attribute('key', 2.0)
+        self.assertTrue(isinstance(sp.get_attribute('key'), Quantity_Real))
+
+    def test_operators(self):
+        self.assertTrue(Species('A') == Species('A'))
+        self.assertFalse(Species('A') == Species('B'))
+        self.assertTrue(Species('A') != Species('B'))
+
+        self.assertTrue(Species('A') < Species('B'))
+        self.assertTrue(Species('B') > Species('A'))
+        self.assertFalse(Species('A') < Species('A'))
+
+        # self.assertTrue(Species('A') <= Species('A'))   # Not implemented yet
+
     def test_count_species_matches(self):
         sp = Species("A")
         self.assertEqual(count_species_matches(sp, Species("A")), 1)
