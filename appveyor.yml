@@ -5,7 +5,7 @@ platform:
 
 environment:
   matrix:
-  - MINICONDA: C:\Miniconda3-x64
+  - CONDA: 36-x64
 
 init:
 - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
@@ -21,7 +21,6 @@ install:
 build_script:
 - ps: |
     conda build conda.recipe
-    conda install --use-local ecell4-base
 
 branches:
   only:
