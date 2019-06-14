@@ -1,0 +1,28 @@
+version: '{build}'
+image: Visual Studio 2017
+platform:
+- x64
+
+environment:
+  matrix:
+  - CONDA: 37-x64
+
+init:
+- call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+- ps: $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
+
+install:
+- ps: |
+    git submodule update -q --init --recursive
+    conda config --set always_yes yes --set changeps1 no
+    conda update -q conda
+    conda install -q conda-build
+
+build_script:
+- ps: |
+    conda build conda.recipe
+    conda install --use-local ecell4-base
+
+branches:
+  only:
+    - appveyor-conda2
