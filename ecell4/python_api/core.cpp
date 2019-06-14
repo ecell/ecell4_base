@@ -235,6 +235,8 @@ void define_species(py::module& m)
         .def("location", &Species::location)
         .def("dimension", &Species::dimension)
         .def(py::self == py::self)
+        .def(py::self < py::self)
+        .def(py::self > py::self)
         .def("__hash__",
             [](const Species& self)
             {

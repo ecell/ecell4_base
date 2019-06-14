@@ -96,6 +96,17 @@ class SpeciesTest(unittest.TestCase):
         sp.set_attribute('key', 2.0)
         self.assertTrue(isinstance(sp.get_attribute('key'), Quantity_Real))
 
+    def test_operators(self):
+        self.assertTrue(Species('A') == Species('A'))
+        self.assertFalse(Species('A') == Species('B'))
+        self.assertTrue(Species('A') != Species('B'))
+
+        self.assertTrue(Species('A') < Species('B'))
+        self.assertTrue(Species('B') > Species('A'))
+        self.assertFalse(Species('A') < Species('A'))
+
+        # self.assertTrue(Species('A') <= Species('A'))   # Not implemented yet
+
     def test_count_species_matches(self):
         sp = Species("A")
         self.assertEqual(count_species_matches(sp, Species("A")), 1)
