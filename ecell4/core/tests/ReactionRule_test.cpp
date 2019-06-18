@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("B"), 1.0);
-        rr.set_policy(ReactionRule::IMPLICIT);
+        rr.set_policy(ReactionRule::POLICY_IMPLICIT);
 
         ReactionRule::reactant_container_type reactants(1, Species("A(b=u^1).B(b^1)"));
         std::vector<ReactionRule> ans;
@@ -336,7 +336,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate4)
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("B"), 1.0);
-        rr.set_policy(ReactionRule::DESTROY);
+        rr.set_policy(ReactionRule::POLICY_DESTROY);
 
         ReactionRule::reactant_container_type reactants(1, Species("A(b=u^1).B(b^1)"));
         std::vector<ReactionRule> ans;
@@ -421,7 +421,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate6)
 {
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("A"), 1.0);
-        rr.set_policy(ReactionRule::IMPLICIT);
+        rr.set_policy(ReactionRule::POLICY_IMPLICIT);
         ReactionRule::reactant_container_type reactants(1, Species("A(b)"));
         std::vector<ReactionRule> ans;
         const ReactionRule _ans = format_reaction_rule_with_nosort(
@@ -431,7 +431,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate6)
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("A"), 1.0);
-        rr.set_policy(ReactionRule::IMPLICIT);
+        rr.set_policy(ReactionRule::POLICY_IMPLICIT);
         ReactionRule::reactant_container_type reactants(1, Species("A(b^1).B(b^1)"));
         std::vector<ReactionRule> ans;
         const ReactionRule _ans = format_reaction_rule_with_nosort(
@@ -441,7 +441,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate6)
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("A"), 1.0);
-        rr.set_policy(ReactionRule::IMPLICIT);
+        rr.set_policy(ReactionRule::POLICY_IMPLICIT);
         ReactionRule::reactant_container_type reactants(1, Species("A(b^1).A(b^1)"));
         std::vector<ReactionRule> ans;
         const ReactionRule _ans = format_reaction_rule_with_nosort(
@@ -461,7 +461,7 @@ BOOST_AUTO_TEST_CASE(ReactionRule_test_generate6)
     }
     {
         ReactionRule rr = create_degradation_reaction_rule(Species("A"), 1.0);
-        rr.set_policy(ReactionRule::DESTROY);
+        rr.set_policy(ReactionRule::POLICY_DESTROY);
         ReactionRule::reactant_container_type reactants(1, Species("A(b^1).A(b^1)"));
         std::vector<ReactionRule> ans;
         const ReactionRule _ans = format_reaction_rule_with_nosort(
