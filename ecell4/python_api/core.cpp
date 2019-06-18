@@ -393,9 +393,9 @@ void define_reaction_rule(py::module& m)
         ));
 
     py::enum_<ReactionRule::policy_type>(m, "ReactionRulePolicy")
-        .value("STRICT", ReactionRule::policy_type::STRICT)
-        .value("IMPLICIT", ReactionRule::policy_type::IMPLICIT)
-        .value("DESTROY", ReactionRule::policy_type::DESTROY)
+        .value("STRICT", ReactionRule::policy_type::POLICY_STRICT)
+        .value("IMPLICIT", ReactionRule::policy_type::POLICY_IMPLICIT)
+        .value("DESTROY", ReactionRule::policy_type::POLICY_DESTROY)
         .export_values();
 
     m.def("create_degradation_reaction_rule", &create_degradation_reaction_rule);

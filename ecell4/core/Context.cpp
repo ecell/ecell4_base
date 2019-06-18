@@ -1067,8 +1067,8 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
 
     // const ReactionRule::policy_type& policy(pttrn.policy());
 
-    if ((policy & ReactionRule::STRICT)
-        && !(policy & (ReactionRule::DESTROY | ReactionRule::IMPLICIT)))
+    if ((policy & ReactionRule::POLICY_STRICT)
+        && !(policy & (ReactionRule::POLICY_DESTROY | ReactionRule::POLICY_IMPLICIT)))
     {
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
             i(bondinfo.begin()); i != bondinfo.end(); ++i)
@@ -1119,7 +1119,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
 
     // 8. Resolve open bonds based on the policy
 
-    if (policy & ReactionRule::IMPLICIT)
+    if (policy & ReactionRule::POLICY_IMPLICIT)
     {
         for (std::vector<UnitSpecies>::iterator i(units.begin());
             i != units.end(); ++i)
@@ -1137,7 +1137,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
         }
     }
 
-    if (policy & ReactionRule::DESTROY)
+    if (policy & ReactionRule::POLICY_DESTROY)
     {
         for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
             i(bondinfo.begin()); i != bondinfo.end(); ++i)
