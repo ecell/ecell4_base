@@ -7,7 +7,7 @@
 #include "world_interface.hpp"
 
 namespace py = pybind11;
-using namespace ecell4::egfrd;
+// using namespace ecell4::egfrd;
 
 namespace ecell4
 {
@@ -18,6 +18,7 @@ namespace python_api
 static inline
 void define_bd_factory(py::module& m)
 {
+    using namespace ::ecell4::egfrd;
     using matrix_sizes_type = EGFRDWorld::matrix_sizes_type;
 
     py::class_<BDFactory> factory(m, "BDFactory");
@@ -33,6 +34,7 @@ void define_bd_factory(py::module& m)
 static inline
 void define_bd_simulator(py::module& m)
 {
+    using namespace ::ecell4::egfrd;
     using BDSimulator = egfrd::BDSimulator;
     using world_type = BDSimulator::world_type;
     using model_type = BDSimulator::model_type;
@@ -63,6 +65,7 @@ void define_bd_simulator(py::module& m)
 static inline
 void define_egfrd_factory(py::module& m)
 {
+    using namespace ::ecell4::egfrd;
     using matrix_sizes_type = EGFRDWorld::matrix_sizes_type;
 
     py::class_<EGFRDFactory> factory(m, "EGFRDFactory");
@@ -81,13 +84,14 @@ void define_egfrd_factory(py::module& m)
 static inline
 void define_egfrd_simulator(py::module& m)
 {
-    using EGFRDSimulator = egfrd::EGFRDSimulator;
-    using world_type = EGFRDSimulator::world_type;
-    using model_type = EGFRDSimulator::model_type;
-    using length_type = EGFRDSimulator::length_type;
+    using world_type = ::ecell4::egfrd::EGFRDSimulator::world_type;
+    using model_type = ::ecell4::egfrd::EGFRDSimulator::model_type;
+    using length_type = ::ecell4::egfrd::EGFRDSimulator::length_type;
 
-    py::class_<EGFRDSimulator, Simulator, PySimulator<EGFRDSimulator>,
-        boost::shared_ptr<EGFRDSimulator>> simulator(m, "EGFRDSimulator");
+    py::class_<::ecell4::egfrd::EGFRDSimulator, Simulator,
+               PySimulator<::ecell4::egfrd::EGFRDSimulator>,
+               boost::shared_ptr<::ecell4::egfrd::EGFRDSimulator>
+                   > simulator(m, "EGFRDSimulator");
     simulator
         .def(py::init<boost::shared_ptr<world_type>, Real, int, length_type>(),
                 py::arg("w"),
@@ -99,9 +103,9 @@ void define_egfrd_simulator(py::module& m)
                 py::arg("bd_dt_factor") = 1e-5,
                 py::arg("dissociation_retry_moves") = 1,
                 py::arg("user_max_shell_size") = std::numeric_limits<length_type>::infinity())
-        .def("last_reactions", &EGFRDSimulator::last_reactions)
-        .def("set_t", &EGFRDSimulator::set_t)
-        .def("set_paranoiac", &EGFRDSimulator::set_paranoiac);
+        .def("last_reactions", &::ecell4::egfrd::EGFRDSimulator::last_reactions)
+        .def("set_t", &::ecell4::egfrd::EGFRDSimulator::set_t)
+        .def("set_paranoiac", &::ecell4::egfrd::EGFRDSimulator::set_paranoiac);
     define_simulator_functions(simulator);
 
     m.attr("Simulator") = simulator;
@@ -110,6 +114,7 @@ void define_egfrd_simulator(py::module& m)
 static inline
 void define_egfrd_world(py::module& m)
 {
+    using namespace ::ecell4::egfrd;
     using position_type = EGFRDWorld::position_type;
     using matrix_sizes_type = EGFRDWorld::matrix_sizes_type;
     using particle_type = EGFRDWorld::particle_type;
@@ -167,6 +172,7 @@ void define_egfrd_world(py::module& m)
 static inline
 void define_reaction_info(py::module& m)
 {
+    using namespace ::ecell4::egfrd;
     using container_type = ReactionInfo::container_type;
 
     py::class_<ReactionInfo>(m, "ReactionInfo")
