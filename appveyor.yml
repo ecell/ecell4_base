@@ -21,7 +21,11 @@ install:
 build_script:
 - ps: |
     conda build conda.recipe
+    cp C:\Miniconda36-x64\conda-bld\win-64\ecell4_base*.tar.bz2 ~
 
 branches:
   only:
     - appveyor-conda2
+
+artifacts:
+  - path: 'ecell4_base*.tar.bz2'
