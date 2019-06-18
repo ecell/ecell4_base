@@ -15,6 +15,7 @@
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
+#include <ecell4/core/extras.hpp>
 
 #include <ecell4/core/SimulatorBase.hpp>
 
@@ -397,6 +398,7 @@ public:
     {
         step(next_time());
     }
+
     bool step(const Real &upto);
 
     // Real next_time() const
@@ -409,14 +411,17 @@ public:
     {
         return world_->t();
     }
+
     void set_t(const Real &t)
     {
         world_->set_t(t);
     }
+
     Real dt(void) const
     {
         return this->dt_;
     }
+
     void set_dt(const Real &dt)
     {
         if (dt <= 0)
@@ -459,9 +464,80 @@ public:
         rel_tol_ = rel_tol;
     }
 
+    std::vector<Real> derivatives() const
+    {
+        const std::vector<Species> species_list(world_->list_species());
+        const unsigned n = species_list.size();
+
+        state_type x(n);
+        {
+            state_type::size_type i(0);
+            for(Model::species_container_type::const_iterator it(species_list.begin());
+                it != species_list.end(); it++, i++)
+            {
+                x[i] = static_cast<double>(world_->get_value_exact(*it));
+            }
+        }
+
+        state_type dxdt(n);
+
+        std::pair<deriv_func, jacobi_func> system(generate_system());
+        system.first(x, dxdt, world_->t());
+
+        std::vector<Real> ret(dxdt.size());
+        std::copy(dxdt.begin(), dxdt.end(), ret.begin());
+        return ret;
+    }
+
+    std::vector<std::vector<Real> > jacobian() const
+    {
+        const std::vector<Species> species_list(world_->list_species());
+        const unsigned n = species_list.size();
+
+        state_type x(n);
+        {
+            state_type::size_type i(0);
+            for(Model::species_container_type::const_iterator it(species_list.begin());
+                it != species_list.end(); it++, i++)
+            {
+                x[i] = static_cast<double>(world_->get_value_exact(*it));
+            }
+        }
+
+        matrix_type jacobi(n, n);
+        state_type dfdt(n);
+
+        std::pair<deriv_func, jacobi_func> system(generate_system());
+        system.second(x, jacobi, world_->t(), dfdt);
+
+        std::vector<std::vector<Real> > ret(jacobi.size1());
+        for (unsigned i = 0; i != jacobi.size1(); i++)
+        {
+            ret[i].resize(jacobi.size2());
+            for (unsigned j = 0; j != jacobi.size2(); j++)
+            {
+                ret[i][j] = jacobi(i, j);
+            }
+        }
+        return ret;
+    }
+
+    std::vector<Real> fluxes() const
+    {
+        return world_->evaluate(model_->reaction_rules());
+    }
+
+    std::vector<std::vector<Real> > stoichiometry() const
+    {
+        return extras::get_stoichiometry(world_->list_species(), model_->reaction_rules());
+    }
+
 protected:
+
     std::pair<deriv_func, jacobi_func> generate_system() const;
+
 protected:
+
     // boost::shared_ptr<ODENetworkModel> model_;
     // boost::shared_ptr<ODEWorld> world_;
     Real dt_;

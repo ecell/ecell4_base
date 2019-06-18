@@ -1068,6 +1068,7 @@ void setup_module(py::module& m)
 
     m.def("load_version_information", (std::string (*)(const std::string&)) &extras::load_version_information);
     m.def("get_dimension_from_model", &extras::get_dimension_from_model);
+    m.def("get_stoichiometry", &extras::get_stoichiometry);
     m.def("cbrt", &ecell4::cbrt);
     m.attr("N_A") = N_A;
     m.attr("epsilon") = epsilon;

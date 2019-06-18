@@ -227,6 +227,94 @@ bool check_version_information(const std::string& version, const std::string& re
     return (vinfo1.devno == -1 || (vinfo2.devno != -1 && vinfo1.devno >= vinfo2.devno));
 }
 
+std::vector<std::vector<Real> > get_stoichiometry(
+    const std::vector<Species>& species_list, const std::vector<ReactionRule>& reaction_rules)
+{
+    typedef utils::get_mapper_mf<Species, unsigned>::type species_map_type;
+
+    species_map_type index_map;
+    {
+        unsigned i(0);
+        for(std::vector<Species>::const_iterator it(species_list.begin());
+            it != species_list.end(); it++, i++)
+        {
+            index_map[*it] = i;
+        }
+    }
+
+    std::vector<std::vector<Real> > ret;
+    {
+        ret.resize(species_list.size());
+        for (std::vector<std::vector<Real> >::iterator it(ret.begin());
+             it != ret.end(); ++it)
+        {
+            (*it).resize(reaction_rules.size());
+        }
+
+        unsigned i(0);
+        for (std::vector<ReactionRule>::const_iterator it(reaction_rules.begin());
+             it != reaction_rules.end(); ++it, i++)
+        {
+            const ReactionRule& rr(*it);
+
+            if (!rr.has_descriptor())
+            {
+                for (auto const& sp : rr.reactants())
+                {
+                    ret[index_map[sp]][i] -= 1.0;
+                }
+                for (auto const& sp : rr.products())
+                {
+                    ret[index_map[sp]][i] += 1.0;
+                }
+            }
+            else
+            {
+                const boost::shared_ptr<ReactionRuleDescriptor>& desc(rr.get_descriptor());
+                {
+                    if (rr.reactants().size() != desc->reactant_coefficients().size())
+                    {
+                        std::stringstream msg;
+                        msg << "The number of reactant coefficients mismatches ("
+                            << desc->reactant_coefficients().size()
+                            << " != "
+                            << rr.reactants().size()
+                            << ").";
+                        throw std::runtime_error(msg.str());
+                    }
+
+                    ReactionRule::reactant_container_type::const_iterator it1(rr.reactants().begin());
+                    ReactionRuleDescriptor::coefficient_container_type::const_iterator it2(desc->reactant_coefficients().begin());
+                    for (; it1 != rr.reactants().end(); ++it1, ++it2)
+                    {
+                        ret[index_map[(*it1)]][i] -= (*it2);
+                    }
+                }
+                {
+                    if (rr.products().size() != desc->product_coefficients().size())
+                    {
+                        std::stringstream msg;
+                        msg << "The number of product coefficients mismatches ("
+                            << desc->product_coefficients().size()
+                            << " != "
+                            << rr.products().size()
+                            << ").";
+                        throw std::runtime_error(msg.str());
+                    }
+
+                    ReactionRule::product_container_type::const_iterator it1(rr.products().begin());
+                    ReactionRuleDescriptor::coefficient_container_type::const_iterator it2(desc->product_coefficients().begin());
+                    for (; it1 != rr.products().end(); ++it1, ++it2)
+                    {
+                        ret[index_map[(*it1)]][i] += (*it2);
+                    }
+                }
+            }
+        }
+    }
+    return ret;
+}
+
 } // extras
 
 } // ecell4
