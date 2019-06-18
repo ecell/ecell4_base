@@ -27,4 +27,19 @@
 #cmakedefine HAVE_CHRONO 1
 #endif
 
+
+#ifdef WIN32_MSC
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
+#define NOMINMAX
+#ifdef STRICT
+#undef STRICT
+#endif
+#define NO_STRICT
+#endif // WIN32_MSC
+
 #endif /* ECELL4_CONFIG_H */
