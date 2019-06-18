@@ -169,7 +169,21 @@ py::class_<Quantity<T>> define_quantity(py::module& m, const std::string& name)
                 py::arg("magnitude"),
                 py::arg("units") = "")
         .def_readwrite("magnitude", &Q::magnitude)
-        .def_readwrite("units", &Q::units);
+        .def_readwrite("units", &Q::units)
+        .def(py::pickle(
+            [](const Q& q)
+            {
+                return py::make_tuple(q.magnitude, q.units);
+            },
+            [](py::tuple t)
+            {
+                if (t.size() != 2)
+                    throw std::runtime_error("Invalid state");
+                return Q(
+                    t[0].cast<T>(),
+                    t[1].cast<typename Q::units_type>());
+            }
+        ));
     return quantity;
 }
 
@@ -376,7 +390,7 @@ void define_reaction_rule(py::module& m)
         .def(py::pickle(
             [](const ReactionRule& self)
             {
-                return py::make_tuple(self.reactants(), self.products(), self.k(), self.get_descriptor());
+                return py::make_tuple(self.reactants(), self.products(), self.get_k(), self.get_descriptor());
             },
             [](py::tuple t)
             {
@@ -385,7 +399,7 @@ void define_reaction_rule(py::module& m)
                 ReactionRule rr(
                     t[0].cast<Reactants>(),
                     t[1].cast<Products>(),
-                    t[2].cast<Real>()
+                    t[2].cast<Quantity<Real> >()
                 );
                 rr.set_descriptor(t[3].cast<boost::shared_ptr<ReactionRuleDescriptor>>());
                 return rr;
