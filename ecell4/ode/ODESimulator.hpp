@@ -338,6 +338,139 @@ public:
         const Real abs_tol_, rel_tol_;
     };
 
+    class elasticity_func
+    {
+    public:
+        elasticity_func(
+            const reaction_container_type &reactions, const Real& volume,
+            const Real& abs_tol, const Real& rel_tol)
+            : reactions_(reactions), volume_(volume), vinv_(1.0 / volume), abs_tol_(abs_tol), rel_tol_(rel_tol)
+        {
+            ;
+        }
+        void operator()(
+                const state_type& x, matrix_type& elasticity, const double &t) const
+        {
+            //fill 0 into elasticity
+            std::fill(elasticity.data().begin(), elasticity.data().end(), 0.0);
+
+            // const Real ETA(2.2204460492503131e-16);
+            const Real SQRTETA(1.4901161193847656e-08);
+            const Real r0(1.0);
+            // Real fac(0.0);
+            // for (std::size_t k(0); k < dfdt.size(); ++k)
+            // {
+            //     const Real ewtk(atol + rtol * x[k]);
+            //     fac = std::max(fac, dfdt[k] * ewtk);
+            // }
+            // const Real r0(1000.0 * h * ETA * dfdt.size() * fac);  //XXX: h means the step interval
+            // {
+            //     const Real ewtj(atol + rtol * x[j]);
+            //     const Real dyj(std::max(SQRTETA * abs(x[j]), r0 * ewtj));
+            // }
+
+            // const Real h(1.0e-8);
+            // const Real ht(1.0e-10);
+            const Real ht(1.0e-10);
+
+            // calculate elasticityan for each reaction and merge it.
+            unsigned reaction_idx = 0;
+            for(reaction_container_type::const_iterator i(reactions_.begin());
+                i != reactions_.end(); i++, reaction_idx++)
+            {
+                // Calculate one reactions's jabobian
+                //  Prepare the state_array to pass ReactionRuleDescriptor.
+                index_container_type::size_type reactants_size(i->reactants.size());
+                index_container_type::size_type products_size(i->products.size());
+                ReactionRuleDescriptor::state_container_type reactants_states(reactants_size);
+                ReactionRuleDescriptor::state_container_type products_states(products_size);
+                ReactionRuleDescriptor::state_container_type::size_type cnt(0);
+                for(index_container_type::const_iterator j(i->reactants.begin());
+                    j != i->reactants.end(); j++, cnt++)
+                {
+                    reactants_states[cnt] = x[*j];
+                }
+                cnt = 0;
+                for(index_container_type::const_iterator j(i->products.begin());
+                    j != i->products.end(); j++, cnt++)
+                {
+                    products_states[cnt] = x[*j];
+                }
+                // Call the ReactionRuleDescriptor object
+
+                if (i->ratelaw.expired())
+                {
+                    boost::scoped_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
+                    Real flux_0 = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t);
+                    // Differentiate by each Reactants
+                    for(std::size_t j(0); j < reactants_states.size(); j++)
+                    {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
+                        const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
+                        ReactionRuleDescriptor::state_container_type h_shift(reactants_states);
+                        h_shift[j] += h;
+                        const Real flux = temporary_ratelaw_obj->propensity(h_shift, products_states, volume_, t);
+                        const Real flux_deriv = (flux - flux_0) / h;
+                        const matrix_type::size_type row = reaction_idx;
+                        const matrix_type::size_type col = i->reactants[j];
+                        elasticity(row, col) = flux_deriv;
+                    }
+                    // Differentiate by Products
+                    for(std::size_t j(0); j < products_states.size(); j++)
+                    {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(products_states[j]);
+                        const Real h = std::max(SQRTETA * abs(products_states[j]), r0 * ewt);
+                        ReactionRuleDescriptor::state_container_type h_shift(products_states);
+                        h_shift[j] += h;
+                        const Real flux = temporary_ratelaw_obj->propensity(reactants_states, h_shift, volume_, t);
+                        const Real flux_deriv = (flux - flux_0) / h;
+                        const matrix_type::size_type row = reaction_idx;
+                        const matrix_type::size_type col = i->products[j];
+                        elasticity(row, col) = flux_deriv;
+                    }
+                }
+                else
+                {
+                    boost::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
+                    assert(ratelaw->is_available());
+                    Real flux_0 = ratelaw->propensity(reactants_states, products_states, volume_, t);
+                    // Differentiate by each Reactants
+                    for(std::size_t j(0); j < reactants_states.size(); j++)
+                    {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
+                        const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
+                        ReactionRuleDescriptor::state_container_type h_shift(reactants_states);
+                        h_shift[j] += h;
+                        const Real flux = ratelaw->propensity(h_shift, products_states, volume_, t);
+                        const Real flux_deriv = (flux - flux_0) / h;
+                        const matrix_type::size_type row = reaction_idx;
+                        const matrix_type::size_type col = i->reactants[j];
+                        elasticity(row, col) += flux_deriv;
+                    }
+                    // Differentiate by Products
+                    for(std::size_t j(0); j < products_states.size(); j++)
+                    {
+                        const Real ewt = abs_tol_ + rel_tol_ * abs(products_states[j]);
+                        const Real h = std::max(SQRTETA * abs(products_states[j]), r0 * ewt);
+                        ReactionRuleDescriptor::state_container_type h_shift(products_states);
+                        h_shift[j] += h;
+                        const Real flux = ratelaw->propensity(reactants_states, h_shift, volume_, t);
+                        const Real flux_deriv = (flux - flux_0) / h;
+                        const matrix_type::size_type row = reaction_idx;
+                        const matrix_type::size_type col = i->products[j];
+                        elasticity(row, col) += flux_deriv;
+                    }
+                }
+            }
+        }
+
+    protected:
+
+        const reaction_container_type reactions_;
+        const Real volume_;
+        const Real vinv_;
+        const Real abs_tol_, rel_tol_;
+    };
 
     struct StateAndTimeBackInserter
     {
@@ -532,8 +665,43 @@ public:
         return extras::get_stoichiometry(world_->list_species(), model_->reaction_rules());
     }
 
+    std::vector<std::vector<Real> > elasticity() const
+    {
+        const std::vector<Species> species_list(world_->list_species());
+        const std::vector<ReactionRule>& reaction_rules(model_->reaction_rules());
+        const unsigned n = species_list.size();
+        const unsigned m = reaction_rules.size();
+
+        state_type x(n);
+        {
+            state_type::size_type i(0);
+            for(Model::species_container_type::const_iterator it(species_list.begin());
+                it != species_list.end(); it++, i++)
+            {
+                x[i] = static_cast<double>(world_->get_value_exact(*it));
+            }
+        }
+
+        matrix_type elas(m, n);
+
+        const reaction_container_type reactions(convert_reactions());
+        elasticity_func(reactions, world_->volume(), abs_tol_, rel_tol_)(x, elas, world_->t());
+
+        std::vector<std::vector<Real> > ret(elas.size1());
+        for (unsigned i = 0; i != elas.size1(); i++)
+        {
+            ret[i].resize(elas.size2());
+            for (unsigned j = 0; j != elas.size2(); j++)
+            {
+                ret[i][j] = elas(i, j);
+            }
+        }
+        return ret;
+    }
+
 protected:
 
+    reaction_container_type convert_reactions() const;
     std::pair<deriv_func, jacobi_func> generate_system() const;
 
 protected:

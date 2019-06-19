@@ -53,6 +53,7 @@ void define_ode_simulator(py::module& m)
         .def("derivatives", &ODESimulator::derivatives)
         .def("jacobian", &ODESimulator::jacobian)
         .def("fluxes", &ODESimulator::fluxes)
+        .def("elasticity", &ODESimulator::elasticity)
         .def("stoichiometry", &ODESimulator::stoichiometry);
     define_simulator_functions(simulator);
 
