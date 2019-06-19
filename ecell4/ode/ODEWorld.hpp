@@ -284,6 +284,11 @@ public:
             std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
+    std::vector<Real> get_values() const
+    {
+        return num_molecules_;
+    }
+
     Real evaluate(const ReactionRule& rr) const
     {
         if (rr.has_descriptor())

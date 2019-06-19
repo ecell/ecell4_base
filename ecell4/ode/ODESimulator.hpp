@@ -655,6 +655,11 @@ public:
         return ret;
     }
 
+    std::vector<Real> values() const
+    {
+        return world_->get_values();
+    }
+
     std::vector<Real> fluxes() const
     {
         return world_->evaluate(model_->reaction_rules());
