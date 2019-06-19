@@ -6,6 +6,7 @@ platform:
 environment:
   matrix:
   - CONDA: 36-x64
+  #- CONDA: 37-x64
 
 init:
 - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
@@ -16,16 +17,20 @@ install:
     git submodule update -q --init --recursive
     conda config --set always_yes yes --set changeps1 no
     conda update -q conda
-    conda install -q conda-build
+    conda install -q conda-build anaconda-client
 
 build_script:
 - ps: |
     conda build conda.recipe
-    cp C:\Miniconda36-x64\conda-bld\win-64\ecell4_base*.tar.bz2 ~
+    # Copy the conda build to the home dir, such that it can be registerd as an artifact
+    #ls C:\Miniconda36-x64\conda-bld
+    mv C:\Miniconda$env:CONDA\conda-bld .
+    pwd
+    ls .
 
 branches:
   only:
     - appveyor-conda2
 
 artifacts:
-  - path: 'ecell4_base*.tar.bz2'
+  - path: 'conda-bld\win-*\*.tar.bz2'
