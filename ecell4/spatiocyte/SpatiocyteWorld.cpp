@@ -201,6 +201,11 @@ Integer SpatiocyteWorld::add_structure(
     const MoleculeInfo info(get_molecule_info(sp));
     get_root()->make_structure_type(sp, info.loc);
 
+    if (shape->dimension() != info.dimension)
+    {
+        throw IllegalArgument("The dimension mismatch occurred between a given species and shape");
+    }
+
     switch (shape->dimension())
     {
     case Shape::THREE:
