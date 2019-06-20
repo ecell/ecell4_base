@@ -23,11 +23,11 @@ namespace spatiocyte
 {
 
 class SpatiocyteSimulator
-    : public SimulatorBase<Model, SpatiocyteWorld>
+    : public SimulatorBase<SpatiocyteWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, SpatiocyteWorld> base_type;
+    typedef SimulatorBase<SpatiocyteWorld> base_type;
     typedef SpatiocyteEvent::reaction_type reaction_type;
     typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
     typedef utils::get_mapper_mf<Species, Real>::type alpha_map_type;
@@ -35,9 +35,9 @@ public:
 public:
 
     SpatiocyteSimulator(
-            boost::shared_ptr<Model> model,
-            boost::shared_ptr<SpatiocyteWorld> world)
-        : base_type(model, world)
+            boost::shared_ptr<SpatiocyteWorld> world,
+            boost::shared_ptr<Model> model)
+        : base_type(world, model)
     {
         initialize();
     }
@@ -94,6 +94,8 @@ protected:
     alpha_map_type alpha_map_;
 
     std::vector<reaction_type> last_reactions_;
+
+    std::vector<Species> species_list_;
 
     Real dt_;
 };

@@ -8,8 +8,8 @@ namespace spatiocyte
 {
 
 const Real calculate_dimensional_factor(
-    const VoxelPool* mt0, const VoxelPool* mt1,
-    const boost::shared_ptr<const SpatiocyteWorld>& world)
+    boost::shared_ptr<const VoxelPool> mt0, boost::shared_ptr<const VoxelPool> mt1,
+    boost::shared_ptr<SpatiocyteWorld> world)
 {
     const Real voxel_radius(world->voxel_radius());
     const Real unit_area(world->unit_area());
@@ -21,8 +21,8 @@ const Real calculate_dimensional_factor(
         D_A(mt0->D()),
         D_B(mt1->D());
     const Shape::dimension_kind
-        dimensionA(mt0->get_dimension()),
-        dimensionB(mt1->get_dimension());
+        dimensionA(world->get_dimension(speciesA)),
+        dimensionB(world->get_dimension(speciesB));
     const Real Dtot(D_A + D_B);
     const Real gamma(pow(2 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0) + sqrt(22.0), 2) /
         (72 * (6 * sqrt(2.0) + 4 * sqrt(3.0) + 3 * sqrt(6.0))));
@@ -69,14 +69,15 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
     const ReactionRule::reactant_container_type& reactants(rr.reactants());
     if (reactants.size() != 2)
         return 1.0;
+    else if (rr.k() == std::numeric_limits<Real>::infinity())
+        return 1.0;
 
     const Species species[2] = {reactants.at(0), reactants.at(1)};
     const MoleculeInfo info[2] = {
         world->get_molecule_info(species[0]),
         world->get_molecule_info(species[1])
     };
-    VoxelPool* mt[2];
-    bool is_created[2] = {false, false};
+    boost::shared_ptr<VoxelPool> mt[2];
     for (int i(0); i < 2; ++i) {
         try
         {
@@ -84,7 +85,7 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
         }
         catch(NotFound e)
         {
-            VoxelPool* location(&(VacantType::getInstance()));
+            boost::weak_ptr<VoxelPool> location(world->vacant());
             if (info[i].loc != "") {
                 try
                 {
@@ -95,14 +96,10 @@ const Real calculate_alpha(const ReactionRule& rr, const boost::shared_ptr<Spati
                     ;
                 }
             }
-            mt[i] = new MolecularType(species[i], location, info[i].radius, info[i].D);
-            is_created[i] = true;
+            mt[i] = boost::shared_ptr<VoxelPool>(new MoleculePool(species[i], location, info[i].radius, info[i].D));
         }
     }
-    const Real factor(calculate_dimensional_factor(mt[0], mt[1], boost::const_pointer_cast<const SpatiocyteWorld>(world)));
-    for (int i(0); i < 2; ++i)
-        if (is_created[i])
-            delete mt[i];
+    const Real factor(calculate_dimensional_factor(mt[0], mt[1], world));
     const Real alpha(1.0 / (factor * rr.k()));
     return alpha < 1.0 ? alpha : 1.0;
 }

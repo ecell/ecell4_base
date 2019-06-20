@@ -14,11 +14,14 @@
 
 #include "types.hpp"
 #include "Species.hpp"
-#include "Voxel.hpp"
+#include "ParticleVoxel.hpp"
 #include "VoxelPool.hpp"
-#include "MolecularType.hpp"
+#include "MoleculePool.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"
+#include "VoxelSpaceBase.hpp"
+
+#include "Space.hpp"  // just for Space::space_kind
 
 
 namespace ecell4
@@ -29,10 +32,8 @@ struct LatticeSpaceHDF5Traits
     struct h5_species_struct {
         double radius;
         double D;
-        // H5std_string location;
         char location[32];
         uint32_t is_structure;
-        uint32_t dimension;
     };
 
     struct h5_voxel_struct {
@@ -55,7 +56,7 @@ struct LatticeSpaceHDF5Traits
     }
 
     static void save_voxel_pool(const VoxelPool* mtb,
-            std::vector<std::pair<ParticleID, Voxel> > voxels, H5::Group* group)
+            std::vector<std::pair<ParticleID, ParticleVoxel> > voxels, H5::Group* group)
     {
         const Species species(mtb->species());
         boost::scoped_ptr<H5::Group> mtgroup(
@@ -64,7 +65,7 @@ struct LatticeSpaceHDF5Traits
         h5_species_struct property;
         property.radius = mtb->radius();
         property.D = mtb->D();
-        const VoxelPool* loc(mtb->location());
+        boost::shared_ptr<const VoxelPool> loc(mtb->location());
         // if (loc->is_vacant())
         //     property.location = H5std_string("");
         // else
@@ -74,7 +75,6 @@ struct LatticeSpaceHDF5Traits
         else
             std::strcpy(property.location, loc->species().serial().c_str());
         property.is_structure = mtb->is_structure() ? 1 : 0;
-        property.dimension = mtb->get_dimension();
 
         mtgroup->createAttribute("radius", H5::PredType::IEEE_F64LE, H5::DataSpace(H5S_SCALAR)
             ).write(H5::PredType::IEEE_F64LE, &property.radius);
@@ -86,19 +86,17 @@ struct LatticeSpaceHDF5Traits
         //     ).write(H5::StrType(0, H5T_VARIABLE), &property.location);
         mtgroup->createAttribute("is_structure", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)
             ).write(H5::PredType::STD_I32LE, &property.is_structure);
-        mtgroup->createAttribute("dimension", H5::PredType::STD_I32LE, H5::DataSpace(H5S_SCALAR)
-            ).write(H5::PredType::STD_I32LE, &property.dimension);
 
         // Save voxels
         const Integer num_voxels(voxels.size());
         std::size_t vidx(0);
         boost::scoped_array<h5_voxel_struct> h5_voxel_array(new h5_voxel_struct[num_voxels]);
-        for (std::vector<std::pair<ParticleID, Voxel> >::const_iterator itr(voxels.begin());
+        for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator itr(voxels.begin());
                 itr != voxels.end(); ++itr)
         {
             h5_voxel_array[vidx].lot = (*itr).first.lot();
             h5_voxel_array[vidx].serial = (*itr).first.serial();
-            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate();
+            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate;
             ++vidx;
         }
 
@@ -153,11 +151,11 @@ void save_lattice_space(const Tspace_& space, H5::Group* root, const std::string
     for (std::vector<Species>::const_iterator itr(species.begin());
             itr != species.end(); ++itr)
     {
-        const VoxelPool *mtb(space.find_voxel_pool(*itr));
+        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(*itr));
         Species location(mtb->location()->species());
-        location_map.insert(std::make_pair(location, mtb));
+        location_map.insert(std::make_pair(location, mtb.get())); // XXX: remove .get()
     }
-    traits_type::save_voxel_pool_recursively(VacantType::getInstance().species(),
+    traits_type::save_voxel_pool_recursively(space.vacant()->species(),
             location_map, space, spgroup.get());
 
     const hsize_t dims[] = {3};
@@ -278,7 +276,6 @@ void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string
         // group.openAttribute("location").read(H5::StrType(0, H5T_VARIABLE), property.location);  //XXX: NEVER use "&" for H5std_string when reading.
         group.openAttribute("location").read(H5::StrType(H5::PredType::C_S1, 32), property.location);
         group.openAttribute("is_structure").read(H5::PredType::STD_I32LE, &property.is_structure);
-        group.openAttribute("dimension").read(H5::PredType::STD_I32LE, &property.dimension);
 
         // std::cout << "load_property(" << name << "," << property.radius << "," << property.D << "," << property.location << ");" << std::endl;
 
@@ -315,14 +312,10 @@ void load_lattice_space(const H5::Group& root, Tspace_* space, const std::string
         Species species(*itr);
         traits_type::h5_species_struct property((*struct_map.find(species)).second);
         std::vector<std::pair<ParticleID, Integer> > voxels((*voxels_map.find(species)).second);
-        // if (property.is_structure == 0)
-        //     space->make_molecular_type(species, property.radius, property.D, property.location);
-        // else
-        //     space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), property.location);
         if (property.is_structure == 0)
             space->make_molecular_type(species, property.radius, property.D, std::string(property.location));
         else
-            space->make_structure_type(species, static_cast<Shape::dimension_kind>(property.dimension), std::string(property.location));
+            space->make_structure_type(species, std::string(property.location));
         space->add_voxels(species, voxels);
     }
 }

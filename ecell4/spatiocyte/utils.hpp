@@ -10,8 +10,8 @@ namespace spatiocyte
 {
 
 const Real calculate_dimensional_factor(
-    const VoxelPool* mt0, const VoxelPool* mt1,
-    const boost::shared_ptr<const SpatiocyteWorld>& world);
+    boost::shared_ptr<const VoxelPool> mt0, boost::shared_ptr<const VoxelPool> mt1,
+    boost::shared_ptr<SpatiocyteWorld> world);
 
 const Real calculate_alpha(
     const ReactionRule& rr, const boost::shared_ptr<SpatiocyteWorld>& world);

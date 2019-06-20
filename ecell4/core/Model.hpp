@@ -57,6 +57,12 @@ public:
         return false;
     }
 
+    virtual bool update_species_attribute(const Species& sp)
+    {
+        throw NotSupported(
+            "update_species_attribute is not supported in this model class");
+    }
+
     /**
      * add attributes of species to the model.
      * this function is a part of the trait of Model.
@@ -161,6 +167,10 @@ public:
     const std::vector<Species> list_species() const
     {
         std::vector<Species> retval;
+
+        const species_container_type& attrs(species_attributes());
+        std::copy(attrs.begin(), attrs.end(), std::back_inserter(retval));  //XXX: This copies attributes too.
+
         const reaction_rule_container_type& rrs(reaction_rules());
         for (reaction_rule_container_type::const_iterator i(rrs.begin());
             i != rrs.end(); ++i)
@@ -174,6 +184,7 @@ public:
             std::copy(products.begin(), products.end(),
                       std::back_inserter(retval));
         }
+
         std::sort(retval.begin(), retval.end());
         retval.erase(
             std::unique(retval.begin(), retval.end()), retval.end());

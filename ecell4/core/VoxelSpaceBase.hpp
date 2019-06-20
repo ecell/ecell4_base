@@ -5,9 +5,10 @@
 #include <set>
 #include <map>
 #include <stdexcept>
+#include <boost/optional.hpp>
 
 #include "Shape.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 #include "Integer3.hpp"
 #include "get_mapper_mf.hpp"
 #include "Context.hpp"
@@ -17,7 +18,10 @@
 #endif
 
 #include "VoxelPool.hpp"
-#include "Voxel.hpp"
+#include "MoleculePool.hpp"
+#include "VacantType.hpp"
+#include "ParticleVoxel.hpp"
+#include "Particle.hpp"
 
 namespace ecell4
 {
@@ -27,7 +31,8 @@ double rint(const double x);
 double round(const double x);
 #endif
 
-static inline std::string get_location_serial(const VoxelPool* vp)
+template <typename T>
+static inline std::string get_location_serial(T vp)
 {
     if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
         return "";
@@ -36,21 +41,13 @@ static inline std::string get_location_serial(const VoxelPool* vp)
     return vp->location()->species().serial();
 }
 
-static inline std::string get_location_serial(const boost::shared_ptr<VoxelPool>& vp)
-{
-    if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant()) {
-        return "";
-    }
 
-    return vp->location()->species().serial();
-}
-
-
-class VoxelSpaceBase : public Space
+class VoxelSpaceBase
+    // : public Space
 {
 public:
 
-    typedef Voxel::coordinate_type coordinate_type;
+    typedef ParticleVoxel::coordinate_type coordinate_type;
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
@@ -66,7 +63,10 @@ public:
     /*
      * Constructor and Destructor
      */
-    VoxelSpaceBase(const Real& voxel_radius) : t_(0.0), voxel_radius_(voxel_radius) {}
+    VoxelSpaceBase(const Real& voxel_radius) :
+        t_(0.0), voxel_radius_(voxel_radius), vacant_(VacantType::allocate())
+    {}
+
     virtual ~VoxelSpaceBase() {}
 
     /*
@@ -140,6 +140,25 @@ public:
             throw std::invalid_argument("the time must be positive.");
         }
         t_ = t;
+    }
+
+    /**
+     * get the axes lengths of a cuboidal region.
+     * @return edge lengths Real3
+     */
+    virtual const Real3& edge_lengths() const
+    {
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
+    }
+
+    /**
+     * get volume.
+     * @return a volume (m^3) Real
+     */
+    const Real volume() const
+    {
+        return actual_size() * voxel_volume();
     }
 
     virtual void save(const std::string& filename) const
@@ -231,9 +250,27 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        const Voxel v(get_voxel(pid).second);
-        return std::make_pair(pid, Particle(
-            v.species(), coordinate2position(v.coordinate()), v.radius(), v.D()));
+        for (const auto &key_value : molecule_pools_)
+        {
+            const auto &species(key_value.first);
+            const auto &pool(key_value.second);
+
+            const auto j(pool->find(pid));
+            if (j != pool->end())
+            {
+                return std::make_pair(
+                    pid,
+                    Particle(
+                        species,
+                        coordinate2position(j->coordinate),
+                        pool->radius(),
+                        pool->D()
+                    )
+                );
+            }
+        }
+
+        throw NotFound("");
     }
 
     virtual const Particle particle_at(const coordinate_type& coord) const = 0;
@@ -259,12 +296,6 @@ public:
     Real get_volume(const Species& sp) const
     {
         return voxel_volume() * num_voxels_exact(sp);
-        // return inner_size() * voxel_volume();
-    }
-
-    Real actual_volume() const
-    {
-        return inner_size() * voxel_volume();
     }
 
     Real unit_area() const
@@ -273,32 +304,50 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
+    boost::shared_ptr<VoxelPool> vacant() {
+        return vacant_;
+    }
+
+    boost::shared_ptr<const VoxelPool> vacant() const {
+        return vacant_;
+    }
+
+    boost::optional<coordinate_type> get_coordinate(const ParticleID& pid) const
+    {
+        for (const auto& key_value : molecule_pools_)
+        {
+            const auto& pool(key_value.second);
+            const auto itr(pool->find(pid));
+            if (itr != pool->end())
+                return itr->coordinate;
+        }
+        return boost::none;
+    }
+
     bool has_voxel(const ParticleID& pid) const;
     Integer num_voxels_exact(const Species& sp) const;
     Integer num_voxels(const Species& sp) const;
     Integer num_voxels() const;
 
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels() const;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels(const Species& sp) const;
-    virtual std::vector<std::pair<ParticleID, Voxel> > list_voxels_exact(const Species& sp) const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels() const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels(const Species& sp) const;
+    virtual std::vector<std::pair<ParticleID, ParticleVoxel> > list_voxels_exact(const Species& sp) const;
 
-    std::pair<ParticleID, Voxel> get_voxel(const ParticleID& pid) const;
-    virtual std::pair<ParticleID, Voxel> get_voxel_at(const coordinate_type& coord) const = 0;
+    virtual std::pair<ParticleID, ParticleVoxel> get_voxel_at(const coordinate_type& coord) const = 0;
 
-    VoxelPool* find_voxel_pool(const Species& sp);
-    const VoxelPool* find_voxel_pool(const Species& sp) const;
+    boost::shared_ptr<VoxelPool> find_voxel_pool(const Species& sp);
+    boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species& sp) const;
 
     bool has_molecule_pool(const Species& sp) const;
-    MoleculePool* find_molecule_pool(const Species& sp);
-    const MoleculePool* find_molecule_pool(const Species& sp) const;
 
-    virtual VoxelPool* get_voxel_pool_at(const coordinate_type& coord) const = 0;
+    boost::shared_ptr<MoleculePool> find_molecule_pool(const Species& sp);
+    boost::shared_ptr<const MoleculePool> find_molecule_pool(const Species& sp) const;
+
+    virtual boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const = 0;
 
     /*
      * Coordinate Transformation
      */
-    virtual coordinate_type inner2coordinate(const coordinate_type inner) const = 0;
-
     virtual Real3 coordinate2position(const coordinate_type& coord) const = 0;
     virtual coordinate_type position2coordinate(const Real3& pos) const = 0;
 
@@ -310,13 +359,11 @@ public:
     virtual coordinate_type
     get_neighbor(const coordinate_type& coord, const Integer& nrand) const = 0;
 
-    virtual coordinate_type
-    get_neighbor_boundary(const coordinate_type& coord, const Integer& nrand) const = 0;
-
     /*
-     * Voxel Manipulation
+     * ParticleVoxel Manipulation
      */
-    virtual bool update_voxel(const ParticleID& pid, const Voxel& v) = 0;
+    virtual bool update_voxel(const ParticleID& pid, ParticleVoxel v) = 0;
+    virtual bool add_voxel(const Species& species, const ParticleID& pid, const coordinate_type& coord) = 0;
     virtual bool remove_voxel(const ParticleID& pid) = 0;
     virtual bool remove_voxel(const coordinate_type& coord) = 0;
 
@@ -328,38 +375,26 @@ public:
          const std::size_t candidate=0)
     = 0;
 
-    virtual
-    std::pair<coordinate_type, bool>
-    move_to_neighbor(VoxelPool* const& from, VoxelPool* const& loc,
-                     coordinate_id_pair_type& info, const Integer nrand)
-    = 0;
-
     virtual Integer size() const = 0;
     virtual Integer3 shape() const = 0;
-    virtual Integer inner_size() const = 0;
+    virtual Integer actual_size() const = 0;
 
-    bool on_structure(const Voxel& v)
-    {
-        return get_voxel_pool_at(v.coordinate()) != get_voxel_pool(v)->location();
-    }
+    bool
+    make_molecular_type(const Species& sp, Real radius, Real D, const std::string loc);
 
-    virtual bool
-    make_structure_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
-    {
-        throw NotImplemented("make_structure_type is not implemented.");
-    }
+    bool
+    make_structure_type(const Species& sp, const std::string loc);
 
-    virtual bool
-    make_interface_type(const Species& sp, Shape::dimension_kind dimension, const std::string loc)
+    virtual bool is_inside(const coordinate_type& coord) const
     {
-        throw NotImplemented("make_interface_type is not implemented.");
+        return true;
     }
 
 protected:
 
-    virtual VoxelPool* get_voxel_pool(const Voxel& v) = 0;
-    virtual Integer count_voxels(const boost::shared_ptr<VoxelPool>& vp) const = 0;
-    void push_voxels(std::vector<std::pair<ParticleID, Voxel> >& voxels,
+    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
+
+    void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel> >& voxels,
                      const boost::shared_ptr<MoleculePool>& voxel_pool,
                      const Species& species) const;
 
@@ -368,7 +403,9 @@ protected:
     Real t_;
     Real voxel_radius_;
 
-    voxel_pool_map_type voxel_pools_;
+    boost::shared_ptr<VoxelPool> vacant_;
+
+    voxel_pool_map_type    voxel_pools_;
     molecule_pool_map_type molecule_pools_;
 
 };

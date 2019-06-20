@@ -180,6 +180,30 @@ inline Real3 operator*(
     return multiply(lhs, rhs);
 }
 
+inline Real3& Real3::operator+=(const Real3& rhs)
+{
+    *this = add(*this, rhs);
+    return *this;
+}
+
+inline Real3& Real3::operator-=(const Real3& rhs)
+{
+    *this = subtract(*this, rhs);
+    return *this;
+}
+
+inline Real3& Real3::operator*=(const Real3::value_type& rhs)
+{
+    *this = multiply(*this, rhs);
+    return *this;
+}
+
+inline Real3& Real3::operator/=(const Real3::value_type& rhs)
+{
+    *this = divide(*this, rhs);
+    return *this;
+}
+
 template<typename Tstrm_, typename Ttraits_>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
     std::basic_ostream<Tstrm_, Ttraits_>& strm, const Real3& v)

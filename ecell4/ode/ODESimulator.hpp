@@ -1,5 +1,5 @@
-#ifndef ECELL4_ODE_ODE_SIMULATOR2_HPP
-#define ECELL4_ODE_ODE_SIMULATOR2_HPP
+#ifndef ECELL4_ODE_ODE_SIMULATOR_NEW_HPP
+#define ECELL4_ODE_ODE_SIMULATOR_NEW_HPP
 
 #include <cstring>
 #include <vector>
@@ -19,8 +19,6 @@
 #include <ecell4/core/SimulatorBase.hpp>
 
 #include "ODEWorld.hpp"
-#include "ODEReactionRule.hpp"
-#include "ODENetworkModel.hpp"
 
 namespace ecell4
 {
@@ -34,11 +32,11 @@ enum ODESolverType {
 };
 
 class ODESimulator
-    : public SimulatorBase<ODENetworkModel, ODEWorld>
+    : public SimulatorBase<ODEWorld>
 {
 public:
 
-    typedef SimulatorBase<ODENetworkModel, ODEWorld> base_type;
+    typedef SimulatorBase<ODEWorld> base_type;
 
 public:
 
@@ -47,8 +45,6 @@ public:
     typedef std::vector<state_type::size_type> index_container_type;
     typedef std::vector<Real> coefficient_container_type;
 
-    typedef ODEReactionRule reacton_container_type;
-
     struct reaction_type
     {
         index_container_type reactants;
@@ -56,8 +52,9 @@ public:
         index_container_type products;
         coefficient_container_type product_coefficients;
         Real k;
-        boost::weak_ptr<ODERatelaw> ratelaw;
-        const ODEReactionRule *raw;
+        // boost::weak_ptr<ODERatelaw> ratelaw;
+        // const ODEReactionRule *raw;
+        boost::weak_ptr<ReactionRuleDescriptor> ratelaw;
     };
     typedef std::vector<reaction_type> reaction_container_type;
 
@@ -76,9 +73,9 @@ public:
             for(reaction_container_type::const_iterator i(reactions_.begin());
                 i != reactions_.end(); i++)
             {
-                ODERatelaw::state_container_type reactants_states(i->reactants.size());
-                ODERatelaw::state_container_type products_states(i->products.size());
-                ODERatelaw::state_container_type::size_type cnt(0);
+                ReactionRuleDescriptor::state_container_type reactants_states(i->reactants.size());
+                ReactionRuleDescriptor::state_container_type products_states(i->products.size());
+                ReactionRuleDescriptor::state_container_type::size_type cnt(0);
 
                 for(index_container_type::const_iterator j(i->reactants.begin());
                     j != i->reactants.end(); j++, cnt++)
@@ -93,15 +90,16 @@ public:
                 }
                 double flux;
                 // Calculation! XXX
-                if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
+                if (i->ratelaw.expired())
                 {
-                    boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
-                    flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    boost::scoped_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
+                    flux = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t);
                 }
                 else
                 {
-                    boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
-                    flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    boost::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
+                    assert(ratelaw->is_available());
+                    flux = ratelaw->propensity(reactants_states, products_states, volume_, t);
                 }
                 // Merge each reaction's flux into whole dxdt
                 std::size_t nth = 0;
@@ -168,12 +166,12 @@ public:
                 i != reactions_.end(); i++)
             {
                 // Calculate one reactions's jabobian
-                //  Prepare the state_array to pass ODERatelaw.
+                //  Prepare the state_array to pass ReactionRuleDescriptor.
                 index_container_type::size_type reactants_size(i->reactants.size());
                 index_container_type::size_type products_size(i->products.size());
-                ODERatelaw::state_container_type reactants_states(reactants_size);
-                ODERatelaw::state_container_type products_states(products_size);
-                ODERatelaw::state_container_type::size_type cnt(0);
+                ReactionRuleDescriptor::state_container_type reactants_states(reactants_size);
+                ReactionRuleDescriptor::state_container_type products_states(products_size);
+                ReactionRuleDescriptor::state_container_type::size_type cnt(0);
                 for(index_container_type::const_iterator j(i->reactants.begin());
                     j != i->reactants.end(); j++, cnt++)
                 {
@@ -185,14 +183,15 @@ public:
                 {
                     products_states[cnt] = x[*j];
                 }
-                // Call the ODERatelaw object
-                if (i->ratelaw.expired() || i->ratelaw.lock()->is_available() == false)
+                // Call the ReactionRuleDescriptor object
+
+                if (i->ratelaw.expired())
                 {
-                    boost::scoped_ptr<ODERatelaw> temporary_ratelaw_obj(new ODERatelawMassAction(i->k));
-                    Real flux_0 = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    boost::scoped_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
+                    Real flux_0 = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t);
                     // Differentiate by time
                     {
-                        Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
+                        Real flux = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t + ht);
                         Real flux_deriv = (flux - flux_0) / ht;
                         if (flux_deriv != 0.0)
                         {
@@ -215,9 +214,9 @@ public:
                     {
                         const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
                         const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
-                        ODERatelaw::state_container_type h_shift(reactants_states);
+                        ReactionRuleDescriptor::state_container_type h_shift(reactants_states);
                         h_shift[j] += h;
-                        Real flux = temporary_ratelaw_obj->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
+                        Real flux = temporary_ratelaw_obj->propensity(h_shift, products_states, volume_, t);
                         Real flux_deriv = (flux - flux_0) / h;
                         matrix_type::size_type col = i->reactants[j];
                         for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -238,9 +237,9 @@ public:
                     {
                         const Real ewt = abs_tol_ + rel_tol_ * abs(products_states[j]);
                         const Real h = std::max(SQRTETA * abs(products_states[j]), r0 * ewt);
-                        ODERatelaw::state_container_type h_shift(products_states);
+                        ReactionRuleDescriptor::state_container_type h_shift(products_states);
                         h_shift[j] += h;
-                        Real flux = temporary_ratelaw_obj->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
+                        Real flux = temporary_ratelaw_obj->propensity(reactants_states, h_shift, volume_, t);
                         Real flux_deriv = (flux - flux_0) / h;
                         matrix_type::size_type col = i->products[j];
                         for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -259,11 +258,12 @@ public:
                 }
                 else
                 {
-                    boost::shared_ptr<ODERatelaw> ratelaw = i->ratelaw.lock();
-                    Real flux_0 = ratelaw->deriv_func(reactants_states, products_states, volume_, t, *(i->raw) );
+                    boost::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
+                    assert(ratelaw->is_available());
+                    Real flux_0 = ratelaw->propensity(reactants_states, products_states, volume_, t);
                     // Differentiate by time
                     {
-                        Real flux = ratelaw->deriv_func(reactants_states, products_states, volume_, t + ht, *(i->raw) );
+                        Real flux = ratelaw->propensity(reactants_states, products_states, volume_, t + ht);
                         Real flux_deriv = (flux - flux_0) / ht;
                         if (flux_deriv != 0.0)
                         {
@@ -286,9 +286,9 @@ public:
                     {
                         const Real ewt = abs_tol_ + rel_tol_ * abs(reactants_states[j]);
                         const Real h = std::max(SQRTETA * abs(reactants_states[j]), r0 * ewt);
-                        ODERatelaw::state_container_type h_shift(reactants_states);
+                        ReactionRuleDescriptor::state_container_type h_shift(reactants_states);
                         h_shift[j] += h;
-                        Real flux = ratelaw->deriv_func(h_shift, products_states, volume_, t, *(i->raw) );
+                        Real flux = ratelaw->propensity(h_shift, products_states, volume_, t);
                         Real flux_deriv = (flux - flux_0) / h;
                         matrix_type::size_type col = i->reactants[j];
                         for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -309,9 +309,9 @@ public:
                     {
                         const Real ewt = abs_tol_ + rel_tol_ * abs(products_states[j]);
                         const Real h = std::max(SQRTETA * abs(products_states[j]), r0 * ewt);
-                        ODERatelaw::state_container_type h_shift(products_states);
+                        ReactionRuleDescriptor::state_container_type h_shift(products_states);
                         h_shift[j] += h;
-                        Real flux = ratelaw->deriv_func(reactants_states, h_shift, volume_, t, *(i->raw));
+                        Real flux = ratelaw->propensity(reactants_states, h_shift, volume_, t);
                         Real flux_deriv = (flux - flux_0) / h;
                         matrix_type::size_type col = i->products[j];
                         for(std::size_t k(0); k < i->reactants.size(); k++)
@@ -360,10 +360,10 @@ public:
 public:
 
     ODESimulator(
-        const boost::shared_ptr<ODENetworkModel>& model,
         const boost::shared_ptr<ODEWorld>& world,
+        const boost::shared_ptr<Model>& model,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(model, world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
+        : base_type(world, model), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
           solver_type_(solver_type)
     {
         initialize();
@@ -374,16 +374,6 @@ public:
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
         : base_type(world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
           solver_type_(solver_type)
-    {
-        initialize();
-    }
-
-    ODESimulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<ODEWorld>& world,
-        const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(boost::shared_ptr<ODENetworkModel>(new ODENetworkModel(model)), world),
-          dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), solver_type_(solver_type)
     {
         initialize();
     }
@@ -399,15 +389,13 @@ public:
                 world_->reserve_species(*it);
             }
         }
+
+        // ode_reaction_rules_ = convert_ode_reaction_rules(model_);
     }
 
     void step(void)
     {
         step(next_time());
-        if ( this->model_->has_network_model() )
-        {
-            this->model_->update_model();
-        }
     }
     bool step(const Real &upto);
 
@@ -471,43 +459,6 @@ public:
         rel_tol_ = rel_tol;
     }
 
-    Real evaluate(const ReactionRule& rr) const
-    {
-        return evaluate(ODEReactionRule(rr));
-    }
-
-    Real evaluate(const ODEReactionRule& rr) const
-    {
-        if (!rr.has_ratelaw())
-        {
-            // std::cout << "No ratelaw was bound. Return zero." << std::endl;
-            return 0.0;
-        }
-
-        const ODEReactionRule::reactant_container_type reactants = rr.reactants();
-        const ODEReactionRule::product_container_type products = rr.products();
-
-        ODERatelaw::state_container_type::size_type cnt(0);
-
-        ODERatelaw::state_container_type r(reactants.size());
-        for(ODEReactionRule::reactant_container_type::const_iterator j(reactants.begin());
-            j != reactants.end(); j++, cnt++)
-        {
-            r[cnt] = static_cast<double>(world_->get_value_exact(*j));
-        }
-
-        cnt = 0;
-
-        ODERatelaw::state_container_type p(products.size());
-        for(ODEReactionRule::reactant_container_type::const_iterator j(products.begin());
-            j != products.end(); j++, cnt++)
-        {
-            p[cnt] = static_cast<double>(world_->get_value_exact(*j));
-        }
-
-        return rr.get_ratelaw()->deriv_func(r, p, world_->volume(), world_->t(), rr);
-    }
-
 protected:
     std::pair<deriv_func, jacobi_func> generate_system() const;
 protected:
@@ -517,6 +468,8 @@ protected:
     // Integer num_steps_;
     Real abs_tol_, rel_tol_;
     ODESolverType solver_type_;
+
+    // ODENetworkModel::ode_reaction_rule_container_type ode_reaction_rules_;
 };
 
 } // ode

@@ -7,29 +7,182 @@
 namespace ecell4
 {
 
+ReactionRule::ReactionRule()
+    : k_(0), reactants_(), products_(), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(
+    const reactant_container_type& reactants,
+    const product_container_type& products)
+    : k_(0), reactants_(reactants), products_(products), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(
+    const reactant_container_type& reactants,
+    const product_container_type& products,
+    const Real& k)
+    : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(
+    const reactant_container_type& reactants,
+    const product_container_type& products,
+    const Quantity<Real>& k)
+    : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
+{
+    ;
+}
+
+ReactionRule::ReactionRule(const ReactionRule& rr)
+    : k_(rr.k_), reactants_(rr.reactants_), products_(rr.products_), policy_(rr.policy_), rr_descriptor_()
+{
+    if (rr.has_descriptor())
+    {
+        set_descriptor(boost::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
+    }
+}
+
+Real ReactionRule::k() const
+{
+    return k_.magnitude;
+}
+
+void ReactionRule::set_k(const Real& k)
+{
+    set_k(Quantity<Real>(k));
+}
+
+void ReactionRule::set_k(const Quantity<Real>& k)
+{
+    if (k.magnitude < 0)
+    {
+        throw std::invalid_argument("a kinetic rate must be positive.");
+    }
+    k_ = k;
+}
+
+Quantity<Real> ReactionRule::get_k() const
+{
+    return k_;
+}
+
+const ReactionRule::reactant_container_type& ReactionRule::reactants() const
+{
+    return reactants_;
+}
+
+const ReactionRule::product_container_type& ReactionRule::products() const
+{
+    return products_;
+}
+
+void ReactionRule::add_reactant(const Species& sp)
+{
+    reactants_.push_back(sp);
+}
+
+void ReactionRule::add_product(const Species& sp)
+{
+    products_.push_back(sp);
+}
+
+const ReactionRule::policy_type ReactionRule::policy() const
+{
+    return policy_;
+}
+
+void ReactionRule::set_policy(const ReactionRule::policy_type policy)
+{
+    policy_ = policy;
+}
+
+
 const std::string ReactionRule::as_string() const
 {
     std::stringstream oss;
     std::vector<std::string> tmp;
-    for (reactant_container_type::const_iterator i(reactants_.begin());
-        i != reactants_.end(); ++i)
+    if (!has_descriptor())
     {
-        tmp.push_back((*i).serial());
+        for (reactant_container_type::const_iterator i(reactants_.begin());
+            i != reactants_.end(); ++i)
+        {
+            tmp.push_back((*i).serial());
+        }
+        oss << boost::algorithm::join(tmp, "+") << ">";
+        tmp.clear();
+        for (product_container_type::const_iterator i(products_.begin());
+            i != products_.end(); ++i)
+        {
+            tmp.push_back((*i).serial());
+        }
+        oss << boost::algorithm::join(tmp, "+") << "|" << k();
     }
-    oss << boost::algorithm::join(tmp, "+") << ">";
-    tmp.clear();
-    for (product_container_type::const_iterator i(products_.begin());
-        i != products_.end(); ++i)
+    else
     {
-        tmp.push_back((*i).serial());
+        {
+            reactant_container_type::const_iterator i(reactants_.begin());
+            ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                j(rr_descriptor_->reactant_coefficients().begin());
+            for (; i != reactants_.end() && j != rr_descriptor_->reactant_coefficients().end(); ++i, ++j)
+            {
+                std::stringstream oss_;
+                oss_ << (*j) << "*" << (*i).serial();
+                tmp.push_back(oss_.str());
+            }
+            oss << boost::algorithm::join(tmp, "+") << ">";
+        }
+        tmp.clear();
+        {
+            product_container_type::const_iterator i(products_.begin());
+            ReactionRuleDescriptor::coefficient_container_type::const_iterator
+                j(rr_descriptor_->product_coefficients().begin());
+            for (; i != products_.end() && j != rr_descriptor_->product_coefficients().end(); ++i, ++j)
+            {
+                std::stringstream oss_;
+                oss_ << (*j) << "*" << (*i).serial();
+                tmp.push_back(oss_.str());
+            }
+            oss << boost::algorithm::join(tmp, "+") << "|" << k();
+        }
     }
-    oss << boost::algorithm::join(tmp, "+") << "|" << k_;
     return oss.str();
+}
+
+Integer ReactionRule::count(const ReactionRule::reactant_container_type& reactants) const
+{
+    return this->generate(reactants).size();
 }
 
 std::vector<ReactionRule> ReactionRule::generate(const reactant_container_type& reactants) const
 {
-    return ReactionRuleExpressionMatcher(*this).gen(reactants);
+    return generate_reaction_rules(*this, reactants);
+}
+
+bool ReactionRule::has_descriptor() const
+{
+    return (rr_descriptor_.get() != NULL);
+}
+
+void ReactionRule::set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor)
+{
+    rr_descriptor_ = descriptor;
+}
+
+const boost::shared_ptr<ReactionRuleDescriptor>& ReactionRule::get_descriptor() const
+{
+    return rr_descriptor_;
+}
+
+void ReactionRule::reset_descriptor()
+{
+    boost::shared_ptr<ReactionRuleDescriptor> tmp;
+    rr_descriptor_.swap(tmp);
 }
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr)

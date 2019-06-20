@@ -5,7 +5,7 @@
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Species.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 #include "Integer3.hpp"
 #include "Shape.hpp"
 #include <numeric>
@@ -19,7 +19,7 @@ namespace ecell4
 {
 
 class SubvolumeSpace
-    : public Space
+    // : public Space
 {
 public:
 
@@ -63,6 +63,7 @@ public:
         virtual void add_molecules(const Integer num, const coordinate_type& i) = 0;
         virtual void remove_molecules(const Integer num, const coordinate_type& i) = 0;
         virtual std::vector<coordinate_type> list_coordinates() const = 0;
+        virtual const std::vector<Integer> get_data() const = 0;
 
     protected:
 
@@ -97,6 +98,25 @@ public:
             throw std::invalid_argument("the time must be positive.");
         }
         t_ = t;
+    }
+
+    /**
+     * get the axes lengths of a cuboidal region.
+     * @return edge lengths Real3
+     */
+    virtual const Real3& edge_lengths() const
+    {
+        throw NotSupported(
+            "edge_lengths() is not supported by this space class");
+    }
+
+    /**
+     * get volume.
+     * @return a volume (m^3) Real
+     */
+    virtual const Real volume() const
+    {
+        throw NotSupported("volume() is not supported by this space class");
     }
 
     virtual Integer num_molecules(const Species& sp) const
@@ -220,6 +240,8 @@ public:
     virtual const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const = 0;
     virtual const boost::shared_ptr<PoolBase> reserve_pool(const Species& sp, const Real D, const Species::serial_type& loc) = 0;
 
+    virtual std::vector<Integer> get_data(const Species& sp) const = 0;
+
 protected:
 
     double t_;
@@ -290,6 +312,11 @@ public:
                 }
             }
             return coords;
+        }
+
+        const std::vector<Integer> get_data() const
+        {
+            return data_;
         }
 
     protected:
@@ -539,6 +566,11 @@ public:
     const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const;
     const boost::shared_ptr<PoolBase> reserve_pool(
         const Species& sp, const Real D, const Species::serial_type& loc);
+
+    virtual std::vector<Integer> get_data(const Species& sp) const
+    {
+        return get_pool(sp)->get_data();
+    }
 
 protected:
 

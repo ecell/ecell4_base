@@ -93,8 +93,8 @@ struct MutativeStructureVisitor
 template<typename Ttraits_>
 class ParticleSimulator
     : public ecell4::SimulatorBase<
-        typename Ttraits_::world_type::traits_type::model_type,
-        typename Ttraits_::world_type>
+        typename Ttraits_::world_type,
+        typename Ttraits_::world_type::traits_type::model_type>
 {
 public:
 
@@ -114,7 +114,7 @@ public:
     typedef typename world_type::traits_type::rng_type rng_type;
     typedef typename world_type::traits_type::model_type model_type;
 
-    typedef ecell4::SimulatorBase<model_type, world_type> base_type;
+    typedef ecell4::SimulatorBase<world_type, model_type> base_type;
 
 public:
 
@@ -123,7 +123,7 @@ public:
     ParticleSimulator(
         const boost::shared_ptr<world_type>& world,
         const boost::shared_ptr<model_type>& model)
-        : base_type(model, world),
+        : base_type(world, model),
         network_rules_(new network_rules_type(model)),
         rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
         dt_(0.), paranoiac_(false)

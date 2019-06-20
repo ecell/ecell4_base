@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
     world->bind_to(model);
 
-    ODESimulator target(model, world);
+    ODESimulator target(world, model);
     target.initialize();
 
     Real next_time(0.0), dt(0.01);

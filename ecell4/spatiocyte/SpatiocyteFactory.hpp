@@ -21,6 +21,9 @@ class SpatiocyteFactory:
 public:
 
     typedef SimulatorFactory<SpatiocyteWorld, SpatiocyteSimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef SpatiocyteFactory this_type;
 
 public:
 
@@ -30,71 +33,49 @@ public:
         ; // do nothing
     }
 
-    static inline const Real default_voxel_radius()
-    {
-        return 0.0;
-    }
-
     virtual ~SpatiocyteFactory()
     {
         ; // do nothing
     }
 
-    SpatiocyteFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    static inline const Real default_voxel_radius()
+    {
+        return 0.0;
+    }
+
+    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline SpatiocyteFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual SpatiocyteWorld* create_world(const std::string filename) const
-    {
-        return new SpatiocyteWorld(filename);
-    }
+protected:
 
-    virtual SpatiocyteWorld* create_world(
-        const Real3& edge_lengths = Real3(1, 1, 1)) const
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {
-            return new SpatiocyteWorld(edge_lengths, voxel_radius_, rng_);
+            return new world_type(edge_lengths, voxel_radius_, rng_);
         }
         else if (voxel_radius_ > 0)
         {
-            return new SpatiocyteWorld(edge_lengths, voxel_radius_);
+            return new world_type(edge_lengths, voxel_radius_);
         }
         else
         {
-            return new SpatiocyteWorld(edge_lengths);
+            return new world_type(edge_lengths);
         }
-    }
-
-    virtual SpatiocyteWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return extras::generate_world_from_model(*this, m);
-    }
-
-    virtual SpatiocyteSimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new SpatiocyteSimulator(model, world);
-    }
-
-    virtual SpatiocyteSimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new SpatiocyteSimulator(world);
     }
 
 protected:
 
-    Real voxel_radius_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
+    Real voxel_radius_;
 };
 
 } // spatiocyte

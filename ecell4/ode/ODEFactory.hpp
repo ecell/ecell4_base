@@ -21,6 +21,9 @@ class ODEFactory:
 public:
 
     typedef SimulatorFactory<ODEWorld, ODESimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef ODEFactory this_type;
 
 public:
 
@@ -66,73 +69,12 @@ public:
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual ODEWorld* create_world(const std::string filename) const
+protected:
+
+    virtual simulator_type* create_simulator(
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
     {
-        return new ODEWorld(filename);
-    }
-
-    virtual ODEWorld* create_world(
-        const Real3& edge_lengths = Real3(1, 1, 1)) const
-    {
-        return new ODEWorld(edge_lengths);
-    }
-
-    virtual ODEWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        throw NotSupported("not supported.");
-    }
-
-    ODESimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
-        sim->set_dt(dt_);
-
-        if (abs_tol_ > 0)
-        {
-            sim->set_absolute_tolerance(abs_tol_);
-        }
-
-        if (rel_tol_ > 0)
-        {
-            sim->set_relative_tolerance(rel_tol_);
-        }
-        return sim;
-    }
-
-    virtual ODESimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        ODESimulator* sim = new ODESimulator(world, solver_type_);
-        sim->set_dt(dt_);
-
-        if (abs_tol_ > 0)
-        {
-            sim->set_absolute_tolerance(abs_tol_);
-        }
-
-        if (rel_tol_ > 0)
-        {
-            sim->set_relative_tolerance(rel_tol_);
-        }
-        return sim;
-    }
-
-    // ODESimulator* create_simulator(
-    //     const boost::shared_ptr<NetworkModel>& model,
-    //     const boost::shared_ptr<world_type>& world) const
-    // {
-    //     ODESimulator* sim = new ODESimulator(model, world, solver_type_);
-    //     sim->set_dt(dt_);
-    //     return sim;
-    // }
-
-    ODESimulator* create_simulator(
-        const boost::shared_ptr<ODENetworkModel>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        ODESimulator* sim = new ODESimulator(model, world, solver_type_);
+        simulator_type* sim = new simulator_type(w, m, solver_type_);
         sim->set_dt(dt_);
 
         if (abs_tol_ > 0)

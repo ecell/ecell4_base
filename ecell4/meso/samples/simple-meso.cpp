@@ -24,7 +24,7 @@ void run()
     const Integer3 matrix_sizes(30, 30, 30);
 
     boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    model->add_species_attribute(Species("A", "0.0025", "1", "C"));
+    model->add_species_attribute(Species("A", 0.0025, 1, "C"));
 
     boost::shared_ptr<RandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
@@ -42,7 +42,7 @@ void run()
 
     world->add_molecules(Species("A"), 1800);
 
-    simulator_type sim(model, world);
+    simulator_type sim(world, model);
     sim.run(1.0);
 }
 

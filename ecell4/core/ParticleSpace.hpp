@@ -10,7 +10,7 @@
 #include "Real3.hpp"
 #include "Particle.hpp"
 #include "Species.hpp"
-#include "Space.hpp"
+// #include "Space.hpp"
 
 #ifdef WITH_HDF5
 #include "ParticleSpaceHDF5Writer.hpp"
@@ -20,7 +20,7 @@ namespace ecell4
 {
 
 class ParticleSpace
-    : public Space
+    // : public Space
 {
 public:
 
@@ -66,6 +66,16 @@ public:
     virtual const Real3& edge_lengths() const
     {
         throw NotImplemented("edge_lengths() not implemented");
+    }
+
+    virtual Integer num_molecules(const Species& sp) const
+    {
+        return num_molecules_exact(sp);
+    }
+
+    virtual Integer num_molecules_exact(const Species& sp) const
+    {
+        throw NotImplemented("num_molecules_exact(const Species&) not implemented");
     }
 
     /**

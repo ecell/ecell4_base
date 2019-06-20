@@ -1,14 +1,25 @@
 #ifndef ECELL4_OBSERVER_HPP
 #define ECELL4_OBSERVER_HPP
 
+#include <ecell4/core/config.h>
+
 #include "types.hpp"
 #include "functions.hpp"
 #include "Space.hpp"
+#include "Species.hpp"
+#include "Real3.hpp"
+#include "Model.hpp"
 #include "Simulator.hpp"
+#include "WorldInterface.hpp"
 
 #include <fstream>
 #include <boost/format.hpp>
+
+#ifndef HAVE_CHRONO
 #include <time.h>
+#else
+#include <chrono>
+#endif
 
 
 namespace ecell4
@@ -30,12 +41,12 @@ public:
     }
 
     virtual const Real next_time() const;
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual void finalize(const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual void finalize(const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
-    // virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space) = 0;
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
+    // virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world) = 0;
 
     const Integer num_steps() const;
 
@@ -75,8 +86,8 @@ public:
 
     const Real next_time() const;
     const Integer count() const;
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
 protected:
@@ -90,7 +101,14 @@ struct NumberLogger
     typedef std::vector<std::vector<Real> > data_container_type;
     typedef std::vector<Species> species_container_type;
 
+    NumberLogger()
+        : all_species(true)
+    {
+        ;
+    }
+
     NumberLogger(const std::vector<std::string>& species)
+        : all_species(species.size() == 0)
     {
         targets.reserve(species.size());
         for (std::vector<std::string>::const_iterator i(species.begin());
@@ -115,11 +133,12 @@ struct NumberLogger
         data.clear();
     }
 
-    void log(const boost::shared_ptr<Space>& space);
+    void log(const boost::shared_ptr<WorldInterface>& world);
     void save(const std::string& filename) const;
 
     data_container_type data;
     species_container_type targets;
+    const bool all_species;
 };
 
 class FixedIntervalNumberObserver
@@ -137,13 +156,19 @@ public:
         ;
     }
 
+    FixedIntervalNumberObserver(const Real& dt)
+        : base_type(dt), logger_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalNumberObserver()
     {
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
@@ -173,14 +198,20 @@ public:
         ;
     }
 
+    NumberObserver()
+        : base_type(true), logger_()
+    {
+        ;
+    }
+
     virtual ~NumberObserver()
     {
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual void finalize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual void finalize(const boost::shared_ptr<WorldInterface>& world);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
@@ -222,8 +253,8 @@ public:
         return num_steps_;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
 protected:
@@ -249,13 +280,19 @@ public:
         ;
     }
 
+    TimingNumberObserver(const std::vector<Real>& t)
+        : base_type(t), logger_()
+    {
+        ;
+    }
+
     virtual ~TimingNumberObserver()
     {
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
@@ -290,8 +327,8 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
 
     inline const std::string filename() const
     {
@@ -375,7 +412,7 @@ struct PositionLogger
         }
     }
 
-    void save(std::ofstream& ofs, const boost::shared_ptr<Space>& space)
+    void save(std::ofstream& ofs, const boost::shared_ptr<WorldInterface>& world)
     {
         ofs << std::setprecision(17);
 
@@ -386,8 +423,8 @@ struct PositionLogger
 
         if (species.size() == 0)
         {
-            const particle_container_type particles(space->list_particles());
-            write_particles(ofs, space->t(), particles);
+            const particle_container_type particles(world->list_particles());
+            write_particles(ofs, world->t(), particles);
         }
         else
         {
@@ -395,8 +432,8 @@ struct PositionLogger
                 i != species.end(); ++i)
             {
                 const Species sp(*i);
-                const particle_container_type particles(space->list_particles(sp));
-                write_particles(ofs, space->t(), particles, *i);
+                const particle_container_type particles(world->list_particles(sp));
+                write_particles(ofs, world->t(), particles, *i);
             }
         }
     }
@@ -440,9 +477,9 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
-    void log(const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
+    void log(const boost::shared_ptr<WorldInterface>& world);
     const std::string filename() const;
     virtual void reset();
 
@@ -496,9 +533,9 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
-    void log(const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
+    void log(const boost::shared_ptr<WorldInterface>& world);
     const std::string filename() const;
     virtual void reset();
 
@@ -544,7 +581,7 @@ struct TimingEvent
 
     const Real next_time() const
     {
-        if (0 <= count && count < times.size())
+        if (count < times.size())
         {
             return times[count];
         }
@@ -574,8 +611,8 @@ struct TimingEvent
 public:
 
     std::vector<Real> times;
-    Integer num_steps;
-    Integer count;
+    size_t num_steps;
+    size_t count;
 };
 
 struct FixedIntervalEvent
@@ -704,15 +741,15 @@ public:
         return event_.count;
     }
 
-    void initialize(const boost::shared_ptr<Space>& space)
+    void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
     {
-        event_.initialize(space->t());
-        subevent_.initialize(space->t());
+        event_.initialize(world->t());
+        subevent_.initialize(world->t());
 
         typedef std::vector<std::pair<ParticleID, Particle> > particle_id_pairs;
         if (pids_.size() == 0)
         {
-            particle_id_pairs const particles(space->list_particles());
+            particle_id_pairs const particles(world->list_particles());
             pids_.reserve(particles.size());
             for (particle_id_pairs::const_iterator i(particles.begin());
                 i != particles.end(); ++i)
@@ -729,15 +766,15 @@ public:
         strides_.resize(pids_.size());
     }
 
-    bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space)
+    bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
     {
         if (subevent_.next_time() <= event_.next_time())
         {
-            fire_subevent(sim, space);
+            fire_subevent(sim, world);
         }
         else
         {
-            fire_event(sim, space);
+            fire_event(sim, world);
         }
         return true;
     }
@@ -770,21 +807,21 @@ public:
 
 protected:
 
-    void fire_event(const Simulator* sim, const boost::shared_ptr<Space>& space)
+    void fire_event(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
     {
-        t_.push_back(space->t());
+        t_.push_back(world->t());
 
-        const Real3 edge_lengths(space->actual_lengths());
+        const Real3 edge_lengths(world->edge_lengths());
         std::vector<Real3>::const_iterator j(prev_positions_.begin());
         std::vector<Real3>::const_iterator k(strides_.begin());
         std::vector<std::vector<Real3> >::iterator l(trajectories_.begin());
         for (std::vector<ParticleID>::const_iterator i(pids_.begin());
             i != pids_.end(); ++i)
         {
-            if (space->has_particle(*i))
+            if (world->has_particle(*i))
             {
                 const Real3& stride(*k);
-                Real3 pos(stride + space->get_particle(*i).second.position());
+                Real3 pos(stride + world->get_particle(*i).second.position());
 
                 if (resolve_boundary_ && subevent_.num_steps > 0)
                 {
@@ -814,20 +851,20 @@ protected:
         event_.fire();
     }
 
-    void fire_subevent(const Simulator* sim, const boost::shared_ptr<Space>& space)
+    void fire_subevent(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
     {
         if (resolve_boundary_)
         {
-            const Real3 edge_lengths(space->actual_lengths());
+            const Real3 edge_lengths(world->edge_lengths());
             std::vector<Real3>::iterator j(prev_positions_.begin());
             std::vector<Real3>::iterator k(strides_.begin());
             for (std::vector<ParticleID>::const_iterator i(pids_.begin());
                 i != pids_.end(); ++i)
             {
-                if (space->has_particle(*i))
+                if (world->has_particle(*i))
                 {
                     Real3& stride(*k);
-                    Real3 pos(stride + space->get_particle(*i).second.position());
+                    Real3 pos(stride + world->get_particle(*i).second.position());
                     if (subevent_.num_steps > 0)
                     {
                         const Real3& prev(*j);
@@ -961,9 +998,9 @@ public:
         ;
     }
 
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual void finalize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual void finalize(const boost::shared_ptr<WorldInterface>& world);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
     const Real interval() const
@@ -986,7 +1023,11 @@ protected:
     Real interval_;
     Real duration_;
     Real acc_;
+#ifndef HAVE_CHRONO
     time_t tstart_;
+#else
+    std::chrono::system_clock::time_point tstart_;
+#endif
 };
 
 class FixedIntervalTrackingObserver
@@ -1034,8 +1075,8 @@ public:
     const Integer num_steps() const;
     const Integer count() const;
     const Integer num_tracers() const;
-    virtual void initialize(const boost::shared_ptr<Space>& space);
-    virtual bool fire(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
+    virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
     virtual void reset();
 
     const std::vector<std::vector<Real3> >& data() const;
@@ -1073,8 +1114,8 @@ public:
 
 protected:
 
-    void fire_event(const Simulator* sim, const boost::shared_ptr<Space>& space);
-    void fire_subevent(const Simulator* sim, const boost::shared_ptr<Space>& space);
+    void fire_event(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
+    void fire_subevent(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
 
 protected:
 
@@ -1084,13 +1125,13 @@ protected:
     bool resolve_boundary_;
     Real threshold_;
 
-    std::vector<ParticleID> pids_;
     std::vector<Real3> prev_positions_;
     std::vector<Real3> strides_;
+    std::vector<ParticleID> pids_;
     std::vector<std::vector<Real3> > trajectories_;
     std::vector<Real> t_;
 };
 
 } // ecell4
 
-#endif /* ECELL4_OBSEVER_HPP */
+#endif /* ECELL4_OBSERVER_HPP */

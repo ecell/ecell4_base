@@ -6,10 +6,6 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/ode/ODESimulator.hpp>
 
-#include <ecell4/ode/ODENetworkModel.hpp>
-#include <ecell4/ode/ODEReactionRule.hpp>
-
-
 using namespace ecell4;
 using namespace ecell4::ode;
 
@@ -44,17 +40,17 @@ int main(int argc, char** argv)
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
-    boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel(model) );
-    ReactionRule rr3;
-    rr3.add_reactant(sp1);
-    rr3.add_product(sp3);
-    ode_model->add_reaction_rule(rr3);
-    ode_model->dump_reactions();
+    // boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel(model) );
+    // ReactionRule rr3;
+    // rr3.add_reactant(sp1);
+    // rr3.add_product(sp3);
+    // ode_model->add_reaction_rule(rr3);
+    // ode_model->dump_reactions();
 
     boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
-    ODESimulator target(model, world);
+    ODESimulator target(world, model);
     target.initialize();
 
     Real next_time(0.0), dt(0.01);
