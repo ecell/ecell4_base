@@ -31,16 +31,14 @@ namespace python_api
     {
     public:
         using base_type = ReactionRuleDescriptor;
-        using callback_t = std::function<Real (
-                const state_container_type&, const state_container_type&,
-                Real, Real,
-                const coefficient_container_type&, const coefficient_container_type&)>;
-        ReactionRuleDescriptorPyfunc(callback_t callback, const std::string& name)
+        using callback_t = py::object;
+
+        ReactionRuleDescriptorPyfunc(const callback_t& callback, const std::string& name)
             : base_type(), callback_(callback), name_(name)
         {
         }
 
-        ReactionRuleDescriptorPyfunc(callback_t callback, const std::string& name,
+        ReactionRuleDescriptorPyfunc(const callback_t& callback, const std::string& name,
                 const coefficient_container_type& reactant_coefficients,
                 const coefficient_container_type& product_coefficients)
             : base_type(reactant_coefficients, product_coefficients), callback_(callback), name_(name)
@@ -49,7 +47,7 @@ namespace python_api
 
         Real propensity(const state_container_type& reactants, const state_container_type& products, Real volume, Real t) const override
         {
-            return callback_(reactants, products, volume, t, reactant_coefficients(), product_coefficients());
+            return callback_(reactants, products, volume, t, reactant_coefficients(), product_coefficients()).cast<Real>();
         }
 
         callback_t get() const

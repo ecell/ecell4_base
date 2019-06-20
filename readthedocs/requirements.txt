@@ -1,7 +1,0 @@
-breathe
-nbsphinx
-recommonmark
-numpydoc
-ipython
-pip>=8.1.2
-https://1446-6348303-gh.circle-artifacts.com/0/root/circle/wheelhouse/ecell4_base-1.0.0-cp37-cp37m-manylinux1_x86_64.whl

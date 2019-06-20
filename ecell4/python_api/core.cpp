@@ -169,7 +169,21 @@ py::class_<Quantity<T>> define_quantity(py::module& m, const std::string& name)
                 py::arg("magnitude"),
                 py::arg("units") = "")
         .def_readwrite("magnitude", &Q::magnitude)
-        .def_readwrite("units", &Q::units);
+        .def_readwrite("units", &Q::units)
+        .def(py::pickle(
+            [](const Q& q)
+            {
+                return py::make_tuple(q.magnitude, q.units);
+            },
+            [](py::tuple t)
+            {
+                if (t.size() != 2)
+                    throw std::runtime_error("Invalid state");
+                return Q(
+                    t[0].cast<T>(),
+                    t[1].cast<typename Q::units_type>());
+            }
+        ));
     return quantity;
 }
 
@@ -219,6 +233,7 @@ void define_species(py::module& m)
         .def("get_attribute", &Species::get_attribute)
         .def("set_attribute", &Species::set_attribute<std::string>)
         .def("set_attribute", &Species::set_attribute<const char*>)
+        .def("set_attribute", &Species::set_attribute<bool>)  //XXX: This must be former than Integer's
         .def("set_attribute", &Species::set_attribute<Real>)
         .def("set_attribute", &Species::set_attribute<Integer>)
         .def("set_attribute", &Species::set_attribute<Quantity<Real>>)
@@ -234,6 +249,8 @@ void define_species(py::module& m)
         .def("location", &Species::location)
         .def("dimension", &Species::dimension)
         .def(py::self == py::self)
+        .def(py::self < py::self)
+        .def(py::self > py::self)
         .def("__hash__",
             [](const Species& self)
             {
@@ -373,7 +390,7 @@ void define_reaction_rule(py::module& m)
         .def(py::pickle(
             [](const ReactionRule& self)
             {
-                return py::make_tuple(self.reactants(), self.products(), self.k(), self.get_descriptor());
+                return py::make_tuple(self.reactants(), self.products(), self.get_k(), self.get_descriptor());
             },
             [](py::tuple t)
             {
@@ -382,7 +399,7 @@ void define_reaction_rule(py::module& m)
                 ReactionRule rr(
                     t[0].cast<Reactants>(),
                     t[1].cast<Products>(),
-                    t[2].cast<Real>()
+                    t[2].cast<Quantity<Real> >()
                 );
                 rr.set_descriptor(t[3].cast<boost::shared_ptr<ReactionRuleDescriptor>>());
                 return rr;
@@ -390,9 +407,9 @@ void define_reaction_rule(py::module& m)
         ));
 
     py::enum_<ReactionRule::policy_type>(m, "ReactionRulePolicy")
-        .value("STRICT", ReactionRule::policy_type::STRICT)
-        .value("IMPLICIT", ReactionRule::policy_type::IMPLICIT)
-        .value("DESTROY", ReactionRule::policy_type::DESTROY)
+        .value("STRICT", ReactionRule::policy_type::POLICY_STRICT)
+        .value("IMPLICIT", ReactionRule::policy_type::POLICY_IMPLICIT)
+        .value("DESTROY", ReactionRule::policy_type::POLICY_DESTROY)
         .export_values();
 
     m.def("create_degradation_reaction_rule", &create_degradation_reaction_rule);

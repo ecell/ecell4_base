@@ -1,112 +1,32 @@
-#os: Visual Studio 2015
+version: '{build}'
+image: Visual Studio 2017
+platform:
+- x64
 
 environment:
-  global:
-    HDF_DIR: "C:/Program Files (x86)/HDF_Group/HDF5/1.10.4/lib"
-    BOOST_ROOT: C:\Libraries\boost_1_67_0
-
   matrix:
-    # - PYTHON: "C:\\Python27"
-    #   PYTHON_VERSION: "2.7.15"
-    #   PYTHON_ARCH: "32"
-
-    # - PYTHON: "C:\\Python27-x64"
-    #   PYTHON_VERSION: "2.7.15"
-    #   PYTHON_ARCH: "64"
-
-    # - PYTHON: "C:\\Python35"
-    #   PYTHON_VERSION: "3.5.3"
-    #   PYTHON_ARCH: "32"
-
-    # - PYTHON: "C:\\Python36"
-    #   PYTHON_VERSION: "3.6.6"
-    #   PYTHON_ARCH: "32"
-    #   # VCVARSALL: "x86"
-
-    - PYTHON: "C:\\Python37-x64"
-      PYTHON_VERSION: "3.7.1"
-      PYTHON_ARCH: "64"
-
-    # - PYTHON: "C:\\Python36-x64"
-    #   PYTHON_VERSION: "3.6.6"
-    #   PYTHON_ARCH: "64"
-    #   # VCVARSALL: "x64"
-
-    # - PYTHON: "C:\\Python35-x64"
-    #   PYTHON_VERSION: "3.5.3"
-    #   PYTHON_ARCH: "64"
-
-cache:
-  - c:\tools\vcpkg\installed\
+  - CONDA: 36-x64
+  #- CONDA: 37-x64
 
 init:
-  - cmd: cmake --version
+- call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+- ps: $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
 
 install:
-  - git submodule update --init --recursive
+- ps: |
+    git submodule update -q --init --recursive
+    conda config --set always_yes yes --set changeps1 no
+    conda update -q conda
+    conda install -q conda-build anaconda-client
 
-  # install hdf5
-  - mkdir hdf5lib
-  - cd hdf5lib
-  # - curl -LvkO https://anaconda.org/anaconda/hdf5/1.8.18/download/win-64/hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
-  # - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar.bz2
-  # - 7z x -y hdf5-1.8.18-vc14h7a021fe_0.tar
-  - curl -LvkO https://anaconda.org/anaconda/hdf5/1.10.4/download/win-64/hdf5-1.10.4-h7ebc959_0.tar.bz2
-  - 7z x -y hdf5-1.10.4-h7ebc959_0.tar.bz2
-  - 7z x -y hdf5-1.10.4-h7ebc959_0.tar
-  - mkdir "C:/Program Files (x86)/HDF_Group/HDF5/1.10.4"
-  - xcopy Library "C:/Program Files (x86)/HDF_Group/HDF5/1.10.4" /s /e /y
-  - cd ..
-
-  # install gsl for build_ext
-  - vcpkg install gsl:x64-windows-static
-
-  # - msbuild GSL.sln /p:Configuration=Release /v:d
-
-  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
-
-  - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -D HDF5_ROOT="C:/Program Files (x86)/HDF_Group/HDF5/1.10.4" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DGSL_INCLUDE_DIR=c:/tools/vcpkg/installed/x64-windows-static/include -DGSL_CBLAS_LIBRARIES=c:/tools/vcpkg/installed/x64-windows-static/lib -DGSL_LIBRARIES=c:/tools/vcpkg/installed/x64-windows-static/lib -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
-  # - cmake -G "Visual Studio 14 2015 Win64" -D CMAKE_CXX_FLAGS_RELEASE="/MD" -D CMAKE_CXX_FLAGS_DEBUG="/MDd" -D CMAKE_C_FLAGS_DEBUG="/MDd" -DBoost_INCLUDE_DIR=C:/Libraries/boost_1_67_0 -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x86-windows-static -DNO_SHARED:BOOL=1 -DNO_BESSEL_TABLE:BOOL=1 .
-
-  # config.h
-  - cd ecell4/core
-  - type config.h
-  - cd ../../greens_functions
-  - type config.h
-  - cd ..
-
-  # go into ecell4/python
-  - "python --version"
-  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
-  # - curl -O https://bootstrap.pypa.io/get-pip.py
-  # - "python get-pip.py"
-  - "python -m pip install --upgrade pip"
-  - python -m pip install Cython --install-option="--no-cython-compile"
-  - cd python
-  - ECHO "ls boost_1_67_0/lib64-msvc-14.0:"
-  - ps: "ls \"C:/Libraries/boost_1_67_0/lib64-msvc-14.0\""
-  - echo %CD%
-  - python setup.py build_ext -I"C:\Program Files (x86)\HDF_Group\HDF5\1.10.4\include";C:/Libraries/boost_1_67_0;c:/tools/vcpkg/installed/x64-windows-static/include -Lc:/tools/vcpkg/installed/x64-windows-static/lib;"C:\Program Files (x86)\HDF_Group\HDF5\1.10.4\lib"
-  - "pip install wheel"
-  - "python setup.py bdist_wheel -v"
-  # - "pip install dist/ecell4-4.0.0b2-cp35-none-win32.whl"
-
-# test_script:
-#   - "build.cmd %PYTHON%\\python.exe setup.py test"
-
-build: false
-
-branches:
-  only:
-    - master
-    - v4.2
+build_script:
+- ps: |
+    conda build conda.recipe
+    # Copy the conda build to the home dir, such that it can be registerd as an artifact
+    #ls C:\Miniconda36-x64\conda-bld
+    mv C:\Miniconda$env:CONDA\conda-bld .
+    pwd
+    ls .
 
 artifacts:
-  # bdist_wheel puts your built wheel in the dist directory
-  - path: python/dist/*
-
-notifications:
-  - provider: Slack
-    auth_token:
-      secure: xoxp-2152083718-2152083720-57117007011-a566bc1aa4
-    channel: '#github'
+  - path: 'conda-bld\win-*\*.tar.bz2'

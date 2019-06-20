@@ -51,13 +51,19 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         else:
             cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-            build_args += ['--', '-j2']
 
-        env = os.environ.copy()
-        env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\" -isystem {}'.format(
-                env.get('CXXFLAGS', ''),
-                self.distribution.get_version(),
-                sysconfig.get_path('include'))
+        if platform.system() == "Windows":
+            env = os.environ.copy()
+            env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\" -I {}'.format(
+                    env.get('CXXFLAGS', ''),
+                    self.distribution.get_version(),
+                    sysconfig.get_path('include'))
+        else:
+            env = os.environ.copy()
+            env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\" -isystem {}'.format(
+                    env.get('CXXFLAGS', ''),
+                    self.distribution.get_version(),
+                    sysconfig.get_path('include'))
 
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)

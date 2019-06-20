@@ -69,7 +69,7 @@ with reaction_rules():
 run_simulation(10, {'A': 60, 'B': 60})
 ```
 
-![png](./readthedocs/images/output_7_0.png)
+![png](./misc/output_7_0.png)
 
 ### Diffusion on a spherical surface
 
@@ -89,7 +89,7 @@ run_simulation(
 viz.plot_trajectory(obs, interactive=False)
 ```
 
-![png](./readthedocs/images/hairball.png)
+![png](./misc/hairball.png)
 
 Tutorials, Examples, and API (Static Site)
 ==========================================

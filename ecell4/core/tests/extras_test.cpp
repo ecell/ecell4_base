@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE(VersionInformationTest)
         BOOST_CHECK(extras::check_version_information("ecell4-test-2.0.0", "ecell4-test-1.0"));
         BOOST_CHECK(extras::check_version_information("ecell4-test-2.0.0b1", "ecell4-test-1.0"));
         BOOST_CHECK(extras::check_version_information("ecell4-test-2.0.0b1", "ecell4-test-2.0.0b1"));
-        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0.1", "ecell4-test-2.0.0b1"));
-        BOOST_CHECK(extras::check_version_information("ecell4-test-1.0", "ecell4-test-2.0.0b1"));
+        BOOST_CHECK(!extras::check_version_information("ecell4-test-1.0.1", "ecell4-test-2.0.0b1"));
+        BOOST_CHECK(!extras::check_version_information("ecell4-test-1.0", "ecell4-test-2.0.0b1"));
         BOOST_CHECK(!extras::check_version_information("ecell4-test-1.0.dev1", "ecell4-test-1.0"));
         BOOST_CHECK(extras::check_version_information("ecell4-test-1.1.dev1", "ecell4-test-1.0"));
         BOOST_CHECK(extras::check_version_information("ecell4-test-1.0.dev1", "ecell4-test-1.0.dev1"));

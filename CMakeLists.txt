@@ -7,6 +7,11 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -pg -O0 -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
+if(WIN32)
+    add_definitions(-DNOMINMAX)
+    add_definitions(-DGSL_DLL)
+endif()
+
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${PROJECT_BINARY_DIR})
 enable_testing()
@@ -32,7 +37,7 @@ else()
   set(WITH_HDF5 0)
 endif()
 
-find_package(Boost COMPONENTS regex unit_test_framework)
+find_package(Boost)
 if(NOT DEFINED Boost_VERSION)
     message(FATAL_ERROR
         "ecell4 requires Boost C++ Library. "
@@ -48,8 +53,8 @@ else()
   set(HAVE_BOOST_REGEX 0)
 endif()
 
-find_library(GSL_LIBRARIES gsl)
-find_library(GSL_CBLAS_LIBRARIES gslcblas)
+find_package(GSL REQUIRED)
+include_directories({${GSL_INCLUDE_DIRS})
 
 include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)

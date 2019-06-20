@@ -32,9 +32,9 @@ public:
 
     enum policy_type
     {
-        STRICT = 1L << 0,
-        IMPLICIT = 1L << 1,
-        DESTROY = 1L << 2
+        POLICY_STRICT = 1L << 0,
+        POLICY_IMPLICIT = 1L << 1,
+        POLICY_DESTROY = 1L << 2
     };
 
 public:
