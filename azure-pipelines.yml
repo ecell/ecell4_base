@@ -17,6 +17,7 @@ jobs:
       export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH}
       python3 setup.py build
       sudo python3 setup.py install
+      python3 setup.py test
       cd && pwd
       python3 -c "from ecell4_base import core"
 - job: macOS1014
@@ -27,12 +28,8 @@ jobs:
   - bash: |
       git submodule init && git submodule update
       brew update && brew install boost gsl hdf5 cmake python
-      /usr/local/bin/python3 -m pip install -U pip wheel
-      /usr/local/bin/python3 setup.py bdist_wheel
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'artifact for macOS10.14'
-      targetPath: 'dist'
+      /usr/local/bin/python3 setup.py install
+      /usr/local/bin/python3 setup.py test
 - job: macOS1013
   pool:
     vmImage: 'macOS-10.13'
@@ -41,10 +38,5 @@ jobs:
   - bash: |
       git submodule init && git submodule update
       brew update && brew install boost gsl hdf5 cmake python
-      /usr/local/bin/python3 -m pip install -U pip wheel
-      /usr/local/bin/python3 setup.py bdist_wheel
-  - task: PublishPipelineArtifact@0
-    inputs:
-      artifactName: 'artifact for macOS10.13'
-      targetPath: 'dist'
-      
+      /usr/local/bin/python3 setup.py install
+      /usr/local/bin/python3 setup.py test
