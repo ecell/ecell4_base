@@ -911,8 +911,8 @@ protected:
         return space_type();
     }
 
-    Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);
-    Integer add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape);
+    Integer add_structure2(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
+    Integer add_structure3(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
     bool is_surface_voxel(const Voxel& voxel, const boost::shared_ptr<const Shape> shape) const;
 
 public:
