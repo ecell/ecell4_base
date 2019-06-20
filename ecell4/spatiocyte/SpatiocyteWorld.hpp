@@ -835,7 +835,7 @@ public:
 
     void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (boost::shared_ptr<Model> bound_model = model_.lock())
         {
             if (bound_model.get() != model.get())
             {
