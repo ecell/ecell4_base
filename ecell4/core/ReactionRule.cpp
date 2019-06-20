@@ -8,7 +8,7 @@ namespace ecell4
 {
 
 ReactionRule::ReactionRule()
-    : k_(0), reactants_(), products_(), policy_(STRICT)
+    : k_(0), reactants_(), products_(), policy_(POLICY_STRICT)
 {
     ;
 }
@@ -16,7 +16,7 @@ ReactionRule::ReactionRule()
 ReactionRule::ReactionRule(
     const reactant_container_type& reactants,
     const product_container_type& products)
-    : k_(0), reactants_(reactants), products_(products), policy_(STRICT)
+    : k_(0), reactants_(reactants), products_(products), policy_(POLICY_STRICT)
 {
     ;
 }
@@ -25,7 +25,7 @@ ReactionRule::ReactionRule(
     const reactant_container_type& reactants,
     const product_container_type& products,
     const Real& k)
-    : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
+    : k_(k), reactants_(reactants), products_(products), policy_(POLICY_STRICT)
 {
     ;
 }
@@ -34,7 +34,7 @@ ReactionRule::ReactionRule(
     const reactant_container_type& reactants,
     const product_container_type& products,
     const Quantity<Real>& k)
-    : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
+    : k_(k), reactants_(reactants), products_(products), policy_(POLICY_STRICT)
 {
     ;
 }
