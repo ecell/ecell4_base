@@ -28,9 +28,5 @@ build_script:
     pwd
     ls .
 
-branches:
-  only:
-    - appveyor-conda2
-
 artifacts:
   - path: 'conda-bld\win-*\*.tar.bz2'
