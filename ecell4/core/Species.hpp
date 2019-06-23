@@ -9,6 +9,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/variant.hpp>
 #include <boost/container/flat_map.hpp>
+// #include <boost/container/small_vector.hpp>
 
 #include <ecell4/core/config.h>
 
@@ -37,6 +38,13 @@ protected:
 
     typedef boost::container::flat_map<std::string, attribute_type>
         attributes_container_type;
+
+    // typedef boost::container::small_vector<
+    //     std::pair<std::string, attribute_type>, 3
+    //         > flat_map_backend_type;
+    // typedef boost::container::flat_map<
+    //     std::string, attribute_type, std::less<std::string>, flat_map_backend_type
+    //         > attributes_container_type;
 
 public:
 
