@@ -99,6 +99,7 @@ void define_meso_world(py::module& m)
             (void (MesoscopicWorld::*)(const Species&, const Integer&, const coordinate_type&)) &MesoscopicWorld::remove_molecules)
         .def("add_structure", &MesoscopicWorld::add_structure)
         .def("get_volume", &MesoscopicWorld::get_volume)
+        .def("get_data", &MesoscopicWorld::get_volume)
         .def("has_structure", &MesoscopicWorld::has_structure)
         .def("on_structure",
             (bool (MesoscopicWorld::*)(const Species&, const Integer3&) const)
