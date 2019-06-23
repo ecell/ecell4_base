@@ -17,6 +17,11 @@
 #include <boost/geometry/index/predicates.hpp>
 #include <boost/tuple/tuple.hpp>
 
+// #include <boost/geometry/algorithms/detail/equals/implementation.hpp>
+// #include <boost/geometry/algorithms/detail/covered_by/implementation.hpp>
+#include <boost/geometry/algorithms/equals.hpp>
+#include <boost/geometry/algorithms/covered_by.hpp>
+
 #if BOOST_VERSION >= 105400
 #define  ECELL4_HAS_BOOST_STATIC_VECTOR 1
 #include <boost/container/static_vector.hpp>
