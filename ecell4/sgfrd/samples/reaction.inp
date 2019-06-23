@@ -1,0 +1,22 @@
+# input data
+polygon         = sphere.stl
+system_size     = 25.0
+bd_dt           = 1e-5
+reaction_length = 1e-2
+
+# A == B + C
+DA = 0.01
+RA = 0.01
+DB = 0.01
+RB = 0.01
+DC = 0.01
+RC = 0.01
+k_bind   = 1.0
+k_unbind = 0.01
+
+# output trajectory
+gfrd_step  = 1000000
+output_dt  = 0.01
+trajectory = trajectory.dat
+species    = species.dat
+reaction   = reaction_record.dat

@@ -13,6 +13,7 @@ PYBIND11_MODULE(ecell4_base, m) {
     py::module m_gillespie  = m.def_submodule("gillespie",  "A submodule of ecell4_base");
     py::module m_meso       = m.def_submodule("meso",       "A submodule of ecell4_base");
     py::module m_ode        = m.def_submodule("ode",        "A submodule of ecell4_base");
+    py::module m_sgfrd      = m.def_submodule("sgfrd",      "A submodule of ecell4_base");
     py::module m_spatiocyte = m.def_submodule("spatiocyte", "A submodule of ecell4_base");
 
     setup_module(m_core);
@@ -21,5 +22,6 @@ PYBIND11_MODULE(ecell4_base, m) {
     setup_gillespie_module(m_gillespie);
     setup_meso_module(m_meso);
     setup_ode_module(m_ode);
+    setup_sgfrd_module(m_sgfrd);
     setup_spatiocyte_module(m_spatiocyte);
 }

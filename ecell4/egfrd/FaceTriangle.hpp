@@ -1,7 +1,7 @@
 #ifndef GFRD_POLYGON_FACE_TRIANGLE
 #define GFRD_POLYGON_FACE_TRIANGLE
-#include "geometry.hpp"
 #include "TriangleOperation.hpp"
+#include <ecell4/core/geometry.hpp>
 #include <boost/array.hpp>
 
 template<typename coordT>
@@ -30,9 +30,9 @@ struct FaceTriangle
         lengths_[0] = length(edges_[0]);
         lengths_[1] = length(edges_[1]);
         lengths_[2] = length(edges_[2]);
-        angles_[0] = angle(edges_[0], edges_[2] * -1.0);
-        angles_[1] = angle(edges_[1], edges_[0] * -1.0);
-        angles_[2] = angle(edges_[2], edges_[1] * -1.0);
+        angles_[0] = calc_angle(edges_[0], edges_[2] * -1.0);
+        angles_[1] = calc_angle(edges_[1], edges_[0] * -1.0);
+        angles_[2] = calc_angle(edges_[2], edges_[1] * -1.0);
     }
 
     FaceTriangle(const position_type& a, const position_type& b,
@@ -49,9 +49,9 @@ struct FaceTriangle
         lengths_[0] = length(edges_[0]);
         lengths_[1] = length(edges_[1]);
         lengths_[2] = length(edges_[2]);
-        angles_[0] = angle(edges_[0], edges_[2] * -1.0);
-        angles_[1] = angle(edges_[1], edges_[0] * -1.0);
-        angles_[2] = angle(edges_[2], edges_[1] * -1.0);
+        angles_[0] = calc_angle(edges_[0], edges_[2] * -1.0);
+        angles_[1] = calc_angle(edges_[1], edges_[0] * -1.0);
+        angles_[2] = calc_angle(edges_[2], edges_[1] * -1.0);
     }
 
     vector_type   const& normal()    const {return normal_;}

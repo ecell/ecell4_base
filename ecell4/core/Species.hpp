@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/variant.hpp>
+#include <boost/container/flat_map.hpp>
 
 #include <ecell4/core/config.h>
 
@@ -34,7 +35,7 @@ public:
 
 protected:
 
-    typedef utils::get_mapper_mf<std::string, attribute_type>::type
+    typedef boost::container::flat_map<std::string, attribute_type>
         attributes_container_type;
 
 public:
