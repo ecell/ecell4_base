@@ -11,8 +11,7 @@ namespace ecell4
 namespace ode
 {
 
-std::pair<ODESimulator::deriv_func, ODESimulator::jacobi_func>
-ODESimulator::generate_system() const
+ODESimulator::reaction_container_type ODESimulator::convert_reactions() const
 {
     const std::vector<Species> species(world_->list_species());
     const Model::reaction_rule_container_type& reaction_rules = model_->reaction_rules();
@@ -76,6 +75,13 @@ ODESimulator::generate_system() const
 
         reactions.push_back(r);
     }
+    return reactions;
+}
+
+std::pair<ODESimulator::deriv_func, ODESimulator::jacobi_func>
+ODESimulator::generate_system() const
+{
+    const reaction_container_type reactions(convert_reactions());
     return std::make_pair(
             deriv_func(reactions, world_->volume()),
             jacobi_func(reactions, world_->volume(), abs_tol_, rel_tol_));
@@ -162,4 +168,5 @@ bool ODESimulator::step(const Real &upto)
 }
 
 } // ode
+
 } // ecell4

@@ -284,12 +284,17 @@ public:
             std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
+    std::vector<Real> get_values() const
+    {
+        return num_molecules_;
+    }
+
     Real evaluate(const ReactionRule& rr) const
     {
         if (rr.has_descriptor())
         {
-            const boost::shared_ptr<ReactionRuleDescriptor> rrd = rr.get_descriptor();
-            return __evaluate(rr, rrd);
+            const boost::shared_ptr<ReactionRuleDescriptor> desc = rr.get_descriptor();
+            return __evaluate(rr, desc);
         }
         else
         {
@@ -301,7 +306,21 @@ public:
         }
     }
 
-    Real __evaluate(const ReactionRule& rr, const boost::shared_ptr<ReactionRuleDescriptor>& rrd) const
+    std::vector<Real> evaluate(const std::vector<ReactionRule>& reaction_rules) const
+    {
+        std::vector<Real> ret(reaction_rules.size(), 0.0);
+        unsigned i = 0;
+        for(std::vector<ReactionRule>::const_iterator
+            it(reaction_rules.begin()); it != reaction_rules.end(); it++, i++)
+        {
+            ret[i] = this->evaluate(*it);
+        }
+        return ret;
+    }
+
+protected:
+
+    Real __evaluate(const ReactionRule& rr, const boost::shared_ptr<ReactionRuleDescriptor>& desc) const
     {
         const ReactionRule::reactant_container_type reactants = rr.reactants();
         const ReactionRule::product_container_type products = rr.products();
@@ -324,7 +343,7 @@ public:
             p[cnt] = static_cast<double>(this->get_value_exact(*j));
         }
 
-        return rrd->propensity(r, p, this->volume(), this->t());
+        return desc->propensity(r, p, this->volume(), this->t());
     }
 
 protected:
