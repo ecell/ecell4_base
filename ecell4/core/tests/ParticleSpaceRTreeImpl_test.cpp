@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 {
     boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
 
-    BOOST_CHECK_EQUAL((*space).num_species(), 0);
+    BOOST_CHECK_EQUAL((*space).list_species().size(), 0);
     BOOST_CHECK_EQUAL((*space).num_particles(), 0);
     BOOST_CHECK_EQUAL((*space).edge_lengths(), edge_lengths);
     BOOST_CHECK_EQUAL((*space).volume(), 1.0);
