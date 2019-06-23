@@ -18,15 +18,15 @@ struct Fixture
 {
     const Real voxel_radius;
     const Species species;
-    const Voxel voxel;
+    const ParticleVoxel voxel;
     OffLatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
 
     Fixture() :
         voxel_radius(2.5e-9),
         species(/* serial = */ "SpeciesA",
-                /* radius = */ "2.5e-9",
-                /* D = */      "1e-12"),
+                /* radius = */ 2.5e-9,
+                /* D = */      1e-12),
         voxel(/* species = */    species,
               /* coordinate = */ 3,
               /* radius = */     2.5e-9,
@@ -49,6 +49,11 @@ struct Fixture
 BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_constructor) {}
+
+BOOST_AUTO_TEST_CASE(CheckVacantSize)
+{
+    BOOST_CHECK_EQUAL(space.actual_size(), space.vacant()->size());
+}
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_molecules)
 {
@@ -79,8 +84,6 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxelspacebase)
     BOOST_CHECK_EQUAL(space.list_voxels(species).at(0).first, pid);
     BOOST_CHECK_EQUAL(space.list_voxels_exact(species).at(0).first, pid);
 
-    BOOST_CHECK_EQUAL(space.get_voxel(pid).first, pid);
-
     BOOST_CHECK_NO_THROW(space.find_voxel_pool(species));
     BOOST_CHECK(space.has_molecule_pool(species));
     BOOST_CHECK_NO_THROW(space.find_molecule_pool(species));
@@ -110,19 +113,6 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_move)
     BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, pid);
 
     BOOST_CHECK(!space.can_move(3, 4));
-
-    BOOST_CHECK(space.can_move(4, 5));
-    OffLatticeSpace::coordinate_id_pair_type info(pid, 4);
-    std::pair<OffLatticeSpace::coordinate_type, bool> result(
-            space.move_to_neighbor(
-                /* src_vp = */ space.get_voxel_pool_at(4),
-                /* loc = */    space.get_voxel_pool_at(4)->location(),
-                /* info = */   info,
-                /* nrand = */  1));
-    BOOST_CHECK_EQUAL(result.first, 5);
-    BOOST_CHECK(result.second);
-    BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, ParticleID());
-    BOOST_CHECK_EQUAL(space.get_voxel_at(5).first, pid);
 }
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)

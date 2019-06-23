@@ -17,6 +17,7 @@
 #include "Particle.hpp"
 #include "AABB.hpp"
 #include "Model.hpp"
+#include "Shape.hpp"
 
 
 namespace ecell4
@@ -78,19 +79,36 @@ template<typename Tfactory_>
 typename Tfactory_::world_type* generate_world_from_model(
     const Tfactory_& f, const boost::shared_ptr<Model>& m)
 {
-    typename Tfactory_::world_type* w = f.create_world();
+    typename Tfactory_::world_type* w = f.world();
     w->bind_to(m);
     return w;
 }
 
+Shape::dimension_kind
+get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model);
+
 struct VersionInformation
 {
+    typedef enum PreRelease
+    {
+        NONE = 0,
+        ALPHA = 1,
+        BETA = 2,
+        RC = 3,
+        FINAL = 4
+    } prerelease_type;
+
     std::string header;
-    int majorno, minorno, patchno;
+    unsigned int majorno, minorno, patchno;
+    prerelease_type pre;
+    unsigned int preno;
+    int devno;
 
     VersionInformation(
-        const std::string& header, const int majorno, const int minorno, const int patchno)
-        : header(header), majorno(majorno), minorno(minorno), patchno(patchno)
+        const std::string& header, const unsigned int majorno, const unsigned int minorno, const unsigned int patchno,
+        const prerelease_type pre, const unsigned int preno, const int devno)
+        : header(header), majorno(majorno), minorno(minorno), patchno(patchno),
+        pre(pre), preno(preno), devno(devno)
     {
         ;
     }
@@ -100,10 +118,13 @@ VersionInformation parse_version_information(const std::string& version);
 bool check_version_information(const std::string& version, const std::string& required);
 
 #ifdef WITH_HDF5
-void save_version_information(H5::CommonFG* root, const std::string& version);
-std::string load_version_information(const H5::CommonFG& root);
+void save_version_information(H5::H5Location* root, const std::string& version);
+std::string load_version_information(const H5::H5Location& root);
 #endif
 std::string load_version_information(const std::string& filename);
+
+std::vector<std::vector<Real> > get_stoichiometry(
+    const std::vector<Species>& species_list, const std::vector<ReactionRule>& reaction_rules);
 
 } // extras
 

@@ -1,13 +1,15 @@
 #ifndef ECELL4_REACTION_RULE_HPP
 #define ECELL4_REACTION_RULE_HPP
 
-// #include <set>
-#include <stdexcept>
+#include "ReactionRuleDescriptor.hpp"
 
 #include "types.hpp"
+#include "Quantity.hpp"
 #include "Species.hpp"
-//#include "Ratelaw.hpp"
+#include <stdexcept>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace ecell4
 {
@@ -30,122 +32,57 @@ public:
 
     enum policy_type
     {
-        STRICT = 1L << 0,
-        IMPLICIT = 1L << 1,
-        DESTROY = 1L << 2
+        POLICY_STRICT = 1L << 0,
+        POLICY_IMPLICIT = 1L << 1,
+        POLICY_DESTROY = 1L << 2
     };
 
 public:
 
-    ReactionRule()
-        : k_(0), reactants_(), products_(), policy_(STRICT)
-    {
-        ;
-    }
+    ReactionRule();
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products);
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products,
+                 const Real& k);
+    ReactionRule(const reactant_container_type& reactants,
+                 const product_container_type& products,
+                 const Quantity<Real>& k);
+    ReactionRule(const ReactionRule& rr);
 
-    ReactionRule(
-        const reactant_container_type& reactants,
-        const product_container_type& products)
-        : k_(0), reactants_(reactants), products_(products), policy_(STRICT)
-    {
-        ;
-    }
+    Real k() const;
+    void set_k(const Real& k);
+    void set_k(const Quantity<Real>& k);
+    Quantity<Real> get_k() const;
 
-    ReactionRule(
-        const reactant_container_type& reactants,
-        const product_container_type& products,
-        const Real& k)
-        : k_(k), reactants_(reactants), products_(products), policy_(STRICT)
-    {
-        ;
-    }
+    const reactant_container_type& reactants() const;
+    const product_container_type& products() const;
+    void add_reactant(const Species& sp);
+    void add_product(const Species& sp);
 
-    ReactionRule(
-        const ReactionRule& rr)
-        : k_(rr.k()), reactants_(rr.reactants()), products_(rr.products()), policy_(rr.policy())
-    {
-        ;
-    }
-
-    Real k() const
-    {
-        return k_;
-    }
-
-    const reactant_container_type& reactants() const
-    {
-        return reactants_;
-    }
-
-    const product_container_type& products() const
-    {
-        return products_;
-    }
-
-    void set_k(const Real& k)
-    {
-        if (k < 0)
-        {
-            throw std::invalid_argument("a kinetic rate must be positive.");
-        }
-        k_ = k;
-    }
-
-    void add_reactant(const Species& sp)
-    {
-        reactants_.push_back(sp);
-    }
-
-    void add_product(const Species& sp)
-    {
-        products_.push_back(sp);
-    }
-
-    const policy_type policy() const
-    {
-        return policy_;
-    }
-
-    void set_policy(const policy_type policy)
-    {
-        policy_ = policy;
-    }
+    const policy_type policy() const;
+    void set_policy(const policy_type policy);
 
     const std::string as_string() const;
 
-    inline Integer count(const reactant_container_type& reactants) const
-    {
-        return this->generate(reactants).size();
-    }
-
+    Integer count(const reactant_container_type& reactants) const;
     std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
 
-    /** Ratelaw related functions.
-      */
-    /*
-    void set_ratelaw(const boost::shared_ptr<Ratelaw> ratelaw)
-    {
-        this->ratelaw_ = ratelaw;
-    }
-
-    boost::shared_ptr<Ratelaw> get_ratelaw() const
-    {
-        return this->ratelaw_.lock();
-    }
-
-    bool has_ratelaw() const
-    {
-        return !(this->ratelaw_.expired());
-    }*/
+    bool has_descriptor() const;
+    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor);
+    const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const;
+    void reset_descriptor();
 
 protected:
 
-    Real k_;
+    Quantity<Real> k_;
     reactant_container_type reactants_;
     product_container_type products_;
 
     policy_type policy_;
-    //boost::weak_ptr<Ratelaw> ratelaw_;
+
+    boost::shared_ptr<ReactionRuleDescriptor> rr_descriptor_;
+    // boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)
@@ -174,6 +111,26 @@ inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr);
 ReactionRule format_reaction_rule(const ReactionRule& rr);
+
+ReactionRule create_unimolecular_reaction_rule(
+    const Species& reactant1, const Species& product1, const Real& k);
+
+ReactionRule create_binding_reaction_rule(
+    const Species& reactant1, const Species& reactant2, const Species& product1,
+    const Real& k);
+
+ReactionRule create_unbinding_reaction_rule(
+    const Species& reactant1, const Species& product1, const Species& product2,
+    const Real& k);
+
+ReactionRule create_degradation_reaction_rule(
+    const Species& reactant1, const Real& k);
+
+ReactionRule create_synthesis_reaction_rule(
+    const Species& product1, const Real& k);
+
+// ReactionRule create_repulsive_reaction_rule(
+//     const Species& reactant1, const Species& reactant2);
 
 } // ecell4
 

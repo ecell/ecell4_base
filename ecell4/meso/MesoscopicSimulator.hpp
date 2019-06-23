@@ -78,11 +78,11 @@ protected:
 };
 
 class MesoscopicSimulator
-    : public SimulatorBase<Model, MesoscopicWorld>
+    : public SimulatorBase<MesoscopicWorld>
 {
 public:
 
-    typedef SimulatorBase<Model, MesoscopicWorld> base_type;
+    typedef SimulatorBase<MesoscopicWorld> base_type;
     typedef SubvolumeSpace::coordinate_type coordinate_type;
     typedef ReactionInfo reaction_info_type;
 
@@ -172,7 +172,7 @@ protected:
             return rr_;
         }
 
-        std::vector<Integer> check_dependency(const Species& sp) const
+        virtual std::vector<Integer> check_dependency(const Species& sp) const
         {
             const ReactionRule::reactant_container_type& reactants(rr_.reactants());
             std::vector<Integer> coefs(reactants.size(), 0);
@@ -199,7 +199,7 @@ protected:
             const std::vector<ReactionRule> reactions(generate(retval.first));
 
             assert(retval.second > 0);
-            assert(retval.second >= reactions.size());
+            assert(retval.second >= static_cast<Integer>(reactions.size()));
 
             if (reactions.size() == 0)
             {
@@ -401,7 +401,7 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return num_tot1_[c] * rr_.k();
+            return (num_tot1_[c] > 0 ? num_tot1_[c] * rr_.k() : 0.0);
         }
 
     protected:
@@ -423,7 +423,10 @@ protected:
         }
 
         SecondOrderReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
-            : base_type(sim, rr), num_tot1_(sim->world()->num_subvolumes()), num_tot2_(sim->world()->num_subvolumes()), num_tot12_(sim->world()->num_subvolumes())
+            : base_type(sim, rr),
+            num_tot1_(sim->world()->num_subvolumes()),
+            num_tot2_(sim->world()->num_subvolumes()),
+            num_tot12_(sim->world()->num_subvolumes())
         {
             ;
         }
@@ -527,7 +530,8 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return (num_tot1_[c] * num_tot2_[c] - num_tot12_[c]) * rr_.k() / world().subvolume();
+            const Integer num = num_tot1_[c] * num_tot2_[c] - num_tot12_[c];
+            return (num > 0 ? num * rr_.k() / world().subvolume(): 0.0);
         }
 
     protected:
@@ -634,14 +638,246 @@ protected:
 
         const Real propensity(const coordinate_type& c) const
         {
-            return (num_tot_[c] * rr_.k()
-                    * world().get_occupancy(rr_.reactants()[stidx_], c));
+            const Real occupancy = world().get_occupancy(rr_.reactants()[stidx_], c);
+            return (num_tot_[c] > 0 ? num_tot_[c] * rr_.k() * occupancy : 0.0);
         }
 
     protected:
 
         std::vector<Integer> num_tot_;
         ReactionRule::reactant_container_type::size_type stidx_, spidx_;
+    };
+
+    class DescriptorReactionRuleProxy
+        : public ReactionRuleProxy
+    {
+    public:
+
+        typedef ReactionRuleProxy base_type;
+        typedef ReactionRuleDescriptor::state_container_type state_container_type;
+
+        DescriptorReactionRuleProxy()
+            : base_type(), num_reactants_(), num_products_()
+        {
+            ;
+        }
+
+        DescriptorReactionRuleProxy(MesoscopicSimulator* sim, const ReactionRule& rr)
+            : base_type(sim, rr), num_reactants_(sim->world()->num_subvolumes()),
+            num_products_(sim->world()->num_subvolumes())
+        {
+            ;
+        }
+
+        virtual std::vector<Integer> check_dependency(const Species& sp) const
+        {
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            const ReactionRule::product_container_type& products(rr_.products());
+            std::vector<Integer> coefs(reactants.size() + products.size(), 0);
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                coefs[i] = get_coef(reactants[i], sp);
+            }
+            for (std::size_t i = 0; i < products.size(); ++i)
+            {
+                coefs[i + reactants.size()] = get_coef(products[i], sp);
+            }
+            return coefs;
+        }
+
+        void inc_with_coefs(const std::vector<Integer>& coefs,
+                 const coordinate_type& c, const Integer val = +1)
+        {
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                num_reactants_[c][i] += coefs[i] * val;
+            }
+
+            const ReactionRule::product_container_type& products(rr_.products());
+            for (std::size_t i = 0; i < products.size(); ++i)
+            {
+                num_products_[c][i] += coefs[i + reactants.size()] * val;
+            }
+        }
+
+        void inc(const Species& sp, const coordinate_type& c, const Integer val = +1)
+        {
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                const Integer coef(get_coef(reactants[i], sp));
+                if (coef > 0)
+                {
+                    num_reactants_[c][i] += coef * val;
+                }
+            }
+
+            const ReactionRule::product_container_type& products(rr_.products());
+            for (std::size_t i = 0; i < products.size(); ++i)
+            {
+                const Integer coef(get_coef(products[i], sp));
+                if (coef > 0)
+                {
+                    num_products_[c][i] += coef * val;
+                }
+            }
+        }
+
+        void initialize()
+        {
+            const std::vector<Species>& species(world().list_species());
+            const std::size_t n_subvolumes = static_cast<std::size_t>(world().num_subvolumes());
+
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+            num_reactants_.resize(n_subvolumes);
+            for (std::size_t i = 0; i < n_subvolumes; ++i)
+            {
+                std::fill(num_reactants_[i].begin(), num_reactants_[i].end(), 0);
+                num_reactants_[i].resize(reactants.size(), 0);
+            }
+
+            const ReactionRule::product_container_type& products(rr_.products());
+            num_products_.resize(n_subvolumes);
+            for (std::size_t i = 0; i < n_subvolumes; ++i)
+            {
+                std::fill(num_products_[i].begin(), num_products_[i].end(), 0);
+                num_products_[i].resize(products.size(), 0);
+            }
+
+            for (std::vector<Species>::const_iterator it(species.begin());
+                it != species.end(); ++it)
+            {
+                const Species& sp(*it);
+
+                for (std::size_t i = 0; i < reactants.size(); ++i)
+                {
+                    const Integer coef(get_coef(reactants[i], sp));
+                    if (coef > 0)
+                    {
+                        for (std::size_t j = 0; j < n_subvolumes; ++j)
+                        {
+                            num_reactants_[j][i] += coef * world().num_molecules_exact(sp, j);
+                        }
+                    }
+                }
+
+                for (std::size_t i = 0; i < products.size(); ++i)
+                {
+                    const Integer coef(get_coef(products[i], sp));
+                    if (coef > 0)
+                    {
+                        for (std::size_t j = 0; j < n_subvolumes; ++j)
+                        {
+                            num_products_[j][i] += coef * world().num_molecules_exact(sp, j);
+                        }
+                    }
+                }
+            }
+        }
+
+        std::pair<ReactionRule::reactant_container_type, Integer> __draw(const coordinate_type& c)
+        {
+            const std::vector<Species>& species(world().list_species());
+            const ReactionRule::reactant_container_type& reactants(rr_.reactants());
+
+            std::pair<ReactionRule::reactant_container_type, Integer> ret;
+            ret.second = 1;
+
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                assert(num_reactants_[c][i] > 0);
+                const Real rnd(rng()->uniform(0.0, num_reactants_[c][i]));
+                Integer num_tot(0);
+                for (std::vector<Species>::const_iterator it(species.begin());
+                    it != species.end(); ++it)
+                {
+                    const Species& sp(*it);
+                    const Integer coef(get_coef(reactants[i], sp));
+                    if (coef > 0)
+                    {
+                        num_tot += coef * world().num_molecules_exact(sp, c);
+                        if (num_tot >= rnd)
+                        {
+                            ret.first.push_back(sp);
+                            ret.second *= coef;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            assert(ret.first.size() == reactants.size());
+            return ret;
+        }
+
+        const Real propensity(const coordinate_type& c) const
+        {
+            assert(rr_.has_descriptor());
+            const boost::shared_ptr<ReactionRuleDescriptor>& ratelaw = rr_.get_descriptor();
+            assert(ratelaw->is_available());
+            const Real ret = ratelaw->propensity(num_reactants_[c], num_products_[c], world().subvolume(), world().t());
+            return ret;
+        }
+
+        virtual void fire(const Real t, const coordinate_type& src)
+        {
+            const std::pair<ReactionRule, coordinate_type>
+                retval = this->draw(src);
+
+            const ReactionRule& nextr = retval.first;
+            // const coordinate_type& dst = retval.second;
+            const ReactionRule::reactant_container_type& reactants(nextr.reactants());
+            const ReactionRule::product_container_type& products(nextr.products());
+
+            assert(retval.second == src);
+
+            for (ReactionRule::product_container_type::const_iterator
+                    it(products.begin()); it != products.end(); ++it)
+            {
+                const Species& sp(*it);
+
+                if (!sim_->world()->on_structure(sp, src))
+                {
+                    ; // do nothing except for update()
+                    return;
+                }
+            }
+
+            const boost::shared_ptr<ReactionRuleDescriptor>& desc = nextr.get_descriptor();
+            assert(desc->is_available());
+
+            const ReactionRuleDescriptor::coefficient_container_type&
+                reactant_coefficients(desc->reactant_coefficients());
+            assert(reactants.size() == reactant_coefficients.size());
+            for (std::size_t i = 0; i < reactants.size(); ++i)
+            {
+                assert(reactant_coefficients[i] >= 0);
+                for (std::size_t j = 0; j < (std::size_t)round(reactant_coefficients[i]); ++j)
+                {
+                    sim_->decrement_molecules(reactants[i], src);
+                }
+            }
+
+            const ReactionRuleDescriptor::coefficient_container_type&
+                product_coefficients(desc->product_coefficients());
+            assert(products.size() == product_coefficients.size());
+            for (std::size_t i = 0; i < products.size(); ++i)
+            {
+                assert(product_coefficients[i] >= 0);
+                for (std::size_t j = 0; j < (std::size_t)round(product_coefficients[i]); ++j)
+                {
+                    sim_->increment_molecules(products[i], src);
+                }
+            }
+
+            sim_->add_last_reaction(
+                nextr, reaction_info_type(t, reactants, products, src));
+        }
+
+    protected:
+
+        std::vector<state_container_type> num_reactants_, num_products_;
     };
 
     class DiffusionProxy
@@ -765,7 +1001,7 @@ protected:
         void set_dependency(ReactionRuleProxy* proxy)
         {
             const std::vector<Integer> coefs = proxy->check_dependency(pool_->species());
-            if (std::count(coefs.begin(), coefs.end(), 0) < coefs.size())
+            if (std::count(coefs.begin(), coefs.end(), 0) < std::distance(coefs.begin(), coefs.end()))
             {
                 dependencies_.push_back(std::make_pair(proxy, coefs));
             }
@@ -828,9 +1064,9 @@ protected:
 public:
 
     MesoscopicSimulator(
-        boost::shared_ptr<Model> model,
-        boost::shared_ptr<MesoscopicWorld> world)
-        : base_type(model, world)
+        boost::shared_ptr<MesoscopicWorld> world,
+        boost::shared_ptr<Model> model)
+        : base_type(world, model)
     {
         initialize();
     }
@@ -896,6 +1132,7 @@ protected:
     void decrement_molecules(const Species& sp, const coordinate_type& c);
     void increment(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c);
     void decrement(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c);
+    void check_model(void);
 
 protected:
 

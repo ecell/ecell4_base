@@ -6,12 +6,14 @@
 #include <boost/weak_ptr.hpp>
 #include <sstream>
 
+#include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ParticleSpace.hpp>
 #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 
 namespace ecell4
@@ -27,7 +29,7 @@ struct MoleculeInfo
 };
 
 class BDWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 
@@ -120,11 +122,16 @@ public:
             }
         }
 
+        if (radius <= 0.0)
+        {
+            std::stringstream msg;
+            msg << "A particle with invalid size [" << radius << "] was given.";
+            throw IllegalArgument(msg.str());
+        }
+
         MoleculeInfo info = {radius, D};
         return info;
     }
-
-    // SpaceTraits
 
     const Real t() const
     {
@@ -135,8 +142,6 @@ public:
     {
         (*ps_).set_t(t);
     }
-
-    // ParticleSpaceTraits
 
     const Real3& edge_lengths() const
     {
@@ -194,8 +199,6 @@ public:
     {
         return static_cast<Real>(num_molecules_exact(sp));
     }
-
-    // ParticleSpace member functions
 
     bool update_particle_without_checking(const ParticleID& pid, const Particle& p)
     {
@@ -269,8 +272,6 @@ public:
         return (*ps_).distance(pos1, pos2);
     }
 
-    // CompartmentSpaceTraits
-
     Integer num_molecules(const Species& sp) const
     {
         return (*ps_).num_molecules(sp);
@@ -322,8 +323,6 @@ public:
         return lengths[0] * lengths[1] * lengths[2];
     }
 
-    // Optional members
-
     inline boost::shared_ptr<RandomNumberGenerator>& rng()
     {
         return rng_;
@@ -344,7 +343,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(ECELL4_VERSION));
+        extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(VERSION_INFO));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
@@ -357,7 +356,7 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
-        const std::string required = "ecell4-bd-4.1.0";
+        const std::string required = "ecell4-bd-0.0";
         try
         {
             const std::string version = extras::load_version_information(*fin);

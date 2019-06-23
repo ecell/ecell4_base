@@ -18,6 +18,7 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 
 namespace ecell4
@@ -27,7 +28,7 @@ namespace gillespie
 {
 
 class GillespieWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 
@@ -54,8 +55,6 @@ public:
         this->load(filename);
     }
 
-    // SpaceTraits
-
     const Real t() const;
     void set_t(const Real& t);
 
@@ -68,8 +67,6 @@ public:
     {
         cs_->reset(edge_lengths);
     }
-
-    // CompartmentSpaceTraits
 
     const Real volume() const
     {
@@ -84,8 +81,6 @@ public:
     std::vector<Species> list_species() const;
     bool has_species(const Species& sp) const;
 
-    // CompartmentSpace member functions
-
     void set_volume(const Real& volume)
     {
         (*cs_).set_volume(volume);
@@ -93,8 +88,6 @@ public:
 
     void add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
-
-    // Optional members
 
     inline const boost::shared_ptr<RandomNumberGenerator>& rng()
     {
@@ -110,7 +103,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("CompartmentSpace")));
         cs_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), std::string("ecell4-gillespie-") + std::string(ECELL4_VERSION));
+        extras::save_version_information(fout.get(), std::string("ecell4-gillespie-") + std::string(VERSION_INFO));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
@@ -123,7 +116,7 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
-        const std::string required = "ecell4-gillespie-4.1.0";
+        const std::string required = "ecell4-gillespie-0.0";
         try
         {
             const std::string version = extras::load_version_information(*fin);

@@ -128,7 +128,7 @@ std::vector<std::pair<ParticleID, Particle> >
     for (std::vector<Species>::const_iterator i(species_list.begin());
         i != species_list.end(); ++i)
     {
-        const Integer coef(sp.count(*i));
+        const Integer coef(count_species_matches(sp, *i));
         if (coef == 0)
         {
             continue;

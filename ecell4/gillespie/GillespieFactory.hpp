@@ -21,6 +21,9 @@ class GillespieFactory:
 public:
 
     typedef SimulatorFactory<GillespieWorld, GillespieSimulator> base_type;
+    typedef base_type::world_type world_type;
+    typedef base_type::simulator_type simulator_type;
+    typedef GillespieFactory this_type;
 
 public:
 
@@ -35,51 +38,29 @@ public:
         ; // do nothing
     }
 
-    GillespieFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline GillespieFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
 
-    virtual GillespieWorld* create_world(const std::string filename) const
-    {
-        return new GillespieWorld(filename);
-    }
+protected:
 
-    virtual GillespieWorld* create_world(
-        const Real3& edge_lengths = Real3(1, 1, 1)) const
+    virtual world_type* create_world(const Real3& edge_lengths) const
     {
         if (rng_)
         {
-            return new GillespieWorld(edge_lengths, rng_);
+            return new world_type(edge_lengths, rng_);
         }
         else
         {
-            return new GillespieWorld(edge_lengths);
+            return new world_type(edge_lengths);
         }
-    }
-
-    virtual GillespieWorld* create_world(const boost::shared_ptr<Model>& m) const
-    {
-        return extras::generate_world_from_model(*this, m);
-    }
-
-    virtual GillespieSimulator* create_simulator(
-        const boost::shared_ptr<Model>& model,
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new GillespieSimulator(model, world);
-    }
-
-    virtual GillespieSimulator* create_simulator(
-        const boost::shared_ptr<world_type>& world) const
-    {
-        return new GillespieSimulator(world);
     }
 
 protected:

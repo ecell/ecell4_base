@@ -45,14 +45,16 @@ protected:
 
 struct StepEvent : SpatiocyteEvent
 {
-    StepEvent(boost::shared_ptr<Model> model, boost::shared_ptr<SpatiocyteWorld> world,
-            const Species& species, const Real& t, const Real alpha=1.0);
+    StepEvent(boost::shared_ptr<Model> model,
+              boost::shared_ptr<SpatiocyteWorld> world,
+              const Species& species,
+              const Real& t,
+              const Real alpha=1.0);
     virtual ~StepEvent() {}
-    virtual void fire_();
 
     Species const& species() const
     {
-        return species_;
+        return mpool_->species();
     }
 
     Real const& alpha() const
@@ -60,28 +62,53 @@ struct StepEvent : SpatiocyteEvent
         return alpha_;
     }
 
+    void fire_()
+    {
+        walk(alpha_);
+        time_ += dt_;
+    }
+
+    virtual void walk(const Real& alpha) = 0;
+
+protected:
+
+    void attempt_reaction_(
+        const SpatiocyteWorld::coordinate_id_pair_type& info,
+        const Voxel& dst,
+        const Real& alpha);
+
+protected:
+
+    boost::shared_ptr<Model> model_;
+    boost::shared_ptr<SpatiocyteWorld> world_;
+    boost::shared_ptr<MoleculePool> mpool_;
+
+    const Real alpha_;
+};
+
+struct StepEvent3D : StepEvent
+{
+    StepEvent3D(boost::shared_ptr<Model> model,
+                boost::shared_ptr<SpatiocyteWorld> world,
+                const Species& species,
+                const Real& t,
+                const Real alpha=1.0);
+
+    void walk(const Real& alpha);
+};
+
+struct StepEvent2D : StepEvent
+{
+    StepEvent2D(boost::shared_ptr<Model> model,
+                boost::shared_ptr<SpatiocyteWorld> world,
+                const Species& species,
+                const Real& t,
+                const Real alpha=1.0);
+
     void walk(const Real& alpha);
 
 protected:
 
-    typedef enum
-    {
-        NO_REACTION = 0,
-        REACTION_FAILED = 1,
-        REACTION_SUCCEEDED = 2
-    } attempt_reaction_result_type;
-
-    void walk_in_space_(const MoleculePool* mtype, const Real& alpha);
-    void walk_on_surface_(const MoleculePool* mtype, const Real& alpha);
-    std::pair<attempt_reaction_result_type, reaction_type> attempt_reaction_(
-        const SpatiocyteWorld::coordinate_id_pair_type& info,
-        const SpatiocyteWorld::coordinate_type to_coord, const Real& alpha);
-
-    boost::shared_ptr<Model> model_;
-    boost::shared_ptr<SpatiocyteWorld> world_;
-    Species species_;
-    VoxelPool* mt_;
-    const Real alpha_;
     std::vector<unsigned int> nids_; // neighbor indexes
 };
 
@@ -121,7 +148,20 @@ struct FirstOrderReactionEvent : SpatiocyteEvent
 
 protected:
 
+    ReactionInfo::Item choice()
+    {
+        const Species& species(rule_.reactants().at(0));
+        boost::shared_ptr<const MoleculePool> mt(world_->find_molecule_pool(species));
+
+        const Integer i(rng_.lock()->uniform_int(0, mt->size() - 1));
+        const SpatiocyteWorld::coordinate_id_pair_type& info(mt->at(i));
+
+        // TODO: Calling coordinate2voxel() is invalid
+        return ReactionInfo::Item(info.pid, species, world_->coordinate2voxel(info.coordinate));
+    }
+
     boost::shared_ptr<SpatiocyteWorld> world_;
+    boost::weak_ptr<RandomNumberGenerator> rng_;
     ReactionRule rule_;
 };
 

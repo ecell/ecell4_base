@@ -1,0 +1,48 @@
+{
+    "description": "An integrated software environment for multi-algorithm, multi-timescale, multi-spatial-representation simulation of various cellular phenomena",
+    "license":  {
+        "id": "GPL-2.0"
+    },
+    "access_right": "open",
+    "title": "E-Cell System version 4",
+    "upload_type": "software",
+    "keywords": [
+        "Systems Biology"
+    ],
+    "creators": [
+        {
+            "name": "Kaizu, Kazunari",
+            "affiliation": "RIKEN",
+            "orcid": "0000-0003-1982-538X"
+        },
+        {
+            "name": "Nishida, Kozo",
+            "affiliation": "RIKEN"
+        },
+        {
+            "name": "Sakamoto, Yuki"
+        },
+        {
+            "name": "Kato, Suguru",
+            "affiliation": "Kyoto University"
+        },
+        {
+            "name": "Niina, Toru",
+            "affiliation": "Kyoto University"
+        },
+        {
+            "name": "Nishida, Naoki"
+        },
+        {
+            "name": "Aota, Naohiro"
+        },
+        {
+            "name": "Koizumi, Moriyoshi",
+            "affiliation": "Open Collector,Inc."
+        },
+        {
+            "name": "Takahashi, Koichi",
+            "affiliation": "RIKEN"
+        }
+    ]
+}

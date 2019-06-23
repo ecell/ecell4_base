@@ -10,26 +10,6 @@
 namespace ecell4
 {
 
-ReactionRule create_unimolecular_reaction_rule(
-    const Species& reactant1, const Species& product1, const Real& k);
-
-ReactionRule create_binding_reaction_rule(
-    const Species& reactant1, const Species& reactant2, const Species& product1,
-    const Real& k);
-
-ReactionRule create_unbinding_reaction_rule(
-    const Species& reactant1, const Species& product1, const Species& product2,
-    const Real& k);
-
-ReactionRule create_degradation_reaction_rule(
-    const Species& reactant1, const Real& k);
-
-ReactionRule create_synthesis_reaction_rule(
-    const Species& product1, const Real& k);
-
-// ReactionRule create_repulsive_reaction_rule(
-//     const Species& reactant1, const Species& reactant2);
-
 class Model
 {
 public:
@@ -75,6 +55,12 @@ public:
     virtual bool is_static() const
     {
         return false;
+    }
+
+    virtual bool update_species_attribute(const Species& sp)
+    {
+        throw NotSupported(
+            "update_species_attribute is not supported in this model class");
     }
 
     /**
@@ -181,6 +167,10 @@ public:
     const std::vector<Species> list_species() const
     {
         std::vector<Species> retval;
+
+        const species_container_type& attrs(species_attributes());
+        std::copy(attrs.begin(), attrs.end(), std::back_inserter(retval));  //XXX: This copies attributes too.
+
         const reaction_rule_container_type& rrs(reaction_rules());
         for (reaction_rule_container_type::const_iterator i(rrs.begin());
             i != rrs.end(); ++i)
@@ -194,6 +184,7 @@ public:
             std::copy(products.begin(), products.end(),
                       std::back_inserter(retval));
         }
+
         std::sort(retval.begin(), retval.end());
         retval.erase(
             std::unique(retval.begin(), retval.end()), retval.end());

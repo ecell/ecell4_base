@@ -214,6 +214,12 @@ public:
     //     return world_.apply_boundary(v);
     // }
 
+    virtual position_type apply_structure(
+            position_type const& p, position_type const& d) const
+    {
+        return world_.apply_structure(p, d);
+    }
+
     virtual position_type periodic_transpose(position_type const& p0, position_type const& p1) const
     {
         return world_.periodic_transpose(p0, p1);
@@ -446,7 +452,7 @@ public:
         {
             spherical_shell_id_pair const& sp(*i);
             position_type ppos(main_.world()->periodic_transpose(sphere.position(), (sp).second.position()));
-            if (distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
+            if (::distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())  //XXX: ecell4::egfrd::distance
             {
                 return true;
             }
@@ -495,8 +501,8 @@ public:
         boost::scoped_ptr<
             typename multi_particle_container_type::transaction_type>
                 tx(pc_.create_transaction());
-        typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
-        typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
+        // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
+        // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
         last_reaction_setter rs(*this);
         volume_clearer vc(*this);
         BDPropagator<traits_type> ppg(

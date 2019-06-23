@@ -7,6 +7,79 @@
 namespace ecell4
 {
 
+bool NetworkModel::update_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        add_species_attribute(sp);
+        return true;
+    }
+    // for (Species::attributes_container_type::const_iterator
+    //     j(sp.attributes().begin()); j != sp.attributes().end(); ++j)
+    // {
+    //     if ((*i).has_attribute((*j).first))
+    //     {
+    //         std::ostringstream message;
+    //         message << "Attribute '" << (*j).first << "' of '" << sp.serial()
+    //             << "' is going to be updated from '" << (*i).get_attribute((*j).first)
+    //             << "' to '" << (*j).second << "'";
+    //         throw AlreadyExists(message.str()); // use boost::format if it's allowed
+    //     }
+    //     (*i).set_attribute((*j).first, (*j).second);
+    // }
+    (*i).overwrite_attributes(sp);
+    return false;
+}
+
+void NetworkModel::add_species_attribute(const Species& sp)
+{
+    if (has_species_attribute(sp))
+    {
+        throw AlreadyExists("species already exists");
+    }
+    species_attributes_.push_back(sp);
+}
+
+void NetworkModel::remove_species_attribute(const Species& sp)
+{
+    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
+    if (i == species_attributes_.end())
+    {
+        std::ostringstream message;
+        message << "The given Speices [" << sp.serial() << "] was not found";
+        throw NotFound(message.str()); // use boost::format if it's allowed
+    }
+    species_attributes_.erase(i, species_attributes_.end());
+}
+
+bool NetworkModel::has_species_attribute(const Species& sp) const
+{
+    species_container_type::const_iterator i(
+        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
+    return (i != species_attributes_.end());
+}
+
+Species NetworkModel::apply_species_attributes(const Species& sp) const
+{
+    for (species_container_type::const_iterator
+        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+    {
+        if ((*i).serial() == "_" || sp == (*i))
+        {
+            Species ret(sp);
+            ret.set_attributes(*i);
+            return ret;
+        }
+    }
+    return sp;
+}
+
+Integer NetworkModel::apply(const Species& pttrn, const Species& sp) const
+{
+    return (pttrn == sp ? 1 : 0);
+}
+
 std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     const Species& sp) const
 {
@@ -49,11 +122,6 @@ std::vector<ReactionRule> NetworkModel::query_reaction_rules(
     return retval;
 }
 
-Integer NetworkModel::apply(const Species& pttrn, const Species& sp) const
-{
-    return (pttrn == sp ? 1 : 0);
-}
-
 std::vector<ReactionRule> NetworkModel::apply(
     const ReactionRule& rr, const ReactionRule::reactant_container_type& reactants) const
 {
@@ -74,46 +142,22 @@ std::vector<ReactionRule> NetworkModel::apply(
     return std::vector<ReactionRule>(1, rr);
 }
 
-void NetworkModel::add_species_attribute(const Species& sp)
-{
-    if (has_species_attribute(sp))
-    {
-        throw AlreadyExists("species already exists");
-    }
-    species_attributes_.push_back(sp);
-}
-
-void NetworkModel::remove_species_attribute(const Species& sp)
-{
-    species_container_type::iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
-    if (i == species_attributes_.end())
-    {
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
-    }
-    species_attributes_.erase(i);
-}
-
-bool NetworkModel::has_species_attribute(const Species& sp) const
-{
-    species_container_type::const_iterator i(
-        std::find(species_attributes_.begin(), species_attributes_.end(), sp));
-    return (i != species_attributes_.end());
-}
-
 void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::iterator
-        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
-    if (i != reaction_rules_.end())
+    if (rr.has_descriptor())
     {
-        // throw AlreadyExists("reaction rule already exists");
-        // std::cerr << "WARN: reaction rule ["
-        //     << rr.as_string() << "] already exists." << std::endl;
-        (*i).set_k((*i).k() + rr.k());
+        reaction_rules_.push_back(rr);
         return;
+    }
+
+    for (reaction_rule_container_type::iterator i(reaction_rules_.begin());
+        i != reaction_rules_.end(); ++i)
+    {
+        if ((*i) == rr && !(*i).has_descriptor())
+        {
+            (*i).set_k((*i).k() + rr.k());  // Merging
+            return;
+        }
     }
 
     const reaction_rule_container_type::size_type idx(reaction_rules_.size());
@@ -121,7 +165,8 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
 
     if (rr.reactants().size() == 1)
     {
-        first_order_reaction_rules_map_[rr.reactants()[0].serial()].push_back(idx);
+        const Species::serial_type key = rr.reactants()[0].serial();
+        first_order_reaction_rules_map_[key].push_back(idx);
     }
     else if (rr.reactants().size() == 2)
     {
@@ -136,59 +181,68 @@ void NetworkModel::add_reaction_rule(const ReactionRule& rr)
     }
     else
     {
-        ;
+        ; // do nothing
     }
 }
 
 void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
 {
-    reaction_rule_container_type::iterator
-        i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
-    if (i == reaction_rules_.end())
+    reaction_rule_container_type::size_type removed = 0;
+    while (true)
     {
-        throw NotFound("reaction rule not found");
+        reaction_rule_container_type::iterator
+            i(std::find(reaction_rules_.begin(), reaction_rules_.end(), rr));
+        if (i == reaction_rules_.end())
+        {
+            break;
+        }
+        remove_reaction_rule(i);
+        ++removed;
     }
 
-    reaction_rule_container_type::size_type const
-        idx(i - reaction_rules_.begin()), last_idx(reaction_rules_.size() - 1);
-    if (rr.reactants().size() == 1)
+    if (removed == 0)
     {
-        first_order_reaction_rules_map_type::iterator
-            j(first_order_reaction_rules_map_.find(rr.reactants()[0].serial()));
-        if (j == first_order_reaction_rules_map_.end())
-        {
-            throw IllegalState("no corresponding map key found");
-        }
+        throw NotFound("The given reaction rule was not found.");
+    }
+}
 
-        first_order_reaction_rules_map_type::mapped_type::iterator
-            k(std::remove((*j).second.begin(), (*j).second.end(), idx));
-        if (k == (*j).second.end())
+void NetworkModel::remove_reaction_rule(const NetworkModel::reaction_rule_container_type::iterator i)
+{
+    assert(reaction_rules_.size() > 0);
+    const reaction_rule_container_type::size_type idx = i - reaction_rules_.begin();
+    assert(idx < reaction_rules_.size());
+    const reaction_rule_container_type::size_type last_idx(reaction_rules_.size() - 1);
+
+    {
+        const ReactionRule& rr = reaction_rules_[idx];
+
+        if (rr.has_descriptor())
         {
-            throw IllegalState("no corresponding map value found");
+            ; // do nothing
         }
-        else
+        else if (rr.reactants().size() == 1)
         {
+            first_order_reaction_rules_map_type::iterator
+                j(first_order_reaction_rules_map_.find(rr.reactants()[0].serial()));
+            assert(j != first_order_reaction_rules_map_.end());
+
+            first_order_reaction_rules_map_type::mapped_type::iterator
+                k(std::remove((*j).second.begin(), (*j).second.end(), idx));
+            assert(k != (*j).second.end());
+
             (*j).second.erase(k, (*j).second.end());
         }
-    }
-    else if (rr.reactants().size() == 2)
-    {
-        second_order_reaction_rules_map_type::iterator
-            j(second_order_reaction_rules_map_.find(std::make_pair(
-                rr.reactants()[0].serial(), rr.reactants()[1].serial())));
-        if (j == second_order_reaction_rules_map_.end())
+        else if (rr.reactants().size() == 2)
         {
-            throw IllegalState("no corresponding map key found");
-        }
+            second_order_reaction_rules_map_type::iterator
+                j(second_order_reaction_rules_map_.find(std::make_pair(
+                    rr.reactants()[0].serial(), rr.reactants()[1].serial())));
+            assert(j != second_order_reaction_rules_map_.end());
 
-        second_order_reaction_rules_map_type::mapped_type::iterator
-            k(std::remove((*j).second.begin(), (*j).second.end(), idx));
-        if (k == (*j).second.end())
-        {
-            throw IllegalState("no corresponding map value found");
-        }
-        else
-        {
+            second_order_reaction_rules_map_type::mapped_type::iterator
+                k(std::remove((*j).second.begin(), (*j).second.end(), idx));
+            assert(k != (*j).second.end());
+
             (*j).second.erase(k, (*j).second.end());
         }
     }
@@ -196,51 +250,40 @@ void NetworkModel::remove_reaction_rule(const ReactionRule& rr)
     if (idx < last_idx)
     {
         reaction_rule_container_type::value_type const
-            last_value(reaction_rules_[last_idx]);
-        (*i) = last_value;
+            rrlast(reaction_rules_[last_idx]);
+        (*i) = rrlast;
 
-        if (last_value.reactants().size() == 1)
+        if (rrlast.has_descriptor())
+        {
+            ; // do nothing
+        }
+        else if (rrlast.reactants().size() == 1)
         {
             first_order_reaction_rules_map_type::iterator
                 j(first_order_reaction_rules_map_.find(
-                    last_value.reactants()[0].serial()));
-            if (j == first_order_reaction_rules_map_.end())
-            {
-                throw IllegalState("no corresponding map key for the last found");
-            }
+                    rrlast.reactants()[0].serial()));
+            assert(j != first_order_reaction_rules_map_.end());
 
             first_order_reaction_rules_map_type::mapped_type::iterator
                 k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
-            if (k == (*j).second.end())
-            {
-                throw IllegalState("no corresponding map value found");
-            }
-            else
-            {
-                (*j).second.erase(k, (*j).second.end());
-            }
+            assert(k != (*j).second.end());
+
+            (*j).second.erase(k, (*j).second.end());
             (*j).second.push_back(idx);
         }
-        else if (last_value.reactants().size() == 2)
+        else if (rrlast.reactants().size() == 2)
         {
             second_order_reaction_rules_map_type::iterator
                 j(second_order_reaction_rules_map_.find(std::make_pair(
-                    last_value.reactants()[0].serial(),
-                    last_value.reactants()[1].serial())));
-            if (j == second_order_reaction_rules_map_.end())
-            {
-                throw IllegalState("no corresponding map key for the last found");
-            }
+                    rrlast.reactants()[0].serial(),
+                    rrlast.reactants()[1].serial())));
+            assert(j != second_order_reaction_rules_map_.end());
+
             second_order_reaction_rules_map_type::mapped_type::iterator
                 k(std::remove((*j).second.begin(), (*j).second.end(), last_idx));
-            if (k == (*j).second.end())
-            {
-                throw IllegalState("no corresponding map value found");
-            }
-            else
-            {
-                (*j).second.erase(k, (*j).second.end());
-            }
+            assert(k != (*j).second.end());
+
+            (*j).second.erase(k, (*j).second.end());
             (*j).second.push_back(idx);
         }
     }

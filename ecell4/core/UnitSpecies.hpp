@@ -112,9 +112,26 @@ public:
         return sites_.end();
     }
 
+    //XXX: This method is not safe. Donot change the name of a site.
+    inline container_type::iterator begin()
+    {
+        return sites_.begin();
+    }
+
+    //XXX: This method is not safe. Donot change the name of a site.
+    inline container_type::iterator end()
+    {
+        return sites_.end();
+    }
+
     bool operator==(const UnitSpecies& rhs) const
     {
         return (serial() == rhs.serial());
+    }
+
+    bool operator!=(const UnitSpecies& rhs) const
+    {
+        return (serial() != rhs.serial());
     }
 
     bool operator<(const UnitSpecies& rhs) const

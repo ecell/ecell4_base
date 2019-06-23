@@ -4,6 +4,7 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 #include <ecell4/core/Space.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/NetworkModel.hpp>
@@ -16,7 +17,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <ecell4/ode/ODENetworkModel.hpp>
 
 namespace ecell4
 {
@@ -47,7 +47,7 @@ struct ODEWorldHDF5Traits
 #endif
 
 class ODEWorld
-    : public Space
+    : public WorldInterface
 {
 protected:
 
@@ -128,8 +128,6 @@ public:
         edge_lengths_ = Real3(L, L, L);
     }
 
-    // CompartmentSpaceTraits
-
     Integer num_molecules(const Species& sp) const
     {
         return static_cast<Integer>(get_value(sp));
@@ -144,8 +142,6 @@ public:
     {
         return species_;
     }
-
-    // CompartmentSpace member functions
 
     void add_molecules(const Species& sp, const Real& num)
     {
@@ -169,8 +165,6 @@ public:
 
         num_molecules_[(*i).second] -= num;
     }
-
-    // Optional members
 
     Real get_value(const Species& sp) const
     {
@@ -264,18 +258,10 @@ public:
     }
 
     void bind_to(boost::shared_ptr<Model> model);
-    void bind_to(boost::shared_ptr<ODENetworkModel> model);
 
-    boost::shared_ptr<ODENetworkModel> lock_model() const
+    boost::shared_ptr<Model> lock_model() const
     {
-        if (generated_)
-        {
-            return generated_;
-        }
-        else
-        {
-            return model_.lock();
-        }
+        return model_.lock();
     }
 
     void add_molecules(const Species& sp, const Integer& num,
@@ -298,13 +284,67 @@ public:
             std::make_pair(ParticleID(), Particle(sp, pos, 0.0, 0.0)), true);
     }
 
-    Real evaluate(const ReactionRule& rr) const
+    std::vector<Real> get_values() const
     {
-        ODEReactionRule oderr(rr);
-        return evaluate(oderr);
+        return num_molecules_;
     }
 
-    Real evaluate(ODEReactionRule& rr) const;
+    Real evaluate(const ReactionRule& rr) const
+    {
+        if (rr.has_descriptor())
+        {
+            const boost::shared_ptr<ReactionRuleDescriptor> desc = rr.get_descriptor();
+            return __evaluate(rr, desc);
+        }
+        else
+        {
+            const boost::shared_ptr<ReactionRuleDescriptorMassAction>
+                rrd(new ReactionRuleDescriptorMassAction(rr.k()));
+            rrd->resize_reactants(rr.reactants().size());
+            rrd->resize_products(rr.products().size());
+            return __evaluate(rr, rrd);
+        }
+    }
+
+    std::vector<Real> evaluate(const std::vector<ReactionRule>& reaction_rules) const
+    {
+        std::vector<Real> ret(reaction_rules.size(), 0.0);
+        unsigned i = 0;
+        for(std::vector<ReactionRule>::const_iterator
+            it(reaction_rules.begin()); it != reaction_rules.end(); it++, i++)
+        {
+            ret[i] = this->evaluate(*it);
+        }
+        return ret;
+    }
+
+protected:
+
+    Real __evaluate(const ReactionRule& rr, const boost::shared_ptr<ReactionRuleDescriptor>& desc) const
+    {
+        const ReactionRule::reactant_container_type reactants = rr.reactants();
+        const ReactionRule::product_container_type products = rr.products();
+
+        ReactionRuleDescriptor::state_container_type::size_type cnt(0);
+
+        ReactionRuleDescriptor::state_container_type r(reactants.size());
+        for(ReactionRule::reactant_container_type::const_iterator j(reactants.begin());
+            j != reactants.end(); j++, cnt++)
+        {
+            r[cnt] = static_cast<double>(this->get_value_exact(*j));
+        }
+
+        cnt = 0;
+
+        ReactionRuleDescriptor::state_container_type p(products.size());
+        for(ReactionRule::reactant_container_type::const_iterator j(products.begin());
+            j != products.end(); j++, cnt++)
+        {
+            p[cnt] = static_cast<double>(this->get_value_exact(*j));
+        }
+
+        return desc->propensity(r, p, this->volume(), this->t());
+    }
 
 protected:
 
@@ -316,13 +356,11 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<ODENetworkModel> model_;
-    boost::shared_ptr<ODENetworkModel> generated_;
-    // bool is_netfree_;
+    boost::weak_ptr<Model> model_;
 };
 
 } // ode
 
 } // ecell4
 
-#endif /* ECELL4_ODE_ODE_WORLD_HPP */
+#endif /* ECELL4_ODE_ODE_WORLD_NEW_HPP */

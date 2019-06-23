@@ -240,6 +240,12 @@ public:
     //     return pc_.apply_boundary(v);
     // }
 
+    virtual position_type apply_structure(
+            position_type const& p, position_type const& d) const
+    {
+        return pc_.apply_structure(p, d);
+    }
+
     virtual position_type periodic_transpose(position_type const& p0, position_type const& p1) const
     {
         return pc_.periodic_transpose(p0, p1);

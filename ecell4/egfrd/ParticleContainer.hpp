@@ -8,14 +8,14 @@
 #include "utils/unassignable_adapter.hpp"
 
 #include <ecell4/core/types.hpp>
-#include <ecell4/core/Space.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 template<typename Ttraits_>
 class Transaction;
 
 template<typename Ttraits_>
 class ParticleContainer
-    : public ecell4::Space
+    : public ecell4::WorldInterface
 {
 public:
 
@@ -90,28 +90,16 @@ public:
 
     virtual transaction_type* create_transaction() = 0;
 
-    /**
-     * ParticleSpace has functions similar, but a bit different.
-     */
-
     virtual bool update_particle(const particle_id_type& pid, const particle_type& p) = 0;
 
     virtual position_type periodic_transpose(
         position_type const& p0, position_type const& p1) const = 0;
-
-    /**
-     * Space
-     */
 
     virtual void save(const std::string& filename) const
     {
         throw ecell4::NotSupported(
             "save(const std::string) is not supported by this space class");
     }
-
-    /**
-     * ParticleSpace
-     */
 
     virtual void remove_particle(particle_id_type const& id) = 0;
 
@@ -130,11 +118,8 @@ public:
         return pos + disp;
     }
 
-    virtual position_type apply_structure(const position_type& pos, const position_type& disp)
-    {
-        return pos + disp;
-    }
+    virtual position_type apply_structure(
+            position_type const& pos, position_type const& disp) const = 0;
 };
-
 
 #endif /* PARTICLE_CONTAINER_HPP */

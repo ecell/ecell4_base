@@ -39,8 +39,8 @@ public:
     virtual void seed() = 0;
 
 #ifdef WITH_HDF5
-    virtual void save(H5::CommonFG* root) const = 0;
-    virtual void load(const H5::CommonFG& root) = 0;
+    virtual void save(H5::H5Location* root) const = 0;
+    virtual void load(const H5::H5Location& root) = 0;
     virtual void save(const std::string& filename) const = 0;
     virtual void load(const std::string& filename) = 0;
 #else
@@ -62,12 +62,13 @@ public:
 template<typename Telem_>
 inline void shuffle(RandomNumberGenerator& rng, std::vector<Telem_>& cont)
 {
+    using std::swap;
     typedef std::vector<Telem_> container_type;
     for (typename container_type::size_type i(cont.size()); i > 0;)
     {
         --i;
         typename container_type::size_type const j(rng.uniform_int(0, i));
-        std::swap(cont[i], cont[j]);
+        swap(cont[i], cont[j]);
     }
 }
 
@@ -90,8 +91,8 @@ public:
     void seed();
 
 #ifdef WITH_HDF5
-    void save(H5::CommonFG* root) const;
-    void load(const H5::CommonFG& root);
+    void save(H5::H5Location* root) const;
+    void load(const H5::H5Location& root);
     void save(const std::string& filename) const;
     void load(const std::string& filename);
 #endif

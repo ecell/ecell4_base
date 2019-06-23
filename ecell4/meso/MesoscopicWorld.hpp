@@ -12,6 +12,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/extras.hpp>
+#include <ecell4/core/WorldInterface.hpp>
 
 namespace ecell4
 {
@@ -26,7 +27,7 @@ struct MoleculeInfo
 };
 
 class MesoscopicWorld
-    : public Space
+    : public WorldInterface
 {
 public:
 
@@ -101,7 +102,7 @@ public:
         boost::scoped_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("SubvolumeSpace")));
         cs_->save_hdf5(group.get());
-        extras::save_version_information(fout.get(), std::string("ecell4-meso-") + std::string(ECELL4_VERSION));
+        extras::save_version_information(fout.get(), std::string("ecell4-meso-") + std::string(VERSION_INFO));
 #else
         throw NotSupported(
             "This method requires HDF5. The HDF5 support is turned off.");
@@ -114,7 +115,7 @@ public:
         boost::scoped_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
-        const std::string required = "ecell4-meso-4.1.0";
+        const std::string required = "ecell4-meso-0.0";
         try
         {
             const std::string version = extras::load_version_information(*fin);
@@ -402,6 +403,11 @@ public:
     {
         const molecule_info_type minfo(get_molecule_info(sp));
         return cs_->reserve_pool(sp, minfo.D, minfo.loc);
+    }
+
+    std::vector<Integer> get_data(const Species& sp) const
+    {
+        return cs_->get_data(sp);
     }
 
 private:

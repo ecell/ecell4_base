@@ -2,8 +2,6 @@
 #ifndef ECELL4_CONFIG_H
 #define ECELL4_CONFIG_H
 
-#cmakedefine ECELL4_VERSION "@ECELL4_VERSION@"
-
 #ifdef _MSC_BUILD
 #define WIN32_MSC 1
 #else
@@ -26,6 +24,7 @@
 #cmakedefine HAVE_BOOST_FUNCTIONAL_HASH_HPP 1
 #cmakedefine HAVE_TR1_UNORDERED_MAP 1
 #cmakedefine HAVE_TR1_FUNCTIONAL 1
+#cmakedefine HAVE_CHRONO 1
 #endif
 
 #endif /* ECELL4_CONFIG_H */

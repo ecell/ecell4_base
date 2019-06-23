@@ -12,7 +12,7 @@ namespace ecell4
 {
 
 #ifdef WITH_HDF5
-void GSLRandomNumberGenerator::save(H5::CommonFG* root) const
+void GSLRandomNumberGenerator::save(H5::H5Location* root) const
 {
     using namespace H5;
 
@@ -25,7 +25,7 @@ void GSLRandomNumberGenerator::save(H5::CommonFG* root) const
     dataset->write((unsigned char*)(gsl_rng_state(rng_.get())), *optype);
 }
 
-void GSLRandomNumberGenerator::load(const H5::CommonFG& root)
+void GSLRandomNumberGenerator::load(const H5::H5Location& root)
 {
     using namespace H5;
 
@@ -42,7 +42,7 @@ void GSLRandomNumberGenerator::save(const std::string& filename) const
     boost::scoped_ptr<H5::H5File>
         fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
     this->save(fout.get());
-    extras::save_version_information(fout.get(), std::string("ecell4-gsl_number_generator-") + std::string(ECELL4_VERSION));
+    extras::save_version_information(fout.get(), std::string("ecell4-gsl_number_generator-") + std::string(VERSION_INFO));
 }
 
 void GSLRandomNumberGenerator::load(const std::string& filename)
