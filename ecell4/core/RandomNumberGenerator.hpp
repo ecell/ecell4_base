@@ -62,12 +62,13 @@ public:
 template<typename Telem_>
 inline void shuffle(RandomNumberGenerator& rng, std::vector<Telem_>& cont)
 {
+    using std::swap;
     typedef std::vector<Telem_> container_type;
     for (typename container_type::size_type i(cont.size()); i > 0;)
     {
         --i;
         typename container_type::size_type const j(rng.uniform_int(0, i));
-        std::swap(cont[i], cont[j]);
+        swap(cont[i], cont[j]);
     }
 }
 
