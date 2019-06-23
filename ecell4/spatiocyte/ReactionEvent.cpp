@@ -22,7 +22,7 @@ void ZerothOrderReactionEvent::fire_()
         i != rule_.products().end(); ++i)
     {
         const Species& sp(*i);
-        const SpatiocyteWorld::molecule_info_type info(world_->get_molecule_info(sp));
+        const MoleculeInfo info(world_->get_molecule_info(sp));
 
         if (boost::shared_ptr<VoxelPool> location = world_->find_voxel_pool(Species(info.loc)))
         {
