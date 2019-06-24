@@ -74,13 +74,15 @@ run_simulation(10, {'A': 60, 'B': 60})
 ### Diffusion on a spherical surface
 
 ```python
-%matplotlib inline
+%%matplotlib inline
+from ecell4_base.core import *
 from ecell4 import *
 
 with species_attributes():
-    A | {'D': '1', 'location': 'M'}
+    M | {'dimension': 2}
+    A | {'D': 1.0, 'location': 'M'}
 
-surface = Sphere(ones() * 0.5, 0.5).surface()
+surface = Sphere(ones() * 0.5, 0.49).surface()
 obs = FixedIntervalTrajectoryObserver(1e-4)
 run_simulation(
     0.4, y0={'A': 10}, structures={'M': surface},
