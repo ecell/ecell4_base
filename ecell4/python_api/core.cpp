@@ -388,6 +388,17 @@ void define_reaction_rule(py::module& m)
         .def("get_descriptor", &ReactionRule::get_descriptor)
         .def("has_descriptor", &ReactionRule::has_descriptor)
         .def("reset_descriptor", &ReactionRule::reset_descriptor)
+        .def("get_attribute", &ReactionRule::get_attribute)
+        .def("set_attribute", &ReactionRule::set_attribute<std::string>)
+        .def("set_attribute", &ReactionRule::set_attribute<const char*>)
+        .def("set_attribute", &ReactionRule::set_attribute<bool>)  //XXX: This must be former than Integer's
+        .def("set_attribute", &ReactionRule::set_attribute<Real>)
+        .def("set_attribute", &ReactionRule::set_attribute<Integer>)
+        .def("set_attribute", &ReactionRule::set_attribute<Quantity<Real>>)
+        .def("set_attribute", &ReactionRule::set_attribute<Quantity<Integer>>)
+        .def("remove_attribute", &ReactionRule::remove_attribute)
+        .def("has_attribute", &ReactionRule::has_attribute)
+        .def("list_attributes", &ReactionRule::list_attributes)
         .def(py::pickle(
             [](const ReactionRule& self)
             {

@@ -6,6 +6,7 @@
 #include "types.hpp"
 #include "Quantity.hpp"
 #include "Species.hpp"
+#include "Attribute.hpp"
 #include <stdexcept>
 
 #include <boost/shared_ptr.hpp>
@@ -36,6 +37,8 @@ public:
         POLICY_IMPLICIT = 1L << 1,
         POLICY_DESTROY = 1L << 2
     };
+
+    typedef Attribute::mapped_type attribute_type;
 
 public:
 
@@ -73,6 +76,30 @@ public:
     const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const;
     void reset_descriptor();
 
+    /**
+     * Attribute
+     */
+    const Attribute& attributes() const;
+    void set_attributes(const Attribute& attr);
+
+    std::vector<std::pair<std::string, attribute_type> > list_attributes() const;
+    attribute_type get_attribute(const std::string& key) const;
+
+    template <typename T_>
+    T_ get_attribute_as(const std::string& key) const
+    {
+        return attributes_.get_as<T_>(key);
+    }
+
+    template <typename T_>
+    void set_attribute(const std::string& key, T_ value)
+    {
+        attributes_.set<T_>(key, value);
+    }
+
+    void remove_attribute(const std::string& key);
+    bool has_attribute(const std::string& key) const;
+
 protected:
 
     Quantity<Real> k_;
@@ -80,6 +107,7 @@ protected:
     product_container_type products_;
 
     policy_type policy_;
+    Attribute attributes_;
 
     boost::shared_ptr<ReactionRuleDescriptor> rr_descriptor_;
     // boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
