@@ -132,7 +132,7 @@ class SGFRDSimulator :
     }
     ~SGFRDSimulator() override = default;
 
-    void initialize()
+    void initialize() override
     {
         if(!(this->is_dirty_))
         {
@@ -198,6 +198,14 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("now %1% shells exists", shell_container_.num_shells()))
         SGFRD_TRACE(tracer_.write("now %1% events exists", scheduler_.size()))
 
+        // Set the next dt_.
+        // This is required to run this simulator with a FixedIntervalXXXObserver.
+        // 1. SimulatorBase::run(obs, upto) checks whether obs.next_time() <
+        //    `Simulator::next_time()`.
+        // 2. Simulator::next_time() is not virtual. So it cannot be overridden.
+        // 3. Simulator::next_time() returns `simulator::t() + simulator::dt()`.
+        this->dt_ = this->scheduler_.next_time() - this->time();
+
         //XXX
         assert(this->diagnosis());
 
@@ -227,6 +235,7 @@ class SGFRDSimulator :
         {
             // step does re-initialize inside it.
             this->step();
+            assert(this->time() < upto);
             return true;
         }
         else if(this->scheduler_.next_time() == upto) // really unlikely
@@ -247,7 +256,7 @@ class SGFRDSimulator :
 
     world_type const& world() const {return *(this->world_);}
 
-    Real dt() const {return dt_;}
+    Real dt() const override {return dt_;}
     Real reaction_length() const {return reaction_length_;}
 
     bool check_reaction() const {return last_reactions_.size() > 0;}
