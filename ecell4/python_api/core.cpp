@@ -151,11 +151,16 @@ void define_integer3(py::module& m)
 
 template<typename T>
 static inline
-void set_attribute_as(Species& species, const std::pair<std::string, Species::attribute_type>& key_value)
+void set_attribute_as(Species& sp, const std::pair<std::string, py::object>& key_value)
 {
-    if (const T* value = boost::get<T>(&key_value.second))
+    try
     {
-        species.set_attribute(key_value.first, value);
+        const T value(key_value.second.cast<T>());
+        sp.set_attribute(key_value.first, value);
+    }
+    catch (py::cast_error e)
+    {
+        ; // do nothing
     }
 }
 
@@ -268,7 +273,7 @@ void define_species(py::module& m)
                 if (t.size() != 2)
                     throw std::runtime_error("Invalid state");
                 Species species(t[0].cast<Species::serial_type>());
-                for (const auto& key_value : t[1].cast<std::vector<std::pair<std::string, Species::attribute_type>>>())
+                for (const auto& key_value : t[1].cast<std::vector<std::pair<std::string, py::object>>>())
                 {
                     set_attribute_as<std::string>(species, key_value);
                     set_attribute_as<Quantity<Real>>(species, key_value);
