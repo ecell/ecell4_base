@@ -27,35 +27,39 @@ class Attribute
 {
 public:
 
-    typedef boost::variant<std::string, Quantity<Real>, Quantity<Integer>, bool> value_type;
+    typedef std::string key_type;
+    typedef boost::variant<std::string, Quantity<Real>, Quantity<Integer>, bool> mapped_type;
 
 protected:
 
-    typedef boost::container::flat_map<std::string, value_type>
-        attributes_container_type;
+    typedef boost::container::flat_map<key_type, mapped_type>
+        container_type;
 
     // typedef boost::container::small_vector<
-    //     std::pair<std::string, value_type>, 3
+    //     std::pair<key_type, mapped_type>, 3
     //         > flat_map_backend_type;
     // typedef boost::container::flat_map<
-    //     std::string, value_type, std::less<std::string>, flat_map_backend_type
-    //         > attributes_container_type;
+    //     key_type, mapped_type, std::less<key_type>, flat_map_backend_type
+    //         > container_type;
 
+public:
+
+    typedef container_type::value_type value_type;
 
 public:
 
     Attribute();
     Attribute(const Attribute& another);
     Attribute& operator=(const Attribute& another);
-    Attribute(const attributes_container_type& attr);
+    Attribute(const container_type& attr);
 
-    std::vector<std::pair<std::string, value_type> > list_attributes() const;
-    value_type get_attribute(const std::string& name_attr) const;
+    std::vector<value_type> list_attributes() const;
+    mapped_type get_attribute(const key_type& name_attr) const;
 
     template <typename T_>
-    T_ get_attribute_as(const std::string& name_attr) const
+    T_ get_attribute_as(const key_type& name_attr) const
     {
-        value_type val = get_attribute(name_attr);
+        mapped_type val = get_attribute(name_attr);
         if (T_* x = boost::get<T_>(&val))
         {
             return (*x);
@@ -64,26 +68,26 @@ public:
     }
 
     template <typename T_>
-    void set_attribute(const std::string& name_attr, T_ value)
+    void set_attribute(const key_type& name_attr, T_ value)
     {
         attributes_[name_attr] = value;
     }
 
     void set_attributes(const Attribute& attr);
-    void remove_attribute(const std::string& name_attr);
-    bool has_key(const std::string& name_attr) const;
+    void remove_attribute(const key_type& name_attr);
+    bool has_key(const key_type& name_attr) const;
     void overwrite_attributes(const Attribute& attr);
 
 protected:
 
-    attributes_container_type attributes_;
+    container_type attributes_;
 };
 
-template <> Real Attribute::get_attribute_as<Real>(const std::string& name_attr) const;
-template <> Integer Attribute::get_attribute_as<Integer>(const std::string& name_attr) const;
-template <> void Attribute::set_attribute<const char*>(const std::string& name_attr, const char* value);
-template <> void Attribute::set_attribute<Real>(const std::string& name_attr, const Real value);
-template <> void Attribute::set_attribute<Integer>(const std::string& name_attr, const Integer value);
+template <> Real Attribute::get_attribute_as<Real>(const key_type& name_attr) const;
+template <> Integer Attribute::get_attribute_as<Integer>(const key_type& name_attr) const;
+template <> void Attribute::set_attribute<const char*>(const key_type& name_attr, const char* value);
+template <> void Attribute::set_attribute<Real>(const key_type& name_attr, const Real value);
+template <> void Attribute::set_attribute<Integer>(const key_type& name_attr, const Integer value);
 
 } // ecell4
 

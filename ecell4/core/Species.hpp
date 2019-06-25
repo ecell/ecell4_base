@@ -39,7 +39,7 @@ protected:
 
 public:
 
-    typedef typename attributes_container_type::value_type attribute_type;
+    typedef typename attributes_container_type::mapped_type attribute_type;
 
 public:
 
