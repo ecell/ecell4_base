@@ -81,7 +81,7 @@ bool Species::operator>(const Species& rhs) const
 Integer Species::count(const Species& sp) const
 {
     // return count_spmatches(*this, sp);
-    throw NotSupported("Function 'Species::count' is deprecated. Rather use 'count_species_matches'");
+    throw NotSupported("Function 'Species::count' was deprecated. Rather use 'count_species_matches'");
 }
 
 const std::vector<UnitSpecies> Species::units() const
@@ -116,68 +116,34 @@ void Species::add_unit(const UnitSpecies& usp)
     }
 }
 
+Species::attribute_type Species::get_attribute(const std::string& key) const
+{
+    return attributes_.get_attribute(key);
+}
+
 std::vector<std::pair<std::string, Species::attribute_type> > Species::list_attributes() const
 {
-    std::vector<std::pair<std::string, attribute_type> > retval;
-    for (attributes_container_type::const_iterator
-        i(attributes_.begin()); i != attributes_.end(); ++i)
-    {
-        retval.push_back(*i);
-    }
-    return retval;
+    return attributes_.list_attributes();
 }
-
-Species::attribute_type Species::get_attribute(const std::string& name_attr) const
-{
-    attributes_container_type::const_iterator
-        i(attributes_.find(name_attr));
-    if (i == attributes_.end())
-    {
-        std::ostringstream message;
-        message << "attribute [" << name_attr << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
-    }
-
-    return (*i).second;
-}
-
-// std::string Species::get_attribute(const std::string& name_attr) const
-// {
-//     return boost::get<std::string>(get_attribute_as_variant(name_attr));
-// }
 
 void Species::set_attributes(const Species& sp)
 {
-    attributes_ = sp.attributes();
+    attributes_.set_attributes(sp.attributes());
 }
 
 void Species::overwrite_attributes(const Species& sp)
 {
-    const attributes_container_type& attrs(sp.attributes());
-    for (attributes_container_type::const_iterator i(attrs.begin());
-        i != attrs.end(); ++i)
-    {
-        this->set_attribute((*i).first, (*i).second);
-    }
+    attributes_.overwrite_attributes(sp.attributes());
 }
 
-void Species::remove_attribute(const std::string& name_attr)
+void Species::remove_attribute(const std::string& key)
 {
-    attributes_container_type::iterator
-        i(attributes_.find(name_attr));
-    if (i == attributes_.end())
-    {
-        std::ostringstream message;
-        message << "attribute [" << name_attr << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
-    }
-
-    attributes_.erase(i);
+    attributes_.remove_attribute(key);
 }
 
-bool Species::has_attribute(const std::string& name_attr) const
+bool Species::has_attribute(const std::string& key) const
 {
-    return (attributes_.find(name_attr) != attributes_.end());
+    return attributes_.has_key(key);
 }
 
 const Species::attributes_container_type& Species::attributes() const
@@ -234,58 +200,6 @@ Species* Species::dimension_ptr(const std::string& value)
 Species::serial_type Species::name() const
 {
     return serial();
-}
-
-template <>
-Real Species::get_attribute_as<Real>(const std::string& name_attr) const
-{
-    attribute_type val = get_attribute(name_attr);
-    if (Quantity<Real>* x = boost::get<Quantity<Real> >(&val))
-    {
-        return (*x).magnitude;
-    }
-    else if (Quantity<Integer>* x = boost::get<Quantity<Integer> >(&val))
-    {
-        return static_cast<Real>((*x).magnitude);
-    }
-    else if (std::string* x = boost::get<std::string>(&val))
-    {
-        return std::atof((*x).c_str());
-    }
-    throw NotSupported("An attribute has incorrect type. Real is expected");
-}
-
-template <>
-Integer Species::get_attribute_as<Integer>(const std::string& name_attr) const
-{
-    attribute_type val = get_attribute(name_attr);
-    if (Quantity<Integer>* x = boost::get<Quantity<Integer> >(&val))
-    {
-        return (*x).magnitude;
-    }
-    else if (std::string* x = boost::get<std::string>(&val))
-    {
-        return std::atoi((*x).c_str());
-    }
-    throw NotSupported("An attribute has incorrect type. Integer is expected");
-}
-
-template <>
-void Species::set_attribute<const char*>(const std::string& name_attr, const char* value)
-{
-    set_attribute(name_attr, std::string(value));
-}
-
-template <>
-void Species::set_attribute<Real>(const std::string& name_attr, const Real value)
-{
-    set_attribute(name_attr, Quantity<Real>(value));
-}
-
-template <>
-void Species::set_attribute<Integer>(const std::string& name_attr, const Integer value)
-{
-    set_attribute(name_attr, Quantity<Integer>(value));
 }
 
 } // ecell4
