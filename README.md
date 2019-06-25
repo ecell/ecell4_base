@@ -1,6 +1,7 @@
 E-Cell System version 4
 =======================
 
+[![Build Status](https://dev.azure.com/knishida/ecell4-base/_apis/build/status/ecell.ecell4-base?branchName=master)](https://dev.azure.com/knishida/ecell4-base/_build/latest?definitionId=2&branchName=master)
 [![Build Status](https://travis-ci.org/ecell/ecell4-base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4-base)
 [![CircleCI](https://circleci.com/gh/ecell/ecell4-base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4-base)
 [![Build status](https://ci.appveyor.com/api/projects/status/hpcf9ug5irglhwdx?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
