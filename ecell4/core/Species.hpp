@@ -33,13 +33,9 @@ public:
     typedef UnitSpecies::serial_type serial_type; //XXX: std::string
     typedef std::vector<UnitSpecies> container_type;
 
-protected:
-
-    typedef Attribute attributes_container_type;
-
 public:
 
-    typedef typename attributes_container_type::mapped_type attribute_type;
+    typedef Attribute::mapped_type attribute_type;
 
 public:
 
@@ -57,7 +53,7 @@ public:
     void add_unit(const UnitSpecies& usp);
     const std::vector<UnitSpecies> units() const;
 
-    const attributes_container_type& attributes() const;
+    const Attribute& attributes() const;
 
     std::vector<std::pair<std::string, attribute_type> > list_attributes() const;
     attribute_type get_attribute(const std::string& key) const;
@@ -105,7 +101,7 @@ public:
 protected:
 
     serial_type serial_;
-    attributes_container_type attributes_;
+    Attribute attributes_;
 };
 
 template<typename Tstrm_, typename Ttraits_>

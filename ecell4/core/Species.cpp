@@ -146,7 +146,7 @@ bool Species::has_attribute(const std::string& key) const
     return attributes_.has_key(key);
 }
 
-const Species::attributes_container_type& Species::attributes() const
+const Attribute& Species::attributes() const
 {
     return attributes_;
 }

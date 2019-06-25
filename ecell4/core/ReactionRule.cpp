@@ -8,7 +8,8 @@ namespace ecell4
 {
 
 ReactionRule::ReactionRule()
-    : k_(0), reactants_(), products_(), policy_(POLICY_STRICT)
+    : k_(0), reactants_(), products_(),
+    policy_(POLICY_STRICT), attributes_(), rr_descriptor_()
 {
     ;
 }
@@ -16,7 +17,8 @@ ReactionRule::ReactionRule()
 ReactionRule::ReactionRule(
     const reactant_container_type& reactants,
     const product_container_type& products)
-    : k_(0), reactants_(reactants), products_(products), policy_(POLICY_STRICT)
+    : k_(0), reactants_(reactants), products_(products),
+    policy_(POLICY_STRICT), attributes_(), rr_descriptor_()
 {
     ;
 }
@@ -25,7 +27,8 @@ ReactionRule::ReactionRule(
     const reactant_container_type& reactants,
     const product_container_type& products,
     const Real& k)
-    : k_(k), reactants_(reactants), products_(products), policy_(POLICY_STRICT)
+    : k_(k), reactants_(reactants), products_(products),
+    policy_(POLICY_STRICT), attributes_(), rr_descriptor_()
 {
     ;
 }
@@ -34,13 +37,15 @@ ReactionRule::ReactionRule(
     const reactant_container_type& reactants,
     const product_container_type& products,
     const Quantity<Real>& k)
-    : k_(k), reactants_(reactants), products_(products), policy_(POLICY_STRICT)
+    : k_(k), reactants_(reactants), products_(products),
+    policy_(POLICY_STRICT), attributes_(), rr_descriptor_()
 {
     ;
 }
 
 ReactionRule::ReactionRule(const ReactionRule& rr)
-    : k_(rr.k_), reactants_(rr.reactants_), products_(rr.products_), policy_(rr.policy_), rr_descriptor_()
+    : k_(rr.k_), reactants_(rr.reactants_), products_(rr.products_),
+    policy_(rr.policy_), attributes_(rr.attributes_), rr_descriptor_()
 {
     if (rr.has_descriptor())
     {
@@ -233,6 +238,36 @@ ReactionRule format_reaction_rule(const ReactionRule& rr)
     // std::sort(products.begin(), products.end());
     // return ReactionRule(reactants, products, rr.k());
     // return rr;
+}
+
+ReactionRule::attribute_type ReactionRule::get_attribute(const std::string& key) const
+{
+    return attributes_.get(key);
+}
+
+std::vector<std::pair<std::string, ReactionRule::attribute_type> > ReactionRule::list_attributes() const
+{
+    return attributes_.values();
+}
+
+void ReactionRule::set_attributes(const Attribute& attr)
+{
+    attributes_ = attr;
+}
+
+void ReactionRule::remove_attribute(const std::string& key)
+{
+    attributes_.remove(key);
+}
+
+bool ReactionRule::has_attribute(const std::string& key) const
+{
+    return attributes_.has_key(key);
+}
+
+const Attribute& ReactionRule::attributes() const
+{
+    return attributes_;
 }
 
 ReactionRule create_degradation_reaction_rule(
