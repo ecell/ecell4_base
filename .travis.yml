@@ -17,4 +17,4 @@ before_install:
 script:
   - conda build conda.recipe
   - conda install --use-local ecell4_base
-  - anaconda -t $CONDA_UPLOAD_TOKEN upload /*/travis/miniconda/conda-bld/*/*.tar.bz2
+#  - anaconda -t $CONDA_UPLOAD_TOKEN upload /*/travis/miniconda/conda-bld/*/*.tar.bz2
