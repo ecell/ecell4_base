@@ -6,7 +6,7 @@ E-Cell System version 4
 [![CircleCI](https://circleci.com/gh/ecell/ecell4-base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4-base)
 [![Build status](https://ci.appveyor.com/api/projects/status/hpcf9ug5irglhwdx?svg=true)](https://ci.appveyor.com/project/kaizu/ecell4)
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/v/ecell.svg)](https://pypi.python.org/pypi/ecell)
+[![PyPI](https://img.shields.io/pypi/v/ecell4-base.svg)](https://pypi.python.org/pypi/ecell4-base)
 [![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4-base/blob/master/licenses/LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4-base?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4-base&amp;utm_campaign=Badge_Grade)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
