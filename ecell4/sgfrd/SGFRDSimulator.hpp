@@ -92,7 +92,7 @@ class SGFRDSimulator :
                    const boost::shared_ptr<model_type>& model,
                    Real bd_dt_factor = 0.01, Real reaction_length = 0.1,
                    const std::string& trace_fname = "sgfrd_trace.log")
-        : base_type(world, model), dt_(0),
+        : base_type(world, model), is_dirty_(true), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(world->polygon()),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
@@ -113,7 +113,7 @@ class SGFRDSimulator :
     SGFRDSimulator(boost::shared_ptr<world_type> world,
                    Real bd_dt_factor = 0.01, Real reaction_length = 0.1,
                    const std::string& trace_fname = "sgfrd_trace.log")
-        : base_type(world), dt_(0),
+        : base_type(world), is_dirty_(true), dt_(0),
           bd_dt_factor_(bd_dt_factor), reaction_length_(reaction_length),
           rng_(*(world->rng())), shell_container_(world->polygon()),
           mut_sh_vis_applier(shell_container_), imm_sh_vis_applier(shell_container_),
@@ -132,8 +132,13 @@ class SGFRDSimulator :
     }
     ~SGFRDSimulator() override = default;
 
-    void initialize()
+    void initialize() override
     {
+        if(!(this->is_dirty_))
+        {
+            // already initialized. do nothing.
+            return;
+        }
         ParticleID pid; Particle p;
         for(const auto& pidp : this->world_->list_particles())
         {
@@ -141,10 +146,13 @@ class SGFRDSimulator :
             add_event(create_tight_domain(create_tight_shell(
                       pid, p, this->get_face_id(pid)), pid, p));
         }
+        this->is_dirty_ = false;
         return ;
     }
     void finalize()
     {
+        this->is_dirty_ = true;
+
         const Real tm(this->time());
         while(this->scheduler_.size() != 0)
         {
@@ -154,6 +162,8 @@ class SGFRDSimulator :
     }
     void finalize(const Real t)
     {
+        this->is_dirty_ = true;
+
         assert(t < this->next_event_time());
         const Real tm(t);
         this->set_t(t);
@@ -173,6 +183,13 @@ class SGFRDSimulator :
     {
         SGFRD_SCOPE(us, step, tracer_);
 
+        if(this->is_dirty_) // unlikely
+        {
+            // if this simulator has been finalized (in the last step(upto)),
+            // re-initialize it.
+            this->initialize();
+        }
+
         this->set_t(this->scheduler_.next_time());
         SGFRD_TRACE(tracer_.write("now t = %1%", this->time()))
 
@@ -181,22 +198,65 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("now %1% shells exists", shell_container_.num_shells()))
         SGFRD_TRACE(tracer_.write("now %1% events exists", scheduler_.size()))
 
+        // Set the next dt_.
+        // This is required to run this simulator with a FixedIntervalXXXObserver.
+        // 1. SimulatorBase::run(obs, upto) checks whether obs.next_time() <
+        //    `Simulator::next_time()`.
+        // 2. Simulator::next_time() is not virtual. So it cannot be overridden.
+        // 3. Simulator::next_time() returns `simulator::t() + simulator::dt()`.
+        this->dt_ = this->scheduler_.next_time() - this->time();
+
         //XXX
         assert(this->diagnosis());
 
         return;
     }
+    /**
+     * step and return true if the next time is less than upto.
+     * if not, step till upto and return false.
+     * @return if the simulator does not rearch upto
+     */
     bool step(const Real& upto) override
     {
-        this->step();
-        return this->time() < upto;
+        if(this->is_dirty_)
+        {
+            // if this simulator has been finalized (in the last step(upto)),
+            // re-initialize it.
+            this->initialize();
+        }
+
+        if(this->time() > upto)
+        {
+            // it's too late to stop...
+            return false;
+        }
+
+        if(this->scheduler_.next_time() < upto)
+        {
+            // step does re-initialize inside it.
+            this->step();
+            assert(this->time() < upto);
+            return true;
+        }
+        else if(this->scheduler_.next_time() == upto) // really unlikely
+        {
+            this->step();
+            assert(this->time() == upto);
+            this->finalize();
+            return false;
+        }
+        // [[assert axiom: next_time > upto]]
+
+        // burst all the domains at t == upto.
+        this->finalize(upto);
+        return false;
     }
 
     void set_t(const Real t) {return this->world_->set_t(t);}
 
     world_type const& world() const {return *(this->world_);}
 
-    Real dt() const {return dt_;}
+    Real dt() const override {return dt_;}
     Real reaction_length() const {return reaction_length_;}
 
     bool check_reaction() const {return last_reactions_.size() > 0;}
@@ -2152,6 +2212,7 @@ class SGFRDSimulator :
     // boost::shared_ptr<model_type> model_;
     // boost::shared_ptr<world_type> world_;
     // Integer num_steps_;
+    bool is_dirty_;
     Real dt_;
     Real bd_dt_factor_;
     Real reaction_length_;
