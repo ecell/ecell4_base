@@ -15,6 +15,7 @@ before_install:
   - source activate test-environment
 
 script:
-- conda build conda.recipe
-- conda install --use-local ecell4_base
-- anaconda -t $CONDA_UPLOAD_TOKEN upload /Users/travis/miniconda/conda-bld/*/ecell4_base-v2.0.0b1-py37_*.tar.bz2
+  - conda build conda.recipe
+  - conda install --use-local ecell4_base
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then anaconda -t $CONDA_UPLOAD_TOKEN upload /home/travis/miniconda/conda-bld/linux-64/*.tar.bz2
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then anaconda -t $CONDA_UPLOAD_TOKEN upload /Users/travis/miniconda/conda-bld/osx-64/*.tar.bz2
