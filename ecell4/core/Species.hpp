@@ -70,6 +70,7 @@ public:
         attributes_.set<T_>(key, value);
     }
 
+    void set_attributes(const Attribute& attributes);
     void set_attributes(const Species& sp);
     void remove_attribute(const std::string& key);
     bool has_attribute(const std::string& key) const;

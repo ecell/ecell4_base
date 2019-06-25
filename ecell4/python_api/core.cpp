@@ -151,21 +151,6 @@ void define_integer3(py::module& m)
 
 template<typename T>
 static inline
-void set_attribute_as(Species& sp, const std::pair<std::string, py::object>& key_value)
-{
-    try
-    {
-        const T value(key_value.second.cast<T>());
-        sp.set_attribute(key_value.first, value);
-    }
-    catch (py::cast_error e)
-    {
-        ; // do nothing
-    }
-}
-
-template<typename T>
-static inline
 py::class_<Quantity<T>> define_quantity(py::module& m, const std::string& name)
 {
     using Q = Quantity<T>;
@@ -191,6 +176,50 @@ py::class_<Quantity<T>> define_quantity(py::module& m, const std::string& name)
             }
         ));
     return quantity;
+}
+
+template<typename T>
+static inline
+void set_attribute_as(Attribute& attr, const std::pair<std::string, py::object>& key_value)
+{
+    try
+    {
+        const T value(key_value.second.cast<T>());
+        attr.set(key_value.first, value);
+    }
+    catch (py::cast_error e)
+    {
+        ; // do nothing
+    }
+}
+
+static inline
+void define_attribute(py::module& m)
+{
+    py::class_<Attribute>(m, "Attriubte")
+        .def(py::pickle(
+            [](const Attribute& self)
+            {
+                return py::make_tuple(self.values());
+            },
+            [](py::tuple t)
+            {
+                if (t.size() != 1)
+                {
+                    throw std::runtime_error("Invalid state");
+                }
+
+                Attribute attr;
+                for (const auto& key_value : t[0].cast<std::vector<std::pair<std::string, py::object>>>())
+                {
+                    set_attribute_as<std::string>(attr, key_value);
+                    set_attribute_as<Quantity<Real>>(attr, key_value);
+                    set_attribute_as<Quantity<Integer>>(attr, key_value);
+                    set_attribute_as<bool>(attr, key_value);
+                }
+                return attr;
+            }
+        ));
 }
 
 static inline
@@ -266,20 +295,14 @@ void define_species(py::module& m)
         .def(py::pickle(
             [](const Species& species)
             {
-                return py::make_tuple(species.serial(), species.list_attributes());
+                return py::make_tuple(species.serial(), species.attributes());
             },
             [](py::tuple t)
             {
                 if (t.size() != 2)
                     throw std::runtime_error("Invalid state");
                 Species species(t[0].cast<Species::serial_type>());
-                for (const auto& key_value : t[1].cast<std::vector<std::pair<std::string, py::object>>>())
-                {
-                    set_attribute_as<std::string>(species, key_value);
-                    set_attribute_as<Quantity<Real>>(species, key_value);
-                    set_attribute_as<Quantity<Integer>>(species, key_value);
-                    set_attribute_as<bool>(species, key_value);
-                }
+                species.set_attributes(t[1].cast<Attribute>());
                 return species;
             }
         ));
@@ -407,11 +430,11 @@ void define_reaction_rule(py::module& m)
         .def(py::pickle(
             [](const ReactionRule& self)
             {
-                return py::make_tuple(self.reactants(), self.products(), self.get_k(), self.get_descriptor());
+                return py::make_tuple(self.reactants(), self.products(), self.get_k(), self.get_descriptor(), self.attributes());
             },
             [](py::tuple t)
             {
-                if (t.size() != 4)
+                if (t.size() != 5)
                     throw std::runtime_error("Invalid state");
                 ReactionRule rr(
                     t[0].cast<Reactants>(),
@@ -419,6 +442,7 @@ void define_reaction_rule(py::module& m)
                     t[2].cast<Quantity<Real> >()
                 );
                 rr.set_descriptor(t[3].cast<boost::shared_ptr<ReactionRuleDescriptor>>());
+                rr.set_attributes(t[4].cast<Attribute>());
                 return rr;
             }
         ));
@@ -1098,6 +1122,7 @@ void setup_module(py::module& m)
     const auto quantity_real = define_quantity<Real>(m, "Quantity_Real");
     define_quantity<Integer>(m, "Quantity_Integer");
     m.attr("Quantity") = quantity_real;
+    define_attribute(m);
     define_species(m);
     define_particle(m);
     define_rng(m);

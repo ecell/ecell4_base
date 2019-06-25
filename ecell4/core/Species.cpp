@@ -126,9 +126,14 @@ std::vector<std::pair<std::string, Species::attribute_type> > Species::list_attr
     return attributes_.values();
 }
 
+void Species::set_attributes(const Attribute& attributes)
+{
+    attributes_ = attributes;
+}
+
 void Species::set_attributes(const Species& sp)
 {
-    attributes_ = sp.attributes();
+    set_attributes(sp.attributes());
 }
 
 void Species::overwrite_attributes(const Species& sp)
