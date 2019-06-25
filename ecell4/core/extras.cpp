@@ -3,13 +3,14 @@
 #include <iostream>
 #include <sstream>
 
-#if defined(HAVE_BOOST_REGEX)
-#include <boost/regex.hpp>
-#elif defined(WIN32_MSC)
+// #if defined(HAVE_BOOST_REGEX)
+// #include <boost/regex.hpp>
+// #elif defined(WIN32_MSC)
+// #include <regex>
+// #else
+// #include <regex.h>
+// #endif /* HAVE_BOOST_REGEX */
 #include <regex>
-#else
-#include <regex.h>
-#endif /* HAVE_BOOST_REGEX */
 
 
 namespace ecell4
@@ -132,12 +133,14 @@ std::pair<VersionInformation::prerelease_type, unsigned int> parse_prerelease(co
 
 VersionInformation parse_version_information(const std::string& version)
 {
-#if defined(HAVE_BOOST_REGEX) || defined(WIN32_MSC)
-#if defined(HAVE_BOOST_REGEX)
-    using namespace boost;
-#else /* WIN32_MSC */
-    using namespace std::tr1;
-#endif /* HAVE_BOOST_REGEX */
+// #if defined(HAVE_BOOST_REGEX) || defined(WIN32_MSC)
+// #if defined(HAVE_BOOST_REGEX)
+//     using namespace boost;
+// #else /* WIN32_MSC */
+//     using namespace std::tr1;
+// #endif /* HAVE_BOOST_REGEX */
+    using namespace std;
+
     regex reg("^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(a[0123456789]+|b[0123456789]+|rc[0123456789]+|c[0123456789]+|)(\\.dev[0123456789]+|)$");
     smatch result;
     if (!regex_match(version, result, reg))
@@ -154,45 +157,45 @@ VersionInformation parse_version_information(const std::string& version)
     const int devno = (result.str(6).size() > 4 ? mystoi<int>(result.str(6).substr(4)) : -1);
 
     return VersionInformation(header, majorno, minorno, patchno, pre.first, pre.second, devno);
-#else /* regex.h */
-    regex_t reg;
-    int errcode = regcomp(
-        &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(a[0123456789]+|b[0123456789]+|rc[0123456789]+|c[0123456789]+|)(\\.dev[0123456789]+|)$",
-        REG_EXTENDED);
-    if (errcode != 0)
-    {
-        char errbuf[100];
-        regerror(errcode, &reg, errbuf, sizeof(errbuf));
-        regfree(&reg);
-        std::cout << "regcompile error: " << errbuf << std::endl;
-        throw IllegalState("regcompile error.");
-    }
-
-    regmatch_t match[7];
-    errcode = regexec(&reg, version.c_str(), 7, match, 0);
-    if (errcode != 0)
-    {
-        char errbuf[100];
-        regerror(errcode, &reg, errbuf, sizeof(errbuf));
-        regfree(&reg);
-        std::cout << "regexec error: " << errbuf << std::endl;
-        throw IllegalState("regexec error.");
-    }
-
-    const std::string header = version.substr(match[1].rm_so, match[1].rm_eo - match[1].rm_so);
-    const unsigned int majorno = mystoi<unsigned int>(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
-    const unsigned int minorno = mystoi<unsigned int>(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
-    const unsigned int patchno = (match[4].rm_eo - match[4].rm_so > 0 ?
-            mystoi<unsigned int>(version.substr(match[4].rm_so + 1, match[4].rm_eo - (match[4].rm_so + 1))) : 0);
-    const std::pair<VersionInformation::prerelease_type, unsigned int> pre = parse_prerelease(
-            version.substr(match[5].rm_so, match[5].rm_eo - match[5].rm_so));
-    const int devno = (match[6].rm_eo - match[6].rm_so > 0 ?
-            mystoi<int>(version.substr(match[6].rm_so + 4, match[6].rm_eo - (match[6].rm_so + 4))) : -1);
-
-    regfree(&reg);
-
-    return VersionInformation(header, majorno, minorno, patchno, pre.first, pre.second, devno);
-#endif /* HAVE_BOOST_REGEX */
+// #else /* regex.h */
+//     regex_t reg;
+//     int errcode = regcomp(
+//         &reg, "^([^-\\.]+-[^-\\.]+-)([0123456789]+)\\.([0123456789]+)(\\.[0123456789]+|)(a[0123456789]+|b[0123456789]+|rc[0123456789]+|c[0123456789]+|)(\\.dev[0123456789]+|)$",
+//         REG_EXTENDED);
+//     if (errcode != 0)
+//     {
+//         char errbuf[100];
+//         regerror(errcode, &reg, errbuf, sizeof(errbuf));
+//         regfree(&reg);
+//         std::cout << "regcompile error: " << errbuf << std::endl;
+//         throw IllegalState("regcompile error.");
+//     }
+// 
+//     regmatch_t match[7];
+//     errcode = regexec(&reg, version.c_str(), 7, match, 0);
+//     if (errcode != 0)
+//     {
+//         char errbuf[100];
+//         regerror(errcode, &reg, errbuf, sizeof(errbuf));
+//         regfree(&reg);
+//         std::cout << "regexec error: " << errbuf << std::endl;
+//         throw IllegalState("regexec error.");
+//     }
+// 
+//     const std::string header = version.substr(match[1].rm_so, match[1].rm_eo - match[1].rm_so);
+//     const unsigned int majorno = mystoi<unsigned int>(version.substr(match[2].rm_so, match[2].rm_eo - match[2].rm_so));
+//     const unsigned int minorno = mystoi<unsigned int>(version.substr(match[3].rm_so, match[3].rm_eo - match[3].rm_so));
+//     const unsigned int patchno = (match[4].rm_eo - match[4].rm_so > 0 ?
+//             mystoi<unsigned int>(version.substr(match[4].rm_so + 1, match[4].rm_eo - (match[4].rm_so + 1))) : 0);
+//     const std::pair<VersionInformation::prerelease_type, unsigned int> pre = parse_prerelease(
+//             version.substr(match[5].rm_so, match[5].rm_eo - match[5].rm_so));
+//     const int devno = (match[6].rm_eo - match[6].rm_so > 0 ?
+//             mystoi<int>(version.substr(match[6].rm_so + 4, match[6].rm_eo - (match[6].rm_so + 4))) : -1);
+// 
+//     regfree(&reg);
+// 
+//     return VersionInformation(header, majorno, minorno, patchno, pre.first, pre.second, devno);
+// #endif /* HAVE_BOOST_REGEX */
 }
 
 bool check_version_information(const std::string& version, const std::string& required)
