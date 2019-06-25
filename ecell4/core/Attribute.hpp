@@ -53,13 +53,13 @@ public:
     Attribute& operator=(const Attribute& another);
     Attribute(const container_type& attr);
 
-    std::vector<value_type> list_attributes() const;
-    mapped_type get_attribute(const key_type& name_attr) const;
+    std::vector<value_type> values() const;
+    mapped_type get(const key_type& name_attr) const;
 
     template <typename T_>
-    T_ get_attribute_as(const key_type& name_attr) const
+    T_ get_as(const key_type& name_attr) const
     {
-        mapped_type val = get_attribute(name_attr);
+        mapped_type val = get(name_attr);
         if (T_* x = boost::get<T_>(&val))
         {
             return (*x);
@@ -68,26 +68,26 @@ public:
     }
 
     template <typename T_>
-    void set_attribute(const key_type& name_attr, T_ value)
+    void set(const key_type& name_attr, T_ value)
     {
-        attributes_[name_attr] = value;
+        data_[name_attr] = value;
     }
 
-    void set_attributes(const Attribute& attr);
-    void remove_attribute(const key_type& name_attr);
+    void remove(const key_type& name_attr);
     bool has_key(const key_type& name_attr) const;
-    void overwrite_attributes(const Attribute& attr);
+    void overwrite(const Attribute& attr);
+    void clear();
 
 protected:
 
-    container_type attributes_;
+    container_type data_;
 };
 
-template <> Real Attribute::get_attribute_as<Real>(const key_type& name_attr) const;
-template <> Integer Attribute::get_attribute_as<Integer>(const key_type& name_attr) const;
-template <> void Attribute::set_attribute<const char*>(const key_type& name_attr, const char* value);
-template <> void Attribute::set_attribute<Real>(const key_type& name_attr, const Real value);
-template <> void Attribute::set_attribute<Integer>(const key_type& name_attr, const Integer value);
+template <> Real Attribute::get_as<Real>(const key_type& name_attr) const;
+template <> Integer Attribute::get_as<Integer>(const key_type& name_attr) const;
+template <> void Attribute::set<const char*>(const key_type& name_attr, const char* value);
+template <> void Attribute::set<Real>(const key_type& name_attr, const Real value);
+template <> void Attribute::set<Integer>(const key_type& name_attr, const Integer value);
 
 } // ecell4
 

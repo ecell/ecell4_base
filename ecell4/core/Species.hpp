@@ -65,13 +65,13 @@ public:
     template <typename T_>
     T_ get_attribute_as(const std::string& key) const
     {
-        return attributes_.get_attribute_as<T_>(key);
+        return attributes_.get_as<T_>(key);
     }
 
     template <typename T_>
     void set_attribute(const std::string& key, T_ value)
     {
-        attributes_.set_attribute<T_>(key, value);
+        attributes_.set<T_>(key, value);
     }
 
     void set_attributes(const Species& sp);

@@ -7,45 +7,45 @@ namespace ecell4
 {
 
 Attribute::Attribute()
-    : attributes_()
+    : data_()
 {
     ; // do nothing
 }
 
 Attribute::Attribute(const Attribute& another)
-    : attributes_(another.attributes_)
+    : data_(another.data_)
 {
     ;
 }
 
 Attribute::Attribute(const Attribute::container_type& attr)
-    : attributes_(attr)
+    : data_(attr)
 {
     ;
 }
 
 Attribute& Attribute::operator=(const Attribute& another)
 {
-    attributes_ = another.attributes_;
+    data_ = another.data_;
     return *this;
 }
 
-std::vector<Attribute::value_type> Attribute::list_attributes() const
+std::vector<Attribute::value_type> Attribute::values() const
 {
     std::vector<value_type> retval;
     for (container_type::const_iterator
-        i(attributes_.begin()); i != attributes_.end(); ++i)
+        i(data_.begin()); i != data_.end(); ++i)
     {
         retval.push_back(*i);
     }
     return retval;
 }
 
-Attribute::mapped_type Attribute::get_attribute(const key_type& key) const
+Attribute::mapped_type Attribute::get(const key_type& key) const
 {
     container_type::const_iterator
-        i(attributes_.find(key));
-    if (i == attributes_.end())
+        i(data_.find(key));
+    if (i == data_.end())
     {
         std::ostringstream message;
         message << "attribute [" << key << "] not found";
@@ -55,45 +55,44 @@ Attribute::mapped_type Attribute::get_attribute(const key_type& key) const
     return (*i).second;
 }
 
-void Attribute::set_attributes(const Attribute& attr)
+void Attribute::clear()
 {
-    //XXX: Deprecate me!!!
-    attributes_ = attr.attributes_;
+    data_.clear();
 }
 
-void Attribute::overwrite_attributes(const Attribute& attr)
+void Attribute::overwrite(const Attribute& attr)
 {
-    const container_type& attrs(attr.attributes_);
+    const container_type& attrs(attr.data_);
     for (container_type::const_iterator i(attrs.begin());
         i != attrs.end(); ++i)
     {
-        this->set_attribute((*i).first, (*i).second);
+        this->set((*i).first, (*i).second);
     }
 }
 
-void Attribute::remove_attribute(const key_type& key)
+void Attribute::remove(const key_type& key)
 {
     container_type::iterator
-        i(attributes_.find(key));
-    if (i == attributes_.end())
+        i(data_.find(key));
+    if (i == data_.end())
     {
         std::ostringstream message;
         message << "attribute [" << key << "] not found";
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
 
-    attributes_.erase(i);
+    data_.erase(i);
 }
 
 bool Attribute::has_key(const key_type& key) const
 {
-    return (attributes_.find(key) != attributes_.end());
+    return (data_.find(key) != data_.end());
 }
 
 template <>
-Real Attribute::get_attribute_as<Real>(const key_type& key) const
+Real Attribute::get_as<Real>(const key_type& key) const
 {
-    mapped_type val = get_attribute(key);
+    mapped_type val = get(key);
     if (Quantity<Real>* x = boost::get<Quantity<Real> >(&val))
     {
         return (*x).magnitude;
@@ -110,9 +109,9 @@ Real Attribute::get_attribute_as<Real>(const key_type& key) const
 }
 
 template <>
-Integer Attribute::get_attribute_as<Integer>(const key_type& key) const
+Integer Attribute::get_as<Integer>(const key_type& key) const
 {
-    mapped_type val = get_attribute(key);
+    mapped_type val = get(key);
     if (Quantity<Integer>* x = boost::get<Quantity<Integer> >(&val))
     {
         return (*x).magnitude;
@@ -125,21 +124,21 @@ Integer Attribute::get_attribute_as<Integer>(const key_type& key) const
 }
 
 template <>
-void Attribute::set_attribute<const char*>(const key_type& key, const char* value)
+void Attribute::set<const char*>(const key_type& key, const char* value)
 {
-    set_attribute(key, std::string(value));
+    set(key, std::string(value));
 }
 
 template <>
-void Attribute::set_attribute<Real>(const key_type& key, const Real value)
+void Attribute::set<Real>(const key_type& key, const Real value)
 {
-    set_attribute(key, Quantity<Real>(value));
+    set(key, Quantity<Real>(value));
 }
 
 template <>
-void Attribute::set_attribute<Integer>(const key_type& key, const Integer value)
+void Attribute::set<Integer>(const key_type& key, const Integer value)
 {
-    set_attribute(key, Quantity<Integer>(value));
+    set(key, Quantity<Integer>(value));
 }
 
 } // ecell4

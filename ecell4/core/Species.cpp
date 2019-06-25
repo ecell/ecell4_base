@@ -118,27 +118,27 @@ void Species::add_unit(const UnitSpecies& usp)
 
 Species::attribute_type Species::get_attribute(const std::string& key) const
 {
-    return attributes_.get_attribute(key);
+    return attributes_.get(key);
 }
 
 std::vector<std::pair<std::string, Species::attribute_type> > Species::list_attributes() const
 {
-    return attributes_.list_attributes();
+    return attributes_.values();
 }
 
 void Species::set_attributes(const Species& sp)
 {
-    attributes_.set_attributes(sp.attributes());
+    attributes_ = sp.attributes();
 }
 
 void Species::overwrite_attributes(const Species& sp)
 {
-    attributes_.overwrite_attributes(sp.attributes());
+    attributes_.overwrite(sp.attributes());
 }
 
 void Species::remove_attribute(const std::string& key)
 {
-    attributes_.remove_attribute(key);
+    attributes_.remove(key);
 }
 
 bool Species::has_attribute(const std::string& key) const
