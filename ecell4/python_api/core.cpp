@@ -430,11 +430,11 @@ void define_reaction_rule(py::module& m)
         .def(py::pickle(
             [](const ReactionRule& self)
             {
-                return py::make_tuple(self.reactants(), self.products(), self.get_k(), self.get_descriptor(), self.attributes());
+                return py::make_tuple(self.reactants(), self.products(), self.get_k(), self.get_descriptor(), self.policy(), self.attributes());
             },
             [](py::tuple t)
             {
-                if (t.size() != 5)
+                if (t.size() != 6)
                     throw std::runtime_error("Invalid state");
                 ReactionRule rr(
                     t[0].cast<Reactants>(),
@@ -442,7 +442,8 @@ void define_reaction_rule(py::module& m)
                     t[2].cast<Quantity<Real> >()
                 );
                 rr.set_descriptor(t[3].cast<boost::shared_ptr<ReactionRuleDescriptor>>());
-                rr.set_attributes(t[4].cast<Attribute>());
+                rr.set_policy(t[4].cast<ReactionRule::policy_type>());
+                rr.set_attributes(t[5].cast<Attribute>());
                 return rr;
             }
         ));
