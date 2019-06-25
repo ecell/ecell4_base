@@ -17,7 +17,7 @@ jobs:
       export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH}
       python3 setup.py build
       sudo python3 setup.py install
-      python3 setup.py test
+      sudo python3 setup.py test
       cd && pwd
       python3 -c "from ecell4_base import core"
 - job: macOS1014
