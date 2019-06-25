@@ -18,3 +18,10 @@ script:
   - conda build conda.recipe
   - conda install --use-local ecell4_base
 #  - anaconda -t $CONDA_UPLOAD_TOKEN upload /*/travis/miniconda/conda-bld/*/*.tar.bz2
+
+deploy:
+  - provider: script
+    script: anaconda -t $CONDA_UPLOAD_TOKEN upload /*/travis/miniconda/conda-bld/*/*.tar.bz2
+    on:
+      tags: true
+    skip_cleanup: true
