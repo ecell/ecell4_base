@@ -75,7 +75,10 @@ class CustomTestCommand(test):
     def run(self):
         super(CustomTestCommand, self).run()
         build_py = self.get_finalized_command('build_ext')
-        subprocess.check_call(['ctest', '--output-on-failure'], cwd=build_py.build_temp)
+        if platform.system() == "Windows":
+            subprocess.check_call(['ctest', '-DCMAKE_BUILD_TYPE=Release'], cwd=build_py.build_temp)
+        else:
+            subprocess.check_call(['ctest', '--output-on-failure'], cwd=build_py.build_temp)
 
 
 DESCRIPTION = (
