@@ -31,13 +31,23 @@ struct Quantity
     {
         ;
     }
+
+    bool operator==(const Quantity& another) const
+    {
+        return (magnitude == another.magnitude && units == another.units);
+    }
+
+    bool operator!=(const Quantity& another) const
+    {
+        return (magnitude != another.magnitude || units != another.units);
+    }
 };
 
 template<typename Tstrm_, typename Ttraits_, typename T>
 inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
     std::basic_ostream<Tstrm_, Ttraits_>& strm, const Quantity<T>& value)
 {
-    strm << value.magnitude;
+    strm << value.magnitude << " " << value.units;
     return strm;
 }
 
