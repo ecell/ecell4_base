@@ -68,13 +68,13 @@ class ReactionRuleTest(unittest.TestCase):
 
     def test_policy(self):
         rr = ReactionRule()
-        self.assertEqual(rr.policy(), ReactionRulePolicy.STRICT)
+        self.assertEqual(rr.policy(), ReactionRule.STRICT)
 
-        rr.set_policy(ReactionRulePolicy.IMPLICIT)
-        self.assertEqual(rr.policy(), ReactionRulePolicy.IMPLICIT)
+        rr.set_policy(ReactionRule.IMPLICIT)
+        self.assertEqual(rr.policy(), ReactionRule.IMPLICIT)
 
-        rr.set_policy(ReactionRulePolicy.DESTROY)
-        self.assertEqual(rr.policy(), ReactionRulePolicy.DESTROY)
+        rr.set_policy(ReactionRule.DESTROY)
+        self.assertEqual(rr.policy(), ReactionRule.DESTROY)
 
 
     def test_descriptor(self):
@@ -86,7 +86,7 @@ class ReactionRuleTest(unittest.TestCase):
 
     def test_pickling(self):
         k = Quantity_Real(2.0, 'micrometer ** 2 / second')
-        policy = DESTROY
+        policy = ReactionRule.DESTROY
 
         rr = ReactionRule()
         rr.add_reactant(Species('A'))
