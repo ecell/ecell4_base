@@ -161,6 +161,7 @@ py::class_<Quantity<T>> define_quantity(py::module& m, const std::string& name)
                 py::arg("units") = "")
         .def_readwrite("magnitude", &Q::magnitude)
         .def_readwrite("units", &Q::units)
+        .def(py::self == py::self)
         .def(py::pickle(
             [](const Q& q)
             {
