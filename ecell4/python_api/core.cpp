@@ -428,6 +428,8 @@ void define_reaction_rule(py::module& m)
         .def("remove_attribute", &ReactionRule::remove_attribute)
         .def("has_attribute", &ReactionRule::has_attribute)
         .def("list_attributes", &ReactionRule::list_attributes)
+        .def(py::self == py::self)
+        .def(py::self < py::self)
         .def(py::pickle(
             [](const ReactionRule& self)
             {
