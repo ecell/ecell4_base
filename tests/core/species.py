@@ -1,4 +1,5 @@
 import unittest
+import copy
 from ecell4_base.core import *
 
 class UnitSpeciesTest(unittest.TestCase):
@@ -118,3 +119,31 @@ class SpeciesTest(unittest.TestCase):
 
         sp = Species("A(p=u^_)")
         self.assertEqual(count_species_matches(sp, Species("A(p=u^1).B(b^1)")), 1)
+
+    def test_pickling(self):
+        sp = Species("A")
+        sp.set_attribute("key1", "value1")
+        sp.set_attribute("key2", Quantity_Real(2.0, "units"))
+        sp.set_attribute("key3", True)
+
+        self.assertTrue(sp.has_attribute("key1"))
+        self.assertEqual(sp.get_attribute("key1"), "value1")
+        self.assertTrue(sp.has_attribute("key2"))
+        # self.assertEqual(sp.get_attribute("key2").magnitude, Quantity_Real(2.0, "units").magnitude)
+        # self.assertEqual(sp.get_attribute("key2").units, Quantity_Real(2.0, "units").units)
+        self.assertEqual(sp.get_attribute("key2"), Quantity_Real(2.0, "units"))
+        self.assertTrue(sp.has_attribute("key3"))
+        self.assertEqual(sp.get_attribute("key3"), True)
+
+        another = copy.copy(sp)
+        self.assertTrue(sp is not another)
+        self.assertEqual(sp, another)
+
+        self.assertTrue(another.has_attribute("key1"))
+        self.assertEqual(another.get_attribute("key1"), "value1")
+        self.assertTrue(another.has_attribute("key2"))
+        # self.assertEqual(another.get_attribute("key2").magnitude, Quantity_Real(2.0, "units").magnitude)
+        # self.assertEqual(another.get_attribute("key2").units, Quantity_Real(2.0, "units").units)
+        self.assertEqual(another.get_attribute("key2"), Quantity_Real(2.0, "units"))
+        self.assertTrue(another.has_attribute("key3"))
+        self.assertEqual(another.get_attribute("key3"), True)
