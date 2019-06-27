@@ -143,6 +143,7 @@ VersionInformation parse_version_information(const std::string& version)
     const int devno = (result.str(6).size() > 4 ? mystoi<int>(result.str(6).substr(4)) : -1);
 
     return VersionInformation(header, majorno, minorno, patchno, pre.first, pre.second, devno);
+
 }
 
 bool check_version_information(const std::string& version, const std::string& required)
