@@ -10,6 +10,8 @@
 #include <ecell4/core/Rod.hpp>
 #include <ecell4/core/AABB.hpp>
 #include <ecell4/core/Mesh.hpp>
+#include <ecell4/core/Polygon.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 
 namespace py = pybind11;
 

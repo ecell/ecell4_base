@@ -148,7 +148,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
+    const MoleculeInfo info(get_molecule_info(sp));
 
     Integer count(0);
     while (count < num)
@@ -175,7 +175,7 @@ bool SpatiocyteWorld::add_molecules(
         throw std::invalid_argument("The number of molecules must be positive.");
     }
 
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
+    const MoleculeInfo info(get_molecule_info(sp));
 
     Integer count(0);
     while (count < num)
@@ -198,15 +198,20 @@ bool SpatiocyteWorld::add_molecules(
 Integer SpatiocyteWorld::add_structure(
     const Species& sp, const boost::shared_ptr<const Shape> shape)
 {
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
+    const MoleculeInfo info(get_molecule_info(sp));
     get_root()->make_structure_type(sp, info.loc);
+
+    if (shape->dimension() != info.dimension)
+    {
+        throw IllegalArgument("The dimension mismatch occurred between a given species and shape");
+    }
 
     switch (shape->dimension())
     {
     case Shape::THREE:
-        return add_structure3(sp, shape);
+        return add_structure3(sp, info.loc, shape);
     case Shape::TWO:
-        return add_structure2(sp, shape);
+        return add_structure2(sp, info.loc, shape);
     case Shape::ONE:
     case Shape::UNDEF:
         break;
@@ -215,9 +220,13 @@ Integer SpatiocyteWorld::add_structure(
     throw NotSupported("The dimension of a shape must be two or three.");
 }
 
-Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape)
+Integer
+SpatiocyteWorld::add_structure3(
+    const Species& sp,
+    const std::string& location,
+    const boost::shared_ptr<const Shape> shape
+)
 {
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord)
     {
@@ -228,13 +237,13 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
             continue;
         }
 
-        if (voxel.get_voxel_pool()->species().serial() != info.loc)
+        if (voxel.get_voxel_pool()->species().serial() != location)
         {
             throw NotSupported(
                 "Mismatch in the location. Failed to place '"
                 + sp.serial() + "' to '"
                 + voxel.get_voxel_pool()->species().serial() + "'. "
-                + "'" + info.loc + "' is expected.");
+                + "'" + location + "' is expected.");
             continue;
         }
 
@@ -246,10 +255,11 @@ Integer SpatiocyteWorld::add_structure3(const Species& sp, const boost::shared_p
 
 Integer
 SpatiocyteWorld::add_structure2(
-        const Species& sp,
-        const boost::shared_ptr<const Shape> shape)
+    const Species& sp,
+    const std::string& location,
+    const boost::shared_ptr<const Shape> shape
+)
 {
-    const SpatiocyteWorld::molecule_info_type info(get_molecule_info(sp));
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord)
     {
@@ -259,13 +269,13 @@ SpatiocyteWorld::add_structure2(
             continue;
         }
 
-        if (voxel.get_voxel_pool()->species().serial() != info.loc)
+        if (voxel.get_voxel_pool()->species().serial() != location)
         {
             throw NotSupported(
                 "Mismatch in the location. Failed to place '"
                 + sp.serial() + "' to '"
                 + voxel.get_voxel_pool()->species().serial() + "'. "
-                + "'" + info.loc + "' is expected.");
+                + "'" + location + "' is expected.");
             continue;
         }
 

@@ -49,7 +49,13 @@ void define_ode_simulator(py::module& m)
         .def("absolute_tolerance", &ODESimulator::absolute_tolerance)
         .def("set_relative_tolerance", &ODESimulator::set_relative_tolerance)
         .def("relative_tolerance", &ODESimulator::relative_tolerance)
-        .def("set_absolute_tolerance", &ODESimulator::set_absolute_tolerance);
+        .def("set_absolute_tolerance", &ODESimulator::set_absolute_tolerance)
+        .def("values", &ODESimulator::values)
+        .def("derivatives", &ODESimulator::derivatives)
+        .def("jacobian", &ODESimulator::jacobian)
+        .def("fluxes", &ODESimulator::fluxes)
+        .def("elasticity", &ODESimulator::elasticity)
+        .def("stoichiometry", &ODESimulator::stoichiometry);
     define_simulator_functions(simulator);
 
     m.attr("Simulator") = simulator;
@@ -79,7 +85,13 @@ void define_ode_world(py::module& m)
         .def("reserve_species", &ODEWorld::reserve_species)
         .def("release_species", &ODEWorld::release_species)
         .def("bind_to", &ODEWorld::bind_to)
-        .def("evaluate", &ODEWorld::evaluate);
+        .def("get_values", &ODEWorld::get_values)
+        .def("evaluate",
+            (std::vector<Real>
+             (ODEWorld::*)(const std::vector<ReactionRule>&) const) &ODEWorld::evaluate)
+        .def("evaluate",
+            (Real
+             (ODEWorld::*)(const ReactionRule&) const) &ODEWorld::evaluate);
 
     m.attr("World") = world;
 }

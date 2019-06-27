@@ -6,6 +6,7 @@
 #include <ecell4/core/functions.hpp>
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/core/Barycentric.hpp>
 #include <ecell4/core/types.hpp>
 
 #include "model.hpp"
@@ -975,8 +976,10 @@ void define_shape(py::module& m)
     py::class_<AABB, Shape, PyShapeImpl<AABB>, boost::shared_ptr<AABB>>(m, "AABB")
         .def(py::init<const Real3&, const Real3&>(), py::arg("lower"), py::arg("upper"))
         .def("distance", &AABB::distance)
-        .def("upper", &AABB::upper)
-        .def("lower", &AABB::lower)
+        .def("upper", (const Real3& (AABB::*)() const) &AABB::upper)
+        .def("lower", (const Real3& (AABB::*)() const) &AABB::lower)
+        .def("upper", (Real3& (AABB::*)()) &AABB::upper)
+        .def("lower", (Real3& (AABB::*)()) &AABB::lower)
         .def("surface", &AABB::surface)
         .def(py::pickle(
             [](const AABB& self)
@@ -1031,7 +1034,31 @@ void define_shape(py::module& m)
         {
             return PlanarSurface(Real3(0, 0, z), Real3(1, 0, 0), Real3(0, 1, 0));
         });
+
+    // =======================================================================
+    // sgfrd polygon related stuff
+    py::class_<Barycentric>(m, "Barycentric")
+        .def(py::init<const Real, const Real, const Real>())
+        .def("__setitem__", [](Barycentric& x, Barycentric::size_type i, Barycentric::value_type value) { x.at(i) = value; }, py::is_operator())
+        .def("__getitem__", [](const Barycentric& x, Barycentric::size_type i) { return x.at(i); }, py::is_operator())
+        ;
+
+    py::class_<Polygon::FaceID>(m, "FaceID");
+
+    py::class_<Polygon, Shape, PyShapeImpl<Polygon>, boost::shared_ptr<Polygon>>(m, "Polygon")
+        .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))
+        .def("reset", &Polygon::reset);
+
+    py::enum_<ecell4::STLFormat>(m, "STLFormat", py::arithmetic())
+        .value("Ascii",  ecell4::STLFormat::Ascii)
+        .value("Binary", ecell4::STLFormat::Binary)
+        .export_values();
+
+    m.def("read_polygon",  &ecell4::read_polygon);
+    m.def("write_polygon", &ecell4::write_polygon);
 }
+
+
 
 static inline
 void define_simulator(py::module& m)
@@ -1068,6 +1095,7 @@ void setup_module(py::module& m)
 
     m.def("load_version_information", (std::string (*)(const std::string&)) &extras::load_version_information);
     m.def("get_dimension_from_model", &extras::get_dimension_from_model);
+    m.def("get_stoichiometry", &extras::get_stoichiometry);
     m.def("cbrt", &ecell4::cbrt);
     m.attr("N_A") = N_A;
     m.attr("epsilon") = epsilon;

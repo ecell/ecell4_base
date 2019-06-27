@@ -6,6 +6,7 @@ pybind11_add_module(ecell4_base
     gillespie.cpp
     meso.cpp
     ode.cpp
+    sgfrd.cpp
     spatiocyte.cpp)
 target_link_libraries(ecell4_base PRIVATE
     ecell4-core
@@ -14,6 +15,7 @@ target_link_libraries(ecell4_base PRIVATE
     ecell4-gillespie
     ecell4-meso
     ecell4-ode
+    ecell4-sgfrd
     ecell4-spatiocyte)
 
 set_target_properties(ecell4_base PROPERTIES BUILD_WITH_INSTALL_RPATH TRUE)

@@ -123,6 +123,9 @@ std::string load_version_information(const H5::H5Location& root);
 #endif
 std::string load_version_information(const std::string& filename);
 
+std::vector<std::vector<Real> > get_stoichiometry(
+    const std::vector<Species>& species_list, const std::vector<ReactionRule>& reaction_rules);
+
 } // extras
 
 } // ecell4

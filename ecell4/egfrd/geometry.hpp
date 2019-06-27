@@ -218,17 +218,4 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
         return end - (normal * (norm_e * 2.0));
     }
 }
-
-template<typename coordT>
-inline typename element_type_of<coordT>::type
-angle(const coordT& lhs, const coordT& rhs)
-{
-    typedef typename element_type_of<coordT>::type valueT;
-    const valueT lensq_l = length_sq(lhs);
-    const valueT lensq_r = length_sq(rhs);
-    const valueT inner = dot_product(lhs, rhs);
-    return acos(inner / std::sqrt(lensq_l * lensq_r));
-}
-
-
 #endif /* GEOMETRY_HPP */

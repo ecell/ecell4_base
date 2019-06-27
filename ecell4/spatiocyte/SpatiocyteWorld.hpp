@@ -32,6 +32,7 @@ struct MoleculeInfo
     const Real radius;
     const Real D;
     const std::string loc;
+    const Shape::dimension_kind dimension;
 };
 
 class SpatiocyteWorld
@@ -40,8 +41,6 @@ class SpatiocyteWorld
 public:
 
     typedef LatticeSpaceVectorImpl default_root_type;
-
-    typedef MoleculeInfo molecule_info_type;
 
     typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
     typedef VoxelSpaceBase::coordinate_type coordinate_type;
@@ -609,55 +608,100 @@ public:
      * @param sp a species
      * @return info a molecule info
      */
-    MoleculeInfo get_molecule_info(const Species& sp) const
+    const MoleculeInfo get_molecule_info(const Species& sp)
     {
-        const bool with_D(sp.has_attribute("D"));
-        const bool with_radius(sp.has_attribute("radius"));
-        const bool with_loc(sp.has_attribute("location"));
+        boost::optional<Real> diffusion_coef;
+        boost::optional<Real> radius;
+        boost::optional<std::string> location;
+        Shape::dimension_kind dimension = Shape::THREE; // The default dimension is 3
 
-        Real radius(voxel_radius()), D(0.0);
-        std::string loc("");
-
-        if (with_D)
+        const auto itr = molecule_info_cache_.find(sp);
+        if (itr != molecule_info_cache_.end())
         {
-            D = sp.get_attribute_as<Real>("D");
+            // return itr->second;
+            // TODO: the below code is only for warning.
+            //       In the future, the value should be returned immediately.
+            diffusion_coef = itr->second.D;
+            radius = itr->second.radius;
+            location = itr->second.loc;
+            dimension = itr->second.dimension;
         }
-
-        if (with_radius)
+        else if (const auto model = lock_model())
         {
-            radius = sp.get_attribute_as<Real>("radius");
-        }
+            const auto species_from_model(model->apply_species_attributes(sp));
 
-        if (with_loc)
-        {
-            loc = sp.get_attribute_as<std::string>("location");
-        }
-
-        if (!(with_D && with_radius))  //XXX: with_loc?
-        {
-            if (boost::shared_ptr<Model> bound_model = lock_model())
+            if (species_from_model.has_attribute("D"))
             {
-                Species newsp(bound_model->apply_species_attributes(sp));
+                diffusion_coef = species_from_model.get_attribute_as<Real>("D");
+            }
 
-                if (!with_D && newsp.has_attribute("D"))
-                {
-                    D = newsp.get_attribute_as<Real>("D");
-                }
+            if (species_from_model.has_attribute("radius"))
+            {
+                radius = species_from_model.get_attribute_as<Real>("radius");
+            }
 
-                if (!with_radius && newsp.has_attribute("radius"))
-                {
-                    radius = newsp.get_attribute_as<Real>("radius");
-                }
+            if (species_from_model.has_attribute("location"))
+            {
+                location = species_from_model.get_attribute_as<std::string>("location");
+            }
 
-                if (!with_loc && newsp.has_attribute("location"))
-                {
-                    loc = newsp.get_attribute_as<std::string>("location");
-                }
+            dimension = extras::get_dimension_from_model(sp, model);
+        }
+
+        if (sp.has_attribute("D"))
+        {
+            const auto new_value = sp.get_attribute_as<Real>("D");
+            if (diffusion_coef && *diffusion_coef != new_value)
+            {
+                warning("D");
+                diffusion_coef = new_value;
             }
         }
 
-        MoleculeInfo info = {radius, D, loc};
+        if (sp.has_attribute("radius"))
+        {
+            const auto new_value = sp.get_attribute_as<Real>("radius");
+            if (radius && *radius != new_value)
+            {
+                warning("radius");
+                radius = new_value;
+            }
+        }
+
+        if (sp.has_attribute("location"))
+        {
+            const auto new_value = sp.get_attribute_as<std::string>("location");
+            if (location && *location != new_value)
+            {
+                warning("location");
+                location = new_value;
+            }
+        }
+
+        if (diffusion_coef == boost::none) {
+            diffusion_coef = 0.0;
+        }
+
+        if (radius == boost::none) {
+            radius = voxel_radius();
+        }
+
+        if (location == boost::none) {
+            location = "";
+        }
+
+        const MoleculeInfo info = {*radius, *diffusion_coef, *location, dimension};
+        molecule_info_cache_.insert(molecule_info_cache_t::value_type(sp, info));
         return info;
+    }
+
+    static inline void
+    warning(const std::string attribute)
+    {
+        std::cerr << "Warning: A given species has an attribute \"" << attribute << "\"";
+        std::cerr << ", but its value differs from that of the bound Model or the value previously given." << std::endl;
+        std::cerr << "         Giving the different value from a species attribute are deprecated." << std::endl;
+        std::cerr << "         An attribute of a given species will be ignored in the future." << std::endl;
     }
 
     // bool has_species_exact(const Species &sp) const
@@ -680,7 +724,7 @@ public:
         // ParticleID pid(sidgen_());
         // const bool is_succeeded(update_particle(pid, p));
         // return std::make_pair(get_particle(pid), is_succeeded);
-        const molecule_info_type minfo(get_molecule_info(p.species()));
+        const MoleculeInfo minfo(get_molecule_info(p.species()));
         const Voxel voxel(get_voxel_nearby(p.position()));
 
         if (voxel.get_voxel_pool()->species().serial() != minfo.loc)
@@ -712,7 +756,7 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
-        const molecule_info_type minfo(get_molecule_info(p.species()));
+        const MoleculeInfo minfo(get_molecule_info(p.species()));
         return update_voxel(pid,
                 ParticleVoxel(p.species(),
                               get_voxel_nearby(p.position()).coordinate,
@@ -740,7 +784,7 @@ public:
         boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
-            const molecule_info_type minfo(get_molecule_info(sp));
+            const MoleculeInfo minfo(get_molecule_info(sp));
             space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
         }
 
@@ -758,7 +802,7 @@ public:
         boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
-            const molecule_info_type minfo(get_molecule_info(sp));
+            const MoleculeInfo minfo(get_molecule_info(sp));
             space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
         }
 
@@ -789,15 +833,9 @@ public:
         return rng_;
     }
 
-    const molecule_info_type get_molecule_info(boost::shared_ptr<const VoxelPool> mt) const
-    {
-        const molecule_info_type info = {mt->radius(), mt->D(), get_location_serial(mt)};
-        return info;
-    }
-
     void bind_to(boost::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (boost::shared_ptr<Model> bound_model = model_.lock())
         {
             if (bound_model.get() != model.get())
             {
@@ -811,18 +849,18 @@ public:
 
     boost::shared_ptr<Model> lock_model() const
     {
-        return model_.lock();
+        const auto bound = model_.lock();
+        if (!bound)
+        {
+            std::cerr << "Warning: Manipulating SpatiocyteWorld without binding Model is deprecated." << std::endl;
+            std::cerr << "         In the future, calling this function before binding Model will throw an exception." << std::endl;
+        }
+        return bound;
     }
 
     Shape::dimension_kind get_dimension(const Species& species)
     {
-        const dim_map_t::const_iterator itr(dim_map_.find(species));
-        if (itr != dim_map_.end())
-            return itr->second;
-
-        const Shape::dimension_kind dim(extras::get_dimension_from_model(species, lock_model()));
-        dim_map_.insert(dim_map_t::value_type(species, dim));
-        return dim;
+        return get_molecule_info(species).dimension;
     }
 
     /**
@@ -873,8 +911,8 @@ protected:
         return space_type();
     }
 
-    Integer add_structure2(const Species& sp, const boost::shared_ptr<const Shape> shape);
-    Integer add_structure3(const Species& sp, const boost::shared_ptr<const Shape> shape);
+    Integer add_structure2(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
+    Integer add_structure3(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
     bool is_surface_voxel(const Voxel& voxel, const boost::shared_ptr<const Shape> shape) const;
 
 public:
@@ -888,7 +926,7 @@ public:
 
 protected:
 
-    typedef utils::get_mapper_mf<Species, Shape::dimension_kind>::type dim_map_t;
+    typedef utils::get_mapper_mf<Species, MoleculeInfo>::type molecule_info_cache_t;
 
     std::size_t size_;
     space_container_type spaces_;
@@ -900,7 +938,7 @@ protected:
     SerialIDGenerator<ParticleID> sidgen_;
 
     boost::weak_ptr<Model> model_;
-    dim_map_t dim_map_;
+    molecule_info_cache_t molecule_info_cache_;
 };
 
 inline
