@@ -1,9 +1,13 @@
-version: 2
-jobs:
-  build_py35:
+version: 2.1
+executors:
+  default:
+    working_directory: ~/circle
     docker:
       - image: quay.io/pypa/manylinux1_x86_64
-    working_directory: ~/circle
+
+jobs:
+  build_py35:
+    executor: default
     steps:
       - setup_remote_docker
       - checkout
@@ -34,10 +38,9 @@ jobs:
             auditwheel repair /root/circle/dist/ecell4_base-$ECELLVER-$PY35-linux_x86_64.whl
       - store_artifacts:
           path: /root/circle/wheelhouse
+
   build_py36:
-    docker:
-      - image: quay.io/pypa/manylinux1_x86_64
-    working_directory: ~/circle
+    executor: default
     steps:
       - setup_remote_docker
       - checkout
@@ -68,10 +71,9 @@ jobs:
             auditwheel repair /root/circle/dist/ecell4_base-$ECELLVER-$PY36-linux_x86_64.whl
       - store_artifacts:
           path: /root/circle/wheelhouse
+
   build_py37:
-    docker:
-      - image: quay.io/pypa/manylinux1_x86_64
-    working_directory: ~/circle
+    executor: default
     steps:
       - setup_remote_docker
       - checkout
