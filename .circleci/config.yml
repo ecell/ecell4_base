@@ -26,7 +26,7 @@ jobs:
           git submodule sync
           git submodule update --init --remote
       - run:
-          name: Build E-Cell4
+          name: Install Dependencies
           command: |
             set -x
             curl -O https://cmake.org/files/v3.13/cmake-$CMAKEVER.tar.gz
@@ -37,7 +37,11 @@ jobs:
             cd cmake-$CMAKEVER && ./configure && make && make install
             cd ../gsl-$GSLVER && ./configure && make && make install
             cd ../hdf5-$HDF5VER && ./configure --prefix=/usr/local --enable-cxx && make && make install
-            cd ~/circle && export BOOST_INCLUDEDIR=/root/circle/$BOOSTFILE
+            cd ~/circle
+      - run:
+          name: Build E-Cell4
+          command: |
+            export BOOST_INCLUDEDIR=/root/circle/$BOOSTFILE
             /opt/python/<< parameters.pyver >>/bin/python setup.py bdist_wheel
             auditwheel repair /root/circle/dist/ecell4_base-$ECELLVER-<< parameters.pyver >>-linux_x86_64.whl
       - store_artifacts:
