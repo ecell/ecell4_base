@@ -4,6 +4,13 @@ executors:
     working_directory: ~/circle
     docker:
       - image: quay.io/pypa/manylinux1_x86_64
+    environment:
+      ECELLVER: "2.0.0b1"
+      CMAKEVER: "3.13.3"
+      GSLVER: "2.4"
+      BOOSTVER: "1.68.0"
+      BOOSTFILE: "boost_1_68_0"
+      HDF5VER: "1.10.4"
 
 jobs:
   build:
@@ -22,12 +29,6 @@ jobs:
           name: Build E-Cell4
           command: |
             set -x
-            ECELLVER="2.0.0b1"
-            CMAKEVER="3.13.3"
-            GSLVER="2.4"
-            BOOSTVER="1.68.0"
-            BOOSTFILE="boost_1_68_0"
-            HDF5VER="1.10.4"
             curl -O https://cmake.org/files/v3.13/cmake-$CMAKEVER.tar.gz
             curl -O ftp://ftp.gnu.org/gnu/gsl/gsl-$GSLVER.tar.gz
             curl -L -o $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
