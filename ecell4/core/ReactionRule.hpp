@@ -31,7 +31,7 @@ public:
 
 public:
 
-    enum policy_type
+    enum policy_type : long
     {
         POLICY_STRICT = 1L << 0,
         POLICY_IMPLICIT = 1L << 1,
@@ -135,6 +135,11 @@ inline bool operator==(const ReactionRule& lhs, const ReactionRule& rhs)
 inline bool operator!=(const ReactionRule& lhs, const ReactionRule& rhs)
 {
     return !(lhs == rhs);
+}
+
+constexpr ReactionRule::policy_type operator|(ReactionRule::policy_type lhs, ReactionRule::policy_type rhs)
+{
+    return static_cast<ReactionRule::policy_type>(static_cast<long>(lhs) | static_cast<long>(rhs));
 }
 
 ReactionRule format_reaction_rule_with_nosort(const ReactionRule& rr);
