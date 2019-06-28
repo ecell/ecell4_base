@@ -455,7 +455,8 @@ void define_reaction_rule(py::module& m)
         .value("STRICT", ReactionRule::policy_type::POLICY_STRICT)
         .value("IMPLICIT", ReactionRule::policy_type::POLICY_IMPLICIT)
         .value("DESTROY", ReactionRule::policy_type::POLICY_DESTROY)
-        .export_values();
+        .export_values()
+        .def(py::self | py::self);
 
     m.def("create_degradation_reaction_rule", &create_degradation_reaction_rule);
     m.def("create_synthesis_reaction_rule", &create_synthesis_reaction_rule);
