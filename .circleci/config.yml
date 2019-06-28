@@ -38,7 +38,11 @@ jobs:
             cd ../gsl-$GSLVER && ./configure && make && make install
             cd ../hdf5-$HDF5VER && ./configure --prefix=/usr/local --enable-cxx && make && make install
             cd ~/circle
-            /opt/python/<< parameters.pyver >>/bin/pip install auditwheel
+      - run:
+          name: Install auditwheel from source
+          command: |
+            git clone https://github.com/pypa/auditwheel.git
+            cd auditwheel && /opt/python/<< parameters.pyver >>/bin/python setup.py install
       - run:
           name: Build E-Cell4
           command: |
