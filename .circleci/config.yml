@@ -3,7 +3,7 @@ executors:
   default:
     working_directory: ~/circle
     docker:
-      - image: quay.io/pypa/manylinux1_x86_64
+      - image: quay.io/pypa/manylinux2010_x86_64
     environment:
       ECELLVER: "2.0.0b1"
       CMAKEVER: "3.13.3"
@@ -38,12 +38,13 @@ jobs:
             cd ../gsl-$GSLVER && ./configure && make && make install
             cd ../hdf5-$HDF5VER && ./configure --prefix=/usr/local --enable-cxx && make && make install
             cd ~/circle
+            /opt/python/<< parameters.pyver >>/bin/pip install auditwheel
       - run:
           name: Build E-Cell4
           command: |
             export BOOST_INCLUDEDIR=/root/circle/$BOOSTFILE
             /opt/python/<< parameters.pyver >>/bin/python setup.py bdist_wheel
-            auditwheel repair /root/circle/dist/ecell4_base-$ECELLVER-<< parameters.pyver >>-linux_x86_64.whl
+            /opt/python/<< parameters.pyver >>/bin/auditwheel repair /root/circle/dist/ecell4_base-$ECELLVER-<< parameters.pyver >>-linux_x86_64.whl
       - store_artifacts:
           path: /root/circle/wheelhouse
 
