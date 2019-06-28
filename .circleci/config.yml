@@ -43,6 +43,7 @@ jobs:
           command: |
             git clone https://github.com/pypa/auditwheel.git
             cd auditwheel && /opt/python/<< parameters.pyver >>/bin/python setup.py install
+            /opt/python/<< parameters.pyver >>/bin/pip install pyelftools
       - run:
           name: Build E-Cell4
           command: |
