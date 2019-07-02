@@ -15,10 +15,9 @@
 using ecell4::Real;
 using ecell4::Real3;
 using ecell4::Triangle;
-using ecell4::Polygon;
-typedef Polygon::FaceID FaceID;
-typedef Polygon::EdgeID EdgeID;
-typedef Polygon::VertexID VertexID;
+typedef ecell4::Polygon::FaceID   FaceID;
+typedef ecell4::Polygon::EdgeID   EdgeID;
+typedef ecell4::Polygon::VertexID VertexID;
 
 bool check_equal(const Real3& lhs, const Real3& rhs, const Real tol)
 {
@@ -85,7 +84,7 @@ struct tetrahedron
     const static Real3 p3;
     const static Real3 p4;
 
-    static Polygon make()
+    static ecell4::Polygon make()
     {
         const Triangle t1(p1, p2, p4);
         const Triangle t2(p1, p4, p3);
@@ -98,7 +97,7 @@ struct tetrahedron
         triangles.push_back(t3);
         triangles.push_back(t4);
 
-        return Polygon(Real3(10.0, 10.0, 10.0), triangles);
+        return ecell4::Polygon(Real3(10.0, 10.0, 10.0), triangles);
     }
 };
 const Real3 tetrahedron::p1 = Real3(0, 0, 0);
@@ -109,7 +108,7 @@ const Real3 tetrahedron::p4 = Real3(0, 0, 1);
 BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
 {
     const Real pi = boost::math::constants::pi<Real>();
-    const Polygon poly = tetrahedron::make();
+    const ecell4::Polygon poly = tetrahedron::make();
 
     // check shape detection
     BOOST_CHECK_EQUAL(poly.face_size(), 4u);
@@ -414,7 +413,7 @@ struct octahedron
     const static Real3 p5;
     const static Real3 p6;
 
-    static Polygon make()
+    static ecell4::Polygon make()
     {
         const Triangle t1(p1, p2, p3);
         const Triangle t3(p1, p4, p5);
@@ -437,7 +436,7 @@ struct octahedron
         triangles.push_back(t7);
         triangles.push_back(t8);
 
-        return Polygon(Real3(10.0, 10.0, 10.0), triangles);
+        return ecell4::Polygon(Real3(10.0, 10.0, 10.0), triangles);
     }
 };
 const Real3 octahedron::p1 = Real3(1, 1, 2);
@@ -450,7 +449,7 @@ const Real3 octahedron::p6 = Real3(1, 1, 0);
 BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
 {
     const Real pi = boost::math::constants::pi<Real>();
-    const Polygon poly = octahedron::make();
+    const ecell4::Polygon poly = octahedron::make();
 
     // check shape detection
     BOOST_CHECK_EQUAL(poly.face_size(), 8u);
@@ -872,7 +871,7 @@ struct plane
 {
     const static Real3 edge_length;
 
-    static Polygon make()
+    static ecell4::Polygon make()
     {
         std::vector<Triangle> triangles;
         for(std::size_t j=0; j<5; ++j)
@@ -893,7 +892,7 @@ struct plane
                 triangles.push_back(Triangle(uxuy, lxuy, lxly));
             }
         }
-        return Polygon(edge_length, triangles);
+        return ecell4::Polygon(edge_length, triangles);
     }
 };
 const Real3 plane::edge_length = Real3(10, 10, 10);
@@ -901,7 +900,7 @@ const Real3 plane::edge_length = Real3(10, 10, 10);
 BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
 {
     const Real pi = boost::math::constants::pi<Real>();
-    const Polygon poly = plane::make();
+    const ecell4::Polygon poly = plane::make();
 
     // check shape detection
     BOOST_CHECK_EQUAL(poly.face_size(),   50u);
