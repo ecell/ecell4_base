@@ -3,15 +3,15 @@ E-Cell System version 4
 
 |   |  |
 | ------------- | ------------- |
-| Conda package for Windows | [![Build status](https://ci.appveyor.com/api/projects/status/9n065mjhgyf33yov/branch/master?svg=true)](https://ci.appveyor.com/project/ecell/ecell4-base/branch/master) |
-| Conda package for Mac and Linux | [![Build Status](https://travis-ci.org/ecell/ecell4-base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4-base) |
-| ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4-base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4-base) |
-| Build only (without packaging)  | [![Build Status](https://dev.azure.com/knishida/ecell4-base/_apis/build/status/ecell.ecell4-base?branchName=master)](https://dev.azure.com/knishida/ecell4-base/_build/latest?definitionId=2&branchName=master) |
+| Conda package for Windows | [![Build status](https://ci.appveyor.com/api/projects/status/9n065mjhgyf33yov/branch/master?svg=true)](https://ci.appveyor.com/project/ecell/ecell4_base/branch/master) |
+| Conda package for Mac and Linux | [![Build Status](https://travis-ci.org/ecell/ecell4_base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4_base) |
+| ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base) |
+| Build only (without packaging)  | [![Build Status](https://dev.azure.com/knishida/ecell4_base/_apis/build/status/ecell.ecell4_base?branchName=master)](https://dev.azure.com/knishida/ecell4_base/_build/latest?definitionId=2&branchName=master) |
 
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/v/ecell4-base.svg)](https://pypi.python.org/pypi/ecell4-base)
-[![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4-base/blob/master/licenses/LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4-base?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4-base&amp;utm_campaign=Badge_Grade)
+[![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base)
+[![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4_base/blob/master/licenses/LICENSE)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4_base?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4_base&amp;utm_campaign=Badge_Grade)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
 <!---[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)--->
 
@@ -39,7 +39,7 @@ Please refer to the https://github.com/ecell/ecell4-docs
 Installation
 -------------
 
-Please see [INSTALL.md](https://github.com/ecell/ecell4-base/blob/master/INSTALL.md).
+Please see [INSTALL.md](https://github.com/ecell/ecell4_base/blob/master/INSTALL.md).
 Basically you can install E-Cell4 on any OS just by running
 ```
 pip install ecell4
