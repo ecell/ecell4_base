@@ -6,7 +6,7 @@ E-Cell System version 4
 | Conda package for Windows | [![Build status](https://ci.appveyor.com/api/projects/status/9n065mjhgyf33yov/branch/master?svg=true)](https://ci.appveyor.com/project/ecell/ecell4_base/branch/master) |
 | Conda package for Mac and Linux | [![Build Status](https://travis-ci.org/ecell/ecell4_base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4_base) |
 | ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base) |
-| Build only (without packaging)  | [![Build Status](https://dev.azure.com/knishida/ecell4_base/_apis/build/status/ecell.ecell4_base?branchName=master)](https://dev.azure.com/knishida/ecell4_base/_build/latest?definitionId=2&branchName=master) |
+| Build only (without packaging)  | [![Build Status](https://dev.azure.com/ecellproject/ecell4_base/_apis/build/status/ecell.ecell4_base?branchName=master)](https://dev.azure.com/ecellproject/ecell4_base/_build/latest?definitionId=3&branchName=master) |
 
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base)
