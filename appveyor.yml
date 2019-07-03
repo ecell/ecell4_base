@@ -17,7 +17,7 @@ install:
     git submodule update -q --init --recursive
     conda config --set always_yes yes --set changeps1 no
     conda update -q conda
-    conda install -q conda-build anaconda-client
+    conda install -q conda-build anaconda-client conda-verify
 
 build_script:
 - ps: |
