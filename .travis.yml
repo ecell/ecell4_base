@@ -19,7 +19,7 @@ before_install:
   - source activate test-environment
 
 script:
-  - conda build conda.recipe
+  - conda build conda.recipe --python $PYTHON_VERSION
   - conda install --use-local ecell4_base
 
 deploy:
