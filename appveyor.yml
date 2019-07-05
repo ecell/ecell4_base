@@ -17,19 +17,13 @@ install:
     git submodule update -q --init --recursive
     conda config --set always_yes yes --set changeps1 no
     conda update -q conda
-    conda install -q conda-build anaconda-client
+    conda install -q conda-build anaconda-client conda-verify
 
 build_script:
-- ps: |
+- cmd: |
     conda build conda.recipe
-    if (!$?) {
-        exit 1
-    }
-    # Copy the conda build to the home dir, such that it can be registerd as an artifact
-    #ls C:\Miniconda36-x64\conda-bld
-    mv C:\Miniconda$env:CONDA\conda-bld .
-    pwd
-    ls .
+    move C:\Miniconda%CONDA%\conda-bld .
+    if %APPVEYOR_REPO_TAG%==true anaconda -t %CONDA_UPLOAD_TOKEN% upload conda-bld\win-*\*.tar.bz2
 
 artifacts:
   - path: 'conda-bld\win-*\*.tar.bz2'
