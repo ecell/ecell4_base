@@ -23,7 +23,7 @@ build_script:
 - cmd: |
     conda build conda.recipe
     move C:\Miniconda%CONDA%\conda-bld .
-- ps: If ($Env:APPVEYOR_REPO_TAG) {anaconda upload -t $Env:CONDA_UPLOAD_TOKEN upload conda-bld\win-*\*.tar.bz2}
+- ps: If ($Env:APPVEYOR_REPO_TAG) {anaconda -t $Env:CONDA_UPLOAD_TOKEN upload conda-bld\win-*\*.tar.bz2}
 
 artifacts:
   - path: 'conda-bld\win-*\*.tar.bz2'
