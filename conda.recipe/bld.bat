@@ -1,3 +1,3 @@
 "%PYTHON%" setup.py install
 "%PYTHON%" setup.py test
-if errorlevel 2 exit 1
+if errorlevel 1 exit 1
