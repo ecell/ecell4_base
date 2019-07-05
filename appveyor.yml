@@ -22,7 +22,6 @@ install:
 build_script:
 - cmd: |
     conda build conda.recipe
-    # Copy the conda build to the home dir, such that it can be registerd as an artifact
     move C:\Miniconda$env:CONDA\conda-bld .
 
 artifacts:
