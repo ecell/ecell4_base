@@ -30,6 +30,17 @@ requirements:
     - ffmpeg # [osx]
     - vs2015_runtime  # [win]
 
+test:
+  imports:
+    - ecell4_base.core
+    - ecell4_base.bd
+    - ecell4_base.egfrd
+    - ecell4_base.gillespie
+    - ecell4_base.meso
+    - ecell4_base.ode
+    - ecell4_base.sgfrd
+    - ecell4_base.spatiocyte
+
 about:
   summary: E-Cell4 project built with pybind11.
   license_file: LICENSE
