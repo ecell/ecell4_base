@@ -25,6 +25,11 @@ requirements:
     - blas
 
   run:
+    - libgcc-ng # [linux]
+    - libstdcxx-ng # [linux]
+    - gsl
+    - hdf5
+    - zlib
     - python
     - notebook
     - ffmpeg # [osx]
