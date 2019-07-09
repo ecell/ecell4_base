@@ -114,7 +114,7 @@ protected:
     }
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const override
     {
         if (user_max_shell_size_ != default_user_max_shell_size())
         {
