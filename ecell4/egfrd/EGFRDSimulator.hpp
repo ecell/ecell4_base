@@ -3904,6 +3904,7 @@ protected:
         case PAIR_EVENT_IV_REACTION:
             return "iv_reaction";
         }
+        throw illegal_state("EGFRDSimulator::stringize_event_kind: never get here");
     }
 
     static std::string stringize_event(single_event const& ev)
@@ -4100,6 +4101,7 @@ protected:
         }
 
         BOOST_ASSERT(false); // should never happen
+        throw illegal_state("EGFRDSimulator::draw_reaction_rule: should never happen");
     }
 
     //template<typename T1, typename T2>
