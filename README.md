@@ -34,72 +34,39 @@ Try online
 ----------
 
 You can try this package online with Google Colaboratory.
-Please refer to the https://github.com/ecell/ecell4-docs
+Please refer to the https://github.com/ecell/ecell4_docs
 
 Installation
 -------------
 
-Please see [INSTALL.md](https://github.com/ecell/ecell4_base/blob/master/INSTALL.md).
-Basically you can install E-Cell4 on any OS just by running
-```
-pip install ecell4
-```
+### Windows
 
-Simple examples
----------------
-
-Here are two extremely simple examples, See http://ecell4.readthedocs.org for more details on running E-Cell4.
+Install Miniconda with Python 3.7 for **64-bit** (from https://docs.conda.io/en/latest/miniconda.html)
+and run this command on **Anaconda Prompt**.
 
 ```
-Python 2.7.6 (default, Mar 22 2014, 22:59:56)
-[GCC 4.8.2] on linux2
-Type "help", "copyright", "credits" or "license" for more information.
->>> from ecell4.core import *
->>> sp = Species("A.B.C")
->>> print sp.serial()
-A.B.C
->>>
+conda install -c ecell ecell4_base
 ```
 
-### Binding and unbinding reactions
+### Mac, Linux
+Install Miniconda with Python 3.7 for **64-bit** (from https://docs.conda.io/en/latest/miniconda.html)
+and run these commands on your Terminal app.
 
-```python
-%matplotlib inline
-from ecell4 import *
-
-with reaction_rules():
-    A + B == C | (0.01, 0.3)
-
-run_simulation(10, {'A': 60, 'B': 60})
+```
+conda config --add channels conda-forge
+conda install -c ecell ecell4_base
 ```
 
-![png](./misc/output_7_0.png)
+### Google Colab and Linux environment where you can NOT use conda
 
-### Diffusion on a spherical surface
-
-```python
-%%matplotlib inline
-from ecell4_base.core import *
-from ecell4 import *
-
-with species_attributes():
-    M | {'dimension': 2}
-    A | {'D': 1.0, 'location': 'M'}
-
-surface = Sphere(ones() * 0.5, 0.49).surface()
-obs = FixedIntervalTrajectoryObserver(1e-4)
-run_simulation(
-    0.4, y0={'A': 10}, structures={'M': surface},
-    solver='spatiocyte', observers=obs, return_type=None)
-
-viz.plot_trajectory(obs, interactive=False)
+```
+pip install ecell4_base
 ```
 
-![png](./misc/hairball.png)
+### If you want to compile ecell4_base by yourself
 
-Tutorials, Examples, and API (Static Site)
-==========================================
-https://ecell4.readthedocs.io/en/latest/
+Please refer to https://github.com/ecell/ecell4_base/blob/master/azure-pipelines.yml
+
 
 Citation
 ========
@@ -111,8 +78,8 @@ If this package contributes to a project which leads to a scientific publication
 Licensing terms
 ===============
 
-This product is licensed under the terms of the [GNU General Public License v2](https://github.com/ecell/ecell4/blob/master/licenses/LICENSE),
-See [NOTICE](https://github.com/ecell/ecell4/blob/master/licenses/NOTICE.txt) for the software included in this product.
+This product is licensed under the terms of the [GNU General Public License v2](https://github.com/ecell/ecell4_base/blob/master/LICENSE),
+See also [LICENSE](https://github.com/ecell/ecell4_base/blob/master/LICENSE) for the software included in this product.
 
 - Copyright (c) 2010-, RIKEN
 
