@@ -34,10 +34,19 @@ Try online
 ----------
 
 You can try this package online with Google Colaboratory.
-Please refer to the https://github.com/ecell/ecell4_docs
+Please refer to https://github.com/ecell/ecell4_docs
+
+Quick start
+-----------
+
+Please refer to https://github.com/ecell/ecell4#quick-start
 
 Installation
 -------------
+
+E-Cell4 does not support Python2.
+
+E-Cell4 does not support `pip install` on Windows and Mac.
 
 ### Windows
 
@@ -57,10 +66,10 @@ conda config --add channels conda-forge
 conda install -c ecell ecell4_base
 ```
 
-### Google Colab and Linux environment where you can NOT use conda
+### Linux environment where you can NOT use conda
 
 ```
-pip install ecell4_base
+python3 -m pip install ecell4_base
 ```
 
 ### If you want to compile ecell4_base by yourself
