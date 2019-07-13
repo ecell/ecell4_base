@@ -31,8 +31,6 @@ requirements:
     - hdf5
     - zlib
     - python
-    - notebook
-    - ffmpeg # [osx]
     - vs2015_runtime  # [win]
 
 test:
