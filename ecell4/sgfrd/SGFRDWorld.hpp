@@ -448,6 +448,11 @@ class SGFRDWorld
         return registrator_.elements_over(fid).size();
     }
 
+    Triangle get_triangle(const ParticleID& pid) const
+    {
+        return this->polygon_->triangle_at(this->registrator_.structure_on(pid));
+    }
+
     std::vector<std::pair<ParticleID, Particle> >
     list_particles(const FaceID& fid) const
     {
