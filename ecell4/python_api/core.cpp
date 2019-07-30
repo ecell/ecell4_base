@@ -1082,6 +1082,28 @@ void define_shape(py::module& m)
 
     // =======================================================================
     // sgfrd polygon related stuff
+
+    py::class_<Triangle, Shape, PyShapeImpl<Triangle>, boost::shared_ptr<Triangle>>(m, "Triangle")
+        .def(py::init<const Real3&, const Real3&, const Real3&>(), py::arg("v1"), py::arg("v2"), py::arg("v3"))
+        .def("normal",    &Triangle::normal)
+        .def("area",      &Triangle::area)
+        .def("vertex_at", &Triangle::vertex_at)
+        .def("vertices",  &Triangle::vertices)
+        .def(py::pickle(
+            [](const Triangle& self)
+            {
+                return py::make_tuple(self.vertex_at(0), self.vertex_at(1), self.vertex_at(2));
+            },
+            [](py::tuple t)
+            {
+                if (t.size() != 2)
+                {
+                    throw std::runtime_error("Invalid state");
+                }
+                return Triangle(t[0].cast<const Real3&>(), t[1].cast<const Real3&>(), t[2].cast<const Real3&>());
+            }
+        ));
+
     py::class_<Barycentric>(m, "Barycentric")
         .def(py::init<const Real, const Real, const Real>())
         .def("__setitem__", [](Barycentric& x, Barycentric::size_type i, Barycentric::value_type value) { x.at(i) = value; }, py::is_operator())
@@ -1092,6 +1114,7 @@ void define_shape(py::module& m)
 
     py::class_<Polygon, Shape, PyShapeImpl<Polygon>, boost::shared_ptr<Polygon>>(m, "Polygon")
         .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))
+        .def(py::init<const Real3&, const std::vector<Triangle>&>(), py::arg("edge_lengths"), py::arg("triangles"))
         .def("reset", &Polygon::reset);
 
     py::enum_<ecell4::STLFormat>(m, "STLFormat", py::arithmetic())
