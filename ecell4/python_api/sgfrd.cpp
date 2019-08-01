@@ -138,6 +138,7 @@ void define_sgfrd_world(py::module& m)
             &world_type::add_molecules)
         .def("remove_molecules", &world_type::remove_molecules)
 
+        .def("get_triangle", &world_type::get_triangle)
         .def("get_surface_position", &world_type::get_surface_position)
         .def("list_surface_positions",
             (std::vector<std::pair<ParticleID, std::pair<Polygon::FaceID, Barycentric>>>
