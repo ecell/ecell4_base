@@ -5,7 +5,7 @@ executors:
     docker:
       - image: quay.io/pypa/manylinux2010_x86_64
     environment:
-      ECELLVER: "2.0.1"
+      ECELLVER: "2.0.2"
       CMAKEVER: "3.13.3"
       GSLVER: "2.4"
       BOOSTVER: "1.68.0"
