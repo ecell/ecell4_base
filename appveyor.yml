@@ -5,12 +5,12 @@ platform:
 
 environment:
   matrix:
-  - CONDA: 36-x64
-  - CONDA: 37-x64
+    - CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+    - CONDA_INSTALL_LOCN: "C:\\Miniconda37-x64"
 
 init:
 - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
-- ps: $env:PATH = "C:\Miniconda$env:CONDA\;C:\Miniconda$env:CONDA\Scripts\;$env:PATH"
+- cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
 
 install:
 - ps: |
@@ -22,7 +22,7 @@ install:
 build_script:
 - cmd: |
     conda build conda.recipe
-    move C:\Miniconda%CONDA%\conda-bld .
+    move %CONDA_INSTALL_LOCN%\conda-bld .
     if %APPVEYOR_REPO_TAG%==true anaconda -t %CONDA_UPLOAD_TOKEN% upload conda-bld\win-*\*.tar.bz2
 
 artifacts:
