@@ -341,15 +341,19 @@ class SGFRDWorld
     new_particle(const Particle& p, const FaceID& fid);
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp, const Real3& pos)
+    new_particle(const Species& sp_, const Real3& pos)
     {
+        const auto model = this->lock_model();
+        const auto sp = model->apply_species_attributes(sp_);
         const Real r = sp.get_attribute_as<Real>("radius");
         const Real D = sp.get_attribute_as<Real>("D");
         return this->new_particle(Particle(sp, pos, r, D));
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp, const FaceID& fid, const Barycentric& bary)
+    new_particle(const Species& sp_, const FaceID& fid, const Barycentric& bary)
     {
+        const auto model = this->lock_model();
+        const auto sp = model->apply_species_attributes(sp_);
         const auto r = sp.get_attribute_as<Real>("radius");
         const auto D = sp.get_attribute_as<Real>("D");
 
