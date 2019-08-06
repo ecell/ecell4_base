@@ -4,6 +4,9 @@ configure_file(
     ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
+# file(READ ${CMAKE_CURRENT_BINARY_DIR}/config.h ECELL4_GENERATED_CONFIG_H)
+# message(STATUS ${ECELL4_GENERATED_CONFIG_H})
+
 file(GLOB CPP_FILES *.cpp)
 
 add_library(ecell4-core STATIC ${CPP_FILES})
