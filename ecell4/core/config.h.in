@@ -10,7 +10,7 @@
 
 #ifdef WIN32_MSC
 /* The following is the default behavior on Windows environment. */
-// #define WITH_HDF5 1
+#cmakedefine WITH_HDF5 1
 #define HAVE_BOOST_UNORDERED_MAP_HPP 1
 #define HAVE_BOOST_FUNCTIONAL_HASH_HPP 1
 #else
