@@ -45,8 +45,10 @@ SGFRDWorld::new_particle(const Particle& p, const FaceID& fid)
 }
 
 std::pair<std::pair<ParticleID, Particle>, bool>
-SGFRDWorld::throw_in_particle(const Species& sp)
+SGFRDWorld::throw_in_particle(const Species& sp_)
 {
+    const auto model = this->lock_model();
+    const auto sp = model->apply_species_attributes(sp_);
     const Real r = sp.get_attribute_as<Real>("radius");
     const Real D = sp.get_attribute_as<Real>("D");
 
@@ -72,7 +74,7 @@ void SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
     return;
 }
 
-void SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
+void SGFRDWorld::add_molecules(const Species& sp_, const Integer& num,
                                const boost::shared_ptr<Shape> shape)
 {
     if (num < 0)
@@ -161,6 +163,8 @@ void SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
         throw std::invalid_argument("The shape does not overlap with polygon.");
     }
 
+    const auto model = this->lock_model();
+    const auto sp = model->apply_species_attributes(sp_);
     const Real r = sp.get_attribute_as<Real>("radius");
     const Real D = sp.get_attribute_as<Real>("D");
     for(Integer i=0; i<num; ++i)
