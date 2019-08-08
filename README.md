@@ -5,12 +5,10 @@ E-Cell System version 4
 | ------------- | ------------- |
 | Conda package for Windows | [![Build status](https://ci.appveyor.com/api/projects/status/8xxyc6q057dkn0vu/branch/master?svg=true)](https://ci.appveyor.com/project/ecell/ecell4-base-aj36m/branch/master) |
 | Conda package for Mac and Linux | [![Build Status](https://travis-ci.org/ecell/ecell4_base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4_base) |
-| ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base) |
+| ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base) [![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base) |
 | Build only (without packaging)  | [![Build Status](https://dev.azure.com/ecellproject/ecell4_base/_apis/build/status/ecell.ecell4_base?branchName=master)](https://dev.azure.com/ecellproject/ecell4_base/_build/latest?definitionId=3&branchName=master) |
 
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
-[![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base)
-[![License: GPL v2](https://img.shields.io/badge/license-GPL%20v2-blue.svg)](https://github.com/ecell/ecell4_base/blob/master/licenses/LICENSE)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4_base?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4_base&amp;utm_campaign=Badge_Grade)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
 <!---[![Slack Status](https://ecell-project.herokuapp.com/badge.svg)](https://ecell-project.herokuapp.com/)--->
@@ -44,9 +42,9 @@ Please refer to https://github.com/ecell/ecell4#quick-start
 Installation
 -------------
 
-E-Cell4 does not support Python2.
+E-Cell4 does NOT support Python2.
 
-E-Cell4 does not support `pip install` on Windows and Mac.
+E-Cell4 does NOT support `pip install` on Windows and Mac.
 
 ### Windows
 
@@ -67,6 +65,7 @@ conda install -c ecell ecell4_base
 ```
 
 ### Linux environment where you can NOT use conda
+We provide `ecell4_base` wheel package only for Linux.
 
 ```
 python3 -m pip install ecell4_base
@@ -87,7 +86,7 @@ If this package contributes to a project which leads to a scientific publication
 Licensing terms
 ===============
 
-This product is licensed under the terms of the [GNU General Public License v2](https://github.com/ecell/ecell4_base/blob/master/LICENSE),
+This product is licensed under the terms of the [GNU General Public License v3](https://github.com/ecell/ecell4_base/blob/master/LICENSE),
 See also [LICENSE](https://github.com/ecell/ecell4_base/blob/master/LICENSE) for the software included in this product.
 
 - Copyright (c) 2010-, RIKEN
