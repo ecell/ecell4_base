@@ -13,7 +13,7 @@ SGFRDWorld::new_particle(const Particle& p)
     {
         Particle p_(p);
         p_.position() = pfid->first;
-        this->new_particle(p_, pfid->second);
+        return this->new_particle(p_, pfid->second);
     }
     throw std::invalid_argument("[error] SGFRDWorld::new_particle: "
             "particle locates distant from polygon");
