@@ -13,7 +13,7 @@ SGFRDWorld::new_particle(const Particle& p)
     {
         Particle p_(p);
         p_.position() = pfid->first;
-        this->new_particle(p_, pfid->second);
+        return this->new_particle(p_, pfid->second);
     }
     throw std::invalid_argument("[error] SGFRDWorld::new_particle: "
             "particle locates distant from polygon");
@@ -45,16 +45,13 @@ SGFRDWorld::new_particle(const Particle& p, const FaceID& fid)
 }
 
 std::pair<std::pair<ParticleID, Particle>, bool>
-SGFRDWorld::throw_in_particle(const Species& sp_)
+SGFRDWorld::throw_in_particle(const Species& sp)
 {
-    const auto model = this->lock_model();
-    const auto sp = model->apply_species_attributes(sp_);
-    const Real r = sp.get_attribute_as<Real>("radius");
-    const Real D = sp.get_attribute_as<Real>("D");
+    const auto info = this->get_molecule_info(sp);
 
     Real3 pos; FaceID fid;
     pos = this->polygon_->draw_position(this->rng_, fid);
-    const Particle p(sp, pos, r, D);
+    const Particle p(sp, pos, info.radius, info.D);
     return this->new_particle(p, fid);
 }
 
@@ -74,7 +71,7 @@ void SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
     return;
 }
 
-void SGFRDWorld::add_molecules(const Species& sp_, const Integer& num,
+void SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
                                const boost::shared_ptr<Shape> shape)
 {
     if (num < 0)
@@ -163,10 +160,7 @@ void SGFRDWorld::add_molecules(const Species& sp_, const Integer& num,
         throw std::invalid_argument("The shape does not overlap with polygon.");
     }
 
-    const auto model = this->lock_model();
-    const auto sp = model->apply_species_attributes(sp_);
-    const Real r = sp.get_attribute_as<Real>("radius");
-    const Real D = sp.get_attribute_as<Real>("D");
+    const auto info = this->get_molecule_info(sp);
     for(Integer i=0; i<num; ++i)
     {
         bool particle_inserted = false;
@@ -181,7 +175,7 @@ void SGFRDWorld::add_molecules(const Species& sp_, const Integer& num,
 
             if(shape->is_inside(pos))
             {
-                const Particle p(sp, pos, r, D);
+                const Particle p(sp, pos, info.radius, info.D);
                 std::tie(std::ignore, particle_inserted) =
                     this->new_particle(p, face_id);
             }

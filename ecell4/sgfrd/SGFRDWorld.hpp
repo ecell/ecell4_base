@@ -24,6 +24,12 @@ namespace ecell4
 namespace sgfrd
 {
 
+struct MoleculeInfo
+{
+    const Real radius;
+    const Real D;
+};
+
 class SGFRDWorld
     : public ecell4::WorldInterface
 {
@@ -34,6 +40,7 @@ class SGFRDWorld
     typedef polygon_type::VertexID VertexID;
     typedef Barycentric barycentric_type;
 
+    typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;
     typedef ecell4::Model model_type;
 
     typedef ParticleSpaceCellListImpl default_particle_space_type;
@@ -208,6 +215,50 @@ class SGFRDWorld
 #endif
     }
 
+    /**
+     * draw attributes of species and return it as a molecule info.
+     * @param sp a species
+     * @return info a molecule info
+     */
+    MoleculeInfo get_molecule_info(const Species& sp) const
+    {
+        Real radius(0.0), D(0.0);
+
+        if (boost::shared_ptr<Model> bound_model = lock_model())
+        {
+            auto const sp_ = bound_model->apply_species_attributes(sp);
+            if (sp_.has_attribute("radius"))
+            {
+                radius = sp_.get_attribute_as<Real>("radius");
+            }
+            if (sp_.has_attribute("D"))
+            {
+                D = sp_.get_attribute_as<Real>("D");
+            }
+        }
+
+        {
+            if (sp.has_attribute("radius"))
+            {
+                radius = sp.get_attribute_as<Real>("radius");
+            }
+            if (sp.has_attribute("D"))
+            {
+                D = sp.get_attribute_as<Real>("D");
+            }
+        }
+
+        if (radius <= 0.0)
+        {
+            std::stringstream msg;
+            msg << "A particle with invalid size [" << radius << "] was given.";
+            throw IllegalArgument(msg.str());
+        }
+
+        MoleculeInfo info = {radius, D};
+        return info;
+    }
+
     const Real volume() const override
     {
         return ps_->volume();
@@ -341,26 +392,20 @@ class SGFRDWorld
     new_particle(const Particle& p, const FaceID& fid);
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp_, const Real3& pos)
+    new_particle(const Species& sp, const Real3& pos)
     {
-        const auto model = this->lock_model();
-        const auto sp = model->apply_species_attributes(sp_);
-        const Real r = sp.get_attribute_as<Real>("radius");
-        const Real D = sp.get_attribute_as<Real>("D");
-        return this->new_particle(Particle(sp, pos, r, D));
+        const auto info = this->get_molecule_info(sp);
+        return this->new_particle(Particle(sp, pos, info.radius, info.D));
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Species& sp_, const FaceID& fid, const Barycentric& bary)
+    new_particle(const Species& sp, const FaceID& fid, const Barycentric& bary)
     {
-        const auto model = this->lock_model();
-        const auto sp = model->apply_species_attributes(sp_);
-        const auto r = sp.get_attribute_as<Real>("radius");
-        const auto D = sp.get_attribute_as<Real>("D");
+        const auto info = this->get_molecule_info(sp);
 
         const auto& tri = this->polygon_->triangle_at(fid);
         const auto  pos = to_absolute(bary, tri);
 
-        return this->new_particle(Particle(sp, pos, r, D), fid);
+        return this->new_particle(Particle(sp, pos, info.radius, info.D), fid);
     }
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle(const Species& sp, const std::pair<FaceID, Barycentric>& sfp)
