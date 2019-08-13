@@ -1215,8 +1215,7 @@ class SGFRDSimulator :
                 const FaceID fid_new = pos_com.second;
 
                 // make new particle
-                const auto species_new = this->model_->apply_species_attributes(
-                                             rule.products().front());
+                const auto species_new = rule.products().front();
                 const auto molinfo     = this->world_->get_molecule_info(species_new);
                 const Real radius_new  = molinfo.radius;
                 const Real D_new       = molinfo.D;

@@ -303,11 +303,10 @@ public:
             reaction_log_type rlog)
     {
         SGFRD_SCOPE(ns, BD_attempt_1to1_reaction, this->vc_.access_tracer())
-        const species_type species_new =
-            this->model_.apply_species_attributes(rlog.first.products().front());
-        const auto molinfo    = container_.get_molecule_info(species_new);
-        const Real radius_new = molinfo.radius;
-        const Real D_new      = molinfo.D;
+        const auto species_new = rlog.first.products().front();
+        const auto molinfo     = container_.get_molecule_info(species_new);
+        const Real radius_new  = molinfo.radius;
+        const Real D_new       = molinfo.D;
 
         if(is_overlapping(std::make_pair(p.position(), fid), radius_new, pid))
         {
@@ -346,10 +345,8 @@ public:
     {
         SGFRD_SCOPE(ns, BD_attempt_1to2_reaction, this->vc_.access_tracer())
 
-        const Species sp1 =
-            model_.apply_species_attributes(rlog.first.products().at(0));
-        const Species sp2 =
-            model_.apply_species_attributes(rlog.first.products().at(1));
+        const auto sp1      = rlog.first.products().at(0);
+        const auto sp2      = rlog.first.products().at(1);
         const auto molinfo1 = container_.get_molecule_info(sp1);
         const auto molinfo2 = container_.get_molecule_info(sp2);
 

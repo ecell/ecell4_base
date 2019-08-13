@@ -188,8 +188,7 @@ SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
 {
     SGFRD_SCOPE(us, attempt_reaction_1_to_1, tracer_)
 
-    const auto species_new = this->model_->apply_species_attributes(
-                                rule.products().front());
+    const auto species_new = rule.products().front();
     const auto molinfo     = this->world_->get_molecule_info(species_new);
     const Real radius_new  = molinfo.radius;
     const Real D_new       = molinfo.D;
@@ -231,10 +230,8 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
 {
     SGFRD_SCOPE(us, attempt_reaction_1_to_2, tracer_)
 
-    const Species sp1 =
-        this->model_->apply_species_attributes(rule.products().at(0));
-    const Species sp2 =
-        this->model_->apply_species_attributes(rule.products().at(1));
+    const auto sp1 = rule.products().at(0);
+    const auto sp2 = rule.products().at(1);
 
     const auto molinfo1 = this->world_->get_molecule_info(sp1);
     const auto molinfo2 = this->world_->get_molecule_info(sp2);
