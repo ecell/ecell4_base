@@ -188,10 +188,12 @@ SGFRDSimulator::attempt_reaction_1_to_1(const ReactionRule& rule,
 {
     SGFRD_SCOPE(us, attempt_reaction_1_to_1, tracer_)
 
-    const Species species_new =
-        this->model_->apply_species_attributes(rule.products().front());
-    const Real radius_new = species_new.get_attribute_as<Real>("radius");
-    const Real D_new      = species_new.get_attribute_as<Real>("D");
+    const auto species_new = this->model_->apply_species_attributes(
+                                rule.products().front());
+    const auto molinfo     = this->world_->get_molecule_info(species_new);
+    const Real radius_new  = molinfo.radius;
+    const Real D_new       = molinfo.D;
+
     const Particle p_new(species_new, p.position(), radius_new, D_new);
 
     inside_checker is_inside_of(
@@ -234,11 +236,14 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     const Species sp2 =
         this->model_->apply_species_attributes(rule.products().at(1));
 
-    const Real D1 = sp1.get_attribute_as<Real>("D");
-    const Real D2 = sp2.get_attribute_as<Real>("D");
+    const auto molinfo1 = this->world_->get_molecule_info(sp1);
+    const auto molinfo2 = this->world_->get_molecule_info(sp2);
+
+    const Real D1 = molinfo1.D;
+    const Real D2 = molinfo2.D;
 //     const Real D12 = D1 + D2
-    const Real r1 = sp1.get_attribute_as<Real>("radius");
-    const Real r2 = sp2.get_attribute_as<Real>("radius");
+    const Real r1 = molinfo1.radius;
+    const Real r2 = molinfo2.radius;
     const Real r12 = r1 + r2;
 
     SGFRD_TRACE(tracer_.write("products has D1(%1%), D2(%2%), r1(%3%), r2(%4%)",

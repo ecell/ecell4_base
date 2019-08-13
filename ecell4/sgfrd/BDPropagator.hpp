@@ -305,8 +305,9 @@ public:
         SGFRD_SCOPE(ns, BD_attempt_1to1_reaction, this->vc_.access_tracer())
         const species_type species_new =
             this->model_.apply_species_attributes(rlog.first.products().front());
-        const Real radius_new = species_new.get_attribute_as<Real>("radius");
-        const Real D_new      = species_new.get_attribute_as<Real>("D");
+        const auto molinfo    = container_.get_molecule_info(species_new);
+        const Real radius_new = molinfo.radius;
+        const Real D_new      = molinfo.D;
 
         if(is_overlapping(std::make_pair(p.position(), fid), radius_new, pid))
         {
@@ -349,12 +350,14 @@ public:
             model_.apply_species_attributes(rlog.first.products().at(0));
         const Species sp2 =
             model_.apply_species_attributes(rlog.first.products().at(1));
+        const auto molinfo1 = container_.get_molecule_info(sp1);
+        const auto molinfo2 = container_.get_molecule_info(sp2);
 
-        const Real D1  = sp1.get_attribute_as<Real>("D");
-        const Real D2  = sp2.get_attribute_as<Real>("D");
+        const Real D1  = molinfo1.D;
+        const Real D2  = molinfo2.D;
+        const Real r1  = molinfo1.radius;
+        const Real r2  = molinfo2.radius;
         const Real D12 = D1 + D2;
-        const Real r1  = sp1.get_attribute_as<Real>("radius");
-        const Real r2  = sp2.get_attribute_as<Real>("radius");
         const Real r12 = r1 + r2;
 
         if(D1 == 0. && D2 == 0)
@@ -505,8 +508,9 @@ public:
             reaction_log_type rlog)
     {
         const species_type sp_new(rlog.first.products().front());
-        const Real radius_new = sp_new.get_attribute_as<Real>("radius");
-        const Real D_new      = sp_new.get_attribute_as<Real>("D");
+        const auto molinfo = this->container_.get_molecule_info(sp_new);
+        const Real radius_new = molinfo.radius;
+        const Real D_new      = molinfo.D;
 
         const Real3 pos1(p1.position()), pos2(p2.position());
         const Real D1(p1.D()), D2(p2.D());
