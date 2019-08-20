@@ -19,6 +19,7 @@ class MultiContainer
     typedef world_type::structure_registrator_type structure_registrator_type;
     typedef world_type::particle_space_type        particle_space_type;
     typedef world_type::particle_container_type    particle_container_type;
+    typedef world_type::molecule_info_type         molecule_info_type;
 
   public:
 
@@ -230,6 +231,11 @@ class MultiContainer
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
     {
         return this->world_.get_particle(pid);
+    }
+
+    MoleculeInfo get_molecule_info(const Species& sp) const
+    {
+        return world_.get_molecule_info(sp);
     }
 
   private:
