@@ -46,8 +46,10 @@ class CMakeBuild(build_ext):
 
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            if sys.maxsize > 2**32:
-                cmake_args += ['-A', 'x64']
+            # temporary suppress this because cmake shows error on conda-forge
+            # (though cmake official document says the combination is allowed)
+#             if sys.maxsize > 2**32:
+#                 cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
 
