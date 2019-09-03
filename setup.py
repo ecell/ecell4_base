@@ -46,11 +46,10 @@ class CMakeBuild(build_ext):
 
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
-            # temporary suppress this because cmake shows error on conda-forge
-            # (though cmake official document says the combination is allowed)
-            cmake_args += ['-G', 'Visual Studio 15 2017 Win64']
-#             if sys.maxsize > 2**32:
-#                 cmake_args += ['-A', 'x64']
+            # force cmake to use VS15 2017 with no respect for environment variables
+            cmake_args += ['-G', 'Visual Studio 15 2017']
+            if sys.maxsize > 2**32:
+                cmake_args += ['-A', 'x64']
             build_args += ['--', '/m']
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
 
