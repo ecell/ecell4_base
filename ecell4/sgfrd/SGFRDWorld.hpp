@@ -53,7 +53,7 @@ class SGFRDWorld
 
   public:
 
-    // !rng && !polygon
+    // !rng && !polygon_file
     SGFRDWorld(const Real3&    edge_lengths =    Real3(1, 1, 1),
                const Integer3& matrix_sizes = Integer3(3, 3, 3))
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
@@ -67,7 +67,7 @@ class SGFRDWorld
         this->prepair_barriers();
     }
 
-    // rng && !polygon
+    // rng && !polygon_file
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                boost::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
@@ -78,7 +78,7 @@ class SGFRDWorld
         this->prepair_barriers();
     }
 
-    // !rng && polygon
+    // !rng && polygon_file
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
@@ -93,7 +93,7 @@ class SGFRDWorld
         this->prepair_barriers();
     }
 
-    // rng && polygon
+    // rng && polygon_file
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                boost::shared_ptr<RandomNumberGenerator> rng,
                const std::string& polygon_file, const STLFormat fmt)
@@ -101,6 +101,31 @@ class SGFRDWorld
           rng_(rng), polygon_(boost::make_shared<Polygon>(
                       read_polygon(polygon_file, fmt, edge_lengths))),
           registrator_(*polygon_)
+    {
+        this->prepair_barriers();
+    }
+
+    // !rng && polygon
+    SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
+               const boost::shared_ptr<Polygon>& poly)
+        : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
+          polygon_(poly), registrator_(*polygon_)
+    {
+        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+            new GSLRandomNumberGenerator());
+        rng_->seed();
+
+        this->prepair_barriers();
+
+        write_polygon("tmp.stl", STLFormat::Ascii, *polygon());
+    }
+
+    // rng && polygon
+    SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
+               boost::shared_ptr<RandomNumberGenerator> rng,
+               const boost::shared_ptr<Polygon>& poly)
+        : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
+          rng_(rng), polygon_(poly), registrator_(*polygon_)
     {
         this->prepair_barriers();
     }
