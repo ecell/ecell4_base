@@ -74,42 +74,100 @@ public:
     void update_shell(const ShellID& id, const shellT& sh,
                       const VertexID& vid);
 
-    storage_type const& get_shell(const ShellID& id) const;
-    storage_type&       get_shell(const ShellID& id);
+    storage_type const& get_shell(const ShellID& id) const noexcept
+    {
+        return container_.at(shell_id_to_index_map_.find(id)->second).second;
+    }
+    storage_type&       get_shell(const ShellID& id) noexcept
+    {
+        return container_.at(shell_id_to_index_map_[id]).second;
+    }
 
-    void remove_shell(const ShellID& id);
+    void remove_shell(const ShellID& shid);
 
-    std::vector<ShellID> const& list_shells_on(const FaceID&) const;
-    std::vector<ShellID> const& list_shells_on(const VertexID&) const;
+    std::vector<ShellID> const& list_shells_on(const FaceID&   fid) const noexcept
+    {
+        return face_registrator_.elements_over(fid);
+    }
+    std::vector<ShellID> const& list_shells_on(const VertexID& vid) const noexcept
+    {
+        return vertex_registrator_.elements_over(vid);
+    }
 
     std::size_t num_shells() const {return container_.size();}
 
     // calculate distance as 3D object
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const Real3& pos, const Real radius) const;
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const Real3& pos, const Real radius,
-            const ShellID& ignore) const;
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const Real3& pos, const Real radius,
-            const ShellID& ignore1, const ShellID& ignore2) const;
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius(const Real3& pos, const Real radius) const
+    {
+        return list_shells_within_radius_impl(pos, radius,
+                [](const ShellID&) noexcept -> bool {return false;});
+    }
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius(const Real3& pos, const Real radius,
+                              const ShellID& ignore) const
+    {
+        return list_shells_within_radius_impl(pos, radius,
+                [ignore](const ShellID& shid) noexcept -> bool {
+                    return shid == ignore;
+                });
+    }
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius(const Real3& pos, const Real radius,
+                              const ShellID& ignore1,
+                              const ShellID& ignore2) const
+    {
+        return this->list_shells_within_radius_impl(pos, radius,
+                [ignore1, ignore2](const ShellID& shid) noexcept -> bool {
+                    return shid == ignore1 || shid == ignore2;
+                });
+    }
 
-    //calculate distance along the polygon
+    // calculate distance along the polygon.
     template<typename strID>
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, strID>& pos,
-            const Real radius) const;
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius(const std::pair<Real3, strID>& pos,
+                              const Real radius) const
+    {
+        return this->list_shells_within_radius_impl(pos, radius,
+                [](const ShellID&) noexcept -> bool {return false;});
+    }
     template<typename strID>
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, strID>& pos,
-            const Real radius, const ShellID& ignore) const;
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius(const std::pair<Real3, strID>& pos,
+                              const Real radius, const ShellID& ignore) const
+    {
+        return this->list_shells_within_radius_impl(pos, radius,
+                [ignore](const ShellID& shid) noexcept -> bool {
+                    return shid == ignore;
+                });
+    }
     template<typename strID>
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> >
-        list_shells_within_radius(const std::pair<Real3, strID>& pos,
-            const Real radius, const ShellID& ignore1, const ShellID& ignore2) const;
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius(const std::pair<Real3, strID>& pos,
+                              const Real radius, const ShellID& ignore1,
+                              const ShellID& ignore2) const
+    {
+        return this->list_shells_within_radius_impl(pos, radius,
+                [ignore1, ignore2](const ShellID& shid) noexcept -> bool {
+                    return shid == ignore1 || shid == ignore2;
+                });
+    }
 
-    std::vector<shell_id_pair_type>
-    list_shells() const {return container_;}
+    std::vector<shell_id_pair_type> list_shells() const {return container_;}
+
+private:
+
+    template<typename strID, typename F>
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius_impl(const std::pair<Real3, strID>& pos,
+                                   const Real radius, F ignore) const;
+
+    // 3D version
+    template<typename F>
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>>
+    list_shells_within_radius_impl(const Real3& pos,
+                                   const Real radius, F ignore) const;
 
 private:
 
@@ -198,6 +256,24 @@ struct ShellContainer::vertex_register_updater
     }
 };
 
+inline void ShellContainer::remove_shell(const ShellID& shid)
+{
+    if(shell_id_to_index_map_.count(shid) == 0)
+    {
+        throw std::invalid_argument("shellcontianer doesnt have the shell");
+    }
+
+    const std::size_t idx = shell_id_to_index_map_[shid];
+    boost::apply_visitor(register_cleaner(*this, shid),
+                         container_.at(idx).second);
+
+    container_.at(idx) = container_.back();
+    shell_id_to_index_map_[container_.back().first] = idx;
+    container_.pop_back();
+    return ;
+}
+
+
 template<typename shellT>
 void ShellContainer::add_shell(
         const ShellID& id, const shellT& sh, const FaceID& fid)
@@ -219,8 +295,9 @@ void ShellContainer::add_shell(
         const ShellID& id, const shellT& sh, const VertexID& vid)
 {
     if(shell_id_to_index_map_.count(id) == 1)
+    {
         throw std::invalid_argument("shellcontianer already have the shell");
-
+    }
     const std::size_t idx = container_.size();
     shell_id_to_index_map_[id] = idx;
     vertex_registrator_.emplace(id, vid);
@@ -269,7 +346,9 @@ void ShellContainer::check_add_shell(
         const std::string& context)
 {
     if(shell_id_to_index_map_.count(id) == 1)
+    {
         throw std::invalid_argument("shellcontianer already have the shell");
+    }
 
     /* overlap check */{
         std::vector<std::pair<std::pair<ShellID, storage_type>, Real>
@@ -328,60 +407,24 @@ void ShellContainer::update_shell(
     return;
 }
 
-inline ShellContainer::storage_type const&
-ShellContainer::get_shell(const ShellID& id) const
+template<typename F>
+std::vector<std::pair<std::pair<ShellID, ShellContainer::storage_type>, Real>>
+ShellContainer::list_shells_within_radius_impl(
+        const Real3& pos, const Real radius, F ignore) const
 {
-    return container_.at(shell_id_to_index_map_.find(id)->second).second;
-}
-
-inline ShellContainer::storage_type&
-ShellContainer::get_shell(const ShellID& id)
-{
-    return container_.at(shell_id_to_index_map_[id]).second;
-}
-
-inline void ShellContainer::remove_shell(const ShellID& id)
-{
-    if(shell_id_to_index_map_.count(id) == 0)
-        throw std::invalid_argument("shellcontianer doesnt have the shell");
-    const std::size_t idx = shell_id_to_index_map_[id];
-    boost::apply_visitor(register_cleaner(*this, id),
-                         container_.at(idx).second);
-
-    container_.at(idx) = container_.back();
-    shell_id_to_index_map_[container_.back().first] = idx;
-    container_.pop_back();
-    return ;
-}
-
-inline std::vector<ShellID> const&
-ShellContainer::list_shells_on(const FaceID& fid) const
-{
-    return face_registrator_.elements_over(fid);
-}
-
-inline std::vector<ShellID> const&
-ShellContainer::list_shells_on(const VertexID& vid) const
-{
-    return vertex_registrator_.elements_over(vid);
-}
-
-inline std::vector<std::pair<
-    std::pair<ShellID, ShellContainer::storage_type>, Real> >
-ShellContainer::list_shells_within_radius(
-    const Real3& pos, const Real radius) const
-{
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator distance(pos);
     //XXX need more sophisticated way than brute-force searching
-
-    for(typename container_type::const_iterator
-        iter = container_.begin(); iter != container_.end(); ++iter)
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>> retval;
+    const distance_calculator distance(pos);
+    for(const auto& shp : this->container_)
     {
-        const Real dist = boost::apply_visitor(distance, iter->second);
+        const auto& shid  = shp.first;
+        const auto& shell = shp.second;
+        if(ignore(shid)) {continue;}
+
+        const Real dist = boost::apply_visitor(distance, shell);
         if(dist < radius)
         {
-            retval.push_back(std::make_pair(*iter, dist));
+            retval.emplace_back(shp, dist);
         }
     }
     std::sort(retval.begin(), retval.end(),
@@ -390,390 +433,57 @@ ShellContainer::list_shells_within_radius(
     return retval;
 }
 
-inline std::vector<std::pair<
-    std::pair<ShellID, ShellContainer::storage_type>, Real> >
-ShellContainer::list_shells_within_radius(
-        const Real3& pos, const Real radius, const ShellID& ignore) const
+template<typename strID, typename F>
+std::vector<std::pair<std::pair<ShellID, ShellContainer::storage_type>, Real>>
+ShellContainer::list_shells_within_radius_impl(
+        const std::pair<Real3, strID>& pos, const Real radius, F ignore) const
 {
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator distance(pos);
-    //XXX need more sophisticated way than brute-force searching
+    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>> retval;
+    const distance_calculator_on_surface<strID> distance_on_surf(pos, *polygon_);
 
-    for(typename container_type::const_iterator
-        iter = container_.begin(); iter != container_.end(); ++iter)
+    // check shells on the same position (either face or vertex)
+    for(const ShellID& shid : list_shells_on(pos.second))
     {
-        if(iter->first == ignore) continue;
-        const Real dist = boost::apply_visitor(distance, iter->second);
+        if(ignore(shid)) {continue;}
+
+        const auto& shell = this->get_shell(shid);
+        const Real  dist  = boost::apply_visitor(distance_on_surf, shell);
         if(dist < radius)
         {
-            retval.push_back(std::make_pair(*iter, dist));
+            retval.emplace_back(std::make_pair(shid, shell), dist);
         }
     }
-    std::sort(retval.begin(), retval.end(),
-              ecell4::utils::pair_second_element_comparator<
-                  std::pair<ShellID, storage_type>, Real>());
-    return retval;
-}
 
-inline std::vector<std::pair<
-    std::pair<ShellID, ShellContainer::storage_type>, Real> >
-ShellContainer::list_shells_within_radius(
-        const Real3& pos, const Real radius,
-        const ShellID& ignore1, const ShellID& ignore2) const
-{
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator distance(pos);
-    //XXX need more sophisticated way than brute-force searching
+    const auto neighbor_faces = polygon_->neighbor_faces_of   (pos.second);
+    const auto neighbor_vtxs  = polygon_->neighbor_vertices_of(pos.second);
 
-    for(typename container_type::const_iterator
-        iter = container_.begin(); iter != container_.end(); ++iter)
+    // check shells on the neighboring faces
+    for(const FaceID& fid : neighbor_faces)
     {
-        if(iter->first == ignore1 || iter->first == ignore2) continue;
-        const Real dist = boost::apply_visitor(distance, iter->second);
-        if(dist < radius)
+        for(const ShellID& shid : list_shells_on(fid))
         {
-            retval.push_back(std::make_pair(*iter, dist));
-        }
-    }
-    std::sort(retval.begin(), retval.end(),
-              ecell4::utils::pair_second_element_comparator<
-                  std::pair<ShellID, storage_type>, Real>());
-    return retval;
-}
+            if(ignore(shid)) {continue;}
 
-template<typename strID>
-std::vector<std::pair<
-    std::pair<ShellID, ShellContainer::storage_type>, Real> >
-ShellContainer::list_shells_within_radius(
-        const std::pair<Real3, strID>& pos, const Real radius) const
-{
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator_on_surface<strID>
-        distance_on_surf(pos, *polygon_);
-
-    {
-        const std::vector<ShellID>& shells = list_shells_on(pos.second);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
+            const auto& shell = this->get_shell(shid);
+            const Real  dist  = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
+                retval.emplace_back(std::make_pair(shid, shell), dist);
             }
         }
     }
-
-    const std::vector<FaceID>   neighborf(polygon_->neighbor_faces_of   (pos.second));
-    const std::vector<VertexID> neighborv(polygon_->neighbor_vertices_of(pos.second));
-
-    for(typename std::vector<FaceID>::const_iterator
-        iter = neighborf.begin(); iter != neighborf.end(); ++iter)
+    // check shells on the neighboring vertices
+    for(const VertexID& vid : neighbor_vtxs)
     {
-        const std::vector<ShellID>& shells = list_shells_on(*iter);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
+        for(const ShellID& shid : list_shells_on(vid))
         {
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
+            if(ignore(shid)) {continue;}
+
+            const auto& shell = this->get_shell(shid);
+            const Real  dist  = boost::apply_visitor(distance_on_surf, shell);
             if(dist < radius)
             {
-                for(std::size_t i=0; i<retval.size(); ++i)
-                {
-                    // to avoid double-count;
-                    // to check the consistency of polygon and structure_registrator.
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        std::cerr << "Error: broken consistency in structure id\n";
-                        std::cerr << "ShellContainer::list_shells_within_radius\n";
-                        std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vector<FaceID>::const_iterator
-                            nfi(neighborf.begin()), nfe(neighborf.end());
-                            nfi != nfe; ++nfi)
-                        {
-                            std::cerr << "  FaceID = " << *nfi << std::endl;
-                        }
-                        std::cerr << "neighbors.\n";
-                        std::cerr << "Shell " << *jter
-                                  << " is found on both Face " << *iter
-                                  << " and Face " << pos.second << std::endl;
-                        face_registrator_.dump(std::cerr);
-                        throw std::runtime_error("error: structure consistency broken");
-                    }
-                }
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
-            }
-        }
-    }
-
-    for(typename std::vector<VertexID>::const_iterator
-        iter = neighborv.begin(); iter != neighborv.end(); ++iter)
-    {
-        const std::vector<ShellID>& shells = list_shells_on(*iter);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, this->get_shell(*jter));
-            if(dist < radius)
-            {
-                for(std::size_t i=0; i<retval.size(); ++i)
-                {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        std::cerr << "Error: broken consistency in structure id\n";
-                        std::cerr << "ShellContainer::list_shells_within_radius\n";
-                        std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vector<VertexID>::const_iterator
-                            nvi(neighborv.begin()), nve(neighborv.end());
-                            nvi != nve; ++nvi)
-                        {
-                            std::cerr << "  VertexID = " << *nvi << std::endl;
-                        }
-                        std::cerr << "neighbors.\n";
-                        std::cerr << "Shell " << *jter
-                                  << " is found on both Vertex " << *iter
-                                  << " and another Face." << std::endl;
-                        face_registrator_.dump(std::cerr);
-                        vertex_registrator_.dump(std::cerr);
-                        throw std::runtime_error("error: structure consistency broken");
-                    }
-                }
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
-            }
-        }
-    }
-    std::sort(retval.begin(), retval.end(),
-              ecell4::utils::pair_second_element_comparator<
-                  std::pair<ShellID, storage_type>, Real>());
-    return retval;
-}
-
-template<typename strID>
-std::vector<std::pair<
-    std::pair<ShellID, ShellContainer::storage_type>, Real> >
-ShellContainer::list_shells_within_radius(
-        const std::pair<Real3, strID>& pos, const Real radius,
-        const ShellID& ignore) const
-{
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator_on_surface<strID>
-        distance_on_surf(pos, *polygon_);
-
-    {
-        const std::vector<ShellID>& shells = list_shells_on(pos.second);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
-            if(dist < radius)
-            {
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
-            }
-        }
-    }
-
-    const std::vector<FaceID>   neighborf(polygon_->neighbor_faces_of   (pos.second));
-    const std::vector<VertexID> neighborv(polygon_->neighbor_vertices_of(pos.second));
-
-    for(typename std::vector<FaceID>::const_iterator
-        iter = neighborf.begin(); iter != neighborf.end(); ++iter)
-    {
-        const std::vector<ShellID>& shells = list_shells_on(*iter);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            if(*jter == ignore) continue;
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
-            if(dist < radius)
-            {
-                for(std::size_t i=0; i<retval.size(); ++i)
-                {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        std::cerr << "Error: broken consistency in structure id\n";
-                        std::cerr << "ShellContainer::list_shells_within_radius\n";
-                        std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vector<FaceID>::const_iterator
-                            nfi(neighborf.begin()), nfe(neighborf.end());
-                            nfi != nfe; ++nfi)
-                        {
-                            std::cerr << "  FaceID = " << *nfi << std::endl;
-                        }
-                        std::cerr << "neighbors.\n";
-                        std::cerr << "Shell " << *jter
-                                  << " is found on both Face " << *iter
-                                  << " and Face " << pos.second << std::endl;
-                        face_registrator_.dump(std::cerr);
-                        throw std::runtime_error("error: structure consistency broken");
-                    }
-                }
-
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
-            }
-        }
-    }
-
-    for(typename std::vector<VertexID>::const_iterator
-        iter = neighborv.begin(); iter != neighborv.end(); ++iter)
-    {
-        const std::vector<ShellID>& shells = list_shells_on(*iter);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            if(*jter == ignore) continue;
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
-            if(dist < radius)
-            {
-                for(std::size_t i=0; i<retval.size(); ++i)
-                {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        std::cerr << "Error: broken consistency in structure id\n";
-                        std::cerr << "ShellContainer::list_shells_within_radius\n";
-                        std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vector<VertexID>::const_iterator
-                            nvi(neighborv.begin()), nve(neighborv.end());
-                            nvi != nve; ++nvi)
-                        {
-                            std::cerr << "  VertexID = " << *nvi << std::endl;
-                        }
-                        std::cerr << "neighbors.\n";
-                        std::cerr << "Shell " << *jter
-                                  << " is found on both Vertex " << *iter
-                                  << " and another Face." << std::endl;
-                        face_registrator_.dump(std::cerr);
-                        vertex_registrator_.dump(std::cerr);
-                        throw std::runtime_error("error: structure consistency broken");
-                    }
-                }
-
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter,shell), dist));
-            }
-        }
-    }
-    std::sort(retval.begin(), retval.end(),
-              ecell4::utils::pair_second_element_comparator<
-                  std::pair<ShellID, storage_type>, Real>());
-    return retval;
-}
-
-template<typename strID>
-std::vector<std::pair<
-    std::pair<ShellID, ShellContainer::storage_type>, Real> >
-ShellContainer::list_shells_within_radius(
-        const std::pair<Real3, strID>& pos, const Real radius,
-        const ShellID& ignore1, const ShellID& ignore2) const
-{
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real> > retval;
-    const distance_calculator_on_surface<strID>
-        distance_on_surf(pos, *polygon_);
-
-    {
-        const std::vector<ShellID>& shells = list_shells_on(pos.second);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
-            if(dist < radius)
-            {
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
-            }
-        }
-    }
-
-    const std::vector<FaceID>   neighborf(polygon_->neighbor_faces_of   (pos.second));
-    const std::vector<VertexID> neighborv(polygon_->neighbor_vertices_of(pos.second));
-
-    for(typename std::vector<FaceID>::const_iterator
-        iter = neighborf.begin(); iter != neighborf.end(); ++iter)
-    {
-        const std::vector<ShellID>& shells = list_shells_on(*iter);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            if(*jter == ignore1 || *jter == ignore2) continue;
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
-            if(dist < radius)
-            {
-                for(std::size_t i=0; i<retval.size(); ++i)
-                {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        std::cerr << "Error: broken consistency in structure id\n";
-                        std::cerr << "ShellContainer::list_shells_within_radius\n";
-                        std::cerr << "FaceID " << pos.second << " has ...\n";
-                        for(typename std::vector<FaceID>::const_iterator
-                            nfi(neighborf.begin()), nfe(neighborf.end());
-                            nfi != nfe; ++nfi)
-                        {
-                            std::cerr << "  FaceID = " << *nfi << std::endl;
-                        }
-                        std::cerr << "neighbors.\n";
-                        std::cerr << "Shell " << *jter
-                                  << " is found on both Face " << *iter
-                                  << " and Face " << pos.second << std::endl;
-                        face_registrator_.dump(std::cerr);
-                        throw std::runtime_error("error: structure consistency broken");
-                    }
-                }
-
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
-            }
-        }
-    }
-
-    for(typename std::vector<VertexID>::const_iterator
-        iter = neighborv.begin(); iter != neighborv.end(); ++iter)
-    {
-        const std::vector<ShellID>& shells = list_shells_on(*iter);
-        for(typename std::vector<ShellID>::const_iterator
-            jter = shells.begin(); jter != shells.end(); ++jter)
-        {
-            if(*jter == ignore1 || *jter == ignore2) continue;
-
-            const storage_type shell(this->get_shell(*jter));
-            const Real dist = boost::apply_visitor(distance_on_surf, shell);
-            if(dist < radius)
-            {
-                for(std::size_t i=0; i<retval.size(); ++i)
-                {
-                    if(retval.at(i).first.first == *jter)
-                    {
-                        std::cerr << "Error: broken consistency in structure id\n";
-                        std::cerr << "ShellContainer::list_shells_within_radius\n";
-                        std::cerr << "Vertex " << pos.second << " has ...\n";
-                        for(typename std::vector<VertexID>::const_iterator
-                            nvi(neighborv.begin()), nve(neighborv.end());
-                            nvi != nve; ++nvi)
-                        {
-                            std::cerr << "  VertexID = " << *nvi << std::endl;
-                        }
-                        std::cerr << "neighbors.\n";
-                        std::cerr << "Shell " << *jter
-                                  << " is found on both Vertex " << *iter
-                                  << " and another Face." << std::endl;
-                        face_registrator_.dump(std::cerr);
-                        vertex_registrator_.dump(std::cerr);
-                        throw std::runtime_error("error: structure consistency broken");
-                    }
-                }
-                retval.push_back(std::make_pair(
-                            std::make_pair(*jter, shell), dist));
+                retval.emplace_back(std::make_pair(shid, shell), dist);
             }
         }
     }
@@ -781,9 +491,39 @@ ShellContainer::list_shells_within_radius(
               ecell4::utils::pair_second_element_comparator<
                   std::pair<ShellID, storage_type>, Real>());
 
+    // -----------------------------------------------------------------------
+    // check double count.
+    // neighbor_faces and neighbor_vtxs should not contain pos.second itself.
+    // So if the polygon is okay, there will not be overlap in retval.
+
+    std::set<ShellID> shellids;
+    for(const auto& found : retval)
+    {
+        const auto& shid = found.first.first;
+        if(shellids.count(shid) != 0)
+        {
+            std::ostringstream oss;
+            oss << "Error: broken Polygon: Shell " << shid << " found twice.\n";
+            oss << "neighboring faces of " << pos.second << " are";
+            for(const FaceID& fid : neighbor_faces)
+            {
+                oss << ", " << fid;
+            }
+            oss << ".\n";
+            oss << "neighboring vertices of " << pos.second << " are";
+            for(const VertexID& vid : neighbor_vtxs)
+            {
+                oss << ", " << vid;
+            }
+            oss << ".\n";
+            face_registrator_  .dump(std::cerr);
+            vertex_registrator_.dump(std::cerr);
+            throw std::runtime_error(oss.str());
+        }
+        shellids.insert(found.first.first);
+    }
     return retval;
 }
-
 
 }// sgfrd
 }// ecell4
