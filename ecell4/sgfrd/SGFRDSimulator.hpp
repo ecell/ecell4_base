@@ -620,7 +620,7 @@ class SGFRDSimulator :
             }
             else
             {
-                assert(false && "neither Pair::IV_ESCAPE/REACTION");
+                throw std::runtime_error("neither Pair::IV_ESCAPE/REACTION");
             }
         }
 
@@ -1448,8 +1448,7 @@ class SGFRDSimulator :
                     }
                     else
                     {
-                        std::cerr << "unknown reaction record found" << std::endl;
-                        assert(false);
+                        throw std::runtime_error("unknown reaction record found");
                     }
                 }
 

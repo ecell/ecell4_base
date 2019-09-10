@@ -500,10 +500,9 @@ ShellContainer::list_shells_within_radius(
                                   << " is found on both Face " << *iter
                                   << " and Face " << pos.second << std::endl;
                         face_registrator_.dump(std::cerr);
-                        assert(false);
+                        throw std::runtime_error("error: structure consistency broken");
                     }
                 }
-
                 retval.push_back(std::make_pair(
                             std::make_pair(*jter, shell), dist));
             }
@@ -540,7 +539,7 @@ ShellContainer::list_shells_within_radius(
                                   << " and another Face." << std::endl;
                         face_registrator_.dump(std::cerr);
                         vertex_registrator_.dump(std::cerr);
-                        assert(false);
+                        throw std::runtime_error("error: structure consistency broken");
                     }
                 }
                 retval.push_back(std::make_pair(
@@ -613,7 +612,7 @@ ShellContainer::list_shells_within_radius(
                                   << " is found on both Face " << *iter
                                   << " and Face " << pos.second << std::endl;
                         face_registrator_.dump(std::cerr);
-                        assert(false);
+                        throw std::runtime_error("error: structure consistency broken");
                     }
                 }
 
@@ -654,7 +653,7 @@ ShellContainer::list_shells_within_radius(
                                   << " and another Face." << std::endl;
                         face_registrator_.dump(std::cerr);
                         vertex_registrator_.dump(std::cerr);
-                        assert(false);
+                        throw std::runtime_error("error: structure consistency broken");
                     }
                 }
 
@@ -728,7 +727,7 @@ ShellContainer::list_shells_within_radius(
                                   << " is found on both Face " << *iter
                                   << " and Face " << pos.second << std::endl;
                         face_registrator_.dump(std::cerr);
-                        assert(false);
+                        throw std::runtime_error("error: structure consistency broken");
                     }
                 }
 
@@ -770,7 +769,7 @@ ShellContainer::list_shells_within_radius(
                                   << " and another Face." << std::endl;
                         face_registrator_.dump(std::cerr);
                         vertex_registrator_.dump(std::cerr);
-                        assert(false);
+                        throw std::runtime_error("error: structure consistency broken");
                     }
                 }
                 retval.push_back(std::make_pair(

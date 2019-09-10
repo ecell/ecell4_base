@@ -548,7 +548,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
         {
             SGFRD_TRACE(tracer_.write("domain %1% does not exist. it may have "
                         "already been fired.", did_));
-            assert(false);
+            throw std::runtime_error("domain does not exist");
         }
 
         boost::shared_ptr<event_type> ev_(get_event(did_));
@@ -1035,7 +1035,7 @@ SGFRDSimulator::form_single_conical_event(
                     std::make_pair(this->polygon().position_at(vid), vid),
                     shell_size).front().second << std::endl;
             std::cout << "shell size " << shell_size << std::endl;
-            assert(false);
+            throw std::runtime_error("shells overlap each other");
         }
         }
 

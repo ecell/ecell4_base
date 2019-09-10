@@ -789,7 +789,8 @@ class SGFRDWorld
                               << " between first calculation " << vtx
                               << " and second calculation " << vtx_
                               << " is too large = " << dist << std::endl;
-                    assert(false);
+                    throw std::runtime_error(
+                            "internal error while searching neighbor faces");
                 }
 
                 segments[i*2  ] = Segment(this->periodic_transpose(orig, vtx),
