@@ -196,8 +196,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         do
         {
             {
-                const std::vector<EdgeID>::iterator found = std::find(
-                    outgoing_edges_tmp.begin(), outgoing_edges_tmp.end(), current);
+                const auto found = std::find(outgoing_edges_tmp.begin(),
+                        outgoing_edges_tmp.end(), current);
                 assert(found != outgoing_edges_tmp.end());
                 outgoing_edges_tmp.erase(found);
             }
@@ -247,8 +247,16 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 }
             }
         }
-        assert(outgoing_edges_tmp.empty());
-        assert(vtx.outgoing_edges.size() == num_edges);
+        if(not outgoing_edges_tmp.empty())
+        {
+            throw std::runtime_error("Polygon::assign: internal error: "
+                    "cannot traverse all the outgoing edges from a vertex");
+        }
+        if(vtx.outgoing_edges.size() != num_edges)
+        {
+            throw std::runtime_error("Polygon::assign: internal error: "
+                    "inconsistent number of outgoing edges");
+        }
     }
 
     // make neighbor list for faces!
