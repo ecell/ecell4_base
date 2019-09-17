@@ -11,7 +11,7 @@ const Real Polygon::relative_tolerance = 1e-8;
 
 void Polygon::assign(const std::vector<Triangle>& ts)
 {
-    const Real pi = boost::math::constants::pi<Real>();
+    constexpr Real pi = boost::math::constants::pi<Real>();
     const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
     const Real tol_rel2 = relative_tolerance * relative_tolerance;
 
