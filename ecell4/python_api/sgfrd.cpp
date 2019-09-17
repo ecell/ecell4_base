@@ -29,7 +29,8 @@ void define_sgfrd_factory(py::module& m)
              py::arg("bd_dt_factor")              = factory_type::default_bd_dt_factor(),
              py::arg("bd_reaction_length_factor") = factory_type::default_bd_reaction_length_factor())
         .def("rng",     &factory_type::rng)
-        .def("polygon", &factory_type::polygon);
+        .def("polygon", (factory_type& (factory_type::*)(const Real3&, const std::vector<Triangle>&))&factory_type::polygon)
+        .def("polygon", (factory_type& (factory_type::*)(const std::string&, const STLFormat))       &factory_type::polygon);
     define_factory_functions(factory);
 
     m.attr("Factory") = factory;
@@ -90,6 +91,7 @@ void define_sgfrd_world(py::module& m)
                 py::arg("stl_file"),
                 py::arg("stl_format"))
         .def(py::init<const std::string&>(), py::arg("filename"))
+        .def("polygon", &world_type::polygon)
         .def("new_particle",
             (std::pair<std::pair<ParticleID, Particle>, bool> (world_type::*)(const Particle&))
             &world_type::new_particle)
