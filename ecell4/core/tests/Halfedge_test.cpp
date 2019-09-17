@@ -9,12 +9,15 @@
 
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/STLFileIO.hpp>
+#include <ecell4/core/RandomNumberGenerator.hpp>
 #include <boost/assign.hpp>
 #include <utility>
 
 using ecell4::Real;
 using ecell4::Real3;
 using ecell4::Triangle;
+using ecell4::RandomNumberGenerator;
+using ecell4::GSLRandomNumberGenerator;
 typedef ecell4::Polygon::FaceID   FaceID;
 typedef ecell4::Polygon::EdgeID   EdgeID;
 typedef ecell4::Polygon::VertexID VertexID;
@@ -379,6 +382,20 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
                 poly.distance(std::make_pair(p2, f4), std::make_pair(p1, f1)),
                 (std::sqrt(2) + std::sqrt(6)) / 6.0, 1e-8);
 
+    }
+
+    {
+        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        for(std::size_t i=0; i<1000; ++i)
+        {
+            FaceID f1, f2;
+            const Real3 p1 = poly.draw_position(rng, f1);
+            const Real3 p2 = poly.draw_position(rng, f2);
+
+            const Real d_3d = length(poly.periodic_transpose(p1, p2) - p2);
+            const Real d_2d = ::ecell4::polygon::distance(poly, std::make_pair(p1, f1), std::make_pair(p2, f2));
+            BOOST_CHECK(d_2d >= d_3d);
+        }
     }
 }
 
@@ -848,6 +865,21 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
         BOOST_CHECK_CLOSE(p4_.first[1], p4[1], 1e-6);
         BOOST_CHECK_CLOSE(p4_.first[2], p4[2], 1e-6);
     }
+
+    {
+        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        for(std::size_t i=0; i<1000; ++i)
+        {
+            FaceID f1, f2;
+            const Real3 p1 = poly.draw_position(rng, f1);
+            const Real3 p2 = poly.draw_position(rng, f2);
+
+            const Real d_3d = length(poly.periodic_transpose(p1, p2) - p2);
+            const Real d_2d = ::ecell4::polygon::distance(poly, std::make_pair(p1, f1), std::make_pair(p2, f2));
+            BOOST_CHECK(d_2d >= d_3d);
+        }
+    }
+
 }
 
 //! test data 3: plane
@@ -1308,5 +1340,26 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         BOOST_CHECK_CLOSE(p12.first[0], 9.0, 1e-6);
         BOOST_CHECK_CLOSE(p12.first[1], 10.0 - std::sqrt(3.0), 1e-6);
         BOOST_CHECK_CLOSE(p12.first[2], 5.0, 1e-6);
+    }
+
+    // --------------------------------------------------------------------------
+    // distance
+
+    {
+        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        for(std::size_t i=0; i<1000; ++i)
+        {
+            FaceID f1, f2;
+            const Real3 p1 = poly.draw_position(rng, f1);
+            const Real3 p2 = poly.draw_position(rng, f2);
+
+            const Real d_3d = length(poly.periodic_transpose(p1, p2) - p2);
+            const Real d_2d = ::ecell4::polygon::distance(poly, std::make_pair(p1, f1), std::make_pair(p2, f2));
+            BOOST_CHECK(d_2d * (1 + 1e-8) /* = relative tolerance*/ >= d_3d);
+            if(d_2d < d_3d)
+            {
+                BOOST_TEST_MESSAGE("d_2d(" << d_2d << ") < d_3d(" << d_3d << ")");
+            }
+        }
     }
 }
