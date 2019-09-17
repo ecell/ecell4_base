@@ -1036,6 +1036,18 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
     }
 
     // check neighbor list
+    //
+    // The shaded triangle have 12 neighbors (excluding self)
+    //    ___ ___ ___
+    //   |  /|  /|  /|
+    //   | /7|6/5|4/3|
+    //   |/__|/__|/__|
+    //   |  /|##/|  /|
+    //   |8/9|#/1|2/ |
+    //   |/__|/__|/__|
+    //   |10/|12/|  /|
+    //   | / | / | / |
+    //   |/11|/__|/__|
     {
         const std::vector<FaceID> fids = poly.list_face_ids();
         assert(fids.size() == poly.face_size());
