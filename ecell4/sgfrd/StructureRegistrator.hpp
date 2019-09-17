@@ -96,9 +96,11 @@ void StructureRegistrator<Te, Ts>::emplace(
         const element_id_type& eid, const structure_id_type& sid)
 {
     if(this->have(eid))
+    {
         throw std::logic_error("already have");
+    }
     const std::size_t idx = this->to_index(sid);
-    if(container_.size() <= idx) container_.resize(idx+1);
+    if(container_.size() <= idx) {container_.resize(idx+1);}
     elemid_to_strid_map_[eid] = sid;
 
     value_type& contained = container_[idx];
@@ -113,7 +115,7 @@ void StructureRegistrator<Te, Ts>::update(
         const element_id_type& eid, const structure_id_type& sid)
 {
     const std::size_t idx = this->to_index(sid);
-    if(container_.size() <= idx) container_.resize(idx+1);
+    if(container_.size() <= idx) {container_.resize(idx+1);}
 
     // cleanup eid->sid map
     const structure_id_type old_sid = elemid_to_strid_map_[eid];
