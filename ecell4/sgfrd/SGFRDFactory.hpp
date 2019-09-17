@@ -26,7 +26,8 @@ class SGFRDFactory :
     SGFRDFactory(const Integer3& matrix_sizes   = default_matrix_sizes(),
                  Real bd_dt_factor              = default_bd_dt_factor(),
                  Real bd_reaction_length_factor = default_bd_reaction_length_factor())
-        : base_type(), rng_(nullptr), polygon_("", STLFormat::Ascii),
+        : base_type(), rng_(nullptr), polygon_(nullptr),
+          polygon_file_("", STLFormat::Ascii),
           matrix_sizes_(matrix_sizes), bd_dt_factor_(bd_dt_factor),
           bd_reaction_length_factor_(bd_reaction_length_factor)
     {
@@ -60,9 +61,29 @@ class SGFRDFactory :
         return std::addressof(this->rng(rng));
     }
 
+    // -----------------------------------------------------------------------
+    // get polygon from a list of triangles
+
+    this_type& polygon(const Real3& el, const std::vector<Triangle>& ts)
+    {
+        polygon_file_.first = ""; // XXX clear polygon file
+
+        this->polygon_ = boost::make_shared<Polygon>(el, ts);
+        return (*this);
+    }
+    this_type* polygon_ptr(const Real3& el, const std::vector<Triangle>& ts)
+    {
+        return std::addressof(this->polygon(el, ts));
+    }
+
+    // -----------------------------------------------------------------------
+    // read polygon from .STL file
+
     this_type& polygon(const std::string& fname, const STLFormat fmt)
     {
-        this->polygon_ = std::make_pair(fname, fmt);
+        polygon_ = nullptr; // XXX clear polygon structure
+
+        this->polygon_file_ = std::make_pair(fname, fmt);
         return (*this);
     }
     this_type* polygon_ptr(const std::string& fname, const STLFormat fmt)
@@ -76,26 +97,42 @@ class SGFRDFactory :
     {
         if (rng_)
         {
-            if(this->polygon_.first.empty())
+            if(this->polygon_)
             {
-                return new world_type(edge_lengths, matrix_sizes_, rng_);
+                std::cerr << "SGFRDFactory: 1" << std::endl;
+                return new world_type(edge_lengths, matrix_sizes_, rng_,
+                                      this->polygon_);
+            }
+            else if(!this->polygon_file_.first.empty())
+            {
+                std::cerr << "SGFRDFactory: 2" << std::endl;
+                return new world_type(edge_lengths, matrix_sizes_, rng_,
+                        this->polygon_file_.first, this->polygon_file_.second);
             }
             else
             {
-                return new world_type(edge_lengths, matrix_sizes_, rng_,
-                        this->polygon_.first, this->polygon_.second);
+                std::cerr << "SGFRDFactory: 3" << std::endl;
+                return new world_type(edge_lengths, matrix_sizes_, rng_);
             }
         }
         else
         {
-            if(this->polygon_.first.empty())
+            if(this->polygon_)
             {
-                return new world_type(edge_lengths, matrix_sizes_);
+                std::cerr << "SGFRDFactory: 4" << std::endl;
+                return new world_type(edge_lengths, matrix_sizes_,
+                                      this->polygon_);
+            }
+            else if(!this->polygon_file_.first.empty())
+            {
+                std::cerr << "SGFRDFactory: 5" << std::endl;
+                return new world_type(edge_lengths, matrix_sizes_,
+                        this->polygon_file_.first, this->polygon_file_.second);
             }
             else
             {
-                return new world_type(edge_lengths, matrix_sizes_,
-                        this->polygon_.first, this->polygon_.second);
+                std::cerr << "SGFRDFactory: 6" << std::endl;
+                return new world_type(edge_lengths, matrix_sizes_);
             }
         }
     }
@@ -109,7 +146,8 @@ class SGFRDFactory :
   protected:
 
     boost::shared_ptr<RandomNumberGenerator> rng_;
-    std::pair<std::string, STLFormat>        polygon_;
+    boost::shared_ptr<Polygon>               polygon_;
+    std::pair<std::string, STLFormat>        polygon_file_;
     Integer3 matrix_sizes_;
     Real     bd_dt_factor_;
     Real     bd_reaction_length_factor_;
