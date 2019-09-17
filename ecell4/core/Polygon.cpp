@@ -260,7 +260,6 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     }
 
     // make neighbor list for faces!
-
     for(face_data& face : this->faces_)
     {
         for(std::size_t i=0; i<3; ++i)
@@ -274,11 +273,11 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 const Real3 ref_edge = face.triangle.edge_at(i==0?2:i-1) /
                     (-length(face.triangle.edge_at(i==0?2:i-1)));
 
-                EdgeID current_edge  = face.edges[i];
-                Real   current_angle = 0.0;
-                do
+                const auto start_edge  = face.edges[i];
+                EdgeID   current_edge  = opposite_of(next_of(next_of(start_edge)));
+                Real     current_angle = 0.0;
+                while(current_edge != start_edge)
                 {
-                    current_edge = opposite_of(next_of(next_of(current_edge)));
                     const FaceID fid  = face_of(current_edge);
 
                     const std::size_t vidx0 = this->face_at(fid).index_of(vid);
@@ -307,8 +306,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                             std::make_pair(fid, Triangle(unfolded)));
 
                     current_angle = next_angle;
+                    current_edge  = opposite_of(next_of(next_of(current_edge)));
                 }
-                while(current_angle <= pi);
             }
 
             // clock wise
@@ -316,11 +315,11 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 const Real3 ref_edge = face.triangle.edge_at(i) /
                     length(face.triangle.edge_at(i));
 
-                EdgeID current_edge  = face.edges[i];
-                Real   current_angle = 0.0;
-                do
+                const auto start_edge  = face.edges[i];
+                EdgeID   current_edge  = next_of(opposite_of(start_edge));
+                Real     current_angle = 0.0;
+                while(current_edge != start_edge)
                 {
-                    current_edge  = next_of(opposite_of(current_edge));
                     const FaceID fid  = face_of(current_edge);
 
                     const std::size_t vidx0 = this->face_at(fid).index_of(vid);
@@ -349,8 +348,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                             std::make_pair(fid, Triangle(unfolded)));
 
                     current_angle = next_angle;
+                    current_edge  = next_of(opposite_of(current_edge));
                 }
-                while(current_angle <= pi);
             }
         }
         std::sort(face.neighbors.begin(), face.neighbors.end());
