@@ -28,10 +28,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
     // first, generate (FaceIDs for all triangles) and (EdgeIDs for all Edges).
     // and collect vertices that are at the same position.
-    for(std::vector<Triangle>::const_iterator
-            t_iter(ts.begin()), t_end(ts.end()); t_iter != t_end; ++t_iter)
+    for(const Triangle& triangle : ts)
     {
-        const Triangle& triangle = *t_iter;
         this->total_area_ += triangle.area();
 
         const FaceID fid = FaceID(faces_.size());
@@ -44,24 +42,23 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             boost::optional<VertexID> found_vtx = boost::none;
 
             // find near vertex
-            for(tmp_vertex_map::iterator
-                    vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
+            for(auto& vid_vtx : tmp_vtxs)
             {
-                const Real3&  v2 = vi->second.first;
+                const Real3&  v2 = vid_vtx.second.first;
                 const Real dist2 =
                     length_sq(this->periodic_transpose(v1, v2) - v2);
 
                 if(dist2 < tol_abs2 || dist2 < tol_rel2 * length_sq(v1))
                 {
                     // vertex that locates near the vertex found
-                    found_vtx = vi->first;
+                    found_vtx = vid_vtx.first;
+                    auto& vtx = vid_vtx.second;
 
                     // calculating mean position...
-                    vi->second.first = (v2 * vi->second.second.size() +
-                                        this->apply_boundary(v1)) /
-                                       (vi->second.second.size() + 1);
+                    vtx.first = (v2 * vtx.second.size() + this->apply_boundary(v1)) /
+                                (vtx.second.size() + 1);
                     // assign face-id to the vertex
-                    vi->second.second.push_back(std::make_pair(fid, i));
+                    vtx.second.push_back(std::make_pair(fid, i));
                     break;
                 }
             }
@@ -98,22 +95,20 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
     // * assign tmp_vtxs to this->vertices_
     // * set outgoing_edges without order
-    for(tmp_vertex_map::const_iterator
-            vi(tmp_vtxs.begin()), ve(tmp_vtxs.end()); vi != ve; ++vi)
+    for(const auto& vid_vtx : tmp_vtxs)
     {
-        const VertexID vid = vi->first;
-        const Real3    pos = vi->second.first;
-        const std::vector<fid_vidx_pair>& face_pos = vi->second.second;
+        const VertexID                         vid = vid_vtx.first;
+        const Real3                            pos = vid_vtx.second.first;
+        const std::vector<fid_vidx_pair>& face_pos = vid_vtx.second.second;
 
         vertex_data vd;
         vd.position = pos;
 
         // * set vertex.outgoing_edges, but not sorted.
-        for(std::vector<fid_vidx_pair>::const_iterator
-                i(face_pos.begin()), e(face_pos.end()); i!=e; ++i)
+        for(const auto& fid_vidx : face_pos)
         {
-            const FaceID fid = i->first;
-            const std::size_t  idx = i->second;
+            const FaceID      fid = fid_vidx.first;
+            const std::size_t idx = fid_vidx.second;
             face_data& fd = this->face_at(fid);
 
             assert(vid == fd.vertices[idx]);
@@ -123,11 +118,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     }
 
     // * refine vertex positions
-    for(face_container_type::iterator
-            fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
+    for(face_data& fd : this->faces_)
     {
-        face_data& fd = *fi;
-
         boost::array<Real3, 3> vs = fd.triangle.vertices();
         vs[0] = this->periodic_transpose(
                 this->vertex_at(fd.vertices[0]).position, vs[0]);
@@ -139,10 +131,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     }
 
     // set edge.length, edge.direction by using face.traingle
-    for(face_container_type::const_iterator
-            fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
+    for(const face_data& fd : this->faces_)
     {
-        const face_data& fd = *fi;
         for(std::size_t i=0; i<3; ++i)
         {
             const EdgeID eid = fd.edges[i];
@@ -160,13 +150,9 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 this->next_of(this->next_of(eid)));
 
         bool opposite_found = false;
-        const std::vector<std::pair<EdgeID, Real> >& vd =
-            this->vertex_at(start).outgoing_edges;
-
-        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
-                iter(vd.begin()), iend(vd.end()); iter != iend; ++iter)
+        for(const auto& eid_angle : this->vertex_at(start).outgoing_edges)
         {
-            const EdgeID outgoing = iter->first;
+            const EdgeID outgoing = eid_angle.first;
             if(this->target_of(outgoing) == target)
             {
                 // found opposite edge! calculate tilt...
@@ -194,10 +180,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     }
 
     // set vertex_data.angle by traversing edges.
-    for(std::size_t i=0; i<vertices_.size(); ++i)
+    for(vertex_data& vtx : this->vertices_)
     {
-        vertex_data& vtx = this->vertices_[i];
-
         const std::size_t num_edges = vtx.outgoing_edges.size();
         std::vector<EdgeID> outgoing_edges_tmp(vtx.outgoing_edges.size());
         for(std::size_t idx=0; idx<vtx.outgoing_edges.size(); ++idx)
@@ -235,7 +219,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         }
         while(current != start);
 
-        this->vertices_[i].apex_angle = total_angle;
+        vtx.apex_angle = total_angle;
 
         if(!outgoing_edges_tmp.empty())
         {
@@ -269,10 +253,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
 
     // make neighbor list for faces!
 
-    for(std::vector<face_data>::iterator
-            fi(this->faces_.begin()), fe(this->faces_.end()); fi != fe; ++fi)
+    for(face_data& face : this->faces_)
     {
-        face_data& face = *fi;
         for(std::size_t i=0; i<3; ++i)
         {
             const VertexID vid = face.vertices[i];
@@ -364,8 +346,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             }
         }
         std::sort(face.neighbors.begin(), face.neighbors.end());
-        const std::vector<FaceID>::iterator last =
-            std::unique(face.neighbors.begin(), face.neighbors.end());
+        const auto last = std::unique(face.neighbors.begin(), face.neighbors.end());
         face.neighbors.erase(last, face.neighbors.end());
     }
     return;
