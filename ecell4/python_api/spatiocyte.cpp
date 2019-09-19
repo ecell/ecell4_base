@@ -150,8 +150,8 @@ void define_spatiocyte_world(py::module& m)
         .def_static("calculate_shape", &SpatiocyteWorld::calculate_shape)
         .def_static("calculate_volume", &SpatiocyteWorld::calculate_volume);
 
-    m.def("create_spatiocyte_world_cell_list_impl", &create_spatiocyte_world_cell_list_impl_alias);
-    m.def("create_spatiocyte_world_vector_impl", &create_spatiocyte_world_vector_impl_alias);
+    m.def("create_spatiocyte_world_cell_list_impl", &create_spatiocyte_world_cell_list_impl);
+    m.def("create_spatiocyte_world_vector_impl", &create_spatiocyte_world_vector_impl);
     m.def("create_spatiocyte_world_square_offlattice_impl", &allocate_spatiocyte_world_square_offlattice_impl);
 
     m.attr("World") = world;

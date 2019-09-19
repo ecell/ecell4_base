@@ -1013,26 +1013,6 @@ allocate_spatiocyte_world_square_offlattice_impl(
     return new SpatiocyteWorld(space, rng);
 }
 
-/**
- * Alias functions for Cython
- */
-
-inline SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
-    const Real3& edge_lengths, const Real& voxel_radius,
-    const Integer3& matrix_sizes,
-    const boost::shared_ptr<RandomNumberGenerator>& rng)
-{
-    return create_spatiocyte_world_cell_list_impl(
-        edge_lengths, voxel_radius, matrix_sizes, rng);
-}
-
-inline SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
-    const Real3& edge_lengths, const Real& voxel_radius,
-    const boost::shared_ptr<RandomNumberGenerator>& rng)
-{
-    return create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng);
-}
-
 } // spatiocyte
 
 } // ecell4
