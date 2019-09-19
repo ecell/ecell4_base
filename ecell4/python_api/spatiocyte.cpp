@@ -182,7 +182,9 @@ void define_voxel(py::module& m)
 static inline
 void define_offlattice(py::module& m)
 {
-    py::class_<OffLatticeSpace, std::unique_ptr<OffLatticeSpace>>(m, "OffLatticeSpace")
+    py::class_<VoxelSpaceBase>(m, "VoxelSpaceBase");
+
+    py::class_<OffLatticeSpace, VoxelSpaceBase>(m, "OffLatticeSpace")
         .def(py::init<const Real&, const OffLatticeSpace::position_container&, const OffLatticeSpace::coordinate_pair_list_type&>(),
                 py::arg("voxel_radius"), py::arg("positions"), py::arg("adjoining_pairs"));
 }
