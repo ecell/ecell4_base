@@ -1,5 +1,6 @@
 #include "python_api.hpp"
 
+#include <ecell4/core/OffLatticeSpace.hpp>
 #include <ecell4/spatiocyte/SpatiocyteReactions.hpp>
 #include <ecell4/spatiocyte/SpatiocyteFactory.hpp>
 #include <ecell4/spatiocyte/SpatiocyteSimulator.hpp>
@@ -145,6 +146,7 @@ void define_spatiocyte_world(py::module& m)
                Use :func:`has_particle` instead.
         )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
+        .def("add_space", &SpatiocyteWorld::add_space)
         .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
         .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)
         .def_static("calculate_shape", &SpatiocyteWorld::calculate_shape)
@@ -177,6 +179,14 @@ void define_voxel(py::module& m)
             });
 }
 
+static inline
+void define_offlattice(py::module& m)
+{
+    py::class_<OffLatticeSpace, std::unique_ptr<OffLatticeSpace>>(m, "OffLatticeSpace")
+        .def(py::init<const Real&, const OffLatticeSpace::position_container&, const OffLatticeSpace::coordinate_pair_list_type&>(),
+                py::arg("voxel_radius"), py::arg("positions"), py::arg("adjoining_pairs"));
+}
+
 void setup_spatiocyte_module(py::module& m)
 {
     define_reaction_info(m);
@@ -184,6 +194,7 @@ void setup_spatiocyte_module(py::module& m)
     define_spatiocyte_simulator(m);
     define_spatiocyte_world(m);
     define_voxel(m);
+    define_offlattice(m);
 }
 
 }
