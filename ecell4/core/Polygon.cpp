@@ -248,7 +248,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 }
             }
         }
-        if(not outgoing_edges_tmp.empty())
+        if(!outgoing_edges_tmp.empty())
         {
             throw std::runtime_error("Polygon::assign: internal error: "
                     "cannot traverse all the outgoing edges from a vertex");
