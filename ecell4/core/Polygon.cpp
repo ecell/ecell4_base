@@ -428,6 +428,7 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
     const auto rel_tol = relative_tolerance * min_edge_length;
 
     const face_data& face = face_at(f1);
+    const Real3&   normal = face.triangle.normal();
 
     boost::container::static_vector<VertexID, 3> connecting_vtxs;
 
@@ -445,18 +446,19 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
 
         const VertexID    vid = face.vertices[i];
         const Real3&     vpos = position_at(vid);
-        const Real3     p1tov = this->periodic_transpose(vpos, p1) - p1;
+        const Real3     vtop1 = this->periodic_transpose(p1, vpos) - vpos;
         const Real3     vtop2 = this->periodic_transpose(p2, vpos) - vpos;
+        const Real3     p1tov = vtop1 * (-1.0);
 
         // check p1 or p2 are exactly on the vertex.
         // If they are on, it causes NaN because the length of v->p vector is 0.
-        const Real p1tov_len = length(p1tov);
-        const Real p2tov_len = length(vtop2);
-        if(p1tov_len < relative_tolerance * min_edge_length)
+        const Real vtop1_len = length(p1tov);
+        const Real vtop2_len = length(vtop2);
+        if(vtop1_len < relative_tolerance * min_edge_length)
         {
             return this->distance_sq(std::make_pair(p1, vid), pos2);
         }
-        if(p2tov_len < relative_tolerance * min_edge_length)
+        if(vtop2_len < relative_tolerance * min_edge_length)
         {
             return this->distance_sq(pos1, std::make_pair(p2, vid));
         }
@@ -507,12 +509,8 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
         // case 5.
         // TODO
 
-        const auto p1tov_lensq = length_sq(p1tov);
-        const auto p2tov_lensq = length_sq(vtop2);
-        const auto dist_sq = p1tov_lensq + p2tov_lensq -
-            2 * std::sqrt(p1tov_lensq * p2tov_lensq) * std::cos(min_angle);
-
-        distance_sq = std::min(distance_sq, dist_sq);
+        const auto vtop2_unf = rotate(min_angle, normal, vtop1) * (vtop2_len / vtop1_len);
+        distance_sq = std::min(distance_sq, length_sq(vtop1 - vtop2_unf));
     }
     if(distance_sq != std::numeric_limits<Real>::infinity())
     {
