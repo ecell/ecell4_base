@@ -1,6 +1,7 @@
 #include <ecell4/core/Polygon.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include <boost/container/flat_map.hpp>
+#include <boost/container/static_vector.hpp>
 #include <boost/format.hpp>
 
 namespace ecell4
@@ -359,111 +360,184 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     return;
 }
 
-Real Polygon::distance_sq(
-        const std::pair<Real3, FaceID>& pos1,
-        const std::pair<Real3, FaceID>& pos2) const
+Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
+                          const std::pair<Real3, FaceID>& pos2) const
 {
     typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
             face_finder_type;
+    constexpr Real pi = boost::math::constants::pi<Real>();
 
+    // if two particles are on the same face, return just a 3D distance.
     if(pos1.second == pos2.second)
     {
         return length_sq(pos2.first - pos1.first);
     }
 
+    // If positions are on different faces, there can be several cases.
+    // 1.)  ______
+    //     /\    /\   | The positions are on the faces connected by a vertex.
+    //    /  \  /p2\  | using p1-vtx-p2 angle and the low-of-cosines, the
+    //   /____\/____\ | minimum distance on the surface can be calculated.
+    //        /\    / |
+    //       /p1\  /  |
+    //      /____\/   |
+    //
+    // 2.)     ______
+    //        /\ p2 / | The positions are on the faces that are not connected
+    //       /  \  /  | by any vertex. There can be several options to unfold
+    //      /____\/   | the polygon to make the particles on the same plane.
+    //     /\    /    | In this case, finding the minimum path is too difficult
+    //    /p1\  /     | to use in simulation, so just returns inf. In the SGFRD
+    //   /____\/      | simulation, movement from p1 to p2 is inhibited.
+    //
+    // 3.)  ______
+    //     /\    /\   | The positions are on the faces connected by a vertex
+    //    /p2\  /  \  | and the apex angle exceeds 360 degree. There can be 2
+    //   /____\/____\ | pathes, counter-clockwise and clockwise, and both angle
+    //        /\    / | exceeds 180 degree. In this case, the minimum distance
+    //       /p1\  /  | pathway goes across the vertex.
+    //      /____\/   |
+    //
+    // 4.)  ......... ______
+    //     /\connected\    /\   | The particles are on the faces connected by a
+    //    /  \ <=====> \  /  \  | vertex and the apex angle exceeds 360 degree.
+    //   /____\.........\/____\ | And the triangles overlaps when unfolded.
+    //   \    /\        /\    / | In this case, we must use the minimum angle
+    //    \  /p2\      /p1\  /  | because just unfolding triangle makes minimum
+    //     \/____\    /____\/   | pathway shorter than the 3D distance.
+    //
+    // 5.) TODO
+    //     \`.p1           | If a polygon is severely deformed, the minimum
+    //      \o`.           | angle pathway can protrude the face. To avoid this,
+    //       ^  `.         | It is required to check the minimum angle pathway
+    //       |\___`.vertex | goes across all the edges.
+    //       |/   .'       |
+    //       v  .'         |
+    //      /o.'           |
+    //     /.'p2           |
+    //
+
     const Real3& p1 = pos1.first;
+    const Real3& p2 = pos2.first;
     const FaceID f1 = pos1.second;
     const FaceID f2 = pos2.second;
-    const Barycentric  b2 = to_barycentric(pos2.first, face_at(f2).triangle);
+
+    // for comparison
+    const auto min_edge_length = std::min(edge_length_[0],
+            std::min(edge_length_[1], edge_length_[2]));
+    const auto rel_tol = relative_tolerance * min_edge_length;
 
     const face_data& face = face_at(f1);
-    const Real3&   normal = face.triangle.normal();
 
-    Real solution = std::numeric_limits<Real>::max();
+    boost::container::static_vector<VertexID, 3> connecting_vtxs;
+
+    Real distance_sq = std::numeric_limits<Real>::infinity();
     for(std::size_t i=0; i<3; ++i)
     {
-        const VertexID vid = face.vertices[i];
-        const Real3& vpos(position_at(vid));
-        const Real3 vtop1(this->periodic_transpose(p1, vpos) - vpos);
+        // counter clockwise
+        //
+        //          ^ vertices[i]
+        // edge[i] /|\
+        //        / |~\
+        //       /  o  \ next(next(egde[i]))
+        //      v______>\
+        //    next(edge[i])
 
-        { // counter clock wise
-            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
-                std::find_if(face.neighbor_ccw[i].begin(),
-                             face.neighbor_ccw[i].end(), face_finder_type(f2));
-            if(fi != face.neighbor_ccw[i].end())
-            {
-                // unfolded place of p2
-                const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
-                // check the angle between p1-v-p2 does not exceeds PI
-                if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
-                {
-                    solution = std::min(length_sq(p1 - p2), solution);
-                    //XXX the opposite way cannot be skipped in some situation...
-//                     continue;
-                }
-            }
-        }
-        { // clock wise
-            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
-                std::find_if(face.neighbor_cw[i].begin(),
-                             face.neighbor_cw[i].end(), face_finder_type(f2));
-            if(fi != face.neighbor_cw[i].end())
-            {
-                // unfolded place of p2
-                const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
-                // check the angle between p1-v-p2 does not exceeds PI
-                if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
-                {
-                    solution = std::min(length_sq(p1 - p2), solution);
-                }
-            }
-        }
-    }
-    if(solution != std::numeric_limits<Real>::max())
-    {
-//         std::cerr << "path does not go through vertex.  dist_sq = " << solution << std::endl;
-        return solution;
-    }
+        const VertexID    vid = face.vertices[i];
+        const Real3&     vpos = position_at(vid);
+        const Real3     p1tov = this->periodic_transpose(vpos, p1) - p1;
+        const Real3     vtop2 = this->periodic_transpose(p2, vpos) - vpos;
 
-    boost::optional<VertexID> connected = boost::none;
-    // search f2 in the connected faces (if the apex angle of the vertex
-    // exceeded 2PI, the minimum path can be the path that goes through
-    // the vertex).
-    for(std::size_t i=0; i<3; ++i)
-    {
-        const VertexID vid = face.vertices[i];
-        const std::vector<std::pair<EdgeID, Real> >&
-            oes = this->vertex_at(vid).outgoing_edges;
-        for(std::vector<std::pair<EdgeID, Real> >::const_iterator
-                iter(oes.begin()), iend(oes.end()); iter!=iend; ++iter)
+        // check p1 or p2 are exactly on the vertex.
+        // If they are on, it causes NaN because the length of v->p vector is 0.
+        const Real p1tov_len = length(p1tov);
+        const Real p2tov_len = length(vtop2);
+        if(p1tov_len < relative_tolerance * min_edge_length)
         {
-            if(face_of(iter->first) == f2)
-            {
-                assert(!connected);
-                connected = vid;
-            }
+            return this->distance_sq(std::make_pair(p1, vid), pos2);
         }
-    }
+        if(p2tov_len < relative_tolerance * min_edge_length)
+        {
+            return this->distance_sq(pos1, std::make_pair(p2, vid));
+        }
 
-    if(connected)
+        // calc the initial angle
+        Real angle = calc_angle(p1tov, face.triangle.edge_at(i==0?2:i-1));
+        const Real apex_angle = apex_angle_at(vid);
+
+        // ------------------------------------------------------------------
+        // search `f2`
+        bool connected = false;
+        for(const auto& neighbor : face.neighbor_ccw[i])
+        {
+            assert(neighbor.first != f1);
+
+            const auto& nface = face_at(neighbor.first);
+            const auto  vidx  = nface.index_of(vid);
+            if(neighbor.first == f2)
+            {
+                angle += calc_angle(vtop2, nface.triangle.edge_at(vidx));
+                connected = true;
+                break;
+            }
+            angle += nface.triangle.angle_at(vidx);
+        }
+        if(!connected)
+        {
+            continue;
+        }
+        connecting_vtxs.push_back(vid);
+
+        // ------------------------------------------------------------------
+        // calculate the minimum angle
+
+        const Real angle_ccw = angle;
+        const Real angle_cw  = apex_angle - angle;
+        assert(angle_cw >= 0.0);
+        const Real min_angle = std::min(angle_ccw, angle_cw);
+
+        // skip case 3.
+        if(min_angle > pi) {continue;}
+
+        // if the minimum angle < 180 degree, its case 1.
+        // calculate distance using the low of cosine.
+
+        // TODO
+        // But... before calculating the distance, check whether this is the
+        // case 5.
+        // TODO
+
+        const auto p1tov_lensq = length_sq(p1tov);
+        const auto p2tov_lensq = length_sq(vtop2);
+        const auto dist_sq = p1tov_lensq + p2tov_lensq -
+            2 * std::sqrt(p1tov_lensq * p2tov_lensq) * std::cos(min_angle);
+
+        distance_sq = std::min(distance_sq, dist_sq);
+    }
+    if(distance_sq != std::numeric_limits<Real>::infinity())
     {
-        assert(false);
-        const Real3& vpos = position_at(*connected);
-        const Real   lsq1 =
-            length_sq(this->periodic_transpose(p1, vpos)         - vpos);
-        const Real   lsq2 =
-            length_sq(this->periodic_transpose(pos2.first, vpos) - vpos);
-        // (x+y)^2 = x^2 + y^2 + 2xy = x^2 + y^2 + 2 * sqrt(x^2y^2)
-        return lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
-
-//         const Real solution = lsq1 + lsq2 + 2 * std::sqrt(lsq1 * lsq2);
-//         std::cerr << "minimum path goes through vertex. dist_sq = " << solution << std::endl;
-//         return solution;
+        // distance_sq is updated! It founds the minimum path (case 1).
+        return distance_sq;
+    }
+    if(connecting_vtxs.empty())
+    {
+        // if `f1` and `f2` are not connected via any vertex, the distance
+        // cannot be calculated (case 2).
+        return std::numeric_limits<Real>::infinity();
     }
 
-    return std::numeric_limits<Real>::infinity();
+    // Here, the positions are connected via some vertices but the minimum
+    // distance is non-trivial. It is case 3. return distance that passes
+    // through the vertex that connects `f1` and `f2`.
+
+    for(const VertexID vtx : connecting_vtxs)
+    {
+        const Real3 vpos = position_at(vtx);
+        const Real  l1   = length(this->periodic_transpose(p1, vpos) - vpos);
+        const Real  l2   = length(this->periodic_transpose(p2, vpos) - vpos);
+        distance_sq = std::min(distance_sq, (l1 + l2) * (l1 + l2));
+    }
+    return distance_sq;
 }
 
 Real Polygon::distance_sq(const std::pair<Real3, VertexID>& pos1,
