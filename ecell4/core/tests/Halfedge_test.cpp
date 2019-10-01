@@ -1363,3 +1363,286 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
         }
     }
 }
+
+//! test data 4: deformed plane
+// below, the normal vector towords the depth of your display.
+//
+// The plane has a peak at the center.
+//
+// each edge has length 2.
+// +--> x
+// | 0 __1__2__3__4__ 0
+// |  |\ |\ |\ |\ |\ |
+// v 5|_\|_\|_\|_\9_\|5
+// y  |\ |\ |\ |\ |\ |
+//   .|_\|_\|_\|_\|_\| .
+//   .|\ |\ |\ |\ |\ | .
+//   .|_\|_\|_\|_\|_\| .
+//    |\ |\ |\ |\ |\ |
+//  20|_\|_\|_\|_\24\|20
+//    |\ |\ |\ |\ |\ |
+//   0|_\|_\|_\|_\|_\|0
+//
+struct gaussian_hill
+{
+    const static Real3 edge_length;
+
+    static Real gaussian(const Real x, const Real y)
+    {
+        return 2.0 * std::exp(-0.5 * ((x-5.0) * (x-5.0) + (y-5.0) * (y-5.0)));
+    }
+
+    static ecell4::Polygon make()
+    {
+        std::vector<Triangle> triangles;
+        for(std::size_t j=0; j<5; ++j)
+        {
+            const Real y_up = 2.0 * (j+1);
+            const Real y_lw = 2.0 *  j;
+            for(std::size_t i=0; i<5; ++i)
+            {
+                const Real x_up = 2.0 * (i+1);
+                const Real x_lw = 2.0 *  i;
+
+                const Real3 uxuy = Real3(x_up, y_up, gaussian(x_up, y_up));
+                const Real3 uxly = Real3(x_up, y_lw, gaussian(x_up, y_lw));
+                const Real3 lxuy = Real3(x_lw, y_up, gaussian(x_lw, y_up));
+                const Real3 lxly = Real3(x_lw, y_lw, gaussian(x_lw, y_lw));
+
+                triangles.push_back(Triangle(lxly, uxly, uxuy));
+                triangles.push_back(Triangle(uxuy, lxuy, lxly));
+            }
+        }
+        return ecell4::Polygon(edge_length, triangles);
+    }
+};
+const Real3 gaussian_hill::edge_length = Real3(10, 10, 10);
+
+BOOST_AUTO_TEST_CASE(Polygon_hill_construction_from_triangles)
+{
+    const Real pi = boost::math::constants::pi<Real>();
+    const ecell4::Polygon poly = gaussian_hill::make();
+
+    // check shape detection
+    BOOST_CHECK_EQUAL(poly.face_size(),   50u);
+    BOOST_CHECK_EQUAL(poly.edge_size(),   50u * 3u);
+    BOOST_CHECK_EQUAL(poly.vertex_size(), 25u);
+    // the total area of the hill is non-trivial.
+    // BOOST_CHECK_CLOSE(poly.total_area(),  10 * 10, 1e-8);
+
+    // check vertex positions
+    for(std::size_t j=0; j<5; ++j)
+    {
+        const Real y = 2.0 * j;
+        for(std::size_t i=0; i<5; ++i)
+        {
+            const Real x = 2.0 * i;
+            const Real3 position(x, y, gaussian_hill::gaussian(x, y));
+            BOOST_CHECK(static_cast<bool>(poly.find_vertex(position)));
+        }
+    }
+
+    // check all the vertices has 6 outgoing-edges under the PBC
+    {
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
+        assert(vids.size() == poly.vertex_size());
+
+        for(std::vector<VertexID>::const_iterator
+                i(vids.begin()), e(vids.end()); i!=e; ++i)
+        {
+            BOOST_CHECK_EQUAL(poly.outgoing_edges(*i).size(), 6u);
+        }
+    }
+
+//     // check normal vector
+//     {
+//         const std::vector<FaceID> fids = poly.list_face_ids();
+//         assert(fids.size() == poly.face_size());
+//
+//         for(std::vector<FaceID>::const_iterator
+//                 i(fids.begin()), e(fids.end()); i!=e; ++i)
+//         {
+//             BOOST_CHECK_SMALL(poly.triangle_at(*i).normal()[0], 1e-8);
+//             BOOST_CHECK_SMALL(poly.triangle_at(*i).normal()[1], 1e-8);
+//             BOOST_CHECK_CLOSE(poly.triangle_at(*i).normal()[2], 1.0, 1e-8);
+//         }
+//     }
+//     // check areas
+//     {
+//         const std::vector<FaceID> fids = poly.list_face_ids();
+//         assert(fids.size() == poly.face_size());
+//
+//         for(std::vector<FaceID>::const_iterator
+//                 i(fids.begin()), e(fids.end()); i!=e; ++i)
+//         {
+//             BOOST_CHECK_CLOSE(poly.triangle_at(*i).area(), 2.0, 1e-8);
+//         }
+//     }
+//     // check angles
+//     {
+//         const std::vector<FaceID> fids = poly.list_face_ids();
+//         assert(fids.size() == poly.face_size());
+//
+//         for(std::vector<FaceID>::const_iterator
+//                 i(fids.begin()), e(fids.end()); i!=e; ++i)
+//         {
+//             const Triangle& t = poly.triangle_at(*i);
+//             for(std::size_t idx=0; idx<3; ++idx)
+//             {
+//                 const Real d45 = std::abs(t.angle_at(idx) - pi / 4.0);
+//                 const Real d90 = std::abs(t.angle_at(idx) - pi / 2.0);
+//                 BOOST_CHECK(d45 < 1e-8 || d90 < 1e-8);
+//             }
+//         }
+//     }
+
+    // check opposite edges
+    {
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
+        assert(vids.size() == poly.vertex_size());
+
+        for(std::vector<VertexID>::const_iterator
+                i(vids.begin()), e(vids.end()); i!=e; ++i)
+        {
+            const VertexID vid = *i;
+            std::vector<EdgeID> const& outs = poly.outgoing_edges(vid);
+            for(std::vector<EdgeID>::const_iterator
+                    oi(outs.begin()), oe(outs.end()); oi != oe; ++oi)
+            {
+                BOOST_CHECK_EQUAL(poly.target_of(poly.opposite_of(*oi)), vid);
+            }
+        }
+    }
+
+    // check next edges
+    {
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
+        assert(vids.size() == poly.vertex_size());
+
+        for(std::vector<VertexID>::const_iterator
+                i(vids.begin()), e(vids.end()); i!=e; ++i)
+        {
+            const VertexID vid = *i;
+            std::vector<EdgeID> const& outs = poly.outgoing_edges(vid);
+            for(std::vector<EdgeID>::const_iterator
+                    oi(outs.begin()), oe(outs.end()); oi != oe; ++oi)
+            {
+                BOOST_CHECK_EQUAL(
+                        poly.target_of(poly.next_of(poly.next_of(*oi))), vid);
+            }
+        }
+    }
+
+    // apex angles are also non-trivial.
+//     {
+//         const std::vector<VertexID> vids = poly.list_vertex_ids();
+//         assert(vids.size() == poly.vertex_size());
+//
+//         for(std::vector<VertexID>::const_iterator
+//                 i(vids.begin()), e(vids.end()); i!=e; ++i)
+//         {
+//             BOOST_REQUIRE_MESSAGE(poly.apex_angle_at(*i) <= 2.0 * pi + 1e-8,
+//                                   "apex angle = " << poly.apex_angle_at(*i));
+//         }
+//     }
+
+//     // check tilt angle
+//     {
+//         const std::vector<EdgeID> eids = poly.list_edge_ids();
+//         assert(eids.size() == poly.edge_size());
+//
+//         for(std::vector<EdgeID>::const_iterator
+//                 i(eids.begin()), e(eids.end()); i!=e; ++i)
+//         {
+//             BOOST_CHECK_SMALL(poly.tilt_angle_at(*i), 1e-8);
+//         }
+//     }
+
+    // check neighbor list
+    //
+    // The shaded triangle have 12 neighbors (excluding self)
+    //    ___ ___ ___
+    //   |  /|  /|  /|
+    //   | /7|6/5|4/3|
+    //   |/__|/__|/__|
+    //   |  /|##/|  /|
+    //   |8/9|#/1|2/ |
+    //   |/__|/__|/__|
+    //   |10/|12/|  /|
+    //   | / | / | / |
+    //   |/11|/__|/__|
+    {
+        const std::vector<FaceID> fids = poly.list_face_ids();
+        assert(fids.size() == poly.face_size());
+
+        for(std::vector<FaceID>::const_iterator
+                i(fids.begin()), e(fids.end()); i!=e; ++i)
+        {
+            BOOST_CHECK_EQUAL(poly.neighbor_faces_of(*i).size(), 12);
+        }
+
+        const std::vector<VertexID> vids = poly.list_vertex_ids();
+        assert(vids.size() == poly.vertex_size());
+
+        for(std::vector<VertexID>::const_iterator
+                i(vids.begin()), e(vids.end()); i!=e; ++i)
+        {
+            BOOST_CHECK_EQUAL(poly.neighbor_faces_of(*i).size(), 12);
+        }
+    }
+
+    {
+        const std::vector<FaceID> fids = poly.list_face_ids();
+        assert(fids.size() == poly.face_size());
+
+        for(std::vector<FaceID>::const_iterator
+                i(fids.begin()), e(fids.end()); i!=e; ++i)
+        {
+            std::vector<FaceID> vneighbors;
+            for(std::size_t idx=0; idx<3; ++idx)
+            {
+                const std::vector<EdgeID> es = poly.outgoing_edges(
+                        poly.vertices_of(*i).at(idx));
+                for(std::vector<EdgeID>::const_iterator
+                        ie(es.begin()), ee(es.end()); ie!=ee; ++ie)
+                {
+                    vneighbors.push_back(poly.face_of(*ie));
+                }
+            }
+            std::sort(vneighbors.begin(), vneighbors.end());
+            const std::vector<FaceID>::iterator uniq =
+                std::unique(vneighbors.begin(), vneighbors.end());
+            vneighbors.erase(uniq, vneighbors.end());
+            const std::vector<FaceID>::iterator self =
+                std::find(vneighbors.begin(), vneighbors.end(), *i);
+            vneighbors.erase(self);
+
+            const std::vector<FaceID> fneighbors = poly.neighbor_faces_of(*i);
+            BOOST_CHECK(ecell::is_permutation(
+                        fneighbors.begin(), fneighbors.end(),
+                        vneighbors.begin(), vneighbors.end()));
+        }
+
+    }
+
+    // --------------------------------------------------------------------------
+    // distance
+
+    {
+        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        for(std::size_t i=0; i<1000; ++i)
+        {
+            FaceID f1, f2;
+            const Real3 p1 = poly.draw_position(rng, f1);
+            const Real3 p2 = poly.draw_position(rng, f2);
+
+            const Real d_3d = length(poly.periodic_transpose(p1, p2) - p2);
+            const Real d_2d = ::ecell4::polygon::distance(poly, std::make_pair(p1, f1), std::make_pair(p2, f2));
+            BOOST_CHECK(d_2d * (1 + 1e-8) /* = relative tolerance*/ >= d_3d);
+            if(d_2d < d_3d)
+            {
+                BOOST_TEST_MESSAGE("d_2d(" << d_2d << ") < d_3d(" << d_3d << ")");
+            }
+        }
+    }
+}
