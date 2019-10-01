@@ -273,6 +273,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 const Real3 ref_edge = face.triangle.edge_at(i==0?2:i-1) /
                     (-length(face.triangle.edge_at(i==0?2:i-1)));
 
+                face.neighbor_ccw[i].clear();
                 const auto start_edge  = face.edges[i];
                 EdgeID   current_edge  = opposite_of(next_of(next_of(start_edge)));
                 Real     current_angle = 0.0;
@@ -302,8 +303,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                         length_of(next_of(next_of(current_edge)));
 
                     face.neighbors.push_back(fid);
-                    face.neighbor_ccw[i].push_back(
-                            std::make_pair(fid, Triangle(unfolded)));
+                    face.neighbor_ccw[i].emplace_back(fid, Triangle(unfolded));
 
                     current_angle = next_angle;
                     current_edge  = opposite_of(next_of(next_of(current_edge)));
@@ -315,6 +315,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                 const Real3 ref_edge = face.triangle.edge_at(i) /
                     length(face.triangle.edge_at(i));
 
+                face.neighbor_cw[i].clear();
                 const auto start_edge  = face.edges[i];
                 EdgeID   current_edge  = next_of(opposite_of(start_edge));
                 Real     current_angle = 0.0;
@@ -344,8 +345,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                         length_of(next_of(next_of(current_edge)));
 
                     face.neighbors.push_back(fid);
-                    face.neighbor_cw[i].push_back(
-                            std::make_pair(fid, Triangle(unfolded)));
+                    face.neighbor_cw[i].emplace_back(fid, Triangle(unfolded));
 
                     current_angle = next_angle;
                     current_edge  = next_of(opposite_of(current_edge));
