@@ -406,7 +406,7 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
     //    \  /p2\      /p1\  /  | because just unfolding triangle makes minimum
     //     \/____\    /____\/   | pathway shorter than the 3D distance.
     //
-    // 5.) TODO
+    // 5.)
     //     \`.p1           | If a polygon is severely deformed, the minimum
     //      \o`.           | angle pathway can protrude the face. To avoid this,
     //       ^  `.         | It is required to check the minimum angle pathway
@@ -430,7 +430,7 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
     const face_data& face = face_at(f1);
     const Real3&   normal = face.triangle.normal();
 
-    boost::container::static_vector<VertexID, 3> connecting_vtxs;
+    boost::container::static_vector<Real3, 3> connecting_vtxs;
 
     Real distance_sq = std::numeric_limits<Real>::infinity();
     for(std::size_t i=0; i<3; ++i)
@@ -464,7 +464,8 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
         }
 
         // calc the initial angle
-        Real angle = calc_angle(p1tov, face.triangle.edge_at(i==0?2:i-1));
+        const auto init_angle = calc_angle(p1tov, face.triangle.edge_at(i==0?2:i-1));
+        Real angle = init_angle;
         const Real apex_angle = apex_angle_at(vid);
 
         // ------------------------------------------------------------------
@@ -488,7 +489,7 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
         {
             continue;
         }
-        connecting_vtxs.push_back(vid);
+        connecting_vtxs.push_back(vpos);
 
         // ------------------------------------------------------------------
         // calculate the minimum angle
@@ -498,18 +499,85 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
         assert(angle_cw >= 0.0);
         const Real min_angle = std::min(angle_ccw, angle_cw);
 
-        // skip case 3.
+        // skip case 3 (theta > 180 deg).
         if(min_angle > pi) {continue;}
 
         // if the minimum angle < 180 degree, its case 1.
         // calculate distance using the low of cosine.
 
-        // TODO
-        // But... before calculating the distance, check whether this is the
-        // case 5.
-        // TODO
+        // Before calculating the distance, check whether this is the case 5.
+        // If a vertex locates inside of a triangle formed by a vertex, p1, and
+        // p2, then it is case 5 and the pathway is not available.
 
-        const auto vtop2_unf = rotate(min_angle, normal, vtop1) * (vtop2_len / vtop1_len);
+        bool is_case5 = false;
+        if(angle_ccw < angle_cw) // the min dist pathway is counter-clockwise
+        {
+            const auto sin_ccw = std::sin(angle_ccw);
+            const auto cos_ccw = std::cos(angle_ccw);
+
+            angle = init_angle;
+            for(const auto& neighbor : face.neighbor_ccw[i])
+            {
+                if(neighbor.first == f2) {break;}
+
+                const auto& nface = face_at(neighbor.first);
+                const auto  vidx  = nface.index_of(vid);
+
+                const auto sin_agl = std::sin(angle);
+                const auto cos_agl = std::cos(angle);
+
+                // sin of the opposite angle (angle_ccw - angle)
+                const auto sin_opp = sin_ccw * cos_agl - cos_ccw * sin_agl;
+
+                const auto threshold = vtop1_len * vtop2_len * sin_ccw /
+                            (vtop1_len * sin_agl + vtop2_len * sin_opp);
+
+                if(nface.triangle.length_of_edge_at(vidx) < threshold)
+                {
+                    is_case5 = true;
+                    break;
+                }
+                angle += nface.triangle.angle_at(vidx);
+            }
+        }
+        else // the minimum distance pathway is clockwise
+        {
+            const auto sin_cw = std::sin(angle_cw);
+            const auto cos_cw = std::cos(angle_cw);
+
+            angle = face.triangle.angle_at(i) - init_angle;
+            for(const auto& neighbor : face.neighbor_cw[i])
+            {
+                if(neighbor.first == f2) {break;}
+
+                const auto& nface = face_at(neighbor.first);
+                const auto  vidx  = nface.index_of(vid);
+
+                const auto sin_agl = std::sin(angle);
+                const auto cos_agl = std::cos(angle);
+
+                // sin of the opposite angle (angle_cw - angle)
+                const auto sin_opp = sin_cw * cos_agl - cos_cw * sin_agl;
+
+                const auto threshold = vtop1_len * vtop2_len * sin_cw /
+                            (vtop1_len * sin_agl + vtop2_len * sin_opp);
+
+                const auto edge_idx = (vidx==0) ? 2 : vidx-1;
+                if(nface.triangle.length_of_edge_at(edge_idx) < threshold)
+                {
+                    is_case5 = true;
+                    break;
+                }
+                angle += nface.triangle.angle_at(vidx);
+            }
+        }
+        if(is_case5) // no available path.
+        {
+            continue;
+        }
+
+        const auto vtop2_unf = rotate(min_angle, normal, vtop1) *
+                               (vtop2_len / vtop1_len);
         distance_sq = std::min(distance_sq, length_sq(vtop1 - vtop2_unf));
     }
     if(distance_sq != std::numeric_limits<Real>::infinity())
@@ -528,9 +596,9 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
     // distance is non-trivial. It is case 3. return distance that passes
     // through the vertex that connects `f1` and `f2`.
 
-    for(const VertexID vtx : connecting_vtxs)
+    // here, distance_sq is still infinity.
+    for(const Real3 vpos : connecting_vtxs)
     {
-        const Real3 vpos = position_at(vtx);
         const Real  l1   = length(this->periodic_transpose(p1, vpos) - vpos);
         const Real  l2   = length(this->periodic_transpose(p2, vpos) - vpos);
         distance_sq = std::min(distance_sq, (l1 + l2) * (l1 + l2));
@@ -664,6 +732,7 @@ Real3 Polygon::direction(
         const std::pair<Real3, FaceID>& pos1,
         const std::pair<Real3, FaceID>& pos2) const
 {
+    // TODO
     typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
             face_finder_type;
 
