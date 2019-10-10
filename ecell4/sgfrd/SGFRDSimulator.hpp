@@ -1941,28 +1941,23 @@ class SGFRDSimulator :
 
     // the second value is distance between
     // the point `pos` and the surface of a domain
-    std::vector<std::pair<DomainID, Real> >
+    std::vector<std::pair<DomainID, Real>>
     get_intrusive_domains(const std::pair<Real3, FaceID>& pos,
                           const Real radius) const
     {
         SGFRD_SCOPE(us, get_intrusive_domains_position, tracer_);
 
-        const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
-            > shells(shell_container_.list_shells_within_radius(pos, radius));
+        const auto shells(shell_container_.list_shells_within_radius(pos, radius));
 
         SGFRD_TRACE(tracer_.write("collected %1% shells in radius %2%",
                     shells.size(), radius));
 
-        std::vector<std::pair<DomainID, Real> > domains;
+        std::vector<std::pair<DomainID, Real>> domains;
         domains.reserve(shells.size());
-
-        for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
-                >::const_iterator iter(shells.begin()), iend(shells.end());
-                iter != iend; ++iter)
+        for(const auto& shid_sh : shells)
         {
-            std::pair<ShellID, shell_type> shell_id_pair;
-            Real dist;
-            std::tie(shell_id_pair, dist) = *iter;
+            const auto& shell_id_pair = shid_sh.first;
+            const auto  dist          = shid_sh.second;
 
             SGFRD_TRACE(tracer_.write("shell %1% = {%2%} is at %3% distant",
                         shell_id_pair.first, shell_id_pair.second, dist));
@@ -1974,21 +1969,20 @@ class SGFRDSimulator :
                         shell_id_pair.first, did));
 
             // filter by domainID to be unique
-            std::vector<std::pair<DomainID, Real> >::iterator found =
-                std::find_if(domains.begin(), domains.end(),
-                    ecell4::utils::pair_first_element_unary_predicator<
-                    DomainID, Real>(did));
+            auto found = std::find_if(domains.begin(), domains.end(),
+                [did](const std::pair<DomainID, Real>& did_dist) noexcept -> bool {
+                    return did_dist.first == did;
+                });
             if(found == domains.end())
             {
                 SGFRD_TRACE(tracer_.write("domain %1% is assigned to retval", did));
-                domains.push_back(std::make_pair(did, dist));
+                domains.emplace_back(did, dist);
             }
             else
             {
                 // choose the nearer one from the domain that contains multiple
                 // shells.
                 found->second = std::min(found->second, dist);
-
                 SGFRD_TRACE(tracer_.write("domain %1% is already assigned", did));
             }
         }
