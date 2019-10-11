@@ -25,6 +25,9 @@ requirements:
     - gsl
     - boost
 
+  run:
+    - python
+
 test:
   imports:
     - ecell4_base.core
