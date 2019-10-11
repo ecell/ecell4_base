@@ -9,7 +9,7 @@ namespace ecell4
 namespace spatiocyte
 {
 
-void SpatiocyteWorld::add_space(VoxelSpaceBase *space)
+void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> space)
 {
     for (coordinate_type i(0); i < space->size(); ++i)
     {
@@ -40,9 +40,8 @@ void SpatiocyteWorld::add_space(VoxelSpaceBase *space)
             neighbors_.extend(*jtr, neighbors);
     }
 
-    spaces_.push_back(space_type(space));
-
     size_ += space->size();
+    spaces_.push_back(space_type(space.release()));
 }
 
 void SpatiocyteWorld::set_value(const Species& sp, const Real value)

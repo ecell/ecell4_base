@@ -146,7 +146,14 @@ void define_spatiocyte_world(py::module& m)
                Use :func:`has_particle` instead.
         )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
-        .def("add_space", &SpatiocyteWorld::add_space)
+        .def("add_offlattice",
+            [](SpatiocyteWorld& self,
+               const Real& voxel_radius,
+               const OffLatticeSpace::position_container& positions,
+               const OffLatticeSpace::coordinate_pair_list_type& adjoining_pairs)
+            {
+                self.add_space(std::unique_ptr<OffLatticeSpace>(new OffLatticeSpace(voxel_radius, positions, adjoining_pairs)));
+            })
         .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
         .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)
         .def_static("calculate_shape", &SpatiocyteWorld::calculate_shape)
@@ -179,16 +186,6 @@ void define_voxel(py::module& m)
             });
 }
 
-static inline
-void define_offlattice(py::module& m)
-{
-    py::class_<VoxelSpaceBase>(m, "VoxelSpaceBase");
-
-    py::class_<OffLatticeSpace, VoxelSpaceBase>(m, "OffLatticeSpace")
-        .def(py::init<const Real&, const OffLatticeSpace::position_container&, const OffLatticeSpace::coordinate_pair_list_type&>(),
-                py::arg("voxel_radius"), py::arg("positions"), py::arg("adjoining_pairs"));
-}
-
 void setup_spatiocyte_module(py::module& m)
 {
     define_reaction_info(m);
@@ -196,7 +193,6 @@ void setup_spatiocyte_module(py::module& m)
     define_spatiocyte_simulator(m);
     define_spatiocyte_world(m);
     define_voxel(m);
-    define_offlattice(m);
 }
 
 }

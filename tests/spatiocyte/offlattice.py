@@ -10,6 +10,5 @@ class OffLatticeTest(unittest.TestCase):
 
     def test_constructor(self):
         voxel_radius = 0.005
-        offlattice = OffLatticeSpace(voxel_radius, self.coordinates, self.connections)
         world = SpatiocyteWorld(ones(), voxel_radius)
-        world.add_space(offlattice)
+        world.add_offlattice(voxel_radius, self.coordinates, self.connections)

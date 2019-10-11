@@ -95,7 +95,7 @@ public:
         size_ = get_root()->size();
     }
 
-    void add_space(VoxelSpaceBase *space);
+    void add_space(std::unique_ptr<VoxelSpaceBase> space);
 
     const Real t() const
     {
