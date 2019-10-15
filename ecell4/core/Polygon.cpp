@@ -728,11 +728,11 @@ Real Polygon::distance(const std::pair<Real3, VertexID>& pos1,
     return std::numeric_limits<Real>::infinity();
 }
 
-Real3 Polygon::direction(
-        const std::pair<Real3, FaceID>& pos1,
-        const std::pair<Real3, FaceID>& pos2) const
+// return direction from pos1 to pos2
+Real3 Polygon::direction(const std::pair<Real3, FaceID>& pos1,
+                         const std::pair<Real3, FaceID>& pos2) const
 {
-    // TODO
+    constexpr Real pi = boost::math::constants::pi<Real>();
     typedef utils::pair_first_element_unary_predicator<FaceID, Triangle>
             face_finder_type;
 
@@ -742,75 +742,205 @@ Real3 Polygon::direction(
     }
 
     const Real3& p1 = pos1.first;
+    const Real3& p2 = pos2.first;
     const FaceID f1 = pos1.second;
     const FaceID f2 = pos2.second;
-    const Barycentric b2 = to_barycentric(pos2.first, face_at(f2).triangle);
+
+    // for comparison
+    const auto min_edge_length = std::min(edge_length_[0],
+            std::min(edge_length_[1], edge_length_[2]));
+    const auto rel_tol = relative_tolerance * min_edge_length;
 
     const face_data& face = face_at(f1);
     const Real3&   normal = face.triangle.normal();
 
-    Real mindist2 = std::numeric_limits<Real>::max();
-    Real3 direction(0,0,0);
+    boost::container::static_vector<Real3, 3> connecting_vtxs;
+
+    Real distance_sq = std::numeric_limits<Real>::infinity();
+    Real3 retval(0,0,0);
     for(std::size_t i=0; i<3; ++i)
     {
-        const VertexID vid = face.vertices[i];
-        const Real3& vpos(position_at(vid));
-        const Real3 vtop1(this->periodic_transpose(p1, vpos) - vpos);
+        // counter clockwise
+        //
+        //          ^ vertices[i]
+        // edge[i] /|\
+        //        / |~\
+        //       /  o  \ next(next(egde[i]))
+        //      v______>\
+        //    next(edge[i])
 
-        { // counter clock wise
-            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
-                std::find_if(face.neighbor_ccw[i].begin(),
-                             face.neighbor_ccw[i].end(), face_finder_type(f2));
-            if(fi != face.neighbor_ccw[i].end())
+        const VertexID    vid = face.vertices[i];
+        const Real3&     vpos = position_at(vid);
+        const Real3     vtop1 = this->periodic_transpose(p1, vpos) - vpos;
+        const Real3     vtop2 = this->periodic_transpose(p2, vpos) - vpos;
+        const Real3     p1tov = vtop1 * (-1.0);
+
+        // check p1 or p2 are exactly on the vertex.
+        // If they are on, it causes NaN because the length of v->p vector is 0.
+        const Real vtop1_len = length(p1tov);
+        const Real vtop2_len = length(vtop2);
+        if(vtop1_len < relative_tolerance * min_edge_length)
+        {
+            // pos1 locates exactly on the vtx. distance from pos1 to pos2 is
+            // equal to the distance from vtx to pos2.
+            const auto& vtxs = this->vertices_of(f2);
+            if(std::find(vtxs.begin(), vtxs.end(), vid) == vtxs.end())
             {
-                // unfolded place of p2
-                const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
-                // check the angle between p1-v-p2 does not exceeds PI
-                if(dot_product(normal, cross_product(vtop1, vtop2)) >= 0)
+                continue;
+            }
+            return vtop2;
+        }
+        if(vtop2_len < relative_tolerance * min_edge_length)
+        {
+            // pos2 locates exactly on the vtx. distance from pos1 to pos2 is
+            // equal to the distance from pos1 to vtx.
+            const auto& vtxs = this->vertices_of(f2);
+            if(std::find(vtxs.begin(), vtxs.end(), vid) == vtxs.end())
+            {
+                continue;
+            }
+            return vtop1;
+        }
+
+        // calc the initial angle
+        const auto init_angle = calc_angle(p1tov, face.triangle.edge_at(i==0?2:i-1));
+        Real angle = init_angle;
+        const Real apex_angle = apex_angle_at(vid);
+
+        // ------------------------------------------------------------------
+        // search `f2`
+        bool connected = false;
+        for(const auto& neighbor : face.neighbor_ccw[i])
+        {
+            assert(neighbor.first != f1);
+
+            const auto& nface = face_at(neighbor.first);
+            const auto  vidx  = nface.index_of(vid);
+            if(neighbor.first == f2)
+            {
+                angle += calc_angle(vtop2, nface.triangle.edge_at(vidx));
+                connected = true;
+                break;
+            }
+            angle += nface.triangle.angle_at(vidx);
+        }
+        if(!connected)
+        {
+            continue;
+        }
+        connecting_vtxs.push_back(vpos);
+
+        // ------------------------------------------------------------------
+        // calculate the minimum angle
+
+        const Real angle_ccw = angle;
+        const Real angle_cw  = apex_angle - angle;
+        assert(angle_cw >= 0.0);
+        const Real min_angle = std::min(angle_ccw, angle_cw);
+
+        // skip case 3 (theta > 180 deg).
+        if(min_angle > pi) {continue;}
+
+        // if the minimum angle < 180 degree, its case 1.
+        // calculate distance using the low of cosine.
+
+        // Before calculating the distance, check whether this is the case 5.
+        // If a vertex locates inside of a triangle formed by a vertex, p1, and
+        // p2, then it is case 5 and the pathway is not available.
+
+        bool is_case5 = false;
+        if(angle_ccw < angle_cw) // the min dist pathway is counter-clockwise
+        {
+            const auto sin_ccw = std::sin(angle_ccw);
+            const auto cos_ccw = std::cos(angle_ccw);
+
+            angle = init_angle;
+            for(const auto& neighbor : face.neighbor_ccw[i])
+            {
+                if(neighbor.first == f2) {break;}
+
+                const auto& nface = face_at(neighbor.first);
+                const auto  vidx  = nface.index_of(vid);
+
+                const auto sin_agl = std::sin(angle);
+                const auto cos_agl = std::cos(angle);
+
+                // sin of the opposite angle (angle_ccw - angle)
+                const auto sin_opp = sin_ccw * cos_agl - cos_ccw * sin_agl;
+
+                const auto threshold = vtop1_len * vtop2_len * sin_ccw /
+                            (vtop1_len * sin_agl + vtop2_len * sin_opp);
+
+                if(nface.triangle.length_of_edge_at(vidx) < threshold)
                 {
-                    const Real3 dr = this->periodic_transpose(p2, p1) - p1;
-                    const Real  d2 = length_sq(dr);
-                    if(d2 < mindist2)
-                    {
-                        mindist2  = d2;
-                        direction = dr;
-                    }
-                    continue;
+                    is_case5 = true;
+                    break;
                 }
+                angle += nface.triangle.angle_at(vidx);
             }
         }
-        { // clock wise
-            const std::vector<std::pair<FaceID, Triangle> >::const_iterator fi =
-                std::find_if(face.neighbor_cw[i].begin(),
-                             face.neighbor_cw[i].end(), face_finder_type(f2));
-            if(fi != face.neighbor_cw[i].end())
+        else // the minimum distance pathway is clockwise
+        {
+            const auto sin_cw = std::sin(angle_cw);
+            const auto cos_cw = std::cos(angle_cw);
+
+            angle = face.triangle.angle_at(i) - init_angle;
+            for(const auto& neighbor : face.neighbor_cw[i])
             {
-                // unfolded place of p2
-                const Real3 p2 = to_absolute(b2, fi->second);
-                const Real3 vtop2(this->periodic_transpose(p2, vpos) - vpos);
-                // check the angle between p1-v-p2 does not exceeds PI
-                if(dot_product(normal, cross_product(vtop1, vtop2)) <= 0)
+                if(neighbor.first == f2) {break;}
+
+                const auto& nface = face_at(neighbor.first);
+                const auto  vidx  = nface.index_of(vid);
+
+                const auto sin_agl = std::sin(angle);
+                const auto cos_agl = std::cos(angle);
+
+                // sin of the opposite angle (angle_cw - angle)
+                const auto sin_opp = sin_cw * cos_agl - cos_cw * sin_agl;
+
+                const auto threshold = vtop1_len * vtop2_len * sin_cw /
+                            (vtop1_len * sin_agl + vtop2_len * sin_opp);
+
+                const auto edge_idx = (vidx==0) ? 2 : vidx-1;
+                if(nface.triangle.length_of_edge_at(edge_idx) < threshold)
                 {
-                    const Real3 dr = this->periodic_transpose(p2, p1) - p1;
-                    const Real  d2 = length_sq(dr);
-                    if(d2 < mindist2)
-                    {
-                        mindist2  = d2;
-                        direction = dr;
-                    }
+                    is_case5 = true;
+                    break;
                 }
+                angle += nface.triangle.angle_at(vidx);
             }
+        }
+        if(is_case5) // no available path.
+        {
+            continue;
+        }
+
+        Real rotation_angle = min_angle;
+        if(angle_cw < angle_ccw)
+        {
+            rotation_angle *= -1; // rotate it clockwise
+        }
+        const auto vtop2_unf = rotate(rotation_angle, normal, vtop1) *
+                               (vtop2_len / vtop1_len);
+        const auto dir       = vtop2_unf - vtop1; // from p1 to p2
+        const auto dist      = length_sq(dir);
+
+        if(dist < distance_sq)
+        {
+            distance_sq = dist;
+            retval      = dir;
         }
     }
-    if(mindist2 == std::numeric_limits<Real>::max())
+    if(distance_sq != std::numeric_limits<Real>::infinity())
     {
-        throw std::runtime_error((boost::format(
-            "polygon::direction: couldn't find the min path between "
-            "%1% on %2% <-> %3% on %4%") % pos1.first % pos1.second %
-            pos2.first % pos2.second).str());
+        // distance_sq is updated! It founds the minimum path (case 1).
+        return retval;
     }
-    return direction;
+    // otherwise, there is no available direction between the positions.
+    throw std::runtime_error((boost::format(
+        "polygon::direction: couldn't find the min path between "
+        "%1% on %2% <-> %3% on %4%") % pos1.first % pos1.second %
+        pos2.first % pos2.second).str());
 }
 
 std::pair<Real3, Polygon::FaceID> Polygon::travel(
