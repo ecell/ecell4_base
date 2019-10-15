@@ -465,12 +465,9 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
             const auto& vtxs = this->vertices_of(f2);
             if(std::find(vtxs.begin(), vtxs.end(), vid) != vtxs.end())
             {
-                return vtop2_len * vtop2_len;
+                distance_sq = std::min(distance_sq, vtop2_len * vtop2_len);
             }
-            else
-            {
-                continue;
-            }
+            continue;
         }
         if(vtop2_len < relative_tolerance * min_edge_length)
         {
@@ -480,12 +477,9 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
             const auto& vtxs = this->vertices_of(f2);
             if(std::find(vtxs.begin(), vtxs.end(), vid) != vtxs.end())
             {
-                return vtop1_len * vtop1_len;
+                distance_sq = std::min(distance_sq, vtop1_len * vtop1_len);
             }
-            else
-            {
-                continue;
-            }
+            continue;
         }
 
         // calc the initial angle
