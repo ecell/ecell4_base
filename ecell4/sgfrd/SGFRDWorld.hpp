@@ -64,7 +64,7 @@ class SGFRDWorld
             new GSLRandomNumberGenerator());
         rng_->seed();
 
-        this->prepair_barriers();
+        this->prepare_restrictions();
     }
 
     // rng && !polygon_file
@@ -75,7 +75,7 @@ class SGFRDWorld
           polygon_(boost::make_shared<Polygon>(edge_lengths, matrix_sizes)),
           registrator_(*polygon_)
     {
-        this->prepair_barriers();
+        this->prepare_restrictions();
     }
 
     // !rng && polygon_file
@@ -90,7 +90,7 @@ class SGFRDWorld
             new GSLRandomNumberGenerator());
         rng_->seed();
 
-        this->prepair_barriers();
+        this->prepare_restrictions();
     }
 
     // rng && polygon_file
@@ -102,7 +102,7 @@ class SGFRDWorld
                       read_polygon(polygon_file, fmt, edge_lengths))),
           registrator_(*polygon_)
     {
-        this->prepair_barriers();
+        this->prepare_restrictions();
     }
 
     // !rng && polygon
@@ -115,7 +115,7 @@ class SGFRDWorld
             new GSLRandomNumberGenerator());
         rng_->seed();
 
-        this->prepair_barriers();
+        this->prepare_restrictions();
 
         write_polygon("tmp.stl", STLFormat::Ascii, *polygon());
     }
@@ -127,7 +127,7 @@ class SGFRDWorld
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(poly), registrator_(*polygon_)
     {
-        this->prepair_barriers();
+        this->prepare_restrictions();
     }
 
     SGFRDWorld(const std::string& filename) // from HDF5
@@ -768,87 +768,60 @@ class SGFRDWorld
         return v * (1.0 / std::sqrt(length_sq(v)));
     }
 
-    void prepair_barriers()
+    void prepare_restrictions()
     {
-        // this contains the edges that correspond to the developed neighbor faces.
-        //
-        //        /\
-        //     > /__\ <
-        //      /\* /\
-        //   > /__\/__\ < these edges
-        //      ^    ^
-        const std::vector<FaceID> faces = polygon_->list_face_ids();
-        for(std::vector<FaceID>::const_iterator
-                iter(faces.begin()), iend(faces.end()); iter!=iend; ++iter)
+        // To avoid edge cases, it calculates the maximum size of particle.
+        // Also, to avoid overlap between shells, it calculates a bisector of
+        // each angle in triangle.
+        Real min_altitude = std::numeric_limits<Real>::max();
+        for(const auto& fid : polygon_->list_face_ids())
         {
-            const FaceID fid = *iter;
-            const Triangle& tri = polygon_->triangle_at(fid);
+            const auto& tri = polygon_->triangle_at(fid);
 
+            // Estimate largest particle radius possible.
+            const auto S = tri.area();
+            min_altitude = std::min(min_altitude, 2.0 * S / tri.length_of_edge_at(0));
+            min_altitude = std::min(min_altitude, 2.0 * S / tri.length_of_edge_at(1));
+            min_altitude = std::min(min_altitude, 2.0 * S / tri.length_of_edge_at(2));
+
+            // calculate boundary for shell size
+            const auto& edges = polygon_->edges_of(fid);
             std::array<Segment, 6> segments;
-            segments.fill(Segment(Real3(0,0,0), Real3(0,0,0)));
-
-            const boost::array<EdgeID, 3>& edges = polygon_->edges_of(fid);
             for(std::size_t i=0; i<3; ++i)
             {
-                const EdgeID eid = edges[i];
-                const Real3 orig = tri.vertex_at(i);
+                // vi1   ei1  vi0  |
+                //     <-----.     |
+                //     \    ^ \    |
+                // ei2  \  /ei0\   |
+                //       v/_____\  |
+                //      vi2        |
 
-                const Real3  vtx = orig + rotate(
-                    -1 * polygon_->tilt_angle_at(eid),
-                    normalize(polygon_->direction_of(eid)),
-                    polygon_->direction_of(polygon_->next_of(
-                        polygon_->opposite_of(eid)))
-                    );
-                const Real3  vtx_ = tri.vertex_at(i==2?0:i+1) + rotate(
-                    -1 * polygon_->tilt_angle_at(eid),
-                    normalize(polygon_->direction_of(eid)),
-                    polygon_->direction_of(polygon_->opposite_of(
-                            polygon_->next_of(polygon_->next_of(
-                                    polygon_->opposite_of(eid)))))
-                    );
+                const auto  ei0 = polygon_->opposite_of(edges.at(i));
+                const auto  ei1 = polygon_->next_of(ei0);
+                const auto  ei2 = polygon_->next_of(ei1);
+                const auto lei0 = polygon_->length_of(ei0);
+                const auto lei1 = polygon_->length_of(ei1);
+                const auto lei2 = polygon_->length_of(ei2);
+                const auto dei0 = polygon_->direction_of(ei0);
+                const auto dei1 = polygon_->direction_of(ei1);
+                const auto dei2 = polygon_->direction_of(ei2);
 
-                const Real dist = length(vtx - vtx_);
-                if(!(dist < 1e-12))
-                {
-                    std::cerr << "[World::prepair_barriers]: the difference"
-                              << " between first calculation " << vtx
-                              << " and second calculation " << vtx_
-                              << " is too large = " << dist << std::endl;
-                    throw std::runtime_error(
-                            "internal error while searching neighbor faces");
-                }
+                const auto  vi0 = polygon_->target_of(ei0);
+                const auto  vi1 = polygon_->target_of(ei1);
+                const auto  vi2 = polygon_->target_of(ei2);
+                const auto pvi0 = polygon_->position_at(vi0);
+                const auto pvi1 = polygon_->position_at(vi1);
+                const auto pvi2 = polygon_->position_at(vi2);
 
-                segments[i*2  ] = Segment(this->periodic_transpose(orig, vtx),
-                    vtx);
-                segments[i*2+1] = Segment(this->periodic_transpose(
-                    this->polygon_->position_at(this->polygon_->target_of(eid)),
-                    vtx), vtx);
+                const auto dst0 = pvi1 + dei2 * (lei1 / (lei1 + lei0));
+                const auto dst2 = pvi0 + dei1 * (lei0 / (lei0 + lei2));
+
+                segments[2*i  ] = Segment(this->periodic_transpose(dst0, pvi0), pvi0);
+                segments[2*i+1] = Segment(this->periodic_transpose(dst2, pvi2), pvi2);
             }
             this->barriers_[fid] = segments;
-
-//             std::cerr << "[World::prepair_barriers]: barriers = {";
-//             for(std::size_t i=0; i<6; ++i)
-//             {
-//                 std::cerr << this->barriers_[fid][i] << ", ";
-//                 const Real3 start = this->barriers_[fid][i].start();
-//                 const Real3 stop  = this->barriers_[fid][i].stop();
-//                 const Real dist = length(start - stop);
-//
-//                 if(dist - 1.0 < 1e-12)
-//                 {
-//                     std::cerr << "[[length = 1.0]] ";
-//                 }
-//                 else if(dist - std::sqrt(2.0) < 1e-12)
-//                 {
-//                     std::cerr << "[[length = sqrt(2)]] ";
-//                 }
-//                 else
-//                 {
-//                     std::cerr << "[[length = " << dist << "]] ";
-//                 }
-//             }
-//             std::cerr << "}\n";
         }
+        this->estimated_possible_largest_particle_radius_ = min_altitude * 0.5;
         return;
     }
 
@@ -860,6 +833,7 @@ class SGFRDWorld
     boost::shared_ptr<polygon_type>          polygon_;
     structure_registrator_type               registrator_;
     particle_id_generator_type               pidgen_;
+    Real estimated_possible_largest_particle_radius_;
 
     // XXX consider moving this to the other place
     // this contains the edges that correspond to the developed neighbor faces.
