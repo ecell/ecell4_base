@@ -456,11 +456,15 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
         const Real vtop2_len = length(vtop2);
         if(vtop1_len < relative_tolerance * min_edge_length)
         {
-            return this->distance_sq(std::make_pair(p1, vid), pos2);
+            // pos1 locates exactly on the vtx. distance from pos1 to pos2 is
+            // equal to the distance from vtx to pos2.
+            return vtop2_len;
         }
         if(vtop2_len < relative_tolerance * min_edge_length)
         {
-            return this->distance_sq(pos1, std::make_pair(p2, vid));
+            // pos2 locates exactly on the vtx. distance from pos1 to pos2 is
+            // equal to the distance from pos1 to vtx.
+            return vtop1_len;
         }
 
         // calc the initial angle
