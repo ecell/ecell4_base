@@ -1287,6 +1287,15 @@ bool SGFRDSimulator::diagnosis() const
     for(const auto& pidp : particles)
     {
         std::tie(pid, p) = pidp;
+        if(p.radius() > world_->estimated_possible_largest_particle_radius())
+        {
+            std::cerr << "ERROR: particle " << pid << " is too large compared "
+                      << "to the widths of triangles ("
+                      << world_->estimated_possible_largest_particle_radius()
+                      << ").\n";
+            result = false;
+        }
+
         const FaceID fid = this->get_face_id(pid);
         std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
 
