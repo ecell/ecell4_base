@@ -601,8 +601,14 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
             continue;
         }
 
-        const auto vtop2_unf = rotate(min_angle, normal, vtop1) *
+        Real rotation_angle = min_angle;
+        if(angle_cw < angle_ccw)
+        {
+            rotation_angle *= -1; // rotate it clockwise
+        }
+        const auto vtop2_unf = rotate(rotation_angle, normal, vtop1) *
                                (vtop2_len / vtop1_len);
+
         distance_sq = std::min(distance_sq, length_sq(vtop1 - vtop2_unf));
     }
     if(distance_sq != std::numeric_limits<Real>::infinity())
