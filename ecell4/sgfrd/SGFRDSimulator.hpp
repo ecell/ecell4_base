@@ -2059,12 +2059,9 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("position = %1%, %2%", pos.first, pos.second));
 
         Real lensq = std::numeric_limits<Real>::max();
-        const std::array<ecell4::Segment, 6>& barrier =
-            world_->barrier_at(pos.second);
-
-        for(std::size_t i=0; i<6; ++i)
+        for(const auto& barrier : world_->barrier_at(pos.second))
         {
-            const Real dist2 = ecell4::sgfrd::distance_sq(pos.first, barrier[i]);
+            const Real dist2 = ecell4::sgfrd::distance_sq(pos.first, barrier);
             if(dist2 < lensq)
             {
                 lensq = dist2;
@@ -2076,11 +2073,9 @@ class SGFRDSimulator :
     Real get_max_cone_size(const VertexID& vid) const
     {
         Real min_len = std::numeric_limits<Real>::max();
-        std::vector<Polygon::EdgeID> outs = this->polygon().outgoing_edges(vid);
-        for(typename std::vector<Polygon::EdgeID>::const_iterator
-                i(outs.begin()), e(outs.end()); i!=e; ++i)
+        for(const auto eid : this->polygon().outgoing_edges(vid))
         {
-            min_len = std::min(min_len, this->polygon().length_of(*i));
+            min_len = std::min(min_len, this->polygon().length_of(eid));
         }
         return min_len * 0.5;
     }
