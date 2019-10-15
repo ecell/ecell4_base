@@ -966,19 +966,38 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     const Barycentric unfolded_b(to_barycentric(np, next.second));
     if(::ecell4::is_inside(unfolded_b, 1e-8))
     {
-        const Real3 nxt = to_absolute(
+        Real3 nxt = to_absolute(
                 force_put_inside(unfolded_b), this->triangle_at(next.first));
 
         if(!this->is_inside_of_boundary(nxt))
         {
-            std::cerr << "travel: initial pos          = " << p   << " on " << f            << std::endl;
-            std::cerr << "travel: initial face         = " << f << " -> " << this->triangle_at(f) << std::endl;
-            std::cerr << "travel: initial disp         = " << disp                          << std::endl;
-            std::cerr << "travel: next face (unfolded) = " << next.second                   << std::endl;
-            std::cerr << "travel: next barycentric crd = " << unfolded_b                    << std::endl;
-            std::cerr << "travel: next bary (inside)   = " << force_put_inside(unfolded_b)  << std::endl;
-            std::cerr << "travel: next face            = " << this->triangle_at(next.first) << std::endl;
-            std::cerr << "travel: next pos             = " << nxt << " on " << next.first   << std::endl;
+            const Real xlim    = this->edge_length_[0];
+            const Real ylim    = this->edge_length_[1];
+            const Real zlim    = this->edge_length_[2];
+            const Real rel_tol = relative_tolerance;
+
+            // allow numerical error in relative tolerance
+            if(nxt[0] <  0.0 && std::abs(nxt[0]) < rel_tol * xlim) {nxt[0] = 0.0;}
+            if(nxt[1] <  0.0 && std::abs(nxt[1]) < rel_tol * ylim) {nxt[1] = 0.0;}
+            if(nxt[2] <  0.0 && std::abs(nxt[2]) < rel_tol * zlim) {nxt[2] = 0.0;}
+
+            if(nxt[0] > xlim && nxt[0] - xlim < rel_tol * xlim) {nxt[0] = xlim;}
+            if(nxt[1] > ylim && nxt[1] - ylim < rel_tol * ylim) {nxt[1] = ylim;}
+            if(nxt[2] > zlim && nxt[2] - zlim < rel_tol * zlim) {nxt[2] = zlim;}
+
+            if(!this->is_inside_of_boundary(nxt))
+            {
+
+                std::cerr << "travel: initial pos          = " << p   << " on " << f            << std::endl;
+                std::cerr << "travel: initial face         = " << f << " -> " << this->triangle_at(f) << std::endl;
+                std::cerr << "travel: initial disp         = " << disp                          << std::endl;
+                std::cerr << "travel: next face (unfolded) = " << next.second                   << std::endl;
+                std::cerr << "travel: next barycentric crd = " << unfolded_b                    << std::endl;
+                std::cerr << "travel: next bary (inside)   = " << force_put_inside(unfolded_b)  << std::endl;
+                std::cerr << "travel: next face            = " << this->triangle_at(next.first) << std::endl;
+                std::cerr << "travel: next pos             = " << nxt << " on " << next.first   << std::endl;
+                throw std::runtime_error("out of bound");
+            }
         }
         return std::make_pair(nxt, next.first);
         // use folded (normal) Triangle, NOT next.second
@@ -989,17 +1008,35 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     //     to_absolute is used with the next triangle.
     const Barycentric on_edge_b(to_barycentric(p + disp * cs.second, next.second));
     const Real3 edge_over = direction_of(fd.edges[cs.first]);
-    const Real3 next_pos  = to_absolute(on_edge_b, this->triangle_at(next.first));
+    Real3 next_pos  = to_absolute(on_edge_b, this->triangle_at(next.first));
 
     if(!this->is_inside_of_boundary(next_pos))
     {
-        std::cerr << "travel: initial  pos               = " << p        << " on " << f          << std::endl;
-        std::cerr << "travel: initial face               = " << f << " -> " << this->triangle_at(f)             << std::endl;
-        std::cerr << "travel: initial disp               = " << disp                          << std::endl;
-        std::cerr << "travel: next face (unfolded)       = " << next.second                      << std::endl;
-        std::cerr << "travel: next barycnetric (on edge) = " << on_edge_b                        << std::endl;
-        std::cerr << "travel: next face                  = " << this->triangle_at(next.first)    << std::endl;
-        std::cerr << "travel: next  pos                  = " << next_pos << " on " << next.first << std::endl;
+        const Real xlim    = this->edge_length_[0];
+        const Real ylim    = this->edge_length_[1];
+        const Real zlim    = this->edge_length_[2];
+        const Real rel_tol = relative_tolerance;
+
+        // allow numerical error in relative tolerance
+        if(next_pos[0] <  0.0 && std::abs(next_pos[0]) < rel_tol * xlim) {next_pos[0] = 0.0;}
+        if(next_pos[1] <  0.0 && std::abs(next_pos[1]) < rel_tol * ylim) {next_pos[1] = 0.0;}
+        if(next_pos[2] <  0.0 && std::abs(next_pos[2]) < rel_tol * zlim) {next_pos[2] = 0.0;}
+
+        if(next_pos[0] > xlim && next_pos[0] - xlim < rel_tol * xlim) {next_pos[0] = xlim;}
+        if(next_pos[1] > ylim && next_pos[1] - ylim < rel_tol * ylim) {next_pos[1] = ylim;}
+        if(next_pos[2] > zlim && next_pos[2] - zlim < rel_tol * zlim) {next_pos[2] = zlim;}
+
+        if(!this->is_inside_of_boundary(next_pos))
+        {
+            std::cerr << "travel: initial  pos               = " << p        << " on " << f          << std::endl;
+            std::cerr << "travel: initial face               = " << f << " -> " << this->triangle_at(f)             << std::endl;
+            std::cerr << "travel: initial disp               = " << disp                          << std::endl;
+            std::cerr << "travel: next face (unfolded)       = " << next.second                      << std::endl;
+            std::cerr << "travel: next barycnetric (on edge) = " << on_edge_b                        << std::endl;
+            std::cerr << "travel: next face                  = " << this->triangle_at(next.first)    << std::endl;
+            std::cerr << "travel: next  pos                  = " << next_pos << " on " << next.first << std::endl;
+            throw std::runtime_error("out of bound");
+        }
     }
 
     return this->travel(std::make_pair(next_pos, next.first),
@@ -1045,19 +1082,37 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     const Barycentric unfolded_b(to_barycentric(np, next.second));
     if(::ecell4::is_inside(unfolded_b, 1e-8))
     {
-        const Real3 nxt = to_absolute(
+        Real3 nxt = to_absolute(
                 force_put_inside(unfolded_b), this->triangle_at(next.first));
 
         if(!this->is_inside_of_boundary(nxt))
         {
-            std::cerr << "travel: initial  pos         = " << p   << " on " << f            << std::endl;
-            std::cerr << "travel: initial face         = " << f << " -> " << this->triangle_at(f)          << std::endl;
-            std::cerr << "travel: initial disp         = " << disp                          << std::endl;
-            std::cerr << "travel: next face (unfolded) = " << next.second                   << std::endl;
-            std::cerr << "travel: next barycentric crd = " << unfolded_b                    << std::endl;
-            std::cerr << "travel: next bary (inside)   = " << force_put_inside(unfolded_b)  << std::endl;
-            std::cerr << "travel: next face            = " << this->triangle_at(next.first) << std::endl;
-            std::cerr << "travel: next  pos            = " << nxt << " on " << next.first   << std::endl;
+            const Real xlim    = this->edge_length_[0];
+            const Real ylim    = this->edge_length_[1];
+            const Real zlim    = this->edge_length_[2];
+            const Real rel_tol = relative_tolerance;
+
+            // allow numerical error in relative tolerance
+            if(nxt[0] <  0.0 && std::abs(nxt[0]) < rel_tol * xlim) {nxt[0] = 0.0;}
+            if(nxt[1] <  0.0 && std::abs(nxt[1]) < rel_tol * ylim) {nxt[1] = 0.0;}
+            if(nxt[2] <  0.0 && std::abs(nxt[2]) < rel_tol * zlim) {nxt[2] = 0.0;}
+
+            if(nxt[0] > xlim && nxt[0] - xlim < rel_tol * xlim) {nxt[0] = xlim;}
+            if(nxt[1] > ylim && nxt[1] - ylim < rel_tol * ylim) {nxt[1] = ylim;}
+            if(nxt[2] > zlim && nxt[2] - zlim < rel_tol * zlim) {nxt[2] = zlim;}
+
+            if(!this->is_inside_of_boundary(nxt))
+            {
+                std::cerr << "travel: initial  pos         = " << p   << " on " << f            << std::endl;
+                std::cerr << "travel: initial face         = " << f << " -> " << this->triangle_at(f)          << std::endl;
+                std::cerr << "travel: initial disp         = " << disp                          << std::endl;
+                std::cerr << "travel: next face (unfolded) = " << next.second                   << std::endl;
+                std::cerr << "travel: next barycentric crd = " << unfolded_b                    << std::endl;
+                std::cerr << "travel: next bary (inside)   = " << force_put_inside(unfolded_b)  << std::endl;
+                std::cerr << "travel: next face            = " << this->triangle_at(next.first) << std::endl;
+                std::cerr << "travel: next  pos            = " << nxt << " on " << next.first   << std::endl;
+                throw std::runtime_error("particle goes exceeds the boundary");
+            }
         }
         return std::make_pair(nxt, next.first);
         // use folded (normal) Triangle, NOT next.second
@@ -1068,17 +1123,35 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     //     to_absolute is used with the next triangle.
     const Barycentric on_edge_b(to_barycentric(p + disp * cs.second, next.second));
     const Real3 edge_over = direction_of(fd.edges[cs.first]);
-    const Real3 next_pos  = to_absolute(on_edge_b, this->triangle_at(next.first));
+    Real3 next_pos  = to_absolute(on_edge_b, this->triangle_at(next.first));
 
     if(!this->is_inside_of_boundary(next_pos))
     {
-        std::cerr << "travel: initial  pos               = " << p        << " on " << f          << std::endl;
-        std::cerr << "travel: initial face               = " << f << " -> " << this->triangle_at(f)             << std::endl;
-        std::cerr << "travel: initial disp               = " << disp                          << std::endl;
-        std::cerr << "travel: next face (unfolded)       = " << next.second                      << std::endl;
-        std::cerr << "travel: next barycnetric (on edge) = " << on_edge_b                        << std::endl;
-        std::cerr << "travel: next face                  = " << this->triangle_at(next.first)    << std::endl;
-        std::cerr << "travel: next  pos                  = " << next_pos << " on " << next.first << std::endl;
+        const Real xlim    = this->edge_length_[0];
+        const Real ylim    = this->edge_length_[1];
+        const Real zlim    = this->edge_length_[2];
+        const Real rel_tol = relative_tolerance;
+
+        // allow numerical error in relative tolerance
+        if(next_pos[0] <  0.0 && std::abs(next_pos[0]) < rel_tol * xlim) {next_pos[0] = 0.0;}
+        if(next_pos[1] <  0.0 && std::abs(next_pos[1]) < rel_tol * ylim) {next_pos[1] = 0.0;}
+        if(next_pos[2] <  0.0 && std::abs(next_pos[2]) < rel_tol * zlim) {next_pos[2] = 0.0;}
+
+        if(next_pos[0] > xlim && next_pos[0] - xlim < rel_tol * xlim) {next_pos[0] = xlim;}
+        if(next_pos[1] > ylim && next_pos[1] - ylim < rel_tol * ylim) {next_pos[1] = ylim;}
+        if(next_pos[2] > zlim && next_pos[2] - zlim < rel_tol * zlim) {next_pos[2] = zlim;}
+
+        if(!this->is_inside_of_boundary(next_pos))
+        {
+            std::cerr << "travel: initial  pos               = " << p        << " on " << f          << std::endl;
+            std::cerr << "travel: initial face               = " << f << " -> " << this->triangle_at(f)             << std::endl;
+            std::cerr << "travel: initial disp               = " << disp                          << std::endl;
+            std::cerr << "travel: next face (unfolded)       = " << next.second                      << std::endl;
+            std::cerr << "travel: next barycnetric (on edge) = " << on_edge_b                        << std::endl;
+            std::cerr << "travel: next face                  = " << this->triangle_at(next.first)    << std::endl;
+            std::cerr << "travel: next  pos                  = " << next_pos << " on " << next.first << std::endl;
+            throw std::runtime_error("particle goes exceeds the boundary");
+        }
     }
     return this->travel(std::make_pair(next_pos, next.first),
         rotate(tilt_angle_at(fd.edges[cs.first]),     // rotate disp by tilt_angle
