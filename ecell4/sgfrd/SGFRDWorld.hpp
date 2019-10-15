@@ -734,6 +734,11 @@ class SGFRDWorld
         return this->barriers_.at(fid);
     }
 
+    Real estimated_possible_largest_particle_radius() const noexcept
+    {
+        return this->estimated_possible_largest_particle_radius_;
+    }
+
   private:
 
     // the tolerance is relative to edge_lengths.
