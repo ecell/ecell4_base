@@ -458,13 +458,34 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
         {
             // pos1 locates exactly on the vtx. distance from pos1 to pos2 is
             // equal to the distance from vtx to pos2.
-            return vtop2_len;
+
+            // if the face on which pos2 locates has the vertex, the squared
+            // distance is just vtop2_len^2.
+
+            const auto& vtxs = this->vertices_of(f2);
+            if(std::find(vtxs.begin(), vtxs.end(), vid) != vtxs.end())
+            {
+                return vtop2_len * vtop2_len;
+            }
+            else
+            {
+                continue;
+            }
         }
         if(vtop2_len < relative_tolerance * min_edge_length)
         {
             // pos2 locates exactly on the vtx. distance from pos1 to pos2 is
             // equal to the distance from pos1 to vtx.
-            return vtop1_len;
+
+            const auto& vtxs = this->vertices_of(f2);
+            if(std::find(vtxs.begin(), vtxs.end(), vid) != vtxs.end())
+            {
+                return vtop1_len * vtop1_len;
+            }
+            else
+            {
+                continue;
+            }
         }
 
         // calc the initial angle
