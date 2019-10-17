@@ -16,7 +16,7 @@ source:
 
 requirements:
   build:
-    - {{ compiler('cxx') }}
+    - {{ compiler('cxx') }} # [not osx]
     - cmake
 
   host:
