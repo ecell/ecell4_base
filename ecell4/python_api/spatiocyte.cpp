@@ -6,6 +6,7 @@
 #include <ecell4/spatiocyte/SpatiocyteSimulator.hpp>
 #include <ecell4/spatiocyte/SpatiocyteWorld.hpp>
 #include <ecell4/spatiocyte/Voxel.hpp>
+#include <ecell4/spatiocyte/OffLattice.hpp>
 
 #include "simulator.hpp"
 #include "simulator_factory.hpp"
@@ -147,12 +148,9 @@ void define_spatiocyte_world(py::module& m)
         )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
         .def("add_offlattice",
-            [](SpatiocyteWorld& self,
-               const Real& voxel_radius,
-               const OffLatticeSpace::position_container& positions,
-               const OffLatticeSpace::coordinate_pair_list_type& adjoining_pairs)
+            [](SpatiocyteWorld& self, const OffLattice& offlattice)
             {
-                self.add_space(std::unique_ptr<OffLatticeSpace>(new OffLatticeSpace(voxel_radius, positions, adjoining_pairs)));
+                self.add_space(offlattice.into_space());
             })
         .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
         .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)
@@ -186,9 +184,21 @@ void define_voxel(py::module& m)
             });
 }
 
+static inline
+void define_offlattice(py::module& m)
+{
+    py::class_<OffLattice>(m, "OffLattice")
+        .def(py::init<const Real, const OffLattice::positions_type, const OffLattice::adjoining_pairs_type>())
+        .def(py::init<const Real, const OffLattice::positions_type>())
+        .def("voxel_radius", &OffLattice::voxel_radius)
+        .def("positions", &OffLattice::positions)
+        .def("adjoining_pairs", &OffLattice::adjoining_pairs);
+}
+
 void setup_spatiocyte_module(py::module& m)
 {
     define_reaction_info(m);
+    define_offlattice(m);
     define_spatiocyte_factory(m);
     define_spatiocyte_simulator(m);
     define_spatiocyte_world(m);
