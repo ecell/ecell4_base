@@ -791,6 +791,7 @@ class SGFRDWorld
 
             // calculate boundary for shell size
             const auto& edges = polygon_->edges_of(fid);
+            const auto& vtxs  = polygon_->vertices_of(fid);
             std::array<Segment, 6> segments;
             for(std::size_t i=0; i<3; ++i)
             {
@@ -814,15 +815,19 @@ class SGFRDWorld
                 const auto  vi0 = polygon_->target_of(ei0);
                 const auto  vi1 = polygon_->target_of(ei1);
                 const auto  vi2 = polygon_->target_of(ei2);
-                const auto pvi0 = polygon_->position_at(vi0);
-                const auto pvi1 = polygon_->position_at(vi1);
-                const auto pvi2 = polygon_->position_at(vi2);
+
+                assert(vi0 == vtxs[0]);
+                assert(vi2 == vtxs[2]);
+
+                const auto pvi0 = tri.vertices()[i];
+                const auto pvi1 = this->periodic_transpose(polygon_->position_at(vi1), pvi0);
+                const auto pvi2 = tri.vertices()[(i==0)?2:i-1];
 
                 const auto dst0 = pvi1 + dei2 * (lei1 / (lei1 + lei0));
                 const auto dst2 = pvi0 + dei1 * (lei0 / (lei0 + lei2));
 
-                segments[2*i  ] = Segment(this->periodic_transpose(dst0, pvi0), pvi0);
-                segments[2*i+1] = Segment(this->periodic_transpose(dst2, pvi2), pvi2);
+                segments[2*i  ] = Segment(dst0, pvi0);
+                segments[2*i+1] = Segment(dst2, pvi2);
             }
             this->barriers_[fid] = segments;
         }
@@ -840,7 +845,6 @@ class SGFRDWorld
     particle_id_generator_type               pidgen_;
     Real estimated_possible_largest_particle_radius_;
 
-    // XXX consider moving this to the other place
     // this contains the edges that correspond to the developed neighbor faces.
     //
     //        /\
