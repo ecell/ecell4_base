@@ -55,8 +55,8 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                     found_vtx = vid_vtx.first;
                     auto& vtx = vid_vtx.second;
 
-                    // calculating mean position...
-                    vtx.first = (v2 * vtx.second.size() + this->apply_boundary(v1)) /
+                    // calculating mean position on the fly.
+                    vtx.first = (v2 * vtx.second.size() + this->periodic_transpose(v1, v2)) /
                                 (vtx.second.size() + 1);
                     // assign face-id to the vertex
                     vtx.second.push_back(std::make_pair(fid, i));
@@ -66,7 +66,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             if(!found_vtx) // new vertices! add VertexID.
             {
                 const VertexID new_vid = VertexID(tmp_vtxs.size());
-                tmp_vtxs[new_vid] = std::make_pair(v1,
+                tmp_vtxs[new_vid] = std::make_pair(this->apply_boundary(v1),
                         std::vector<fid_vidx_pair>(1, std::make_pair(fid, i)));
                 found_vtx = new_vid;
             }
@@ -118,7 +118,10 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         this->vertices_.push_back(vd);
     }
 
-    // * refine vertex positions
+    // refine vertex positions
+    // - keep the absolute position to allow out-of-bound vertices
+    // - make vertex positions semantically the same
+    //   - if a vertex shares triangles, put vertices on the triangles together
     for(face_data& fd : this->faces_)
     {
         boost::array<Real3, 3> vs = fd.triangle.vertices();
