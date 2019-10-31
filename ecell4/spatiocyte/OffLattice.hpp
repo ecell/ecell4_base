@@ -47,9 +47,10 @@ public:
         return adjoining_pairs_;
     }
 
-    std::unique_ptr<OffLatticeSpace> into_space() const
+    std::unique_ptr<OffLatticeSpace> generate_space(const Species& species) const
     {
-        return std::unique_ptr<OffLatticeSpace>(new OffLatticeSpace(voxel_radius_, positions_, adjoining_pairs_));
+        return std::unique_ptr<OffLatticeSpace>(
+                new OffLatticeSpace(voxel_radius_, species, positions_, adjoining_pairs_));
     }
 
 protected:

@@ -148,9 +148,9 @@ void define_spatiocyte_world(py::module& m)
         )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
         .def("add_offlattice",
-            [](SpatiocyteWorld& self, const OffLattice& offlattice)
+            [](SpatiocyteWorld& self, const Species& species, const OffLattice& offlattice)
             {
-                self.add_space(offlattice.into_space());
+                self.add_space(offlattice.generate_space(species));
             })
         .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
         .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)

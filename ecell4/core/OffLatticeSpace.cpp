@@ -6,14 +6,18 @@
 
 namespace ecell4 {
 
-OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
+OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius, const Species& species)
     : base_type(voxel_radius),
       voxels_(),
       positions_(),
       adjoinings_()
-{}
+{
+    vacant_ = boost::shared_ptr<VoxelPool>(
+            new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
+}
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
+                                 const Species& species,
                                  const position_container& positions,
                                  const coordinate_pair_list_type& adjoining_pairs)
     : base_type(voxel_radius),
@@ -21,6 +25,8 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
       positions_(),
       adjoinings_()
 {
+    vacant_ = boost::shared_ptr<VoxelPool>(
+            new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
     reset(positions, adjoining_pairs);
 }
 
