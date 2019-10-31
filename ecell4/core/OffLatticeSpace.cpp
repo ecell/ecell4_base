@@ -210,16 +210,15 @@ bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
 bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
 {
     boost::shared_ptr<VoxelPool> vp(voxels_.at(coord));
-    if (vp->is_vacant())
+    if (auto location_ptr = vp->location())
     {
-        return false;
-    }
-    if (vp->remove_voxel_if_exists(coord))
-    {
-        voxels_.at(coord) = vp->location();
-        vp->location()->add_voxel(
-            coordinate_id_pair_type(ParticleID(), coord));
-        return true;
+        if (vp->remove_voxel_if_exists(coord))
+        {
+            voxels_.at(coord) = location_ptr;
+            location_ptr->add_voxel(
+                coordinate_id_pair_type(ParticleID(), coord));
+            return true;
+        }
     }
     return false;
 }

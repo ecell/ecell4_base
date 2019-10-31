@@ -98,12 +98,22 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxel)
 {
     const ParticleID pid(sidgen());
 
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(space.update_voxel(pid, voxel));
+
+    BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(space.remove_voxel(pid));
+
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(!space.remove_voxel(3));
 
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(space.update_voxel(pid, voxel));
+
+    BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(space.remove_voxel(3));
+
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(!space.remove_voxel(pid));
 }
 
