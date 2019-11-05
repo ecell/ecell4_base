@@ -151,6 +151,8 @@ class SGFRDSimulator :
     }
     void finalize()
     {
+        assert(this->diagnosis());
+
         this->is_dirty_ = true;
 
         const Real tm(this->time());
@@ -162,6 +164,8 @@ class SGFRDSimulator :
     }
     void finalize(const Real t)
     {
+        assert(this->diagnosis());
+
         this->is_dirty_ = true;
 
         assert(t < this->next_event_time());
