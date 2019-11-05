@@ -99,19 +99,16 @@ class SGFRDFactory :
         {
             if(this->polygon_)
             {
-                std::cerr << "SGFRDFactory: 1" << std::endl;
                 return new world_type(edge_lengths, matrix_sizes_, rng_,
                                       this->polygon_);
             }
             else if(!this->polygon_file_.first.empty())
             {
-                std::cerr << "SGFRDFactory: 2" << std::endl;
                 return new world_type(edge_lengths, matrix_sizes_, rng_,
                         this->polygon_file_.first, this->polygon_file_.second);
             }
             else
             {
-                std::cerr << "SGFRDFactory: 3" << std::endl;
                 return new world_type(edge_lengths, matrix_sizes_, rng_);
             }
         }
@@ -119,19 +116,16 @@ class SGFRDFactory :
         {
             if(this->polygon_)
             {
-                std::cerr << "SGFRDFactory: 4" << std::endl;
                 return new world_type(edge_lengths, matrix_sizes_,
                                       this->polygon_);
             }
             else if(!this->polygon_file_.first.empty())
             {
-                std::cerr << "SGFRDFactory: 5" << std::endl;
                 return new world_type(edge_lengths, matrix_sizes_,
                         this->polygon_file_.first, this->polygon_file_.second);
             }
             else
             {
-                std::cerr << "SGFRDFactory: 6" << std::endl;
                 return new world_type(edge_lengths, matrix_sizes_);
             }
         }
