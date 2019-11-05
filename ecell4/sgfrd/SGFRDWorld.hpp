@@ -816,12 +816,12 @@ class SGFRDWorld
                 const auto  vi1 = polygon_->target_of(ei1);
                 const auto  vi2 = polygon_->target_of(ei2);
 
-                assert(vi0 == vtxs[0]);
-                assert(vi2 == vtxs[2]);
+                assert(vi0 == vtxs[i]);
+                assert(vi2 == vtxs[i==2?0:i+1]);
 
                 const auto pvi0 = tri.vertices()[i];
                 const auto pvi1 = this->periodic_transpose(polygon_->position_at(vi1), pvi0);
-                const auto pvi2 = tri.vertices()[(i==0)?2:i-1];
+                const auto pvi2 = tri.vertices()[(i==2)?0:i+1];
 
                 const auto dst0 = pvi1 + dei2 * (lei1 / (lei1 + lei0));
                 const auto dst2 = pvi0 + dei1 * (lei0 / (lei0 + lei2));
