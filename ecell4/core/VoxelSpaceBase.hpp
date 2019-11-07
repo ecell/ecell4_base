@@ -214,26 +214,6 @@ public:
     /*
      * ParticleSpace Traits
      */
-    Integer num_particles() const
-    {
-        return num_voxels();
-    }
-
-    Integer num_particles(const Species& sp) const
-    {
-        return num_voxels(sp);
-    }
-
-    Integer num_particles_exact(const Species& sp) const
-    {
-        return num_voxels_exact(sp);
-    }
-
-    bool has_particle(const ParticleID& pid) const
-    {
-        return has_voxel(pid);
-    }
-
     virtual
     std::vector<std::pair<ParticleID, Particle> >
     list_particles() const;
@@ -250,35 +230,38 @@ public:
     std::pair<ParticleID, Particle>
     get_particle(const ParticleID& pid) const
     {
-        for (const auto &key_value : molecule_pools_)
+        if (const auto particle = find_particle(pid))
         {
-            const auto &species(key_value.first);
-            const auto &pool(key_value.second);
-
-            const auto j(pool->find(pid));
-            if (j != pool->end())
-            {
-                return std::make_pair(
-                    pid,
-                    Particle(
-                        species,
-                        coordinate2position(j->coordinate),
-                        pool->radius(),
-                        pool->D()
-                    )
-                );
-            }
+            return std::make_pair(pid, particle.get());
         }
 
         throw NotFound("");
     }
 
-    virtual const Particle particle_at(const coordinate_type& coord) const = 0;
-
-    virtual bool remove_particle(const ParticleID& pid)
+    boost::optional<Particle>
+    find_particle(const ParticleID& pid) const
     {
-        return remove_voxel(pid);
+        for (const auto& key_value : molecule_pools_)
+        {
+            const auto& species(key_value.first);
+            const auto& pool(key_value.second);
+
+            const auto itr(pool->find(pid));
+            if (itr != pool->end())
+            {
+                return Particle(
+                        species,
+                        coordinate2position(itr->coordinate),
+                        pool->radius(),
+                        pool->D()
+                    );
+            }
+        }
+
+        return boost::none;
     }
+
+    virtual const Particle particle_at(const coordinate_type& coord) const = 0;
 
     /*
      * VoxelSpace Traits

@@ -92,7 +92,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_particle)
     BOOST_CHECK(space.has_species(sp));
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_voxels)
 {
     ParticleID id(sidgen());
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
@@ -113,8 +113,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_particles)
     BOOST_CHECK(space.update_voxel(a_id, another));
     // BOOST_CHECK(space.update_particle(id, particle));
     // BOOST_CHECK(space.update_particle(a_id, another));
-    BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
-    BOOST_CHECK_EQUAL(space.num_particles(), 2);
+    BOOST_CHECK_EQUAL(space.num_voxels(sp), 1);
+    BOOST_CHECK_EQUAL(space.num_voxels(), 2);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_add_remove_molecule)
     ParticleID pid(sidgen());
     BOOST_CHECK(space.update_voxel(
         pid, ParticleVoxel(sp, coord, radius, D)));
-    BOOST_CHECK_EQUAL(space.num_particles(sp), 1);
+    BOOST_CHECK_EQUAL(space.num_voxels(sp), 1);
 
     boost::shared_ptr<const VoxelPool> mt(space.get_voxel_pool_at(coord));
     BOOST_CHECK(!mt->is_vacant());
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
 
         const Real3 pos(space.coordinate2position(coord));
         space.update_voxel(pid, ParticleVoxel(sp, coord, radius, D));
-        BOOST_CHECK_EQUAL(space.num_particles(), 1);
+        BOOST_CHECK_EQUAL(space.num_voxels(), 1);
 
         std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
         BOOST_CHECK_EQUAL(pid, pair.first);
@@ -543,7 +543,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
         pid, ParticleVoxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
-    BOOST_CHECK(space.remove_particle(pid));
+    BOOST_CHECK(space.remove_voxel(pid));
     BOOST_CHECK_EQUAL(space.list_particles().size(), 1); // TODO -> 0
     BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 0);
 
@@ -618,7 +618,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     BOOST_CHECK_EQUAL(space.voxel_radius(), space2.voxel_radius());
     BOOST_CHECK_EQUAL(space.is_periodic(), space2.is_periodic());
     BOOST_CHECK_EQUAL(space.t(), space2.t());
-    BOOST_CHECK_EQUAL(space.num_particles(), space2.num_particles());
+    BOOST_CHECK_EQUAL(space.num_voxels(), space2.num_voxels());
     BOOST_CHECK_EQUAL(space.num_species(), space2.num_species());
 
     std::vector<Species> species(space.list_species());

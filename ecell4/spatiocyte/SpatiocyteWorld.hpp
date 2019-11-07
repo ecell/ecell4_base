@@ -240,35 +240,17 @@ public:
 
     Integer num_particles() const
     {
-        Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            total += (*itr)->num_particles();
-        }
-        return total;
+        return num_voxels();
     }
 
     Integer num_particles(const Species& sp) const
     {
-        Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            total += (*itr)->num_particles(sp);
-        }
-        return total;
+        return num_voxels(sp);
     }
 
     Integer num_particles_exact(const Species& sp) const
     {
-        Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            total += (*itr)->num_particles_exact(sp);
-        }
-        return total;
+        return num_voxels_exact(sp);
     }
 
     boost::optional<Voxel> get_voxel(const ParticleID& pid) const
@@ -283,13 +265,7 @@ public:
 
     bool has_particle(const ParticleID& pid) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if ((*itr)->has_particle(pid))
-                return true;
-        }
-        return false;
+        return has_voxel(pid);
     }
 
     // Suggests: Rename to 'find_particle'
@@ -298,8 +274,10 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if ((*itr)->has_particle(pid))
-                return (*itr)->get_particle(pid);
+            if (const auto& particle = (*itr)->find_particle(pid))
+            {
+                return std::make_pair(pid, particle.get());
+            }
         }
         throw "No particle corresponding to a given ParticleID is found.";
     }
@@ -745,13 +723,7 @@ public:
 
     bool remove_particle(const ParticleID& pid)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            if ((*itr)->has_particle(pid))
-                return (*itr)->remove_particle(pid);
-        }
-        return false;
+        return remove_voxel(pid);
     }
 
     bool update_particle(const ParticleID& pid, const Particle& p)
