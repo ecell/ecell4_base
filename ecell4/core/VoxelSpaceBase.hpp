@@ -212,32 +212,6 @@ public:
 
 
     /*
-     * ParticleSpace Traits
-     */
-    boost::optional<Particle>
-    find_particle(const ParticleID& pid) const
-    {
-        for (const auto& key_value : molecule_pools_)
-        {
-            const auto& species(key_value.first);
-            const auto& pool(key_value.second);
-
-            const auto itr(pool->find(pid));
-            if (itr != pool->end())
-            {
-                return Particle(
-                        species,
-                        coordinate2position(itr->coordinate),
-                        pool->radius(),
-                        pool->D()
-                    );
-            }
-        }
-
-        return boost::none;
-    }
-
-    /*
      * VoxelSpace Traits
      */
     Real voxel_radius() const
@@ -267,6 +241,29 @@ public:
 
     boost::shared_ptr<const VoxelPool> vacant() const {
         return vacant_;
+    }
+
+    boost::optional<ParticleVoxel> find_voxel(const ParticleID& pid) const
+    {
+        for (const auto& key_value : molecule_pools_)
+        {
+            const auto& species(key_value.first);
+            const auto& pool(key_value.second);
+
+            const auto itr(pool->find(pid));
+            if (itr != pool->end())
+            {
+                const std::string location_serial(get_location_serial(pool));
+                return ParticleVoxel(
+                        species,
+                        itr->coordinate,
+                        pool->radius(),
+                        pool->D(),
+                        location_serial
+                    );
+            }
+        }
+        return boost::none;
     }
 
     boost::optional<coordinate_type> get_coordinate(const ParticleID& pid) const

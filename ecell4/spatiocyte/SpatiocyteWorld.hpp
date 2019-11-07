@@ -274,9 +274,9 @@ public:
         for (space_container_type::const_iterator itr(spaces_.begin());
              itr != spaces_.end(); ++itr)
         {
-            if (const auto& particle = (*itr)->find_particle(pid))
+            if (const auto& voxel = (*itr)->find_voxel(pid))
             {
-                return std::make_pair(pid, particle.get());
+                return std::make_pair(pid, gen_particle_from(*itr, voxel.get()));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
@@ -864,6 +864,18 @@ protected:
     Integer add_structure3(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
     bool is_surface_voxel(const Voxel& voxel, const boost::shared_ptr<const Shape> shape) const;
 
+    Particle gen_particle_from(const space_type& space, const ParticleVoxel& voxel) const
+    {
+        const auto coordinate = space->coordinate2position(voxel.coordinate);
+        return Particle(
+                voxel.species,
+                space->coordinate2position(voxel.coordinate),
+                voxel.radius,
+                voxel.D,
+                voxel.loc
+            );
+    }
+
 private:
 
     template<typename F>
@@ -875,15 +887,10 @@ private:
         {
             for (const auto& pair : f(space))
             {
-                const auto pid(pair.first);
-                const Particle particle(
-                        pair.second.species,
-                        space->coordinate2position(pair.second.coordinate),
-                        pair.second.radius,
-                        pair.second.D,
-                        pair.second.loc
-                    );
-                list.push_back(std::make_pair(pid, particle));
+                list.push_back(std::make_pair(
+                            pair.first,
+                            gen_particle_from(space, pair.second)
+                        ));
             }
         }
         return list;
