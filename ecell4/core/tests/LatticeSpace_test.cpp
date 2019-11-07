@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_voxels)
     BOOST_CHECK_EQUAL(space.num_voxels(), 2);
 }
 
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
+BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_voxels)
 {
     ParticleID id(sidgen());
     Real3 pos(2e-8, 1.7e-8, 1.5e-8);
@@ -139,10 +139,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_particles)
     // BOOST_CHECK(space.update_particle(id, particle));
     // BOOST_CHECK(space.update_particle(a_id, another));
 
-    typedef std::vector<std::pair<ParticleID, Particle> > vector;
-
-    vector test_list(space.list_particles(sp));
-    vector list(space.list_particles());
+    const auto test_list(space.list_voxels(sp));
+    const auto list(space.list_voxels());
     BOOST_CHECK_EQUAL(list.size(), 2);
     BOOST_CHECK_EQUAL(test_list.size(), 1);
 }
@@ -285,11 +283,11 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_voxel)
         space.update_voxel(pid, ParticleVoxel(sp, coord, radius, D));
         BOOST_CHECK_EQUAL(space.num_voxels(), 1);
 
-        std::pair<ParticleID, Particle> pair(space.list_particles()[0]);
+        const auto pair(space.list_voxels()[0]);
         BOOST_CHECK_EQUAL(pid, pair.first);
-        BOOST_CHECK_EQUAL(pos, pair.second.position());
-        BOOST_CHECK_EQUAL(radius, pair.second.radius());
-        BOOST_CHECK_EQUAL(D, pair.second.D());
+        BOOST_CHECK_EQUAL(coord, pair.second.coordinate);
+        BOOST_CHECK_EQUAL(radius, pair.second.radius);
+        BOOST_CHECK_EQUAL(D, pair.second.D);
         //BOOST_CHECK_EQUAL(sp, pair.second.species());
         //[TODO] Species is not comparable.
     }
@@ -535,17 +533,17 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
 {
     const Real3 pos(2.7e-9, 1.3e-8, 2.0e-8);
     BOOST_CHECK(space.update_structure(Particle(structure, pos, radius, D)));
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 1);
     ParticleID pid(sidgen());
     //XXX: Particle has no information about the location.
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos, radius, D)));
     BOOST_CHECK(space.update_voxel(
         pid, ParticleVoxel(sp, space.position2coordinate(pos), radius, D, structure.serial())));
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
-    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels(sp).size(), 1);
     BOOST_CHECK(space.remove_voxel(pid));
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 1); // TODO -> 0
-    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 0);
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 1); // TODO -> 0
+    BOOST_CHECK_EQUAL(space.list_voxels(sp).size(), 0);
 
     Species sp2("B", 2.5e-9, 1e-12);
     BOOST_CHECK_THROW(
@@ -561,24 +559,24 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     const Real3 pos1(2.7e-9, 1.3e-8, 2.0e-8);
     const Real3 pos2(1.2e-8, 1.5e-8, 1.8e-8);
     BOOST_CHECK(space.update_structure(Particle(structure, pos1, radius, D)));
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 1);
     BOOST_CHECK(space.update_structure(Particle(structure, pos2, radius, D)));
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 0
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 2); // TODO -> 0
 
     ParticleID pid(sidgen());
     //XXX: BOOST_CHECK(space.update_particle(pid, Particle(sp, pos1, radius, D)));
     BOOST_CHECK(space.update_voxel(
         pid, ParticleVoxel(sp, space.position2coordinate(pos1), radius, D, structure.serial())));
-    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
-    BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
+    BOOST_CHECK_EQUAL(space.list_voxels(sp).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels(structure).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 2); // TODO -> 1
     const VoxelSpaceBase::coordinate_type
         coord1(space.position2coordinate(pos1)),
         coord2(space.position2coordinate(pos2));
     BOOST_CHECK(space.move(coord1, coord2));
-    BOOST_CHECK_EQUAL(space.list_particles(sp).size(), 1);
-    BOOST_CHECK_EQUAL(space.list_particles(structure).size(), 1);
-    BOOST_CHECK_EQUAL(space.list_particles().size(), 2); // TODO -> 1
+    BOOST_CHECK_EQUAL(space.list_voxels(sp).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels(structure).size(), 1);
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 2); // TODO -> 1
 }
 
 #ifdef WITH_HDF5

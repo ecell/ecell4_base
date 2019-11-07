@@ -214,30 +214,6 @@ public:
     /*
      * ParticleSpace Traits
      */
-    virtual
-    std::vector<std::pair<ParticleID, Particle> >
-    list_particles() const;
-
-    virtual
-    std::vector<std::pair<ParticleID, Particle> >
-    list_particles(const Species& sp) const;
-
-    virtual
-    std::vector<std::pair<ParticleID, Particle> >
-    list_particles_exact(const Species& sp) const;
-
-    virtual
-    std::pair<ParticleID, Particle>
-    get_particle(const ParticleID& pid) const
-    {
-        if (const auto particle = find_particle(pid))
-        {
-            return std::make_pair(pid, particle.get());
-        }
-
-        throw NotFound("");
-    }
-
     boost::optional<Particle>
     find_particle(const ParticleID& pid) const
     {

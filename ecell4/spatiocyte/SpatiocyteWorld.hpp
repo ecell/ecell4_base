@@ -285,11 +285,14 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
         std::vector<std::pair<ParticleID, Particle> > list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto& space : spaces_)
         {
-            std::vector<std::pair<ParticleID, Particle> > particles((*itr)->list_particles());
-            list.insert(list.end(), particles.begin(), particles.end());
+            for (const auto& pair : space->list_voxels())
+            {
+                const auto& pid(pair.first);
+                const auto& particle(space->particle_at(pair.second.coordinate));
+                list.push_back(std::make_pair(pid, particle));
+            }
         }
         return list;
     }
@@ -297,25 +300,29 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const
     {
         std::vector<std::pair<ParticleID, Particle> > list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto& space : spaces_)
         {
-            std::vector<std::pair<ParticleID, Particle> > particles((*itr)->list_particles(sp));
-            list.insert(list.end(), particles.begin(), particles.end());
+            for (const auto& pair : space->list_voxels(sp))
+            {
+                const auto& pid(pair.first);
+                const auto& particle(space->particle_at(pair.second.coordinate));
+                list.push_back(std::make_pair(pid, particle));
+            }
         }
-
         return list;
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const
     {
         std::vector<std::pair<ParticleID, Particle> > list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto& space : spaces_)
         {
-            std::vector<std::pair<ParticleID, Particle> > particles(
-                    (*itr)->list_particles_exact(sp));
-            list.insert(list.end(), particles.begin(), particles.end());
+            for (const auto& pair : space->list_voxels_exact(sp))
+            {
+                const auto& pid(pair.first);
+                const auto& particle(space->particle_at(pair.second.coordinate));
+                list.push_back(std::make_pair(pid, particle));
+            }
         }
         return list;
     }

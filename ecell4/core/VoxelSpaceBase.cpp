@@ -46,63 +46,6 @@ Integer VoxelSpaceBase::num_molecules(const Species& sp) const
 
 
 /*
- * ParticleSpace Traits
- */
-
-std::vector<std::pair<ParticleID, Particle> >
-VoxelSpaceBase::list_particles() const
-{
-    const std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(list_voxels());
-
-    std::vector<std::pair<ParticleID, Particle> > retval;
-    retval.reserve(voxels.size());
-    for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator
-        i(voxels.begin()); i != voxels.end(); ++i)
-    {
-        const ParticleID& pid((*i).first);
-        const Particle p(particle_at((*i).second.coordinate));
-        retval.push_back(std::make_pair(pid, p));
-    }
-    return retval;
-}
-
-std::vector<std::pair<ParticleID, Particle> >
-VoxelSpaceBase::list_particles(const Species& sp) const
-{
-    const std::vector<std::pair<ParticleID, ParticleVoxel> > voxels(list_voxels(sp));
-
-    std::vector<std::pair<ParticleID, Particle> > retval;
-    retval.reserve(voxels.size());
-    for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator
-        i(voxels.begin()); i != voxels.end(); ++i)
-    {
-        const ParticleID& pid((*i).first);
-        const Particle p(particle_at((*i).second.coordinate));
-        retval.push_back(std::make_pair(pid, p));
-    }
-    return retval;
-}
-
-std::vector<std::pair<ParticleID, Particle> >
-VoxelSpaceBase::list_particles_exact(const Species& sp) const
-{
-    const std::vector<std::pair<ParticleID, ParticleVoxel> >
-        voxels(list_voxels_exact(sp));
-
-    std::vector<std::pair<ParticleID, Particle> > retval;
-    retval.reserve(voxels.size());
-    for (std::vector<std::pair<ParticleID, ParticleVoxel> >::const_iterator
-        i(voxels.begin()); i != voxels.end(); ++i)
-    {
-        const ParticleID& pid((*i).first);
-        const Particle p(particle_at((*i).second.coordinate));
-        retval.push_back(std::make_pair(pid, p));
-    }
-    return retval;
-}
-
-
-/*
  * VoxelSpace Traits
  */
 
