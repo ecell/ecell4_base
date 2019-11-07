@@ -338,13 +338,6 @@ public:
         return (dest_vp == src_vp->location());
     }
 
-    virtual const Particle particle_at(const coordinate_type& coord) const
-    {
-        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
-        return Particle(
-            vp->species(), coordinate2position(coord), vp->radius(), vp->D());
-    }
-
     boost::shared_ptr<VoxelPool> get_voxel_pool_at(const coordinate_type& coord) const;
 
     coordinate_type get_neighbor(

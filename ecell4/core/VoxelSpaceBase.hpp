@@ -237,8 +237,6 @@ public:
         return boost::none;
     }
 
-    virtual const Particle particle_at(const coordinate_type& coord) const = 0;
-
     /*
      * VoxelSpace Traits
      */

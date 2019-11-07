@@ -107,8 +107,6 @@ public:
         initialize_voxels(is_periodic_);
     }
 
-    const Particle particle_at(const coordinate_type& coord) const;
-
 protected:
 
     coordinate_type apply_boundary_(const coordinate_type& coord) const

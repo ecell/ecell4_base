@@ -284,47 +284,17 @@ public:
 
     std::vector<std::pair<ParticleID, Particle> > list_particles() const
     {
-        std::vector<std::pair<ParticleID, Particle> > list;
-        for (const auto& space : spaces_)
-        {
-            for (const auto& pair : space->list_voxels())
-            {
-                const auto& pid(pair.first);
-                const auto& particle(space->particle_at(pair.second.coordinate));
-                list.push_back(std::make_pair(pid, particle));
-            }
-        }
-        return list;
+        return list_particles_private([](const space_type& space) { return space->list_voxels(); });
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const
     {
-        std::vector<std::pair<ParticleID, Particle> > list;
-        for (const auto& space : spaces_)
-        {
-            for (const auto& pair : space->list_voxels(sp))
-            {
-                const auto& pid(pair.first);
-                const auto& particle(space->particle_at(pair.second.coordinate));
-                list.push_back(std::make_pair(pid, particle));
-            }
-        }
-        return list;
+        return list_particles_private([&sp](const space_type& space) { return space->list_voxels(sp); });
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const
     {
-        std::vector<std::pair<ParticleID, Particle> > list;
-        for (const auto& space : spaces_)
-        {
-            for (const auto& pair : space->list_voxels_exact(sp))
-            {
-                const auto& pid(pair.first);
-                const auto& particle(space->particle_at(pair.second.coordinate));
-                list.push_back(std::make_pair(pid, particle));
-            }
-        }
-        return list;
+        return list_particles_private([&sp](const space_type& space) { return space->list_voxels_exact(sp); });
     }
 
     std::vector<std::pair<ParticleID, Particle> > list_structure_particles() const;
@@ -893,6 +863,31 @@ protected:
     Integer add_structure2(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
     Integer add_structure3(const Species& sp, const std::string& location, const boost::shared_ptr<const Shape> shape);
     bool is_surface_voxel(const Voxel& voxel, const boost::shared_ptr<const Shape> shape) const;
+
+private:
+
+    template<typename F>
+    std::vector<std::pair<ParticleID, Particle>>
+    list_particles_private(F f) const
+    {
+        std::vector<std::pair<ParticleID, Particle> > list;
+        for (const auto& space : spaces_)
+        {
+            for (const auto& pair : f(space))
+            {
+                const auto pid(pair.first);
+                const Particle particle(
+                        pair.second.species,
+                        space->coordinate2position(pair.second.coordinate),
+                        pair.second.radius,
+                        pair.second.D,
+                        pair.second.loc
+                    );
+                list.push_back(std::make_pair(pid, particle));
+            }
+        }
+        return list;
+    }
 
 public:
 

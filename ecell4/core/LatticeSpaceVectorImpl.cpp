@@ -480,17 +480,6 @@ LatticeSpaceVectorImpl::move_(
     return std::pair<coordinate_type, bool>(to, true);
 }
 
-const Particle LatticeSpaceVectorImpl::particle_at(
-    const coordinate_type& coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-
-    return Particle(vp->species(),
-                    coordinate2position(coord),
-                    vp->radius(),
-                    vp->D());
-}
-
 /*
  * Change the Species and coordinate of a ParticleVoxel with ParticleID, pid, to
  * v.species() and v.coordinate() respectively and return false.
