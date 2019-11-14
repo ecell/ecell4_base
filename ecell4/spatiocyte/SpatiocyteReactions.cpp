@@ -9,19 +9,15 @@ namespace spatiocyte
 
 // Utilities
 
-inline
-const std::string
-get_serial(boost::shared_ptr<SpatiocyteWorld> world,
-           const Voxel& voxel)
+inline const std::string get_serial(boost::shared_ptr<SpatiocyteWorld> world,
+                                    const Voxel &voxel)
 {
     boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
     return mtype->is_vacant() ? "" : mtype->species().serial();
 }
 
-inline
-const std::string
-get_location(boost::shared_ptr<SpatiocyteWorld> world,
-             const Voxel& voxel)
+inline const std::string get_location(boost::shared_ptr<SpatiocyteWorld> world,
+                                      const Voxel &voxel)
 {
     boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
     if (mtype->is_vacant())
@@ -30,22 +26,23 @@ get_location(boost::shared_ptr<SpatiocyteWorld> world,
     return ltype->is_vacant() ? "" : ltype->species().serial();
 }
 
-static inline void
-make_product(boost::shared_ptr<SpatiocyteWorld> world,
-             ReactionInfo& rinfo,
-             const Species& species,
-             const Voxel voxel)
+static inline void make_product(boost::shared_ptr<SpatiocyteWorld> world,
+                                ReactionInfo &rinfo, const Species &species,
+                                const Voxel voxel)
 {
-    if (world->has_species(species) && world->find_voxel_pool(species)->is_structure())
+    if (world->has_species(species) &&
+        world->find_voxel_pool(species)->is_structure())
     {
-        if (boost::optional<ParticleID> new_pid = world->new_voxel_structure(species, voxel))
+        if (boost::optional<ParticleID> new_pid =
+                world->new_voxel_structure(species, voxel))
         {
             rinfo.add_product(ReactionInfo::Item(*new_pid, species, voxel));
         }
     }
     else
     {
-        if (boost::optional<ParticleID> new_pid = world->new_particle(species, voxel))
+        if (boost::optional<ParticleID> new_pid =
+                world->new_particle(species, voxel))
         {
             rinfo.add_product(ReactionInfo::Item(*new_pid, species, voxel));
         }
@@ -54,10 +51,9 @@ make_product(boost::shared_ptr<SpatiocyteWorld> world,
 
 // Application of reactions
 
-ReactionInfo
-apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
-          const ReactionInfo::Item& reactant_item,
-          const Species& product_species)
+ReactionInfo apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
+                       const ReactionInfo::Item &reactant_item,
+                       const Species &product_species)
 {
     const Voxel voxel(reactant_item.voxel);
     const std::string bloc(world->get_molecule_info(product_species).loc);
@@ -88,17 +84,18 @@ apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
         else
         {
             // When B is the location of A, it's enough to remove A
-            std::pair<ParticleID, Species> id_species_pair(world->get_voxel_at(voxel));
-            rinfo.add_product(ReactionInfo::Item(id_species_pair.first,
-                                                 id_species_pair.second,
-                                                 voxel));
+            std::pair<ParticleID, Species> id_species_pair(
+                world->get_voxel_at(voxel));
+            rinfo.add_product(ReactionInfo::Item(
+                id_species_pair.first, id_species_pair.second, voxel));
         }
     }
     else
     {
         // A is NOT on the location of B.
         // B must be released into a neighbor, which is the location of B
-        if (boost::optional<Voxel> neighbor = world->check_neighbor(voxel, bloc))
+        if (boost::optional<Voxel> neighbor =
+                world->check_neighbor(voxel, bloc))
         {
             // The neighbor is the location of B.
             // Place B at the neighbor, and remove A.
@@ -112,19 +109,18 @@ apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
     return rinfo;
 }
 
-ReactionInfo apply_a2bc(
-        boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::Item& reactant_item,
-        const Species& product_species0,
-        const Species& product_species1)
+ReactionInfo apply_a2bc(boost::shared_ptr<SpatiocyteWorld> world,
+                        const ReactionInfo::Item &reactant_item,
+                        const Species &product_species0,
+                        const Species &product_species1)
 {
     // A (pinfo) becomes B and C (product_species0 and product_species1)
     // At least, one of A and B must be placed at the neighbor.
     const Voxel voxel(reactant_item.voxel);
     const std::string bserial(product_species0.serial()),
-                      cserial(product_species1.serial()),
-                      bloc(world->get_molecule_info(product_species0).loc),
-                      cloc(world->get_molecule_info(product_species1).loc);
+        cserial(product_species1.serial()),
+        bloc(world->get_molecule_info(product_species0).loc),
+        cloc(world->get_molecule_info(product_species1).loc);
     const std::string aserial(get_serial(world, voxel));
     const std::string aloc(get_location(world, voxel));
 
@@ -141,7 +137,7 @@ ReactionInfo apply_a2bc(
 
         if (!neighbor)
         {
-            //TODO: C cannot be on the neighbor.
+            // TODO: C cannot be on the neighbor.
             return rinfo;
         }
 
@@ -167,10 +163,10 @@ ReactionInfo apply_a2bc(
         else
         {
             // When B is the location of A, it's enough to remove A
-            std::pair<ParticleID, Species> id_species_pair(world->get_voxel_at(voxel));
-            rinfo.add_product(ReactionInfo::Item(id_species_pair.first,
-                                                 id_species_pair.second,
-                                                 voxel));
+            std::pair<ParticleID, Species> id_species_pair(
+                world->get_voxel_at(voxel));
+            rinfo.add_product(ReactionInfo::Item(
+                id_species_pair.first, id_species_pair.second, voxel));
         }
 
         // Place a new C-molecule at the neighbor
@@ -188,7 +184,7 @@ ReactionInfo apply_a2bc(
 
         if (!neighbor)
         {
-            //TODO: B cannot be on the neighbor.
+            // TODO: B cannot be on the neighbor.
             return rinfo;
         }
 
@@ -217,20 +213,19 @@ ReactionInfo apply_a2bc(
         else
         {
             // When C is the location of A, it's enough to remove A
-            std::pair<ParticleID, Species> id_species_pair(world->get_voxel_at(voxel));
-            rinfo.add_product(ReactionInfo::Item(id_species_pair.first,
-                                                 id_species_pair.second,
-                                                 voxel));
+            std::pair<ParticleID, Species> id_species_pair(
+                world->get_voxel_at(voxel));
+            rinfo.add_product(ReactionInfo::Item(
+                id_species_pair.first, id_species_pair.second, voxel));
         }
         return rinfo;
     }
     return rinfo;
 }
 
-ReactionInfo apply_vanishment(
-        boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::Item& reactant_item0,
-        const ReactionInfo::Item& reactant_item1)
+ReactionInfo apply_vanishment(boost::shared_ptr<SpatiocyteWorld> world,
+                              const ReactionInfo::Item &reactant_item0,
+                              const ReactionInfo::Item &reactant_item1)
 {
     ReactionInfo rinfo(world->t());
     rinfo.add_reactant(reactant_item0);
@@ -242,11 +237,10 @@ ReactionInfo apply_vanishment(
     return rinfo;
 }
 
-ReactionInfo apply_ab2c(
-        boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::Item& reactant_item0,
-        const ReactionInfo::Item& reactant_item1,
-        const Species& product_species)
+ReactionInfo apply_ab2c(boost::shared_ptr<SpatiocyteWorld> world,
+                        const ReactionInfo::Item &reactant_item0,
+                        const ReactionInfo::Item &reactant_item1,
+                        const Species &product_species)
 {
     const Voxel voxel0(reactant_item0.voxel);
     const Voxel voxel1(reactant_item1.voxel);
@@ -296,14 +290,12 @@ ReactionInfo apply_ab2c(
 }
 
 // For apply_ab2cd
-ReactionInfo apply_ab2cd_in_order(
-        boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::Item& reactant_item0,
-        const ReactionInfo::Item& reactant_item1,
-        const Species& product_species0,
-        const Species& product_species1,
-        const Voxel& voxel0,
-        const Voxel& voxel1)
+ReactionInfo apply_ab2cd_in_order(boost::shared_ptr<SpatiocyteWorld> world,
+                                  const ReactionInfo::Item &reactant_item0,
+                                  const ReactionInfo::Item &reactant_item1,
+                                  const Species &product_species0,
+                                  const Species &product_species1,
+                                  const Voxel &voxel0, const Voxel &voxel1)
 {
     ReactionInfo rinfo(world->t());
     rinfo.add_reactant(reactant_item0);
@@ -315,15 +307,14 @@ ReactionInfo apply_ab2cd_in_order(
     return rinfo;
 }
 
-ReactionInfo apply_ab2cd(
-        boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionInfo::Item& reactant_item0,
-        const ReactionInfo::Item& reactant_item1,
-        const Species& product_species0,
-        const Species& product_species1)
+ReactionInfo apply_ab2cd(boost::shared_ptr<SpatiocyteWorld> world,
+                         const ReactionInfo::Item &reactant_item0,
+                         const ReactionInfo::Item &reactant_item1,
+                         const Species &product_species0,
+                         const Species &product_species1)
 {
-    const Voxel& src(reactant_item0.voxel);
-    const Voxel& dst(reactant_item1.voxel);
+    const Voxel &src(reactant_item0.voxel);
+    const Voxel &dst(reactant_item1.voxel);
 
     const std::string aserial(get_serial(world, src));
     const std::string aloc(get_location(world, src));
@@ -346,7 +337,9 @@ ReactionInfo apply_ab2cd(
                 // Remove B once if B is not the location of D
                 dst.clear();
             }
-            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, src, dst);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1,
+                                        product_species0, product_species1, src,
+                                        dst);
         }
         else
         {
@@ -360,7 +353,9 @@ ReactionInfo apply_ab2cd(
                     // Remove A once if A is not the location of C
                     src.clear();
                 }
-                return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, src, *neighbor);
+                return apply_ab2cd_in_order(world, reactant_item0,
+                                            reactant_item1, product_species0,
+                                            product_species1, src, *neighbor);
             }
         }
     }
@@ -378,7 +373,9 @@ ReactionInfo apply_ab2cd(
                 // Remove B once if B is not the location of C
                 dst.clear();
             }
-            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, dst, src);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1,
+                                        product_species0, product_species1, dst,
+                                        src);
         }
         else
         {
@@ -392,13 +389,16 @@ ReactionInfo apply_ab2cd(
                     // Remove A once if A is not the location of D
                     src.clear();
                 }
-                return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, *neighbor, src);
+                return apply_ab2cd_in_order(world, reactant_item0,
+                                            reactant_item1, product_species0,
+                                            product_species1, *neighbor, src);
             }
         }
     }
     else if (bserial == cloc || bloc == cloc)
     {
-        if (boost::optional<Voxel> neighbor = (world->check_neighbor(dst, dloc)))
+        if (boost::optional<Voxel> neighbor =
+                (world->check_neighbor(dst, dloc)))
         {
             src.clear();
             if (bserial != cloc)
@@ -406,7 +406,9 @@ ReactionInfo apply_ab2cd(
                 // Remove B once if B is not the location of C
                 dst.clear();
             }
-            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, dst, *neighbor);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1,
+                                        product_species0, product_species1, dst,
+                                        *neighbor);
         }
     }
     else if (bserial == dloc || bloc == dloc)
@@ -419,34 +421,38 @@ ReactionInfo apply_ab2cd(
                 // remove b once if b is not the location of d
                 dst.clear();
             }
-            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1, product_species0, product_species1, *neighbor, dst);
+            return apply_ab2cd_in_order(world, reactant_item0, reactant_item1,
+                                        product_species0, product_species1,
+                                        *neighbor, dst);
         }
     }
     return ReactionInfo(world->t());
 }
 
-ReactionInfo apply_second_order_reaction(
-        boost::shared_ptr<SpatiocyteWorld> world,
-        const ReactionRule& reaction_rule,
-        const ReactionInfo::Item& reactant_item0,
-        const ReactionInfo::Item& reactant_item1)
+ReactionInfo
+apply_second_order_reaction(boost::shared_ptr<SpatiocyteWorld> world,
+                            const ReactionRule &reaction_rule,
+                            const ReactionInfo::Item &reactant_item0,
+                            const ReactionInfo::Item &reactant_item1)
 {
-    const ReactionRule::product_container_type& products(reaction_rule.products());
+    const ReactionRule::product_container_type &products(
+        reaction_rule.products());
 
     switch (products.size())
     {
-        case 0:
-            return apply_vanishment(world, reactant_item0, reactant_item1);
-        case 1:
-            return apply_ab2c(world, reactant_item0, reactant_item1, *(products.begin()));
-        case 2:
-            return apply_ab2cd(world, reactant_item0, reactant_item1,
-                               products.at(0), products.at(1));
-        default:
-            return ReactionInfo(world->t());
+    case 0:
+        return apply_vanishment(world, reactant_item0, reactant_item1);
+    case 1:
+        return apply_ab2c(world, reactant_item0, reactant_item1,
+                          *(products.begin()));
+    case 2:
+        return apply_ab2cd(world, reactant_item0, reactant_item1,
+                           products.at(0), products.at(1));
+    default:
+        return ReactionInfo(world->t());
     }
 }
 
-} // spatiocyte
+} // namespace spatiocyte
 
-} // ecell4
+} // namespace ecell4
