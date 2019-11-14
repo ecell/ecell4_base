@@ -3,6 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <numeric>
 #include <sstream>
 #include <stdexcept>
 
@@ -221,24 +222,12 @@ public:
 
     Real get_value(const Species &sp) const
     {
-        Real value(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            value += (*itr)->get_value(sp);
-        }
-        return value;
+        return static_cast<Real>(num_molecules(sp));
     }
 
     Real get_value_exact(const Species &sp) const
     {
-        Real value(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
-        {
-            value += (*itr)->get_value_exact(sp);
-        }
-        return value;
+        return static_cast<Real>(num_molecules_exact(sp));
     }
 
     const Real3 &edge_lengths() const { return get_root()->edge_lengths(); }

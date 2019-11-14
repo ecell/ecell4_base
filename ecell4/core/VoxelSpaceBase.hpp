@@ -182,16 +182,6 @@ public:
         return num_voxels_exact(sp);
     }
 
-    Real get_value(const Species &sp) const
-    {
-        return static_cast<Real>(num_molecules(sp));
-    }
-
-    Real get_value_exact(const Species &sp) const
-    {
-        return static_cast<Real>(num_molecules_exact(sp));
-    }
-
     /*
      * VoxelSpace Traits
      */
