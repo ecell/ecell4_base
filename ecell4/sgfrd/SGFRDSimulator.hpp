@@ -947,8 +947,8 @@ class SGFRDSimulator :
 
         const FaceID sh_fid = sh.structure_id();
         const Triangle&   f = this->polygon().triangle_at(sh_fid);
-        const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
 
+        const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
         const Real3 disp_com = direction_com * (l_com / length(direction_com));
         const Real3 disp_ipv = rotate(theta_ipv, f.normal(), dom.ipv()) *
                                (l_ipv / length(dom.ipv()));
@@ -964,23 +964,24 @@ class SGFRDSimulator :
         const ParticleID pid1 = dom.particle_id_at(0);
         const ParticleID pid2 = dom.particle_id_at(1);
 
-        const Real3&  pos_com(sh.position());
-        const FaceID& fid_com(sh.structure_id());
+        const std::pair<Real3, FaceID> pos_com(sh.position(), sh.structure_id());
+
         // ipv is a vector from p1 to p2
-        Real3 disp_p1 = disp_com + disp_ipv * (-p1.D() / (p1.D() + p2.D()));
-        Real3 disp_p2 = disp_com + disp_ipv * ( p2.D() / (p1.D() + p2.D()));
-        std::pair<Real3, FaceID> pos_p1(pos_com, fid_com);
-        std::pair<Real3, FaceID> pos_p2(pos_com, fid_com);
+        const Real3 disp_p1 = disp_com + disp_ipv * (-p1.D() / (p1.D() + p2.D()));
+        const Real3 disp_p2 = disp_com + disp_ipv * ( p2.D() / (p1.D() + p2.D()));
+        std::pair<Real3, FaceID> pos_p1(pos_com);
+        std::pair<Real3, FaceID> pos_p2(pos_com);
         SGFRD_TRACE(tracer_.write("p1 is on face %1%, p2 is on face %2%",
                                   get_face_id(pid1), get_face_id(pid2)))
 
         pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
         pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
 
+        // check distance between p1 and p2; it should be the same as l_ipv
         SGFRD_TRACE(tracer_.write("distance after travel = %1%",
                     ecell4::polygon::distance(this->polygon(), pos_p1, pos_p2)))
-        SGFRD_TRACE(tracer_.write("now p1 is on face %1%, p2 is on face %2%",
-                                  pos_p1.second, pos_p2.second))
+        assert(std::abs(ecell4::polygon::distance(
+                this->polygon(), pos_p1, pos_p2,  true) - l_ipv) < l_ipv * 1e-6);
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
@@ -2071,7 +2072,7 @@ class SGFRDSimulator :
                 lensq = dist2;
             }
         }
-        SGFRD_TRACE(tracer_.write("distance to barrier = %1%", lensq));
+        SGFRD_TRACE(tracer_.write("distance to barrier = %1%", std::sqrt(lensq)));
         return std::sqrt(lensq);
     }
     Real get_max_cone_size(const VertexID& vid) const
