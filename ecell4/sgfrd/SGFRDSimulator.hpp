@@ -981,7 +981,7 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("distance after travel = %1%",
                     ecell4::polygon::distance(this->polygon(), pos_p1, pos_p2)))
         assert(std::abs(ecell4::polygon::distance(
-                this->polygon(), pos_p1, pos_p2,  true) - l_ipv) < l_ipv * 1e-6);
+                this->polygon(), pos_p1, pos_p2) - l_ipv) < l_ipv * 1e-6);
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
