@@ -719,9 +719,40 @@ SGFRDSimulator::form_pair(
         shell_container_.check_add_shell(shid, pair_shell, pos_com.second,
                                          "create pair shell");
 
-        return add_event(create_pair(
-                    std::make_pair(shid, pair_circle),
-                    pid, p, partner_id, partner, ipv, len_ipv));
+        SGFRD_TRACE(tracer_.write("pair shell size = %1%", pair_shell_size);)
+
+        if(pos_com.second == fid)
+        {
+            // ipv is determined on the face `fid` where the particle belongs to.
+            // if the CoM locates on the same triangle, it's okay to store it
+            // as an ipv of the shell because the displacement will be calculated
+            // based on the position of CoM.
+            return add_event(create_pair(
+                        std::make_pair(shid, pair_circle),
+                        pid, p, partner_id, partner, ipv, len_ipv));
+        }
+        else
+        {
+            // if the CoM of p and partner locates on a different triangle,
+            // we need to re-calculate ipv. since different triangle can have
+            // different normal vector, so when the ipv is applied to particles,
+            // the position can be invalid.
+
+            const auto ipv_opposite = ecell4::polygon::direction(this->polygon(),
+                std::make_pair(partner.position(), partner_fid),
+                std::make_pair(p.position(), fid));
+
+            if(std::abs(length(ipv_opposite) - length(ipv)) > 1e-6)
+            {
+                throw std::runtime_error("inter-particle vector changes in each"
+                        " direction. Polygon has an abnormal shape or"
+                        " some internal error happens.");
+            }
+
+            return add_event(create_pair(
+                std::make_pair(shid, pair_circle),
+                pid, p, partner_id, partner, (ipv_opposite * -1.0), len_ipv));
+        }
     }
     SGFRD_TRACE(tracer_.write("pair shell size = %1%, min_shell_size = %2%",
                 pair_shell_size, sh_minim);)
