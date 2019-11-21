@@ -836,10 +836,18 @@ protected:
     Particle gen_particle_from(const space_type &space,
                                const ParticleVoxel &voxel) const
     {
-        const auto coordinate = space->coordinate2position(voxel.coordinate);
-        return Particle(voxel.species,
-                        space->coordinate2position(voxel.coordinate),
-                        voxel.radius, voxel.D, voxel.loc);
+        const auto position = space->coordinate2position(voxel.coordinate);
+        const auto minfo_iter = molecule_info_cache_.find(voxel.species);
+        if (minfo_iter != molecule_info_cache_.end())
+        {
+            const auto &minfo = minfo_iter->second;
+            return Particle(voxel.species, position, minfo.radius, minfo.D,
+                            minfo.loc);
+        }
+        else
+        {
+            return Particle(voxel.species, position, 0.0, 0.0, "");
+        }
     }
 
 private:
