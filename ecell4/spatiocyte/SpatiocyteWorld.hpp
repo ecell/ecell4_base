@@ -36,6 +36,19 @@ struct MoleculeInfo
     const Shape::dimension_kind dimension;
 };
 
+template <typename T>
+struct ParticleBase
+{
+    ParticleID pid;
+    const Species &species;
+    T voxel;
+
+    ParticleBase(ParticleID pid, const Species &species, T voxel)
+        : pid(pid), species(species), voxel(voxel)
+    {
+    }
+};
+
 class SpatiocyteWorld : public WorldInterface
 {
 public:
@@ -350,39 +363,23 @@ public:
         return total;
     }
 
-    std::vector<std::pair<ParticleID, ParticleVoxel>> list_voxels() const
+    std::vector<ParticleBase<Voxel>> list_voxels() const
     {
-        std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (const auto &space : spaces_)
-        {
-            auto voxels(space->list_voxels());
-            list.insert(list.end(), voxels.begin(), voxels.end());
-        }
-        return list;
+        return list_voxels_private(
+            [](const space_type &space) { return space->list_voxels(); });
     }
 
-    std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels(const Species &sp) const
+    std::vector<ParticleBase<Voxel>> list_voxels(const Species &sp) const
     {
-        std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (const auto &space : spaces_)
-        {
-            auto voxels(space->list_voxels(sp));
-            list.insert(list.end(), voxels.begin(), voxels.end());
-        }
-        return list;
+        return list_voxels_private(
+            [&sp](const space_type &space) { return space->list_voxels(sp); });
     }
 
-    std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels_exact(const Species &sp) const
+    std::vector<ParticleBase<Voxel>> list_voxels_exact(const Species &sp) const
     {
-        std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (const auto &space : spaces_)
-        {
-            auto voxels(space->list_voxels_exact(sp));
-            list.insert(list.end(), voxels.begin(), voxels.end());
-        }
-        return list;
+        return list_voxels_private([&sp](const space_type &space) {
+            return space->list_voxels_exact(sp);
+        });
     }
 
     Species get_species_at(const Voxel &voxel) const
@@ -846,20 +843,44 @@ protected:
     }
 
 private:
-    template <typename F>
-    std::vector<std::pair<ParticleID, Particle>>
-    list_particles_private(F f) const
+    template <typename T, typename ListFn, typename Fn>
+    std::vector<T> map_voxels(ListFn list_f, Fn f) const
     {
-        std::vector<std::pair<ParticleID, Particle>> list;
+        std::vector<T> list;
         for (const auto &space : spaces_)
         {
-            for (const auto &pair : f(space))
+            const auto voxels(list_f(space));
+            list.reserve(list.size() + voxels.size());
+            for (const auto &item : voxels)
             {
-                list.push_back(std::make_pair(
-                    pair.first, gen_particle_from(space, pair.second)));
+                list.push_back(f(space, item));
             }
         }
         return list;
+    }
+
+    template <typename ListFn>
+    std::vector<std::pair<ParticleID, Particle>>
+    list_particles_private(ListFn list_fn) const
+    {
+        return map_voxels<std::pair<ParticleID, Particle>>(
+            list_fn, [this](const space_type &space,
+                            const std::pair<ParticleID, ParticleVoxel> &pair) {
+                return std::make_pair(pair.first,
+                                      gen_particle_from(space, pair.second));
+            });
+    }
+
+    template <typename ListFn>
+    std::vector<ParticleBase<Voxel>> list_voxels_private(ListFn list_fn) const
+    {
+        return map_voxels<ParticleBase<Voxel>>(
+            list_fn, [](const space_type &space,
+                        const std::pair<ParticleID, ParticleVoxel> &voxel) {
+                return ParticleBase<Voxel>(
+                    voxel.first, voxel.second.species,
+                    Voxel(space, voxel.second.coordinate));
+            });
     }
 
 public:
