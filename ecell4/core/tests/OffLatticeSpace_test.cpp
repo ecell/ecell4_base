@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_move)
 
     BOOST_CHECK(space.can_move(3, 4));
     BOOST_CHECK(space.move(3, 4, 0));
-    BOOST_CHECK_EQUAL(space.get_voxel_at(3).first, ParticleID());
-    BOOST_CHECK_EQUAL(space.get_voxel_at(4).first, pid);
+    BOOST_CHECK_EQUAL(space.get_voxel_at(3).pid, ParticleID());
+    BOOST_CHECK_EQUAL(space.get_voxel_at(4).pid, pid);
 
     BOOST_CHECK(!space.can_move(3, 4));
 }
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)
     BOOST_CHECK(space.update_voxel(pid, voxel));
 
     BOOST_CHECK_NO_THROW(space.get_voxel_at(3));
-    BOOST_CHECK_EQUAL(space.get_voxel_at(3).first, pid);
+    BOOST_CHECK_EQUAL(space.get_voxel_at(3).pid, pid);
 
     BOOST_CHECK_NO_THROW(space.particle_at(3));
     BOOST_CHECK_EQUAL(space.particle_at(3).species(), species);

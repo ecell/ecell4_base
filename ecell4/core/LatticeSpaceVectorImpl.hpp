@@ -39,9 +39,6 @@ public:
     std::vector<VoxelView> list_voxels(const Species &sp) const;
     std::vector<VoxelView> list_voxels_exact(const Species &sp) const;
 
-    std::pair<ParticleID, ParticleVoxel>
-    get_voxel_at(const coordinate_type &coord) const;
-
     bool update_voxel(const ParticleID &pid, ParticleVoxel v);
     bool add_voxel(const Species &species, const ParticleID &pid,
                    const coordinate_type &coord);

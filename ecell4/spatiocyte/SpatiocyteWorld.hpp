@@ -380,10 +380,8 @@ public:
 
     std::pair<ParticleID, Species> get_voxel_at(const Voxel &voxel) const
     {
-        std::pair<ParticleID, ParticleVoxel> id_voxel_pair(
-            voxel.space.lock()->get_voxel_at(voxel.coordinate));
-        return std::make_pair(id_voxel_pair.first,
-                              id_voxel_pair.second.species);
+        const auto view(voxel.space.lock()->get_voxel_at(voxel.coordinate));
+        return std::make_pair(view.pid, view.species);
     }
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &species)

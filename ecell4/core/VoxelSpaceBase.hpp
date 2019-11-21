@@ -243,8 +243,11 @@ public:
     virtual std::vector<VoxelView> list_voxels(const Species &sp) const;
     virtual std::vector<VoxelView> list_voxels_exact(const Species &sp) const;
 
-    virtual std::pair<ParticleID, ParticleVoxel>
-    get_voxel_at(const coordinate_type &coord) const = 0;
+    VoxelView get_voxel_at(const coordinate_type &coord) const
+    {
+        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
+        return VoxelView(vp->get_particle_id(coord), vp->species(), coord);
+    }
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &sp);
     boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species &sp) const;

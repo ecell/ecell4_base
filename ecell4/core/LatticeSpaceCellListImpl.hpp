@@ -227,15 +227,6 @@ public:
     virtual bool add_voxel(const Species &sp, const ParticleID &pid,
                            const coordinate_type &coord);
 
-    virtual std::pair<ParticleID, ParticleVoxel>
-    get_voxel_at(const coordinate_type &coord) const
-    {
-        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
-        return std::make_pair(vp->get_particle_id(coord),
-                              ParticleVoxel(vp->species(), coord, vp->radius(),
-                                            vp->D(), get_location_serial(vp)));
-    }
-
     virtual bool remove_voxel(const ParticleID &pid)
     {
         std::pair<boost::shared_ptr<VoxelPool>, coordinate_type> target(

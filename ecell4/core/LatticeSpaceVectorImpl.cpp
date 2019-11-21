@@ -64,16 +64,6 @@ Integer LatticeSpaceVectorImpl::num_species() const
     return voxel_pools_.size() + molecule_pools_.size();
 }
 
-std::pair<ParticleID, ParticleVoxel>
-LatticeSpaceVectorImpl::get_voxel_at(const coordinate_type &coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-
-    return std::make_pair(vp->get_particle_id(coord),
-                          ParticleVoxel(vp->species(), coord, vp->radius(),
-                                        vp->D(), get_location_serial(vp)));
-}
-
 bool LatticeSpaceVectorImpl::update_structure(const Particle &p)
 {
     // XXX: Particle does not have a location.

@@ -94,16 +94,6 @@ OffLatticeSpace::get_coord(const ParticleID &pid) const
  */
 
 // Same as LatticeSpaceVectorImpl
-std::pair<ParticleID, ParticleVoxel>
-OffLatticeSpace::get_voxel_at(const coordinate_type &coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-    return std::make_pair(vp->get_particle_id(coord),
-                          ParticleVoxel(vp->species(), coord, vp->radius(),
-                                        vp->D(), get_location_serial(vp)));
-}
-
-// Same as LatticeSpaceVectorImpl
 const Particle OffLatticeSpace::particle_at(const coordinate_type &coord) const
 {
     boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
