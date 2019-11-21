@@ -9,13 +9,12 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species &sp) const
     Integer count(0);
     SpeciesExpressionMatcher sexp(sp);
 
-    for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
+    for (const auto &info : molecule_pools_)
     {
-        const Integer cnt(sexp.count((*itr).first));
+        const Integer cnt(sexp.count(info.first));
         if (cnt > 0)
         {
-            const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+            const boost::shared_ptr<MoleculePool> &vp(info.second);
             count += vp->size() * cnt;
         }
     }
@@ -103,10 +102,9 @@ std::pair<boost::shared_ptr<VoxelPool>,
           LatticeSpaceCellListImpl::coordinate_type>
 LatticeSpaceCellListImpl::__get_coordinate(const ParticleID &pid)
 {
-    for (molecule_pool_map_type::iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
+    for (auto &info : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+        const boost::shared_ptr<MoleculePool> &vp(info.second);
         MoleculePool::container_type::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {
@@ -121,10 +119,9 @@ std::pair<boost::shared_ptr<const VoxelPool>,
           LatticeSpaceCellListImpl::coordinate_type>
 LatticeSpaceCellListImpl::__get_coordinate(const ParticleID &pid) const
 {
-    for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
-         itr != molecule_pools_.end(); ++itr)
+    for (const auto &info : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+        const boost::shared_ptr<MoleculePool> &vp(info.second);
         MoleculePool::container_type::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {

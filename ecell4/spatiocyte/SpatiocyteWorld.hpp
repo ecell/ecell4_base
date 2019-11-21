@@ -105,10 +105,9 @@ public:
     {
         Real time(0.0);
 
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            time = std::max(time, (*itr)->t());
+            time = std::max(time, space->t());
         }
 
         return time;
@@ -116,10 +115,9 @@ public:
 
     void set_t(const Real &t)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (auto &space : spaces_)
         {
-            (*itr)->set_t(t);
+            space->set_t(t);
         }
     }
 
@@ -189,10 +187,9 @@ public:
 
     bool has_species(const Species &sp) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_species(sp))
+            if (space->has_species(sp))
                 return true;
         }
         return false;
@@ -201,10 +198,9 @@ public:
     Integer num_molecules(const Species &sp) const
     {
         Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            total += (*itr)->num_molecules(sp);
+            total += space->num_molecules(sp);
         }
         return total;
     }
@@ -212,10 +208,9 @@ public:
     Integer num_molecules_exact(const Species &sp) const
     {
         Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            total += (*itr)->num_molecules_exact(sp);
+            total += space->num_molecules_exact(sp);
         }
         return total;
     }
@@ -256,13 +251,12 @@ public:
     // Suggests: Rename to 'find_particle'
     std::pair<ParticleID, Particle> get_particle(const ParticleID &pid) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if (const auto &voxel = (*itr)->find_voxel(pid))
+            if (const auto &voxel = space->find_voxel(pid))
             {
                 return std::make_pair(pid,
-                                      gen_particle_from(*itr, voxel.get()));
+                                      gen_particle_from(space, voxel.get()));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
@@ -300,12 +294,11 @@ public:
 
     Real get_volume(const Species &sp) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_species(sp) &&
-                (*itr)->find_molecule_pool(sp)->is_structure())
-                return (*itr)->get_volume(sp);
+            if (space->has_species(sp) &&
+                space->find_molecule_pool(sp)->is_structure())
+                return space->get_volume(sp);
         }
         return 0.0;
     }
@@ -319,10 +312,9 @@ public:
 
     bool has_voxel(const ParticleID &pid) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_voxel(pid))
+            if (space->has_voxel(pid))
                 return true;
         }
         return false;
@@ -331,10 +323,9 @@ public:
     Integer num_voxels() const
     {
         Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            total += (*itr)->num_voxels();
+            total += space->num_voxels();
         }
         return total;
     }
@@ -342,10 +333,9 @@ public:
     Integer num_voxels(const Species &sp) const
     {
         Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            total += (*itr)->num_voxels(sp);
+            total += space->num_voxels(sp);
         }
         return total;
     }
@@ -353,10 +343,9 @@ public:
     Integer num_voxels_exact(const Species &sp) const
     {
         Integer total(0);
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            total += (*itr)->num_voxels_exact(sp);
+            total += space->num_voxels_exact(sp);
         }
         return total;
     }
@@ -364,11 +353,10 @@ public:
     std::vector<std::pair<ParticleID, ParticleVoxel>> list_voxels() const
     {
         std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
             std::vector<std::pair<ParticleID, ParticleVoxel>> voxels(
-                (*itr)->list_voxels());
+                space->list_voxels());
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -378,11 +366,10 @@ public:
     list_voxels(const Species &sp) const
     {
         std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
             std::vector<std::pair<ParticleID, ParticleVoxel>> voxels(
-                (*itr)->list_voxels(sp));
+                space->list_voxels(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -392,11 +379,10 @@ public:
     list_voxels_exact(const Species &sp) const
     {
         std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
             std::vector<std::pair<ParticleID, ParticleVoxel>> voxels(
-                (*itr)->list_voxels_exact(sp));
+                space->list_voxels_exact(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -422,11 +408,10 @@ public:
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &species)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_species(species))
-                return (*itr)->find_voxel_pool(species);
+            if (space->has_species(species))
+                return space->find_voxel_pool(species);
         }
         // create VoxelPool TODO
         return get_root()->find_voxel_pool(species);
@@ -436,21 +421,19 @@ public:
     boost::shared_ptr<const VoxelPool>
     find_voxel_pool(const Species &species) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_species(species))
-                return (*itr)->find_voxel_pool(species);
+            if (space->has_species(species))
+                return space->find_voxel_pool(species);
         }
         throw "No VoxelPool corresponding to a given Species is found";
     }
 
     bool has_molecule_pool(const Species &species) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_molecule_pool(species))
+            if (space->has_molecule_pool(species))
                 return true;
         }
         return false;
@@ -458,11 +441,10 @@ public:
 
     boost::shared_ptr<MoleculePool> find_molecule_pool(const Species &species)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_molecule_pool(species))
-                return (*itr)->find_molecule_pool(species);
+            if (space->has_molecule_pool(species))
+                return space->find_molecule_pool(species);
         }
         throw "No MoleculePool corresponding to a given Species is found";
     }
@@ -470,11 +452,10 @@ public:
     boost::shared_ptr<const MoleculePool>
     find_molecule_pool(const Species &species) const
     {
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_molecule_pool(species))
-                return (*itr)->find_molecule_pool(species);
+            if (space->has_molecule_pool(species))
+                return space->find_molecule_pool(species);
         }
         throw "No MoleculePool corresponding to a given Species is found";
     }
@@ -492,11 +473,10 @@ public:
      */
     bool update_voxel(const ParticleID &pid, ParticleVoxel v)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_voxel(pid))
-                return (*itr)->update_voxel(pid, v);
+            if (space->has_voxel(pid))
+                return space->update_voxel(pid, v);
         }
 
         return get_space(v.coordinate)->update_voxel(pid, v);
@@ -504,11 +484,10 @@ public:
 
     bool remove_voxel(const ParticleID &pid)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if ((*itr)->has_voxel(pid))
-                return (*itr)->remove_voxel(pid);
+            if (space->has_voxel(pid))
+                return space->remove_voxel(pid);
         }
         return false;
     }
@@ -706,10 +685,9 @@ public:
     std::vector<Species> list_species() const
     {
         std::vector<Species> list;
-        for (space_container_type::const_iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            std::vector<Species> species((*itr)->list_species());
+            std::vector<Species> species(space->list_species());
             list.insert(list.end(), species.begin(), species.end());
         }
         return list;
@@ -844,13 +822,12 @@ protected:
 
     space_type get_space(coordinate_type &coordinate)
     {
-        for (space_container_type::iterator itr(spaces_.begin());
-             itr != spaces_.end(); ++itr)
+        for (const auto &space : spaces_)
         {
-            if (coordinate < (*itr)->size())
-                return *itr;
+            if (coordinate < space->size())
+                return space;
 
-            coordinate -= (*itr)->size();
+            coordinate -= space->size();
         }
         return space_type();
     }

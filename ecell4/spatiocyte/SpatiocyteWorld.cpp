@@ -27,22 +27,21 @@ void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> space)
         }
     }
 
-    for (OneToManyMap<coordinate_type>::const_iterator itr(interfaces_.begin());
-         itr != interfaces_.end(); ++itr)
+    for (const auto &interface : interfaces_)
     {
         std::vector<coordinate_type> neighbors;
-        for (Integer i(0); i < get_root()->num_neighbors((*itr).first); ++i)
+        for (Integer i(0); i < get_root()->num_neighbors(interface.first); ++i)
         {
             const coordinate_type neighbor(
-                get_root()->get_neighbor((*itr).first, i));
+                get_root()->get_neighbor(interface.first, i));
             if (!interfaces_.find(neighbor))
                 neighbors.push_back(neighbor);
         }
 
-        for (std::vector<coordinate_type>::const_iterator jtr(
-                 (*itr).second.begin());
-             jtr != (*itr).second.end(); ++jtr)
-            neighbors_.extend(*jtr, neighbors);
+        for (const auto &adjoining : interface.second)
+        {
+            neighbors_.extend(adjoining, neighbors);
+        }
     }
 
     size_ += space->size();
@@ -72,20 +71,19 @@ SpatiocyteWorld::list_structure_particles() const
     tmp_type tmp_vector(structure_species.size());
     Integer num_elements(0);
 
-    for (std::vector<Species>::const_iterator itr(structure_species.begin());
-         itr != structure_species.end(); ++itr)
+    for (const auto &species : structure_species)
     {
-        std::vector<std::pair<ParticleID, Particle>> tmp(list_particles(*itr));
+        std::vector<std::pair<ParticleID, Particle>> tmp(
+            list_particles(species));
         tmp_vector.push_back(tmp);
         num_elements += tmp.size();
     }
 
     std::vector<std::pair<ParticleID, Particle>> retval;
     retval.reserve(num_elements);
-    for (tmp_type::const_iterator itr(tmp_vector.begin());
-         itr != tmp_vector.end(); ++itr)
+    for (const auto &tmp : tmp_vector)
     {
-        retval.insert(retval.end(), (*itr).begin(), (*itr).end());
+        retval.insert(retval.end(), tmp.begin(), tmp.end());
     }
 
     return retval;
@@ -101,21 +99,19 @@ SpatiocyteWorld::list_non_structure_particles() const
     tmp_type tmp_vector(non_structure_species.size());
     Integer num_elements(0);
 
-    for (std::vector<Species>::const_iterator itr(
-             non_structure_species.begin());
-         itr != non_structure_species.end(); ++itr)
+    for (const auto &species : non_structure_species)
     {
-        std::vector<std::pair<ParticleID, Particle>> tmp(list_particles(*itr));
+        std::vector<std::pair<ParticleID, Particle>> tmp(
+            list_particles(species));
         tmp_vector.push_back(tmp);
         num_elements += tmp.size();
     }
 
     std::vector<std::pair<ParticleID, Particle>> retval;
     retval.reserve(num_elements);
-    for (tmp_type::const_iterator itr(tmp_vector.begin());
-         itr != tmp_vector.end(); ++itr)
+    for (const auto &tmp : tmp_vector)
     {
-        retval.insert(retval.end(), (*itr).begin(), (*itr).end());
+        retval.insert(retval.end(), tmp.begin(), tmp.end());
     }
 
     return retval;
@@ -123,26 +119,22 @@ SpatiocyteWorld::list_non_structure_particles() const
 
 std::vector<Species> SpatiocyteWorld::list_non_structure_species() const
 {
-    const std::vector<Species> species(list_species());
     std::vector<Species> retval;
-    for (std::vector<Species>::const_iterator itr(species.begin());
-         itr != species.end(); ++itr)
+    for (const auto &species : list_species())
     {
-        if (!find_voxel_pool(*itr)->is_structure())
-            retval.push_back(*itr);
+        if (!find_voxel_pool(species)->is_structure())
+            retval.push_back(species);
     }
     return retval;
 }
 
 std::vector<Species> SpatiocyteWorld::list_structure_species() const
 {
-    const std::vector<Species> species(list_species());
     std::vector<Species> retval;
-    for (std::vector<Species>::const_iterator itr(species.begin());
-         itr != species.end(); ++itr)
+    for (const auto &species : list_species())
     {
-        if (find_voxel_pool(*itr)->is_structure())
-            retval.push_back(*itr);
+        if (find_voxel_pool(species)->is_structure())
+            retval.push_back(species);
     }
     return retval;
 }

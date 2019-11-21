@@ -46,10 +46,8 @@ void StepEvent3D::walk(const Real &alpha)
     copy(mpool_->begin(), mpool_->end(), back_inserter(voxels));
 
     std::size_t idx(0);
-    for (MoleculePool::container_type::iterator itr(voxels.begin());
-         itr != voxels.end(); ++itr)
+    for (const auto &info : voxels)
     {
-        const SpatiocyteWorld::coordinate_id_pair_type &info(*itr);
         const Voxel voxel(world_->coordinate2voxel(info.coordinate));
         const Integer rnd(rng->uniform_int(0, voxel.num_neighbors() - 1));
 
@@ -110,11 +108,8 @@ void StepEvent2D::walk(const Real &alpha)
     copy(mpool_->begin(), mpool_->end(), back_inserter(voxels));
 
     std::size_t idx(0);
-    for (MoleculePool::container_type::iterator itr(voxels.begin());
-         itr != voxels.end(); ++itr)
+    for (const auto &info : voxels)
     {
-        const SpatiocyteWorld::coordinate_id_pair_type &info(*itr);
-
         // TODO: Calling coordinate2voxel is invalid
         const Voxel voxel(world_->coordinate2voxel(info.coordinate));
 
@@ -128,13 +123,12 @@ void StepEvent2D::walk(const Real &alpha)
         const std::size_t num_neighbors(voxel.num_neighbors());
 
         ecell4::shuffle(*(rng.get()), nids_);
-        for (std::vector<unsigned int>::const_iterator itr(nids_.begin());
-             itr != nids_.end(); ++itr)
+        for (const auto &index : nids_)
         {
-            if (*itr >= num_neighbors)
+            if (index >= num_neighbors)
                 continue;
 
-            const Voxel neighbor(voxel.get_neighbor(*itr));
+            const Voxel neighbor(voxel.get_neighbor(index));
             boost::shared_ptr<const VoxelPool> target(
                 neighbor.get_voxel_pool());
 
@@ -185,10 +179,9 @@ void StepEvent::attempt_reaction_(
     const Real rnd(world_->rng()->uniform(0, 1));
     Real accp(0.0);
 
-    for (std::vector<ReactionRule>::const_iterator itr(rules.begin());
-         itr != rules.end(); ++itr)
+    for (const auto &rule : rules)
     {
-        const Real k((*itr).k());
+        const Real k(rule.k());
         const Real P(k * factor * alpha);
         accp += P;
         if (accp > 1 && k != std::numeric_limits<Real>::infinity())
@@ -200,13 +193,13 @@ void StepEvent::attempt_reaction_(
         if (accp >= rnd)
         {
             ReactionInfo rinfo(apply_second_order_reaction(
-                world_, *itr,
+                world_, rule,
                 ReactionInfo::Item(info.pid, from_mt->species(), voxel),
                 ReactionInfo::Item(to_mt->get_particle_id(dst.coordinate),
                                    to_mt->species(), dst)));
             if (rinfo.has_occurred())
             {
-                reaction_type reaction(std::make_pair(*itr, rinfo));
+                reaction_type reaction(std::make_pair(rule, rinfo));
                 push_reaction(reaction);
             }
             return;

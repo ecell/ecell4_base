@@ -20,11 +20,8 @@ void ZerothOrderReactionEvent::fire_()
 {
     ReactionInfo rinfo(world_->t());
 
-    for (ReactionRule::product_container_type::const_iterator i(
-             rule_.products().begin());
-         i != rule_.products().end(); ++i)
+    for (const auto &sp : rule_.products())
     {
-        const Species &sp(*i);
         const MoleculeInfo info(world_->get_molecule_info(sp));
 
         if (boost::shared_ptr<VoxelPool> location =

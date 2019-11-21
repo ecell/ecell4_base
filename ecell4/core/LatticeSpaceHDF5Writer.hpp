@@ -105,13 +105,11 @@ struct LatticeSpaceHDF5Traits
         std::size_t vidx(0);
         boost::scoped_array<h5_voxel_struct> h5_voxel_array(
             new h5_voxel_struct[num_voxels]);
-        for (std::vector<std::pair<ParticleID, ParticleVoxel>>::const_iterator
-                 itr(voxels.begin());
-             itr != voxels.end(); ++itr)
+        for (const auto &voxel : voxels)
         {
-            h5_voxel_array[vidx].lot = (*itr).first.lot();
-            h5_voxel_array[vidx].serial = (*itr).first.serial();
-            h5_voxel_array[vidx].coordinate = (*itr).second.coordinate;
+            h5_voxel_array[vidx].lot = voxel.first.lot();
+            h5_voxel_array[vidx].serial = voxel.first.serial();
+            h5_voxel_array[vidx].coordinate = voxel.second.coordinate;
             ++vidx;
         }
 
@@ -167,10 +165,9 @@ void save_lattice_space(const Tspace_ &space, H5::Group *root,
 
     const std::vector<Species> species(space.list_species());
     std::multimap<Species, const VoxelPool *> location_map;
-    for (std::vector<Species>::const_iterator itr(species.begin());
-         itr != species.end(); ++itr)
+    for (const auto &sp : species)
     {
-        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(*itr));
+        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(sp));
         Species location(mtb->location()->species());
         location_map.insert(
             std::make_pair(location, mtb.get())); // XXX: remove .get()
@@ -339,10 +336,8 @@ void load_lattice_space(const H5::Group &root, Tspace_ *space,
 
     std::vector<Species> sp_list;
     traits_type::sort_by_location(location_map, sp_list);
-    for (std::vector<Species>::iterator itr(sp_list.begin());
-         itr != sp_list.end(); ++itr)
+    for (const auto &species : sp_list)
     {
-        Species species(*itr);
         traits_type::h5_species_struct property(
             (*struct_map.find(species)).second);
         std::vector<std::pair<ParticleID, Integer>> voxels(
