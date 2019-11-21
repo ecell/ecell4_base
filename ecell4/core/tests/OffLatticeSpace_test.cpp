@@ -136,13 +136,6 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)
 
     BOOST_CHECK_NO_THROW(space.get_voxel_at(3));
     BOOST_CHECK_EQUAL(space.get_voxel_at(3).pid, pid);
-
-    BOOST_CHECK_NO_THROW(space.particle_at(3));
-    BOOST_CHECK_EQUAL(space.particle_at(3).species(), species);
-    BOOST_CHECK_EQUAL(space.particle_at(3).position(),
-                      space.coordinate2position(3));
-    BOOST_CHECK_EQUAL(space.particle_at(3).radius(), 2.5e-9);
-    BOOST_CHECK_EQUAL(space.particle_at(3).D(), 1e-12);
 }
 
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_neighbor)

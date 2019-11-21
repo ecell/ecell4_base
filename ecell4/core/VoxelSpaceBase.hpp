@@ -294,9 +294,7 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer actual_size() const = 0;
 
-    bool make_molecular_type(const Species &sp, Real radius, Real D,
-                             const std::string loc);
-
+    bool make_molecular_type(const Species &sp, const std::string loc);
     bool make_structure_type(const Species &sp, const std::string loc);
 
     virtual bool is_inside(const coordinate_type &coord) const { return true; }

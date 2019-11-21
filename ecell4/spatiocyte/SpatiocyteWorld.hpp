@@ -682,7 +682,7 @@ public:
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
-            space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
+            space->make_molecular_type(sp, minfo.loc);
         }
 
         ParticleID pid(sidgen_());
@@ -700,7 +700,7 @@ public:
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
-            space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
+            space->make_molecular_type(sp, minfo.loc);
         }
 
         ParticleID pid;

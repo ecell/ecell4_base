@@ -635,9 +635,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         boost::shared_ptr<const VoxelPool> vp1(space.find_voxel_pool(species));
         boost::shared_ptr<const VoxelPool> vp2(space2.find_voxel_pool(species));
 
-        BOOST_CHECK_EQUAL(vp1->radius(), vp2->radius());
-        BOOST_CHECK_EQUAL(vp1->D(), vp2->D());
-
         const MoleculePool *mtb1(dynamic_cast<const MoleculePool *>(vp1.get()));
         const MoleculePool *mtb2(dynamic_cast<const MoleculePool *>(vp2.get()));
         BOOST_ASSERT((mtb1 && mtb2) || (!mtb1 && !mtb2));

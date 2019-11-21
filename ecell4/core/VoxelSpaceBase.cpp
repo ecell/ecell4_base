@@ -231,7 +231,7 @@ VoxelSpaceBase::find_molecule_pool(const Species &sp) const
     throw NotFound("MoleculePool not found.");
 }
 
-bool VoxelSpaceBase::make_molecular_type(const Species &sp, Real radius, Real D,
+bool VoxelSpaceBase::make_molecular_type(const Species &sp,
                                          const std::string loc)
 {
     molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
@@ -246,7 +246,7 @@ bool VoxelSpaceBase::make_molecular_type(const Species &sp, Real radius, Real D,
     }
 
     boost::shared_ptr<MoleculePool> vp(
-        new MoleculePool(sp, find_voxel_pool(Species(loc)), radius, D));
+        new MoleculePool(sp, find_voxel_pool(Species(loc))));
 
     std::pair<molecule_pool_map_type::iterator, bool> retval(
         molecule_pools_.insert(molecule_pool_map_type::value_type(sp, vp)));
@@ -273,7 +273,7 @@ bool VoxelSpaceBase::make_structure_type(const Species &sp,
     }
 
     boost::shared_ptr<VoxelPool> vp(
-        new StructureType(sp, find_voxel_pool(Species(loc)), voxel_radius_));
+        new StructureType(sp, find_voxel_pool(Species(loc))));
     std::pair<voxel_pool_map_type::iterator, bool> retval(
         voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
     if (!retval.second)
@@ -295,7 +295,7 @@ boost::shared_ptr<VoxelPool> VoxelSpaceBase::get_voxel_pool(ParticleVoxel voxel)
     {
         // Create a new molecular pool
 
-        if (!make_molecular_type(sp, voxel.radius, voxel.D, voxel.loc))
+        if (!make_molecular_type(sp, voxel.loc))
         {
             throw IllegalState("never reach here");
         }

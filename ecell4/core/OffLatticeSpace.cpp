@@ -12,7 +12,7 @@ OffLatticeSpace::OffLatticeSpace(const Real &voxel_radius,
     : base_type(voxel_radius), voxels_(), positions_(), adjoinings_()
 {
     vacant_ = boost::shared_ptr<VoxelPool>(
-        new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
+        new StructureType(species, boost::weak_ptr<VoxelPool>()));
 }
 
 OffLatticeSpace::OffLatticeSpace(
@@ -22,7 +22,7 @@ OffLatticeSpace::OffLatticeSpace(
     : base_type(voxel_radius), voxels_(), positions_(), adjoinings_()
 {
     vacant_ = boost::shared_ptr<VoxelPool>(
-        new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
+        new StructureType(species, boost::weak_ptr<VoxelPool>()));
     reset(positions, adjoining_pairs);
 }
 
@@ -92,14 +92,6 @@ OffLatticeSpace::get_coord(const ParticleID &pid) const
 /*
  * public functions
  */
-
-// Same as LatticeSpaceVectorImpl
-const Particle OffLatticeSpace::particle_at(const coordinate_type &coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-    return Particle(vp->species(), coordinate2position(coord), vp->radius(),
-                    vp->D());
-}
 
 // Same as LatticeSpaceVectorImpl
 bool OffLatticeSpace::update_voxel(const ParticleID &pid, ParticleVoxel v)

@@ -54,8 +54,6 @@ public:
         edge_lengths_ = edge_lengths;
     }
 
-    const Particle particle_at(const coordinate_type &coord) const;
-
     /*
      * VoxelSpace Traits
      */
