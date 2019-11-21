@@ -251,6 +251,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
         }
 
         const boost::shared_ptr<VoxelPool> &vp(pool.second);
+        const Species &sp(vp->species());
         const std::string loc(get_location_serial(vp));
         for (voxel_container::const_iterator i(voxels_.begin());
              i != voxels_.end(); ++i)
@@ -275,6 +276,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
         }
 
         const boost::shared_ptr<MoleculePool> &vp(pool.second);
+        const Species &sp(vp->species());
         const std::string loc(get_location_serial(vp));
         for (const auto &voxel : *vp)
         {
