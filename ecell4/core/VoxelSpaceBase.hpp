@@ -207,19 +207,16 @@ public:
 
     boost::shared_ptr<const VoxelPool> vacant() const { return vacant_; }
 
-    boost::optional<ParticleVoxel> find_voxel(const ParticleID &pid) const
+    boost::optional<VoxelView> find_voxel(const ParticleID &pid) const
     {
         for (const auto &key_value : molecule_pools_)
         {
-            const auto &species(key_value.first);
             const auto &pool(key_value.second);
 
             const auto itr(pool->find(pid));
             if (itr != pool->end())
             {
-                const std::string location_serial(get_location_serial(pool));
-                return ParticleVoxel(species, itr->coordinate, pool->radius(),
-                                     pool->D(), location_serial);
+                return VoxelView(pid, pool->species(), itr->coordinate);
             }
         }
         return boost::none;

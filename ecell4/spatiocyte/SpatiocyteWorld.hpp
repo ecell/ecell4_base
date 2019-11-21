@@ -252,11 +252,10 @@ public:
     {
         for (const auto &space : spaces_)
         {
-            if (const auto &voxel = space->find_voxel(pid))
+            if (const auto &view = space->find_voxel(pid))
             {
-                return std::make_pair(pid,
-                                      gen_particle_from(space, voxel->species,
-                                                        voxel->coordinate));
+                return std::make_pair(
+                    pid, gen_particle_from(space, view->species, view->voxel));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
