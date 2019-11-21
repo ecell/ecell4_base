@@ -355,8 +355,7 @@ public:
         std::vector<std::pair<ParticleID, ParticleVoxel>> list;
         for (const auto &space : spaces_)
         {
-            std::vector<std::pair<ParticleID, ParticleVoxel>> voxels(
-                space->list_voxels());
+            auto voxels(space->list_voxels());
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -368,8 +367,7 @@ public:
         std::vector<std::pair<ParticleID, ParticleVoxel>> list;
         for (const auto &space : spaces_)
         {
-            std::vector<std::pair<ParticleID, ParticleVoxel>> voxels(
-                space->list_voxels(sp));
+            auto voxels(space->list_voxels(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
@@ -381,8 +379,7 @@ public:
         std::vector<std::pair<ParticleID, ParticleVoxel>> list;
         for (const auto &space : spaces_)
         {
-            std::vector<std::pair<ParticleID, ParticleVoxel>> voxels(
-                space->list_voxels_exact(sp));
+            auto voxels(space->list_voxels_exact(sp));
             list.insert(list.end(), voxels.begin(), voxels.end());
         }
         return list;
