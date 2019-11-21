@@ -128,18 +128,19 @@ Integer VoxelSpaceBase::num_voxels() const
     return count;
 }
 
-void VoxelSpaceBase::push_voxels(
-    std::vector<std::pair<ParticleID, ParticleVoxel>> &voxels,
-    const boost::shared_ptr<MoleculePool> &voxel_pool,
-    const Species &species) const
+static inline void
+push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel>> &voxels,
+            const boost::shared_ptr<const MoleculePool> &voxel_pool,
+            const Species &species)
 {
     const std::string location_serial(get_location_serial(voxel_pool));
-    for (MoleculePool::const_iterator i(voxel_pool->begin());
-         i != voxel_pool->end(); ++i)
+    for (const auto &voxel : *voxel_pool)
+    {
         voxels.push_back(std::make_pair(
-            (*i).pid,
-            ParticleVoxel(species, (*i).coordinate, voxel_pool->radius(),
+            voxel.pid,
+            ParticleVoxel(species, voxel.coordinate, voxel_pool->radius(),
                           voxel_pool->D(), location_serial)));
+    }
 }
 
 std::vector<std::pair<ParticleID, ParticleVoxel>>

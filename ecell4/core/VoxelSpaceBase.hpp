@@ -29,7 +29,8 @@ double rint(const double x);
 double round(const double x);
 #endif
 
-template <typename T> static inline std::string get_location_serial(T vp)
+template <typename T>
+static inline std::string get_location_serial(T vp)
 {
     if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant())
     {
@@ -39,7 +40,8 @@ template <typename T> static inline std::string get_location_serial(T vp)
     return vp->location()->species().serial();
 }
 
-class VoxelSpaceBase {
+class VoxelSpaceBase
+{
 public:
     typedef ParticleVoxel::coordinate_type coordinate_type;
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
@@ -303,10 +305,6 @@ public:
 
 protected:
     boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
-
-    void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel>> &voxels,
-                     const boost::shared_ptr<MoleculePool> &voxel_pool,
-                     const Species &species) const;
 
 protected:
     Real t_;
