@@ -129,23 +129,19 @@ Integer VoxelSpaceBase::num_voxels() const
 }
 
 static inline void
-push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel>> &voxels,
+push_voxels(std::vector<VoxelView> &voxels,
             const boost::shared_ptr<const MoleculePool> &voxel_pool)
 {
-    const std::string location_serial(get_location_serial(voxel_pool));
     for (const auto &voxel : *voxel_pool)
     {
-        voxels.push_back(std::make_pair(
-            voxel.pid, ParticleVoxel(voxel_pool->species(), voxel.coordinate,
-                                     voxel_pool->radius(), voxel_pool->D(),
-                                     location_serial)));
+        voxels.push_back(
+            VoxelView(voxel.pid, voxel_pool->species(), voxel.coordinate));
     }
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
-VoxelSpaceBase::list_voxels() const
+std::vector<VoxelView> VoxelSpaceBase::list_voxels() const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
@@ -157,10 +153,9 @@ VoxelSpaceBase::list_voxels() const
     return retval;
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
-VoxelSpaceBase::list_voxels(const Species &sp) const
+std::vector<VoxelView> VoxelSpaceBase::list_voxels(const Species &sp) const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
     SpeciesExpressionMatcher sexp(sp);
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
@@ -171,10 +166,10 @@ VoxelSpaceBase::list_voxels(const Species &sp) const
     return retval;
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
+std::vector<VoxelView>
 VoxelSpaceBase::list_voxels_exact(const Species &sp) const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
 
     molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
     if (itr != molecule_pools_.end())

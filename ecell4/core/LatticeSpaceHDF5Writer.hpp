@@ -19,6 +19,7 @@
 #include "VacantType.hpp"
 #include "VoxelPool.hpp"
 #include "VoxelSpaceBase.hpp"
+#include "VoxelView.hpp"
 #include "types.hpp"
 
 #include "Space.hpp" // just for Space::space_kind
@@ -56,10 +57,8 @@ struct LatticeSpaceHDF5Traits
         return voxel_comp_type;
     }
 
-    static void
-    save_voxel_pool(const VoxelPool *mtb,
-                    std::vector<std::pair<ParticleID, ParticleVoxel>> voxels,
-                    H5::Group *group)
+    static void save_voxel_pool(const VoxelPool *mtb,
+                                std::vector<VoxelView> voxels, H5::Group *group)
     {
         const Species species(mtb->species());
         boost::scoped_ptr<H5::Group> mtgroup(
@@ -105,11 +104,11 @@ struct LatticeSpaceHDF5Traits
         std::size_t vidx(0);
         boost::scoped_array<h5_voxel_struct> h5_voxel_array(
             new h5_voxel_struct[num_voxels]);
-        for (const auto &voxel : voxels)
+        for (const auto &view : voxels)
         {
-            h5_voxel_array[vidx].lot = voxel.first.lot();
-            h5_voxel_array[vidx].serial = voxel.first.serial();
-            h5_voxel_array[vidx].coordinate = voxel.second.coordinate;
+            h5_voxel_array[vidx].lot = view.pid.lot();
+            h5_voxel_array[vidx].serial = view.pid.serial();
+            h5_voxel_array[vidx].coordinate = view.voxel;
             ++vidx;
         }
 

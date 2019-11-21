@@ -35,20 +35,6 @@ struct MoleculeInfo
     const std::string loc;
     const Shape::dimension_kind dimension;
 };
-
-template <typename T>
-struct ParticleBase
-{
-    ParticleID pid;
-    const Species &species;
-    T voxel;
-
-    ParticleBase(ParticleID pid, const Species &species, T voxel)
-        : pid(pid), species(species), voxel(voxel)
-    {
-    }
-};
-
 class SpatiocyteWorld : public WorldInterface
 {
 public:
@@ -269,7 +255,8 @@ public:
             if (const auto &voxel = space->find_voxel(pid))
             {
                 return std::make_pair(pid,
-                                      gen_particle_from(space, voxel.get()));
+                                      gen_particle_from(space, voxel->species,
+                                                        voxel->coordinate));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
@@ -833,20 +820,20 @@ protected:
     bool is_surface_voxel(const Voxel &voxel,
                           const boost::shared_ptr<const Shape> shape) const;
 
-    Particle gen_particle_from(const space_type &space,
-                               const ParticleVoxel &voxel) const
+    Particle gen_particle_from(const space_type &space, const Species &species,
+                               const coordinate_type coordinate) const
     {
-        const auto position = space->coordinate2position(voxel.coordinate);
-        const auto minfo_iter = molecule_info_cache_.find(voxel.species);
+        const auto position = space->coordinate2position(coordinate);
+        const auto minfo_iter = molecule_info_cache_.find(species);
         if (minfo_iter != molecule_info_cache_.end())
         {
             const auto &minfo = minfo_iter->second;
-            return Particle(voxel.species, position, minfo.radius, minfo.D,
+            return Particle(species, position, minfo.radius, minfo.D,
                             minfo.loc);
         }
         else
         {
-            return Particle(voxel.species, position, 0.0, 0.0, "");
+            return Particle(species, position, 0.0, 0.0, "");
         }
     }
 
@@ -872,10 +859,10 @@ private:
     list_particles_private(ListFn list_fn) const
     {
         return map_voxels<std::pair<ParticleID, Particle>>(
-            list_fn, [this](const space_type &space,
-                            const std::pair<ParticleID, ParticleVoxel> &pair) {
-                return std::make_pair(pair.first,
-                                      gen_particle_from(space, pair.second));
+            list_fn, [this](const space_type &space, const VoxelView &view) {
+                return std::make_pair(
+                    view.pid,
+                    gen_particle_from(space, view.species, view.voxel));
             });
     }
 
@@ -883,11 +870,9 @@ private:
     std::vector<ParticleBase<Voxel>> list_voxels_private(ListFn list_fn) const
     {
         return map_voxels<ParticleBase<Voxel>>(
-            list_fn, [](const space_type &space,
-                        const std::pair<ParticleID, ParticleVoxel> &voxel) {
-                return ParticleBase<Voxel>(
-                    voxel.first, voxel.second.species,
-                    Voxel(space, voxel.second.coordinate));
+            list_fn, [](const space_type &space, const VoxelView &view) {
+                return ParticleBase<Voxel>(view.pid, view.species,
+                                           Voxel(space, view.voxel));
             });
     }
 

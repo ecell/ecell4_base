@@ -35,11 +35,9 @@ public:
      *
      * using Species and coordinate_type
      */
-    std::vector<std::pair<ParticleID, ParticleVoxel>> list_voxels() const;
-    std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels(const Species &sp) const;
-    std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels_exact(const Species &sp) const;
+    std::vector<VoxelView> list_voxels() const;
+    std::vector<VoxelView> list_voxels(const Species &sp) const;
+    std::vector<VoxelView> list_voxels_exact(const Species &sp) const;
 
     std::pair<ParticleID, ParticleVoxel>
     get_voxel_at(const coordinate_type &coord) const;

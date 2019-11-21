@@ -1,10 +1,10 @@
 #define BOOST_TEST_MODULE "OffLatticeSpace_test"
 
 #ifdef UNITTEST_FRAMEWORK_LIBRARY_EXIST
-#   include <boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 #else
-#   define BOOST_TEST_NO_LIB
-#   include <boost/test/included/unit_test.hpp>
+#define BOOST_TEST_NO_LIB
+#include <boost/test/included/unit_test.hpp>
 #endif
 
 #include <boost/test/floating_point_comparison.hpp>
@@ -23,30 +23,27 @@ struct Fixture
     OffLatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
 
-    Fixture() :
-        voxel_radius(2.5e-9),
-        base(/* serial = */ "Base",
-             /* radius = */ 2.5e-9,
-             /* D = */      1e-12),
-        species(/* serial = */   "SpeciesA",
-                /* radius = */   2.5e-9,
-                /* D = */        1e-12,
-                /* location = */ "Base"),
-        voxel(/* species = */    species,
-              /* coordinate = */ 3,
-              /* radius = */     2.5e-9,
-              /* D = */          1e-12),
-        space(voxel_radius, base)
+    Fixture()
+        : voxel_radius(2.5e-9), base(/* serial = */ "Base",
+                                     /* radius = */ 2.5e-9,
+                                     /* D = */ 1e-12),
+          species(/* serial = */ "SpeciesA",
+                  /* radius = */ 2.5e-9,
+                  /* D = */ 1e-12,
+                  /* location = */ "Base"),
+          voxel(/* species = */ species,
+                /* coordinate = */ 3,
+                /* radius = */ 2.5e-9,
+                /* D = */ 1e-12),
+          space(voxel_radius, base)
     {
         OffLatticeSpace::position_container positions;
         const Real unit(voxel_radius / sqrt(3.0));
         for (int i(0); i < 10; ++i)
-            positions.push_back(
-                    Real3(unit * i, unit * i, unit * i));
+            positions.push_back(Real3(unit * i, unit * i, unit * i));
         OffLatticeSpace::coordinate_pair_list_type adjoining_pairs;
-        for (int i(1); i < 10; ++i )
-            adjoining_pairs.push_back(
-                    std::make_pair(i-1, i));
+        for (int i(1); i < 10; ++i)
+            adjoining_pairs.push_back(std::make_pair(i - 1, i));
         space = OffLatticeSpace(voxel_radius, base, positions, adjoining_pairs);
     }
 };
@@ -85,9 +82,9 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxelspacebase)
     BOOST_CHECK_EQUAL(space.list_voxels(species).size(), 1);
     BOOST_CHECK_EQUAL(space.list_voxels_exact(species).size(), 1);
 
-    BOOST_CHECK_EQUAL(space.list_voxels().at(0).first, pid);
-    BOOST_CHECK_EQUAL(space.list_voxels(species).at(0).first, pid);
-    BOOST_CHECK_EQUAL(space.list_voxels_exact(species).at(0).first, pid);
+    BOOST_CHECK_EQUAL(space.list_voxels().at(0).pid, pid);
+    BOOST_CHECK_EQUAL(space.list_voxels(species).at(0).pid, pid);
+    BOOST_CHECK_EQUAL(space.list_voxels_exact(species).at(0).pid, pid);
 
     BOOST_CHECK_NO_THROW(space.find_voxel_pool(species));
     BOOST_CHECK(space.has_molecule_pool(species));
@@ -142,7 +139,8 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)
 
     BOOST_CHECK_NO_THROW(space.particle_at(3));
     BOOST_CHECK_EQUAL(space.particle_at(3).species(), species);
-    BOOST_CHECK_EQUAL(space.particle_at(3).position(), space.coordinate2position(3));
+    BOOST_CHECK_EQUAL(space.particle_at(3).position(),
+                      space.coordinate2position(3));
     BOOST_CHECK_EQUAL(space.particle_at(3).radius(), 2.5e-9);
     BOOST_CHECK_EQUAL(space.particle_at(3).D(), 1e-12);
 }

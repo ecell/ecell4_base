@@ -15,6 +15,7 @@
 #include "Shape.hpp"
 #include "VacantType.hpp"
 #include "VoxelPool.hpp"
+#include "VoxelView.hpp"
 #include "get_mapper_mf.hpp"
 
 #ifdef WITH_HDF5
@@ -241,12 +242,9 @@ public:
     Integer num_voxels(const Species &sp) const;
     Integer num_voxels() const;
 
-    virtual std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels() const;
-    virtual std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels(const Species &sp) const;
-    virtual std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels_exact(const Species &sp) const;
+    virtual std::vector<VoxelView> list_voxels() const;
+    virtual std::vector<VoxelView> list_voxels(const Species &sp) const;
+    virtual std::vector<VoxelView> list_voxels_exact(const Species &sp) const;
 
     virtual std::pair<ParticleID, ParticleVoxel>
     get_voxel_at(const coordinate_type &coord) const = 0;
