@@ -808,7 +808,6 @@ class SGFRDWorld
                 const auto lei0 = polygon_->length_of(ei0);
                 const auto lei1 = polygon_->length_of(ei1);
                 const auto lei2 = polygon_->length_of(ei2);
-                const auto dei0 = polygon_->direction_of(ei0);
                 const auto dei1 = polygon_->direction_of(ei1);
                 const auto dei2 = polygon_->direction_of(ei2);
 
