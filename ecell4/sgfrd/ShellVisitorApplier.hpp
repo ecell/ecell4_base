@@ -4,6 +4,7 @@
 #include "Single.hpp"
 #include "Pair.hpp"
 #include "Multi.hpp"
+#include "Birth.hpp"
 
 namespace ecell4
 {
@@ -62,6 +63,26 @@ struct shell_visitor_applier
         }
         return !Functor::eval_manner::value;
     }
+
+    template<typename Functor>
+    typename boost::enable_if<
+        boost::is_same<void, typename Functor::result_type>, void>::type
+    operator()(Functor&, const Birth&)
+    {
+        // Birth domain does not have any shell. do nothing.
+        return ;
+    }
+
+    template<typename Functor>
+    typename boost::disable_if<
+        boost::is_same<void, typename Functor::result_type>, void>::type
+    operator()(Functor&, const Birth&)
+    {
+        // Birth domain does not have any shell. do nothing.
+        // if the return value is not void, return a default value.
+        return typename Functor::result_type();
+    }
+
 };
 
 } // sgfrd
