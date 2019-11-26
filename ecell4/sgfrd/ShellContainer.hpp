@@ -412,25 +412,27 @@ std::vector<std::pair<std::pair<ShellID, ShellContainer::storage_type>, Real>>
 ShellContainer::list_shells_within_radius_impl(
         const Real3& pos, const Real radius, F ignore) const
 {
-    //XXX need more sophisticated way than brute-force searching
-    std::vector<std::pair<std::pair<ShellID, storage_type>, Real>> retval;
-    const distance_calculator distance(pos);
-    for(const auto& shp : this->container_)
-    {
-        const auto& shid  = shp.first;
-        const auto& shell = shp.second;
-        if(ignore(shid)) {continue;}
-
-        const Real dist = boost::apply_visitor(distance, shell);
-        if(dist < radius)
-        {
-            retval.emplace_back(shp, dist);
-        }
-    }
-    std::sort(retval.begin(), retval.end(),
-              ecell4::utils::pair_second_element_comparator<
-                  std::pair<ShellID, storage_type>, Real>());
-    return retval;
+    throw NotSupported(
+            "sGFRD does not support list_shells_within_radius in 3D space");
+//     //XXX need more sophisticated way than brute-force searching
+//     std::vector<std::pair<std::pair<ShellID, storage_type>, Real>> retval;
+//     const distance_calculator distance(pos);
+//     for(const auto& shp : this->container_)
+//     {
+//         const auto& shid  = shp.first;
+//         const auto& shell = shp.second;
+//         if(ignore(shid)) {continue;}
+//
+//         const Real dist = boost::apply_visitor(distance, shell);
+//         if(dist < radius)
+//         {
+//             retval.emplace_back(shp, dist);
+//         }
+//     }
+//     std::sort(retval.begin(), retval.end(),
+//               ecell4::utils::pair_second_element_comparator<
+//                   std::pair<ShellID, storage_type>, Real>());
+//     return retval;
 }
 
 template<typename strID, typename F>
