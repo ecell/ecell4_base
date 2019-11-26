@@ -139,12 +139,23 @@ class SGFRDSimulator :
             // already initialized. do nothing.
             return;
         }
+
+        // add tight shells for each particle
         ParticleID pid; Particle p;
         for(const auto& pidp : this->world_->list_particles())
         {
             std::tie(pid, p) = pidp;
             add_event(create_tight_domain(create_tight_shell(
                       pid, p, this->get_face_id(pid)), pid, p));
+        }
+
+        // add birth domains for each 0-th order reaction rule
+        for(const auto& rule : this->model_->reaction_rules())
+        {
+            if(rule.reactants().empty()) // it is 0-th order
+            {
+                this->add_birth_event(rule);
+            }
         }
         this->is_dirty_ = false;
         return ;
@@ -1538,10 +1549,54 @@ class SGFRDSimulator :
 
     void fire_birth(const Birth& dom, DomainID did)
     {
-        //TODO
+        SGFRD_SCOPE(ns, fire_birth, tracer_);
+
+        const auto& rule = dom.rule();
+        assert(rule.products().size() == 1);
+
+        const auto&     sp = rule.products().front();
+        const auto molinfo = this->world_->get_molecule_info(sp);
+
+        constexpr std::size_t max_retry_position = 1000;  // 1 means no retry.
+        for(std::size_t i = 0; i < max_retry_position; ++i)
+        {
+            FaceID fid;
+            const Real3 pos = this->polygon().draw_position(this->world_->rng(), fid);
+            const Particle p(sp, pos, molinfo.radius, molinfo.D);
+
+            const bool no_overlap = this->burst_and_shrink_overlaps(p, fid, did);
+            if(no_overlap)
+            {
+                const auto pp = this->create_particle(p, fid);
+                assert(pp.second);
+
+                const auto pid = pp.first.first;
+
+                // record this birth reaction
+                last_reactions_.emplace_back(rule, make_synthesis_reaction_info(
+                        this->time(), pid, pp.first.second));
+
+                // add tight shell for the new particle
+                add_event(create_tight_domain(
+                          create_tight_shell(pid, p, fid), pid, p));
+                break;
+            }
+        }
+
+        // anyway, re-register the Birth reaction for the next time
+
+        add_birth_event(rule);
         return;
     }
 
+    DomainID add_birth_event(const ReactionRule& rule)
+    {
+        const auto rnd = this->rng_.uniform(0, 1);
+        const auto dt  = std::log(1.0 / rnd) /
+                         (rule.k() * this->polygon().total_area());
+        Birth new_event(dt, this->time(), rule);
+        return this->add_event(new_event);
+    }
 
 // -----------------------------------------------------------------------------
 
