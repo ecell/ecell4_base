@@ -171,6 +171,9 @@ class SGFRDSimulator :
         {
             this->burst_event(this->scheduler_.pop(), tm);
         }
+
+        // clear dt to correctly step in SimulatorBase::run();
+        this->dt_ = 0.0;
         return ;
     }
     void finalize(const Real t)
@@ -186,6 +189,9 @@ class SGFRDSimulator :
         {
             this->burst_event(this->scheduler_.pop(), tm);
         }
+
+        // clear dt to correctly step in SimulatorBase::run();
+        this->dt_ = 0.0;
         return ;
     }
 
