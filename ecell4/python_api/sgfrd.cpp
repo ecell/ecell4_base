@@ -152,7 +152,8 @@ void define_sgfrd_world(py::module& m)
             &world_type::list_surface_positions)
         .def("list_surface_positions_exact", &world_type::list_surface_positions_exact)
         .def("bind_to", &world_type::bind_to)
-        .def("rng", &world_type::rng);
+        .def("rng", (boost::shared_ptr<RandomNumberGenerator>& (world_type::*)())
+                    &world_type::rng);
     m.attr("World") = world;
 }
 

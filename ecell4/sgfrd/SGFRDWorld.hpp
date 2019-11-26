@@ -143,7 +143,8 @@ class SGFRDWorld
 
     ~SGFRDWorld() override = default;
 
-    boost::shared_ptr<RandomNumberGenerator> const& rng() {return this->rng_;}
+    boost::shared_ptr<RandomNumberGenerator> const& rng() const noexcept {return this->rng_;}
+    boost::shared_ptr<RandomNumberGenerator>&       rng()       noexcept {return this->rng_;}
     boost::shared_ptr<polygon_type> const& polygon() const {return polygon_;}
 
     // -----------------------------------------------------------------------
