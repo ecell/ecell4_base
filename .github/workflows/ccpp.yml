@@ -16,12 +16,14 @@ jobs:
     - name: hdf5
       run: wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2 && tar xf hdf5-1.10.4.tar.bz2 && cd hdf5-1.10.4 && ./configure --enable-cxx --prefix=/opt/hdf5 && make && sudo make install && cd ..
     - name: setuppy
-      run: python3 setup.py build && sudo python3 setup.py install && sudo python3 setup.py test
-      env:
-        PATH: /opt/hdf5/bin:${PATH}
-        LD_LIBRARY_PATH: /opt/hdf5/lib:${LD_LIBRARY_PATH}
-        LIBRARY_PATH: /opt/hdf5/lib:${LIBRARY_PATH}
-        LD_RN_PATH: /opt/hdf5/lib:${LD_RUN_PATH}
-        INCLUDE_PATH: /opt/hdf5/include:${INCLUDE_PATH}
+      run: |
+        export PATH=/opt/hdf5/bin:${PATH}
+        export LIBRARY_PATH=/opt/hdf5/lib:${LIBRARY_PATH}
+        export LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH}
+        export LD_RUN_PATH=/opt/hdf5/lib:${LD_RUN_PATH}
+        export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH}
+        python3 setup.py build
+        python3 setup.py test
+        sudo python3 setup.py install
     - name: hoge
       run: pwd
