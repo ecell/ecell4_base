@@ -19,7 +19,7 @@ struct Fixture
     const Real voxel_radius;
     const Species base;
     const Species species;
-    const ParticleVoxel voxel;
+    const OffLatticeSpace::coordinate_type coordinate;
     OffLatticeSpace space;
     SerialIDGenerator<ParticleID> sidgen;
 
@@ -31,11 +31,7 @@ struct Fixture
                   /* radius = */ 2.5e-9,
                   /* D = */ 1e-12,
                   /* location = */ "Base"),
-          voxel(/* species = */ species,
-                /* coordinate = */ 3,
-                /* radius = */ 2.5e-9,
-                /* D = */ 1e-12),
-          space(voxel_radius, base)
+          coordinate(3), space(voxel_radius, base)
     {
         OffLatticeSpace::position_container positions;
         const Real unit(voxel_radius / sqrt(3.0));
@@ -61,7 +57,7 @@ BOOST_AUTO_TEST_CASE(CheckVacantSize)
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_molecules)
 {
     const ParticleID pid(sidgen());
-    space.update_voxel(pid, voxel);
+    space.update_voxel(pid, species, coordinate);
 
     BOOST_CHECK_EQUAL(space.num_molecules(species), 1);
 }
@@ -69,7 +65,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_molecules)
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxelspacebase)
 {
     const ParticleID pid(sidgen());
-    space.update_voxel(pid, voxel);
+    space.update_voxel(pid, species, coordinate);
 
     BOOST_CHECK_EQUAL(space.list_species().size(), 1);
     BOOST_CHECK_EQUAL(space.num_voxels_exact(species), 1);
@@ -97,7 +93,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxel)
     const ParticleID pid(sidgen());
 
     BOOST_CHECK(!space.has_voxel(pid));
-    BOOST_CHECK(space.update_voxel(pid, voxel));
+    BOOST_CHECK(space.update_voxel(pid, species, coordinate));
 
     BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(space.remove_voxel(pid));
@@ -106,7 +102,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxel)
     BOOST_CHECK(!space.remove_voxel(3));
 
     BOOST_CHECK(!space.has_voxel(pid));
-    BOOST_CHECK(space.update_voxel(pid, voxel));
+    BOOST_CHECK(space.update_voxel(pid, species, coordinate));
 
     BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(space.remove_voxel(3));
@@ -118,7 +114,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxel)
 BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_move)
 {
     const ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_voxel(pid, voxel));
+    BOOST_CHECK(space.update_voxel(pid, species, coordinate));
 
     BOOST_CHECK(space.can_move(3, 4));
     BOOST_CHECK(space.move(3, 4, 0));
@@ -133,7 +129,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_at)
     BOOST_CHECK_EQUAL(space.size(), 10);
 
     const ParticleID pid(sidgen());
-    BOOST_CHECK(space.update_voxel(pid, voxel));
+    BOOST_CHECK(space.update_voxel(pid, species, coordinate));
 
     BOOST_CHECK_NO_THROW(space.get_voxel_at(3));
     BOOST_CHECK_EQUAL(space.get_voxel_at(3).pid, pid);

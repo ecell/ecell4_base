@@ -90,7 +90,8 @@ public:
     /*
      * ParticleVoxel Manipulation
      */
-    bool update_voxel(const ParticleID &pid, ParticleVoxel v);
+    bool update_voxel(const ParticleID &pid, const Species &species,
+                      const coordinate_type coordinate);
     bool add_voxel(const Species &species, const ParticleID &pid,
                    const coordinate_type &coord);
     bool remove_voxel(const ParticleID &pid);

@@ -277,7 +277,8 @@ public:
     /*
      * ParticleVoxel Manipulation
      */
-    virtual bool update_voxel(const ParticleID &pid, ParticleVoxel v) = 0;
+    virtual bool update_voxel(const ParticleID &pid, const Species &species,
+                              const coordinate_type coordinate) = 0;
     virtual bool add_voxel(const Species &species, const ParticleID &pid,
                            const coordinate_type &coord) = 0;
     virtual bool remove_voxel(const ParticleID &pid) = 0;

@@ -453,8 +453,6 @@ public:
                       const Voxel voxel)
     {
         const MoleculeInfo minfo(get_molecule_info(species));
-        const ParticleVoxel v(species, voxel.coordinate, minfo.radius, minfo.D,
-                              minfo.loc);
 
         const auto target_space = voxel.space.lock();
         for (const auto &space : spaces_)
@@ -465,7 +463,8 @@ public:
                 {
                     space->remove_voxel(pid);
                 }
-                return target_space->update_voxel(pid, v);
+                return target_space->update_voxel(pid, species,
+                                                  voxel.coordinate);
             }
         }
 
@@ -473,7 +472,7 @@ public:
         {
             target_space->make_molecular_type(species, minfo.loc);
         }
-        return target_space->update_voxel(pid, v);
+        return target_space->update_voxel(pid, species, voxel.coordinate);
     }
 
     bool remove_voxel(const ParticleID &pid)

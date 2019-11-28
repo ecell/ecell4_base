@@ -223,7 +223,8 @@ public:
     //     update_matrix(coord, new_vp);
     // }
 
-    virtual bool update_voxel(const ParticleID &pid, ParticleVoxel v);
+    virtual bool update_voxel(const ParticleID &pid, const Species &species,
+                              const coordinate_type coordinate);
     virtual bool add_voxel(const Species &sp, const ParticleID &pid,
                            const coordinate_type &coord);
 
