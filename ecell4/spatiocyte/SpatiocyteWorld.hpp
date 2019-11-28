@@ -449,20 +449,31 @@ public:
     /*
      * ParticleVoxel Manipulation
      */
-    bool update_voxel(const ParticleID &pid, ParticleVoxel v)
+    bool update_voxel(const ParticleID &pid, const Species species,
+                      const Voxel voxel)
     {
+        const MoleculeInfo minfo(get_molecule_info(species));
+        const ParticleVoxel v(species, voxel.coordinate, minfo.radius, minfo.D,
+                              minfo.loc);
+
+        const auto target_space = voxel.space.lock();
         for (const auto &space : spaces_)
         {
             if (space->has_voxel(pid))
-                return space->update_voxel(pid, v);
+            {
+                if (space != target_space)
+                {
+                    space->remove_voxel(pid);
+                }
+                return target_space->update_voxel(pid, v);
+            }
         }
 
-        auto space = get_space(v.coordinate);
-        if (!space->has_species(v.species))
+        if (!target_space->has_species(species))
         {
-            space->make_molecular_type(v.species, v.loc);
+            target_space->make_molecular_type(species, minfo.loc);
         }
-        return space->update_voxel(pid, v);
+        return target_space->update_voxel(pid, v);
     }
 
     bool remove_voxel(const ParticleID &pid)
@@ -659,10 +670,7 @@ public:
     bool update_particle(const ParticleID &pid, const Particle &p)
     {
         const MoleculeInfo minfo(get_molecule_info(p.species()));
-        return update_voxel(
-            pid, ParticleVoxel(p.species(),
-                               get_voxel_nearby(p.position()).coordinate,
-                               minfo.radius, minfo.D, minfo.loc));
+        return update_voxel(pid, p.species(), get_voxel_nearby(p.position()));
     }
 
     std::vector<Species> list_species() const
