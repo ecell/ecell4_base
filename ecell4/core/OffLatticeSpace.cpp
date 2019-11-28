@@ -100,7 +100,7 @@ bool OffLatticeSpace::update_voxel(const ParticleID &pid, ParticleVoxel v)
     if (!is_in_range(to_coord))
         throw NotSupported("Out of bounds");
 
-    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v));
+    boost::shared_ptr<VoxelPool> new_vp(find_voxel_pool(v.species));
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())

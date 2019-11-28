@@ -283,32 +283,4 @@ bool VoxelSpaceBase::make_structure_type(const Species &sp,
     return retval.second;
 }
 
-boost::shared_ptr<VoxelPool> VoxelSpaceBase::get_voxel_pool(ParticleVoxel voxel)
-{
-    const Species &sp(voxel.species);
-
-    try
-    {
-        return find_voxel_pool(sp);
-    }
-    catch (const NotFound &_e)
-    {
-        // Create a new molecular pool
-
-        if (!make_molecular_type(sp, voxel.loc))
-        {
-            throw IllegalState("never reach here");
-        }
-
-        molecule_pool_map_type::iterator itr = molecule_pools_.find(sp);
-
-        if (itr == molecule_pools_.end())
-        {
-            throw IllegalState("never reach here");
-        }
-
-        return itr->second;
-    }
-}
-
 } // namespace ecell4

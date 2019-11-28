@@ -37,7 +37,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID &pid,
     }
 
     boost::shared_ptr<VoxelPool> new_vp(
-        get_voxel_pool(v)); // XXX: need MoleculeInfo
+        find_voxel_pool(v.species)); // XXX: need MoleculeInfo
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())

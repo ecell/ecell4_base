@@ -174,8 +174,7 @@ public:
 
     bool has_species(const Species &sp) const
     {
-        return (voxel_pools_.find(sp) != voxel_pools_.end() ||
-                molecule_pools_.find(sp) != molecule_pools_.end());
+        return num_voxels_exact(sp) != 0;
     }
 
     virtual Integer num_molecules(const Species &sp) const;
@@ -298,9 +297,6 @@ public:
     bool make_structure_type(const Species &sp, const std::string loc);
 
     virtual bool is_inside(const coordinate_type &coord) const { return true; }
-
-protected:
-    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
 
 protected:
     Real t_;

@@ -29,6 +29,7 @@ struct Fixture
           space(edge_lengths, voxel_radius, false), sidgen(), D(1e-12),
           radius(2.5e-9), sp("A", 2.5e-9, 1e-12)
     {
+        space.make_molecular_type(sp, "");
     }
 };
 
@@ -61,11 +62,6 @@ BOOST_AUTO_TEST_CASE(GetVoxel)
         BOOST_CHECK_EQUAL(view.pid, id);
         BOOST_CHECK_EQUAL(view.species, sp);
     }
-}
-
-BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_species)
-{
-    BOOST_CHECK_EQUAL(space.num_species(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(LatticeSpace_test_has_species)
@@ -102,6 +98,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_num_voxels)
     Real3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
+    BOOST_CHECK(space.make_molecular_type(a, ""));
     // Particle another(a, pos1, r1, d1);
     ParticleVoxel another(a, space.position2coordinate(pos1), r1, d1);
 
@@ -127,6 +124,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_list_voxels)
     Real3 pos1(1e-8, 2e-8, 1e-9);
     Real r1(1.1);
     Real d1(4.3);
+    BOOST_CHECK(space.make_molecular_type(a, ""));
     // Particle another(a, pos1, r1, d1);
     ParticleVoxel another(a, space.position2coordinate(pos1), r1, d1);
 
@@ -250,6 +248,9 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_update_molecule)
     const VoxelSpaceBase::coordinate_type coord(
         space.global2coordinate(global));
 
+    BOOST_CHECK(space.make_molecular_type(reactant, ""));
+    BOOST_CHECK(space.make_molecular_type(product, ""));
+
     ParticleID pid(sidgen());
     BOOST_CHECK(
         space.update_voxel(pid, ParticleVoxel(reactant, coord, radius, D)));
@@ -344,6 +345,7 @@ struct PeriodicFixture
           space(edge_lengths, voxel_radius, true), sidgen(), D(1e-12),
           radius(2.5e-9), sp(std::string("A"), 2.5e-9, 1e-12)
     {
+        space.make_molecular_type(sp, "");
     }
 };
 
@@ -520,6 +522,8 @@ struct StructureFixture
           radius(2.5e-9), structure("Structure", 2.5e-9, 0),
           sp("A", 2.5e-9, 1e-12, "Structure")
     {
+        space.make_structure_type(structure, "");
+        space.make_molecular_type(sp, structure.serial());
     }
 };
 
@@ -544,6 +548,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_update)
     BOOST_CHECK_EQUAL(space.list_voxels(sp).size(), 0);
 
     Species sp2("B", 2.5e-9, 1e-12);
+    BOOST_CHECK(space.make_molecular_type(sp2, ""));
     BOOST_CHECK_THROW(
         space.update_voxel(
             sidgen(),
@@ -561,6 +566,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_structure_move)
     BOOST_CHECK(space.update_structure(Particle(structure, pos1, radius, D)));
     BOOST_CHECK_EQUAL(space.list_voxels().size(), 1);
     BOOST_CHECK(space.update_structure(Particle(structure, pos2, radius, D)));
+    BOOST_CHECK_EQUAL(space.list_voxels().size(), 2); // TODO -> 0
     BOOST_CHECK_EQUAL(space.list_voxels().size(), 2); // TODO -> 0
 
     ParticleID pid(sidgen());
@@ -624,7 +630,6 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
     BOOST_CHECK_EQUAL(space.is_periodic(), space2.is_periodic());
     BOOST_CHECK_EQUAL(space.t(), space2.t());
     BOOST_CHECK_EQUAL(space.num_voxels(), space2.num_voxels());
-    BOOST_CHECK_EQUAL(space.num_species(), space2.num_species());
 
     std::vector<Species> species(space.list_species());
     for (std::vector<Species>::const_iterator itr(species.begin());

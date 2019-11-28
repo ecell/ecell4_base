@@ -45,6 +45,7 @@ struct Fixture
         for (int i(1); i < 10; ++i)
             adjoining_pairs.push_back(std::make_pair(i - 1, i));
         space = OffLatticeSpace(voxel_radius, base, positions, adjoining_pairs);
+        space.make_molecular_type(species, "");
     }
 };
 

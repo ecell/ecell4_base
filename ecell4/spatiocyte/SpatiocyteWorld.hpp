@@ -457,7 +457,12 @@ public:
                 return space->update_voxel(pid, v);
         }
 
-        return get_space(v.coordinate)->update_voxel(pid, v);
+        auto space = get_space(v.coordinate);
+        if (!space->has_species(v.species))
+        {
+            space->make_molecular_type(v.species, v.loc);
+        }
+        return space->update_voxel(pid, v);
     }
 
     bool remove_voxel(const ParticleID &pid)
@@ -657,7 +662,7 @@ public:
         return update_voxel(
             pid, ParticleVoxel(p.species(),
                                get_voxel_nearby(p.position()).coordinate,
-                               p.radius(), p.D(), minfo.loc));
+                               minfo.radius, minfo.D, minfo.loc));
     }
 
     std::vector<Species> list_species() const
@@ -700,7 +705,7 @@ public:
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
-            space->make_molecular_type(sp, minfo.loc);
+            space->make_structure_type(sp, minfo.loc);
         }
 
         ParticleID pid;
