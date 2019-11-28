@@ -12,7 +12,7 @@ jobs:
     - name: submodule
       run: git submodule init && git submodule update
     - name: deps
-      run: apt-get update && sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake && python3 -m pip install -U pip setuptools
+      run: sudo apt-get update && sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake && sudo python3 -m pip install -U pip setuptools
     - name: hdf5
       run: wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2 && tar xf hdf5-1.10.4.tar.bz2 && cd hdf5-1.10.4 && ./configure --enable-cxx --prefix=/opt/hdf5 && make && sudo make install && cd ..
     - name: export
