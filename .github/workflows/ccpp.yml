@@ -19,4 +19,5 @@ jobs:
       run: export PATH=/opt/hdf5/bin:${PATH} && export LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH} && export LIBRARY_PATH=/opt/hdf5/lib:${LIBRARY_PATH} && export LD_RUN_PATH=/opt/hdf5/lib:${LD_RUN_PATH} && export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH}
     - name: setuppy
       run: python3 setup.py build && sudo python3 setup.py install && sudo python3 setup.py test
-      
+    - name: hoge
+      run: pwd      
