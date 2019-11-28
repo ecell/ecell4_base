@@ -51,7 +51,7 @@ Install Miniconda with Python 3.7 for **64-bit** (from https://docs.conda.io/en/
 and run this command on **Anaconda Prompt**.
 
 ```
-conda install -c ecell ecell4_base
+conda install -c ecell ecell4
 ```
 
 ### Mac, Linux
@@ -60,14 +60,14 @@ and run these commands on your Terminal app.
 
 ```
 conda config --add channels conda-forge
-conda install -c ecell ecell4_base
+conda install -c ecell ecell4
 ```
 
-### Linux environment where you can NOT use conda
-We provide `ecell4_base` wheel package only for Linux.
+### Linux environment where you can NOT use conda (For example Google Colab)
+We provide `ecell4_base` (and `ecell4`) wheel package only for Linux.
 
 ```
-python3 -m pip install ecell4_base
+python3 -m pip install ecell4 ecell4_base
 ```
 
 ### If you want to compile ecell4_base by yourself
