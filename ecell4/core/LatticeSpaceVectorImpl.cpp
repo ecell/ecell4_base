@@ -433,10 +433,10 @@ LatticeSpaceVectorImpl::move_(coordinate_id_pair_type &info, coordinate_type to)
 }
 
 /*
- * Change the Species and coordinate of a ParticleVoxel with ParticleID, pid, to
- * v.species() and v.coordinate() respectively and return false.
- * If no ParticleVoxel with pid is found, create a new ParticleVoxel at
- * v.coordiante() and return true.
+ * Change the Species and coordinate of a Voxel with ParticleID, pid, to
+ * species and coordinate respectively and return false.
+ * If no Voxel with pid is found, create a new Voxel at
+ * coordiante() and return true.
  */
 bool LatticeSpaceVectorImpl::update_voxel(const ParticleID &pid,
                                           const Species &species,

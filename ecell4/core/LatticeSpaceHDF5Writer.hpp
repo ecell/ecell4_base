@@ -13,7 +13,6 @@
 #include <hdf5.h>
 
 #include "MoleculePool.hpp"
-#include "ParticleVoxel.hpp"
 #include "Species.hpp"
 #include "StructureType.hpp"
 #include "VacantType.hpp"

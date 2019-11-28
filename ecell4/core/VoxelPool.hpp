@@ -2,7 +2,6 @@
 #define ECELL4_MOLECULAR_TYPE_BASE_HPP
 
 #include "Identifier.hpp"
-#include "ParticleVoxel.hpp"
 #include "RandomNumberGenerator.hpp"
 #include "Shape.hpp"
 #include "Species.hpp"
@@ -16,7 +15,7 @@ namespace ecell4
 class VoxelPool
 {
 public:
-    typedef ParticleVoxel::coordinate_type coordinate_type;
+    typedef Integer coordinate_type;
 
     // typedef std::pair<coordinate_type, ParticleID> coordinate_id_pair_type;
     typedef struct coordinate_id_pair_type

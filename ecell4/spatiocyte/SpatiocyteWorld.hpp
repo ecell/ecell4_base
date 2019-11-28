@@ -447,7 +447,7 @@ public:
     }
 
     /*
-     * ParticleVoxel Manipulation
+     * Voxel Manipulation
      */
     bool update_voxel(const ParticleID &pid, const Species species,
                       const Voxel voxel)

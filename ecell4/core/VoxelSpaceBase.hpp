@@ -11,7 +11,6 @@
 #include "Integer3.hpp"
 #include "MoleculePool.hpp"
 #include "Particle.hpp"
-#include "ParticleVoxel.hpp"
 #include "Shape.hpp"
 #include "VacantType.hpp"
 #include "VoxelPool.hpp"
@@ -44,7 +43,7 @@ static inline std::string get_location_serial(T vp)
 class VoxelSpaceBase
 {
 public:
-    typedef ParticleVoxel::coordinate_type coordinate_type;
+    typedef Integer coordinate_type;
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
@@ -275,7 +274,7 @@ public:
                                          const Integer &nrand) const = 0;
 
     /*
-     * ParticleVoxel Manipulation
+     * Voxel Manipulation
      */
     virtual bool update_voxel(const ParticleID &pid, const Species &species,
                               const coordinate_type coordinate) = 0;
