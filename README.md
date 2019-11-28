@@ -6,7 +6,6 @@ E-Cell System version 4
 | Conda package for Windows | [![Build status](https://ci.appveyor.com/api/projects/status/8xxyc6q057dkn0vu/branch/master?svg=true)](https://ci.appveyor.com/project/ecell/ecell4-base-aj36m/branch/master) [![Anaconda-Server Badge](https://anaconda.org/ecell/ecell4_base/badges/version.svg)](https://anaconda.org/ecell/ecell4_base) |
 | Conda package for Mac and Linux | [![Build Status](https://travis-ci.org/ecell/ecell4_base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4_base) [![Anaconda-Server Badge](https://anaconda.org/ecell/ecell4_base/badges/version.svg)](https://anaconda.org/ecell/ecell4_base) |
 | ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base) [![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base) |
-| Build only (without packaging)  | [![Build Status](https://dev.azure.com/ecellproject/ecell4_base/_apis/build/status/ecell.ecell4_base?branchName=master)](https://dev.azure.com/ecellproject/ecell4_base/_build/latest?definitionId=3&branchName=master) |
 
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4_base?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4_base&amp;utm_campaign=Badge_Grade)
