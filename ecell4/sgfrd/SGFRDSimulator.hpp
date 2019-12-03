@@ -1932,6 +1932,13 @@ class SGFRDSimulator :
             {
                 return this->burst_multi(boost::get<Multi>(dom), tm);
             }
+            case event_type::birth_domain:
+            {
+                // birth domain have nothing inside and particle appears only
+                // when the domain is fired. Thus when it is bursted, nothing
+                // happens.
+                return {};
+            }
             default:
             {
                 throw std::runtime_error((boost::format(
