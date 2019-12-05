@@ -36,7 +36,7 @@ jobs:
       run: |
         tar xf hdf5-1.10.4.tar.bz2
         cd hdf5-1.10.4
-        ./configure --enable-cxx
+        ./configure --enable-cxx --prefix=/usr/local
         make
         cd ..
 
