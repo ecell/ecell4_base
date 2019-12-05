@@ -36,7 +36,7 @@ jobs:
       run: |
         tar xf hdf5-1.10.4.tar.bz2
         cd hdf5-1.10.4
-        ./configure --enable-cxx --prefix=/usr/local
+        ./configure --enable-cxx --prefix=/opt/hdf5
         make
         cd ..
 
@@ -45,6 +45,8 @@ jobs:
 
     - name: setuppy
       run: |
+        export HDF5_ROOT=/opt/hdf5
+        export LD_LIBRARY_PATH=/opt/hdf5/lib
         python3 setup.py build
         python3 setup.py test
         sudo python3 setup.py install
