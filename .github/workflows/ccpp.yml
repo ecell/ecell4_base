@@ -21,3 +21,9 @@ jobs:
     - name: Download hdf5
       run: wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2
 
+    - name: Cache hdf5
+      id: cache-hdf5
+      uses: actions/cache@v1
+      with:
+        path: hdf5-1.10.4
+        key: ${{ runner.OS }}-build-${{ hashFiles('hdf5-1.10.4.tar.bz2') }}
