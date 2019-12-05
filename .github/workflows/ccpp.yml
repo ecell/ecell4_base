@@ -37,3 +37,14 @@ jobs:
         make
         sudo make install
         cd ..
+
+    - name: setuppy
+      run: |
+        export PATH=/opt/hdf5/bin:${PATH}
+        export LIBRARY_PATH=/opt/hdf5/lib:${LIBRARY_PATH}
+        export LD_LIBRARY_PATH=/opt/hdf5/lib:${LD_LIBRARY_PATH}
+        export LD_RUN_PATH=/opt/hdf5/lib:${LD_RUN_PATH}
+        export INCLUDE_PATH=/opt/hdf5/include:${INCLUDE_PATH}
+        python3 setup.py build
+        python3 setup.py test
+        sudo python3 setup.py install
