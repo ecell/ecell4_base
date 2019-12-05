@@ -5,8 +5,15 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout
       uses: actions/checkout@v1
       with:
         submodules: true
+
+    - name: deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake
+        sudo python3 -m pip install -U pip setuptools
