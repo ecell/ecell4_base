@@ -35,8 +35,10 @@ jobs:
         cd hdf5-1.10.4
         ./configure --enable-cxx --prefix=/opt/hdf5
         make
-        sudo make install
         cd ..
+
+    - name: Install hdf5
+      run: cd hdf5-1.10.4 && sudo make install && cd ..
 
     - name: setuppy
       run: |
