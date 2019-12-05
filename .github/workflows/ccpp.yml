@@ -8,9 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
-    - name: submodule
-      run: git submodule init && git submodule update
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        submodules: true
     - name: deps
       run: sudo apt-get update && sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake && sudo python3 -m pip install -U pip setuptools
     - name: hdf5
@@ -25,5 +26,5 @@ jobs:
         python3 setup.py build
         python3 setup.py test
         sudo python3 setup.py install
-    - name: hoge
-      run: pwd
+    - name: import_test
+      run: python3 -c "from ecell4_base import core"
