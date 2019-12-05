@@ -52,4 +52,6 @@ jobs:
         sudo python3 setup.py install
 
     - name: import_test
-      run: python3 -c "from ecell4_base import core"
+      run: |
+        export LD_LIBRARY_PATH=/opt/hdf5/lib
+        python3 -c "from ecell4_base import core"
