@@ -95,7 +95,7 @@ public:
         size_ = get_root()->size();
     }
 
-    void add_space(VoxelSpaceBase *space);
+    void add_space(std::unique_ptr<VoxelSpaceBase> space);
 
     const Real t() const
     {
@@ -968,6 +968,7 @@ inline
 SpatiocyteWorld*
 allocate_spatiocyte_world_square_offlattice_impl(
         const Real edge_length,
+        const Species& species,
         const Real& voxel_radius,
         const boost::shared_ptr<RandomNumberGenerator>& rng)
 {
@@ -1007,30 +1008,10 @@ allocate_spatiocyte_world_square_offlattice_impl(
             adjoining_pairs.push_back(std::make_pair(index+1, right_bottom));
         }
 
-    OffLatticeSpace *space = new OffLatticeSpace(voxel_radius, positions, adjoining_pairs);
+    OffLatticeSpace *space = new OffLatticeSpace(voxel_radius, species, positions, adjoining_pairs);
     space->set_lengths(Real3(2*num_col, 2*sqrt(3)*num_row, 2) * voxel_radius);
 
     return new SpatiocyteWorld(space, rng);
-}
-
-/**
- * Alias functions for Cython
- */
-
-inline SpatiocyteWorld* create_spatiocyte_world_cell_list_impl_alias(
-    const Real3& edge_lengths, const Real& voxel_radius,
-    const Integer3& matrix_sizes,
-    const boost::shared_ptr<RandomNumberGenerator>& rng)
-{
-    return create_spatiocyte_world_cell_list_impl(
-        edge_lengths, voxel_radius, matrix_sizes, rng);
-}
-
-inline SpatiocyteWorld* create_spatiocyte_world_vector_impl_alias(
-    const Real3& edge_lengths, const Real& voxel_radius,
-    const boost::shared_ptr<RandomNumberGenerator>& rng)
-{
-    return create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng);
 }
 
 } // spatiocyte

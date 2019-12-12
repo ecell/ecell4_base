@@ -17,6 +17,7 @@ using namespace ecell4;
 struct Fixture
 {
     const Real voxel_radius;
+    const Species base;
     const Species species;
     const ParticleVoxel voxel;
     OffLatticeSpace space;
@@ -24,14 +25,18 @@ struct Fixture
 
     Fixture() :
         voxel_radius(2.5e-9),
-        species(/* serial = */ "SpeciesA",
-                /* radius = */ 2.5e-9,
-                /* D = */      1e-12),
+        base(/* serial = */ "Base",
+             /* radius = */ 2.5e-9,
+             /* D = */      1e-12),
+        species(/* serial = */   "SpeciesA",
+                /* radius = */   2.5e-9,
+                /* D = */        1e-12,
+                /* location = */ "Base"),
         voxel(/* species = */    species,
               /* coordinate = */ 3,
               /* radius = */     2.5e-9,
               /* D = */          1e-12),
-        space(voxel_radius)
+        space(voxel_radius, base)
     {
         OffLatticeSpace::position_container positions;
         const Real unit(voxel_radius / sqrt(3.0));
@@ -42,7 +47,7 @@ struct Fixture
         for (int i(1); i < 10; ++i )
             adjoining_pairs.push_back(
                     std::make_pair(i-1, i));
-        space = OffLatticeSpace(voxel_radius, positions, adjoining_pairs);
+        space = OffLatticeSpace(voxel_radius, base, positions, adjoining_pairs);
     }
 };
 
@@ -93,12 +98,22 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxel)
 {
     const ParticleID pid(sidgen());
 
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(space.update_voxel(pid, voxel));
+
+    BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(space.remove_voxel(pid));
+
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(!space.remove_voxel(3));
 
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(space.update_voxel(pid, voxel));
+
+    BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(space.remove_voxel(3));
+
+    BOOST_CHECK(!space.has_voxel(pid));
     BOOST_CHECK(!space.remove_voxel(pid));
 }
 

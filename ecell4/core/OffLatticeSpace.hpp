@@ -23,8 +23,9 @@ public:
     /*
      * Constructor and Destructor
      */
-    OffLatticeSpace(const Real& voxel_radius);
+    OffLatticeSpace(const Real& voxel_radius, const Species& species);
     OffLatticeSpace(const Real& voxel_radius,
+                    const Species& species,
                     const position_container& positions,
                     const coordinate_pair_list_type& adjoining_pairs);
     ~OffLatticeSpace();

@@ -104,7 +104,7 @@ public:
 
     bool is_vacant() const
     {
-        return voxel_type() == VACANT;
+        return voxel_type() == VACANT || location_.expired();
     }
 
     bool is_structure() const

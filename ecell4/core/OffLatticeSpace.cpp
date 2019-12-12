@@ -6,14 +6,18 @@
 
 namespace ecell4 {
 
-OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
+OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius, const Species& species)
     : base_type(voxel_radius),
       voxels_(),
       positions_(),
       adjoinings_()
-{}
+{
+    vacant_ = boost::shared_ptr<VoxelPool>(
+            new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
+}
 
 OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
+                                 const Species& species,
                                  const position_container& positions,
                                  const coordinate_pair_list_type& adjoining_pairs)
     : base_type(voxel_radius),
@@ -21,6 +25,8 @@ OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
       positions_(),
       adjoinings_()
 {
+    vacant_ = boost::shared_ptr<VoxelPool>(
+            new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
     reset(positions, adjoining_pairs);
 }
 
@@ -204,16 +210,15 @@ bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
 bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
 {
     boost::shared_ptr<VoxelPool> vp(voxels_.at(coord));
-    if (vp->is_vacant())
+    if (auto location_ptr = vp->location())
     {
-        return false;
-    }
-    if (vp->remove_voxel_if_exists(coord))
-    {
-        voxels_.at(coord) = vp->location();
-        vp->location()->add_voxel(
-            coordinate_id_pair_type(ParticleID(), coord));
-        return true;
+        if (vp->remove_voxel_if_exists(coord))
+        {
+            voxels_.at(coord) = location_ptr;
+            location_ptr->add_voxel(
+                coordinate_id_pair_type(ParticleID(), coord));
+            return true;
+        }
     }
     return false;
 }

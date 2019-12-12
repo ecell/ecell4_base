@@ -1,10 +1,12 @@
 #include "python_api.hpp"
 
+#include <ecell4/core/OffLatticeSpace.hpp>
 #include <ecell4/spatiocyte/SpatiocyteReactions.hpp>
 #include <ecell4/spatiocyte/SpatiocyteFactory.hpp>
 #include <ecell4/spatiocyte/SpatiocyteSimulator.hpp>
 #include <ecell4/spatiocyte/SpatiocyteWorld.hpp>
 #include <ecell4/spatiocyte/Voxel.hpp>
+#include <ecell4/spatiocyte/OffLattice.hpp>
 
 #include "simulator.hpp"
 #include "simulator_factory.hpp"
@@ -145,13 +147,18 @@ void define_spatiocyte_world(py::module& m)
                Use :func:`has_particle` instead.
         )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
+        .def("add_offlattice",
+            [](SpatiocyteWorld& self, const Species& species, const OffLattice& offlattice)
+            {
+                self.add_space(offlattice.generate_space(species));
+            })
         .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
         .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)
         .def_static("calculate_shape", &SpatiocyteWorld::calculate_shape)
         .def_static("calculate_volume", &SpatiocyteWorld::calculate_volume);
 
-    m.def("create_spatiocyte_world_cell_list_impl", &create_spatiocyte_world_cell_list_impl_alias);
-    m.def("create_spatiocyte_world_vector_impl", &create_spatiocyte_world_vector_impl_alias);
+    m.def("create_spatiocyte_world_cell_list_impl", &create_spatiocyte_world_cell_list_impl);
+    m.def("create_spatiocyte_world_vector_impl", &create_spatiocyte_world_vector_impl);
     m.def("create_spatiocyte_world_square_offlattice_impl", &allocate_spatiocyte_world_square_offlattice_impl);
 
     m.attr("World") = world;
@@ -177,9 +184,21 @@ void define_voxel(py::module& m)
             });
 }
 
+static inline
+void define_offlattice(py::module& m)
+{
+    py::class_<OffLattice>(m, "OffLattice")
+        .def(py::init<const Real, const OffLattice::positions_type, const OffLattice::adjoining_pairs_type>())
+        .def(py::init<const Real, const OffLattice::positions_type>())
+        .def("voxel_radius", &OffLattice::voxel_radius)
+        .def("positions", &OffLattice::positions)
+        .def("adjoining_pairs", &OffLattice::adjoining_pairs);
+}
+
 void setup_spatiocyte_module(py::module& m)
 {
     define_reaction_info(m);
+    define_offlattice(m);
     define_spatiocyte_factory(m);
     define_spatiocyte_simulator(m);
     define_spatiocyte_world(m);
