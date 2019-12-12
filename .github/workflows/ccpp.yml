@@ -52,3 +52,21 @@ jobs:
       run: |
         export LD_LIBRARY_PATH=/opt/hdf5/lib
         python3 -c "from ecell4_base import core"
+
+  build-for-macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: brew update && brew install boost gsl hdf5 cmake python
+
+    - name: Build and Install ecell4_base
+      run: /usr/local/bin/python3 setup.py install
+
+    - name: Test ecell4_base
+      run: /usr/local/bin/python3 setup.py test
