@@ -1,9 +1,9 @@
 #ifndef ECELL4_SPATIOCYTE_VOXEL_HPP
 #define ECELL4_SPATIOCYTE_VOXEL_HPP
 
-#include <ecell4/core/types.hpp>
-#include <ecell4/core/VoxelSpaceBase.hpp>
 #include <boost/weak_ptr.hpp>
+#include <ecell4/core/VoxelSpaceBase.hpp>
+#include <ecell4/core/types.hpp>
 
 namespace ecell4
 {
@@ -24,16 +24,12 @@ struct Voxel
     coordinate_type coordinate;
 
 public:
-
     const Real3 position() const
     {
         return space.lock()->coordinate2position(coordinate);
     }
 
-    bool clear() const
-    {
-        return space.lock()->remove_voxel(coordinate);
-    }
+    bool clear() const { return space.lock()->remove_voxel(coordinate); }
 
     boost::shared_ptr<VoxelPool> get_voxel_pool() const
     {
@@ -51,8 +47,8 @@ public:
     }
 };
 
-}
+} // namespace spatiocyte
 
-}
+} // namespace ecell4
 
 #endif

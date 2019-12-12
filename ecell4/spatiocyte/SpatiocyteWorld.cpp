@@ -1,5 +1,5 @@
-#include <stdexcept>
 #include <fstream>
+#include <stdexcept>
 
 #include "SpatiocyteWorld.hpp"
 
@@ -14,37 +14,41 @@ void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> space)
     for (coordinate_type i(0); i < space->size(); ++i)
     {
         const Real3 position(space->coordinate2position(i));
-        const coordinate_type nearest(get_root()->position2coordinate(position));
+        const coordinate_type nearest(
+            get_root()->position2coordinate(position));
 
         for (Integer j(0); j < get_root()->num_neighbors(nearest); ++j)
         {
-            const coordinate_type neighbor(get_root()->get_neighbor(nearest, j));
-            if (length(get_root()->coordinate2position(neighbor) - position) < voxel_radius() * 2)
+            const coordinate_type neighbor(
+                get_root()->get_neighbor(nearest, j));
+            if (length(get_root()->coordinate2position(neighbor) - position) <
+                voxel_radius() * 2)
                 interfaces_.add(neighbor, i + size_);
         }
     }
 
-    for (OneToManyMap<coordinate_type>::const_iterator itr(interfaces_.begin());
-         itr != interfaces_.end(); ++itr)
+    for (const auto &interface : interfaces_)
     {
         std::vector<coordinate_type> neighbors;
-        for (Integer i(0); i < get_root()->num_neighbors((*itr).first); ++i)
+        for (Integer i(0); i < get_root()->num_neighbors(interface.first); ++i)
         {
-            const coordinate_type neighbor(get_root()->get_neighbor((*itr).first, i));
-            if (! interfaces_.find(neighbor))
+            const coordinate_type neighbor(
+                get_root()->get_neighbor(interface.first, i));
+            if (!interfaces_.find(neighbor))
                 neighbors.push_back(neighbor);
         }
 
-        for (std::vector<coordinate_type>::const_iterator jtr((*itr).second.begin());
-             jtr != (*itr).second.end(); ++jtr)
-            neighbors_.extend(*jtr, neighbors);
+        for (const auto &adjoining : interface.second)
+        {
+            neighbors_.extend(adjoining, neighbors);
+        }
     }
 
     size_ += space->size();
     spaces_.push_back(space_type(space.release()));
 }
 
-void SpatiocyteWorld::set_value(const Species& sp, const Real value)
+void SpatiocyteWorld::set_value(const Species &sp, const Real value)
 {
     const Integer num1 = static_cast<Integer>(value);
     const Integer num2 = num_molecules_exact(sp);
@@ -58,57 +62,56 @@ void SpatiocyteWorld::set_value(const Species& sp, const Real value)
     }
 }
 
-std::vector<std::pair<ParticleID, Particle> >
+std::vector<std::pair<ParticleID, Particle>>
 SpatiocyteWorld::list_structure_particles() const
 {
     const std::vector<Species> structure_species(list_structure_species());
 
-    typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
+    typedef std::vector<std::vector<std::pair<ParticleID, Particle>>> tmp_type;
     tmp_type tmp_vector(structure_species.size());
     Integer num_elements(0);
 
-    for (std::vector<Species>::const_iterator itr(structure_species.begin());
-            itr != structure_species.end(); ++itr)
+    for (const auto &species : structure_species)
     {
-        std::vector<std::pair<ParticleID, Particle> > tmp(list_particles(*itr));
+        std::vector<std::pair<ParticleID, Particle>> tmp(
+            list_particles(species));
         tmp_vector.push_back(tmp);
         num_elements += tmp.size();
     }
 
-    std::vector<std::pair<ParticleID, Particle> > retval;
+    std::vector<std::pair<ParticleID, Particle>> retval;
     retval.reserve(num_elements);
-    for (tmp_type::const_iterator itr(tmp_vector.begin());
-            itr != tmp_vector.end(); ++itr)
+    for (const auto &tmp : tmp_vector)
     {
-        retval.insert(retval.end(), (*itr).begin(), (*itr).end());
+        retval.insert(retval.end(), tmp.begin(), tmp.end());
     }
 
     return retval;
 }
 
-std::vector<std::pair<ParticleID, Particle> >
+std::vector<std::pair<ParticleID, Particle>>
 SpatiocyteWorld::list_non_structure_particles() const
 {
-    const std::vector<Species> non_structure_species(list_non_structure_species());
+    const std::vector<Species> non_structure_species(
+        list_non_structure_species());
 
-    typedef std::vector<std::vector<std::pair<ParticleID, Particle> > > tmp_type;
+    typedef std::vector<std::vector<std::pair<ParticleID, Particle>>> tmp_type;
     tmp_type tmp_vector(non_structure_species.size());
     Integer num_elements(0);
 
-    for (std::vector<Species>::const_iterator itr(non_structure_species.begin());
-            itr != non_structure_species.end(); ++itr)
+    for (const auto &species : non_structure_species)
     {
-        std::vector<std::pair<ParticleID, Particle> > tmp(list_particles(*itr));
+        std::vector<std::pair<ParticleID, Particle>> tmp(
+            list_particles(species));
         tmp_vector.push_back(tmp);
         num_elements += tmp.size();
     }
 
-    std::vector<std::pair<ParticleID, Particle> > retval;
+    std::vector<std::pair<ParticleID, Particle>> retval;
     retval.reserve(num_elements);
-    for (tmp_type::const_iterator itr(tmp_vector.begin());
-            itr != tmp_vector.end(); ++itr)
+    for (const auto &tmp : tmp_vector)
     {
-        retval.insert(retval.end(), (*itr).begin(), (*itr).end());
+        retval.insert(retval.end(), tmp.begin(), tmp.end());
     }
 
     return retval;
@@ -116,35 +119,32 @@ SpatiocyteWorld::list_non_structure_particles() const
 
 std::vector<Species> SpatiocyteWorld::list_non_structure_species() const
 {
-    const std::vector<Species> species(list_species());
     std::vector<Species> retval;
-    for (std::vector<Species>::const_iterator itr(species.begin());
-            itr != species.end(); ++itr)
+    for (const auto &species : list_species())
     {
-        if (!find_voxel_pool(*itr)->is_structure())
-            retval.push_back(*itr);
+        if (!find_voxel_pool(species)->is_structure())
+            retval.push_back(species);
     }
     return retval;
 }
 
 std::vector<Species> SpatiocyteWorld::list_structure_species() const
 {
-    const std::vector<Species> species(list_species());
     std::vector<Species> retval;
-    for (std::vector<Species>::const_iterator itr(species.begin());
-            itr != species.end(); ++itr)
+    for (const auto &species : list_species())
     {
-        if (find_voxel_pool(*itr)->is_structure())
-            retval.push_back(*itr);
+        if (find_voxel_pool(species)->is_structure())
+            retval.push_back(species);
     }
     return retval;
 }
 
-bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
+bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num)
 {
     if (num < 0)
     {
-        throw std::invalid_argument("The number of molecules must be positive.");
+        throw std::invalid_argument(
+            "The number of molecules must be positive.");
     }
 
     const MoleculeInfo info(get_molecule_info(sp));
@@ -152,7 +152,7 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     Integer count(0);
     while (count < num)
     {
-        const Voxel voxel(coordinate2voxel(rng()->uniform_int(0, size()-1)));
+        const Voxel voxel(coordinate2voxel(rng()->uniform_int(0, size() - 1)));
 
         if (voxel.get_voxel_pool()->species().serial() != info.loc)
         {
@@ -166,12 +166,13 @@ bool SpatiocyteWorld::add_molecules(const Species& sp, const Integer& num)
     return true;
 }
 
-bool SpatiocyteWorld::add_molecules(
-    const Species& sp, const Integer& num, const boost::shared_ptr<const Shape> shape)
+bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num,
+                                    const boost::shared_ptr<const Shape> shape)
 {
     if (num < 0)
     {
-        throw std::invalid_argument("The number of molecules must be positive.");
+        throw std::invalid_argument(
+            "The number of molecules must be positive.");
     }
 
     const MoleculeInfo info(get_molecule_info(sp));
@@ -194,15 +195,17 @@ bool SpatiocyteWorld::add_molecules(
     return true;
 }
 
-Integer SpatiocyteWorld::add_structure(
-    const Species& sp, const boost::shared_ptr<const Shape> shape)
+Integer
+SpatiocyteWorld::add_structure(const Species &sp,
+                               const boost::shared_ptr<const Shape> shape)
 {
     const MoleculeInfo info(get_molecule_info(sp));
     get_root()->make_structure_type(sp, info.loc);
 
     if (shape->dimension() != info.dimension)
     {
-        throw IllegalArgument("The dimension mismatch occurred between a given species and shape");
+        throw IllegalArgument("The dimension mismatch occurred between a given "
+                              "species and shape");
     }
 
     switch (shape->dimension())
@@ -220,11 +223,8 @@ Integer SpatiocyteWorld::add_structure(
 }
 
 Integer
-SpatiocyteWorld::add_structure3(
-    const Species& sp,
-    const std::string& location,
-    const boost::shared_ptr<const Shape> shape
-)
+SpatiocyteWorld::add_structure3(const Species &sp, const std::string &location,
+                                const boost::shared_ptr<const Shape> shape)
 {
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord)
@@ -238,11 +238,10 @@ SpatiocyteWorld::add_structure3(
 
         if (voxel.get_voxel_pool()->species().serial() != location)
         {
-            throw NotSupported(
-                "Mismatch in the location. Failed to place '"
-                + sp.serial() + "' to '"
-                + voxel.get_voxel_pool()->species().serial() + "'. "
-                + "'" + location + "' is expected.");
+            throw NotSupported("Mismatch in the location. Failed to place '" +
+                               sp.serial() + "' to '" +
+                               voxel.get_voxel_pool()->species().serial() +
+                               "'. " + "'" + location + "' is expected.");
             continue;
         }
 
@@ -253,11 +252,8 @@ SpatiocyteWorld::add_structure3(
 }
 
 Integer
-SpatiocyteWorld::add_structure2(
-    const Species& sp,
-    const std::string& location,
-    const boost::shared_ptr<const Shape> shape
-)
+SpatiocyteWorld::add_structure2(const Species &sp, const std::string &location,
+                                const boost::shared_ptr<const Shape> shape)
 {
     Integer count(0);
     for (coordinate_type coord(0); coord < size(); ++coord)
@@ -270,11 +266,10 @@ SpatiocyteWorld::add_structure2(
 
         if (voxel.get_voxel_pool()->species().serial() != location)
         {
-            throw NotSupported(
-                "Mismatch in the location. Failed to place '"
-                + sp.serial() + "' to '"
-                + voxel.get_voxel_pool()->species().serial() + "'. "
-                + "'" + location + "' is expected.");
+            throw NotSupported("Mismatch in the location. Failed to place '" +
+                               sp.serial() + "' to '" +
+                               voxel.get_voxel_pool()->species().serial() +
+                               "'. " + "'" + location + "' is expected.");
             continue;
         }
 
@@ -284,10 +279,8 @@ SpatiocyteWorld::add_structure2(
     return count;
 }
 
-bool
-SpatiocyteWorld::is_surface_voxel(
-        const Voxel& voxel,
-        const boost::shared_ptr<const Shape> shape) const
+bool SpatiocyteWorld::is_surface_voxel(
+    const Voxel &voxel, const boost::shared_ptr<const Shape> shape) const
 {
     const Real L(shape->is_inside(voxel.position()));
     if (L > 0 || L < -2 * voxel_radius())
@@ -300,11 +293,12 @@ SpatiocyteWorld::is_surface_voxel(
     return false;
 }
 
-void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
+void SpatiocyteWorld::remove_molecules(const Species &sp, const Integer &num)
 {
     if (num < 0)
     {
-        throw std::invalid_argument("The number of molecules must be positive.");
+        throw std::invalid_argument(
+            "The number of molecules must be positive.");
     }
 
     boost::shared_ptr<const MoleculePool> mtype(find_molecule_pool(sp));
@@ -325,8 +319,8 @@ void SpatiocyteWorld::remove_molecules(const Species& sp, const Integer& num)
     }
 }
 
-boost::optional<Voxel>
-SpatiocyteWorld::check_neighbor(const Voxel& voxel, const std::string& loc)
+boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
+                                                       const std::string &loc)
 {
     const std::size_t num_neighbors(voxel.num_neighbors());
 
@@ -349,9 +343,9 @@ SpatiocyteWorld::check_neighbor(const Voxel& voxel, const std::string& loc)
         return boost::none;
     }
 
-    return tmp[rng()->uniform_int(0, tmp.size()-1)];
+    return tmp[rng()->uniform_int(0, tmp.size() - 1)];
 }
 
-} // spatiocyte
+} // namespace spatiocyte
 
-} // ecell4
+} // namespace ecell4
