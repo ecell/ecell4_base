@@ -26,7 +26,7 @@ jobs:
           command: |
             set -x
             curl -L -o $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
-            tar xf cmake-$CMAKEVER.tar.gz && tar xf gsl-$GSLVER.tar.gz && tar xf hdf5-$HDF5VER.tar.bz2 && tar xf $BOOSTFILE.tar.bz2
+            tar xf $BOOSTFILE.tar.bz2
             cd ~/circle
       - run:
           name: Install auditwheel from source
