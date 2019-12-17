@@ -554,7 +554,7 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
                 const auto threshold = vtop1_len * vtop2_len * sin_ccw /
                             (vtop1_len * sin_agl + vtop2_len * sin_opp);
 
-                if(nface.triangle.length_of_edge_at(vidx) < threshold)
+                if(nface.triangle.length_of_edge_at(vidx) < threshold * (1.0 - relative_tolerance))
                 {
                     is_case5 = true;
                     break;
@@ -585,7 +585,7 @@ Real Polygon::distance_sq(const std::pair<Real3, FaceID>& pos1,
                             (vtop1_len * sin_agl + vtop2_len * sin_opp);
 
                 const auto edge_idx = (vidx==0) ? 2 : vidx-1;
-                if(nface.triangle.length_of_edge_at(edge_idx) < threshold)
+                if(nface.triangle.length_of_edge_at(edge_idx) < threshold * (1.0 - relative_tolerance))
                 {
                     is_case5 = true;
                     break;
