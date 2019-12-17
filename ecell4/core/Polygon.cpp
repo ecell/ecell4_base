@@ -967,7 +967,7 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     // if the position is inside of the adjacent face, return the position
     // reconstructed from unfolded-Barycentric by using folded Triangle.
     const Barycentric unfolded_b(to_barycentric(np, next.second));
-    if(::ecell4::is_inside(unfolded_b, 1e-8))
+    if(::ecell4::is_inside(unfolded_b, relative_tolerance))
     {
         Real3 nxt = to_absolute(
                 force_put_inside(unfolded_b), this->triangle_at(next.first));
@@ -1083,7 +1083,7 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
     // if the position is inside of the adjacent face, return the position
     // reconstructed from unfolded-Barycentric by using folded Triangle.
     const Barycentric unfolded_b(to_barycentric(np, next.second));
-    if(::ecell4::is_inside(unfolded_b, 1e-8))
+    if(::ecell4::is_inside(unfolded_b, relative_tolerance))
     {
         Real3 nxt = to_absolute(
                 force_put_inside(unfolded_b), this->triangle_at(next.first));
