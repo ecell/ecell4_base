@@ -53,6 +53,11 @@ endif()
 find_package(GSL REQUIRED)
 include_directories({${GSL_INCLUDE_DIRS})
 
+find_package(pybind11)
+if(NOT pybind11_FOUND)
+    add_subdirectory(pybind11)
+endif()
+
 include(CheckIncludeFileCXX)
 include(CheckCXXSourceCompiles)
 
@@ -73,5 +78,4 @@ check_include_file_cxx("boost/functional/hash.hpp" HAVE_BOOST_FUNCTIONAL_HASH_HP
 check_include_file_cxx(chrono HAVE_CHRONO)
 
 add_subdirectory(greens_functions)
-add_subdirectory(pybind11)
 add_subdirectory(ecell4)
