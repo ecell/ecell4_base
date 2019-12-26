@@ -11,15 +11,19 @@ namespace ecell4
 namespace spatiocyte
 {
 
+class SpatiocyteWorld;
+
 struct Voxel
 {
     typedef Integer coordinate_type;
 
-    Voxel(boost::weak_ptr<VoxelSpaceBase> space, coordinate_type coordinate)
-        : space(space), coordinate(coordinate)
+    Voxel(const SpatiocyteWorld *world, boost::weak_ptr<VoxelSpaceBase> space,
+          coordinate_type coordinate)
+        : world(world), space(space), coordinate(coordinate)
     {
     }
 
+    const SpatiocyteWorld *world;
     boost::weak_ptr<VoxelSpaceBase> space;
     coordinate_type coordinate;
 
@@ -43,15 +47,20 @@ public:
 
     Voxel get_neighbor(Integer nrand) const
     {
-        return Voxel(space, space.lock()->get_neighbor(coordinate, nrand));
+        return Voxel(world, space,
+                     space.lock()->get_neighbor(coordinate, nrand));
     }
 
     Voxel get_neighbor_randomly(
         const boost::shared_ptr<RandomNumberGenerator> &rng) const
     {
         const Integer idx(rng->uniform_int(0, num_neighbors() - 1));
-        return Voxel(space, space.lock()->get_neighbor(coordinate, idx));
+        return get_neighbor(idx);
     }
+
+    Voxel
+    get_neighbor_randomly(const boost::shared_ptr<RandomNumberGenerator> &rng,
+                          Shape::dimension_kind dimension) const;
 };
 
 } // namespace spatiocyte

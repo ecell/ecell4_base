@@ -35,6 +35,7 @@ struct MoleculeInfo
     const std::string loc;
     const Shape::dimension_kind dimension;
 };
+
 class SpatiocyteWorld : public WorldInterface
 {
 public:
@@ -240,7 +241,7 @@ public:
         for (const auto &space : spaces_)
         {
             if (const auto coordinate = space->get_coordinate(pid))
-                return Voxel(space, *coordinate);
+                return Voxel(this, space, *coordinate);
         }
         return boost::none;
     }
@@ -443,7 +444,7 @@ public:
      */
     Voxel get_voxel_nearby(const Real3 &pos) const
     {
-        return Voxel(get_root(), get_root()->position2coordinate(pos));
+        return Voxel(this, get_root(), get_root()->position2coordinate(pos));
     }
 
     /*
@@ -512,6 +513,16 @@ public:
     /*
      * SpatiocyteWorld API
      */
+
+    const MoleculeInfo get_molecule_info(const Species &sp) const
+    {
+        const auto itr = molecule_info_cache_.find(sp);
+        if (itr != molecule_info_cache_.end())
+        {
+            return itr->second;
+        }
+        throw NotFound("MoleculeInfo not found");
+    }
 
     /**
      * draw attributes of species and return it as a molecule info.
@@ -775,6 +786,11 @@ public:
         return get_molecule_info(species).dimension;
     }
 
+    Shape::dimension_kind get_dimension(const Species &species) const
+    {
+        return get_molecule_info(species).dimension;
+    }
+
     /**
      * static members
      */
@@ -879,9 +895,9 @@ private:
     std::vector<ParticleBase<Voxel>> list_voxels_private(ListFn list_fn) const
     {
         return map_voxels<ParticleBase<Voxel>>(
-            list_fn, [](const space_type &space, const VoxelView &view) {
+            list_fn, [this](const space_type &space, const VoxelView &view) {
                 return ParticleBase<Voxel>(view.pid, view.species,
-                                           Voxel(space, view.voxel));
+                                           Voxel(this, space, view.voxel));
             });
     }
 
@@ -890,7 +906,7 @@ public:
     Voxel coordinate2voxel(const coordinate_type &coordinate)
     {
         coordinate_type coord(coordinate);
-        return Voxel(get_space(coord), coord);
+        return Voxel(this, get_space(coord), coord);
     }
 
 protected:
