@@ -648,11 +648,9 @@ SGFRDSimulator::form_pair(
 
     // check other shells are not in the range...
     Real max_dist = get_max_circle_size(pos_com);
-    for(std::vector<std::pair<DomainID, Real> >::const_iterator
-        iter(intruders.begin()+1), iend(intruders.end()); iter != iend; ++iter)
+    for(auto iter(intruders.begin()+1), iend(intruders.end()); iter != iend; ++iter)
     {
-        const boost::shared_ptr<event_type> intruder_ev =
-            this->get_event(iter->first);
+        const boost::shared_ptr<event_type> intruder_ev(this->get_event(iter->first));
         if(intruder_ev->which_domain() != event_type::single_domain)
         {
             continue;
@@ -676,19 +674,15 @@ SGFRDSimulator::form_pair(
         max_dist = std::min(max_dist, d_to_sh);
     }
 
-    std::vector<std::pair<std::pair<ShellID, shell_type>, Real> >
-        other_shells(this->shell_container_.list_shells_within_radius(
-                     pos_com, max_dist));
     Real pair_shell_size = max_dist;
-    for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real> >::iterator
-            iter = other_shells.begin(), iend = other_shells.end();
-            iter != iend; ++iter)
+    for(auto&& shid_sh_dist :
+                shell_container_.list_shells_within_radius(pos_com, max_dist))
     {
-        if(iter->first.first == partner_sid)
+        if(shid_sh_dist.first.first == partner_sid)
         {
             continue;
         }
-        pair_shell_size = std::min(pair_shell_size, iter->second);
+        pair_shell_size = std::min(pair_shell_size, shid_sh_dist.second);
     }
 
     const Real effective_pair_shell_size =
@@ -1089,13 +1083,12 @@ SGFRDSimulator::form_single_circular_event(
     assert(p.D() != 0.0);
 
     const Real min_circle_size = p.radius() * single_circular_shell_factor;
-    const std::pair<Real3, FaceID> pos = std::make_pair(p.position(), fid);
+    const auto pos = std::make_pair(p.position(), fid);
 
     /* XXX:TAKE CARE! the distance in the element of intrusive_domains, typed *
      * as `std::pair<DomainID, Real>` is not a distance between particle and  *
      * shell, but a distance between center of particle and shell surface.    */
-    const std::vector<std::pair<DomainID, Real> > intrusive_domains(
-            get_intrusive_domains(pos, max_circle_size));
+    const auto intrusive_domains = get_intrusive_domains(pos, max_circle_size);
     SGFRD_TRACE(tracer_.write(
                 "intrusive_domain_size = %1%", intrusive_domains.size()))
 
@@ -1110,36 +1103,34 @@ SGFRDSimulator::form_single_circular_event(
 
     Real distance_to_nearest = max_circle_size; //XXX nearest (but not intruder)
     std::vector<std::pair<DomainID, Real> > min_shell_intruder;
-    for(std::vector<std::pair<DomainID, Real> >::const_iterator
-            iter = intrusive_domains.begin(), end = intrusive_domains.end();
-            iter != end; ++iter)
+    for(const auto& did_dist : intrusive_domains)
     {
         SGFRD_TRACE(tracer_.write("check domain %1%: distance = %2%",
-                    iter->first, iter->second));
-        if(iter->second <= min_circle_size)
+                    did_dist.first, did_dist.second));
+        if(did_dist.second <= min_circle_size)
         {
             SGFRD_TRACE(tracer_.write("%1% is inside of minimum circle size",
-                        iter->first));
-            if(iter->second < p.radius())
+                        did_dist.first));
+            if(did_dist.second < p.radius())
             {
                 throw std::runtime_error((
                     boost::format("form_single_circular_event: nearest domain "
                         "%1% overlaps with particle %2%. distance from point = "
-                        "%3%, radius = %4%") % iter->first % pid %
-                        iter->second % p.radius()
+                        "%3%, radius = %4%") % did_dist.first % pid %
+                        did_dist.second % p.radius()
                     ).str());
             }
-            min_shell_intruder.push_back(*iter);
+            min_shell_intruder.push_back(did_dist);
             // collect all the min-shell-intruders.
             continue;
         }
         else
         {
             SGFRD_TRACE(tracer_.write(
-                "%1% does not intersect with minimum circle", iter->first));
+                "%1% does not intersect with minimum circle", did_dist.first));
 
             // calculate modest distance if this one is a single domain.
-            boost::shared_ptr<event_type> ev(this->get_event(iter->first));
+            boost::shared_ptr<event_type> ev(this->get_event(did_dist.first));
             if(ev->which_domain() == event_type::single_domain)
             {
                 SGFRD_TRACE(tracer_.write("calculating modest r."))
@@ -1148,17 +1139,17 @@ SGFRDSimulator::form_single_circular_event(
                 const shell_type& sh        = this->get_shell(sgl.shell_id());
                 const Real sh_size = boost::apply_visitor(shell_size_getter(), sh);
 
-                SGFRD_TRACE(tracer_.write("raw distance = %1%", iter->second))
+                SGFRD_TRACE(tracer_.write("raw distance = %1%", did_dist.second))
                 SGFRD_TRACE(tracer_.write("shell radius = %1%", sh_size))
                 SGFRD_TRACE(tracer_.write("nearp radius = %1%", nearest_p.radius()))
 
                 const Real modest_dist = calc_modest_shell_size(p, nearest_p,
-                    iter->second + sh_size - p.radius() - nearest_p.radius());
-                distance_to_nearest = std::min(iter->second, modest_dist);
+                    did_dist.second + sh_size - p.radius() - nearest_p.radius());
+                distance_to_nearest = std::min(did_dist.second, modest_dist);
             }
             else // nearest domain is not a single domain.
             {
-                distance_to_nearest = iter->second;
+                distance_to_nearest = did_dist.second;
             }
             SGFRD_TRACE(tracer_.write("distance_to_nearest = %1%",
                                       distance_to_nearest));
