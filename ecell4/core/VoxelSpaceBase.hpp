@@ -11,10 +11,10 @@
 #include "Integer3.hpp"
 #include "MoleculePool.hpp"
 #include "Particle.hpp"
-#include "ParticleVoxel.hpp"
 #include "Shape.hpp"
 #include "VacantType.hpp"
 #include "VoxelPool.hpp"
+#include "VoxelView.hpp"
 #include "get_mapper_mf.hpp"
 
 #ifdef WITH_HDF5
@@ -29,7 +29,8 @@ double rint(const double x);
 double round(const double x);
 #endif
 
-template <typename T> static inline std::string get_location_serial(T vp)
+template <typename T>
+static inline std::string get_location_serial(T vp)
 {
     if (vp == NULL || vp->location() == NULL || vp->location()->is_vacant())
     {
@@ -39,9 +40,10 @@ template <typename T> static inline std::string get_location_serial(T vp)
     return vp->location()->species().serial();
 }
 
-class VoxelSpaceBase {
+class VoxelSpaceBase
+{
 public:
-    typedef ParticleVoxel::coordinate_type coordinate_type;
+    typedef Integer coordinate_type;
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
@@ -171,8 +173,7 @@ public:
 
     bool has_species(const Species &sp) const
     {
-        return (voxel_pools_.find(sp) != voxel_pools_.end() ||
-                molecule_pools_.find(sp) != molecule_pools_.end());
+        return num_voxels_exact(sp) != 0;
     }
 
     virtual Integer num_molecules(const Species &sp) const;
@@ -204,19 +205,16 @@ public:
 
     boost::shared_ptr<const VoxelPool> vacant() const { return vacant_; }
 
-    boost::optional<ParticleVoxel> find_voxel(const ParticleID &pid) const
+    boost::optional<VoxelView> find_voxel(const ParticleID &pid) const
     {
         for (const auto &key_value : molecule_pools_)
         {
-            const auto &species(key_value.first);
             const auto &pool(key_value.second);
 
             const auto itr(pool->find(pid));
             if (itr != pool->end())
             {
-                const std::string location_serial(get_location_serial(pool));
-                return ParticleVoxel(species, itr->coordinate, pool->radius(),
-                                     pool->D(), location_serial);
+                return VoxelView(pid, pool->species(), itr->coordinate);
             }
         }
         return boost::none;
@@ -239,15 +237,15 @@ public:
     Integer num_voxels(const Species &sp) const;
     Integer num_voxels() const;
 
-    virtual std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels() const;
-    virtual std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels(const Species &sp) const;
-    virtual std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels_exact(const Species &sp) const;
+    virtual std::vector<VoxelView> list_voxels() const;
+    virtual std::vector<VoxelView> list_voxels(const Species &sp) const;
+    virtual std::vector<VoxelView> list_voxels_exact(const Species &sp) const;
 
-    virtual std::pair<ParticleID, ParticleVoxel>
-    get_voxel_at(const coordinate_type &coord) const = 0;
+    VoxelView get_voxel_at(const coordinate_type &coord) const
+    {
+        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
+        return VoxelView(vp->get_particle_id(coord), vp->species(), coord);
+    }
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &sp);
     boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species &sp) const;
@@ -276,9 +274,10 @@ public:
                                          const Integer &nrand) const = 0;
 
     /*
-     * ParticleVoxel Manipulation
+     * Voxel Manipulation
      */
-    virtual bool update_voxel(const ParticleID &pid, ParticleVoxel v) = 0;
+    virtual bool update_voxel(const ParticleID &pid, const Species &species,
+                              const coordinate_type coordinate) = 0;
     virtual bool add_voxel(const Species &species, const ParticleID &pid,
                            const coordinate_type &coord) = 0;
     virtual bool remove_voxel(const ParticleID &pid) = 0;
@@ -294,19 +293,10 @@ public:
     virtual Integer3 shape() const = 0;
     virtual Integer actual_size() const = 0;
 
-    bool make_molecular_type(const Species &sp, Real radius, Real D,
-                             const std::string loc);
-
+    bool make_molecular_type(const Species &sp, const std::string loc);
     bool make_structure_type(const Species &sp, const std::string loc);
 
     virtual bool is_inside(const coordinate_type &coord) const { return true; }
-
-protected:
-    boost::shared_ptr<VoxelPool> get_voxel_pool(ParticleVoxel v);
-
-    void push_voxels(std::vector<std::pair<ParticleID, ParticleVoxel>> &voxels,
-                     const boost::shared_ptr<MoleculePool> &voxel_pool,
-                     const Species &species) const;
 
 protected:
     Real t_;

@@ -128,57 +128,52 @@ Integer VoxelSpaceBase::num_voxels() const
     return count;
 }
 
-void VoxelSpaceBase::push_voxels(
-    std::vector<std::pair<ParticleID, ParticleVoxel>> &voxels,
-    const boost::shared_ptr<MoleculePool> &voxel_pool,
-    const Species &species) const
+static inline void
+push_voxels(std::vector<VoxelView> &voxels,
+            const boost::shared_ptr<const MoleculePool> &voxel_pool)
 {
-    const std::string location_serial(get_location_serial(voxel_pool));
-    for (MoleculePool::const_iterator i(voxel_pool->begin());
-         i != voxel_pool->end(); ++i)
-        voxels.push_back(std::make_pair(
-            (*i).pid,
-            ParticleVoxel(species, (*i).coordinate, voxel_pool->radius(),
-                          voxel_pool->D(), location_serial)));
+    for (const auto &voxel : *voxel_pool)
+    {
+        voxels.push_back(
+            VoxelView(voxel.pid, voxel_pool->species(), voxel.coordinate));
+    }
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
-VoxelSpaceBase::list_voxels() const
+std::vector<VoxelView> VoxelSpaceBase::list_voxels() const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
         const boost::shared_ptr<MoleculePool> &vp((*itr).second);
-        push_voxels(retval, vp, vp->species());
+        push_voxels(retval, vp);
     }
 
     return retval;
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
-VoxelSpaceBase::list_voxels(const Species &sp) const
+std::vector<VoxelView> VoxelSpaceBase::list_voxels(const Species &sp) const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
     SpeciesExpressionMatcher sexp(sp);
 
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
         if (sexp.match((*itr).first))
-            push_voxels(retval, (*itr).second, sp);
+            push_voxels(retval, (*itr).second);
 
     return retval;
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
+std::vector<VoxelView>
 VoxelSpaceBase::list_voxels_exact(const Species &sp) const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
 
     molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
     if (itr != molecule_pools_.end())
-        push_voxels(retval, (*itr).second, sp);
+        push_voxels(retval, (*itr).second);
     return retval;
 }
 
@@ -236,7 +231,7 @@ VoxelSpaceBase::find_molecule_pool(const Species &sp) const
     throw NotFound("MoleculePool not found.");
 }
 
-bool VoxelSpaceBase::make_molecular_type(const Species &sp, Real radius, Real D,
+bool VoxelSpaceBase::make_molecular_type(const Species &sp,
                                          const std::string loc)
 {
     molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
@@ -251,7 +246,7 @@ bool VoxelSpaceBase::make_molecular_type(const Species &sp, Real radius, Real D,
     }
 
     boost::shared_ptr<MoleculePool> vp(
-        new MoleculePool(sp, find_voxel_pool(Species(loc)), radius, D));
+        new MoleculePool(sp, find_voxel_pool(Species(loc))));
 
     std::pair<molecule_pool_map_type::iterator, bool> retval(
         molecule_pools_.insert(molecule_pool_map_type::value_type(sp, vp)));
@@ -278,7 +273,7 @@ bool VoxelSpaceBase::make_structure_type(const Species &sp,
     }
 
     boost::shared_ptr<VoxelPool> vp(
-        new StructureType(sp, find_voxel_pool(Species(loc)), voxel_radius_));
+        new StructureType(sp, find_voxel_pool(Species(loc))));
     std::pair<voxel_pool_map_type::iterator, bool> retval(
         voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));
     if (!retval.second)
@@ -286,34 +281,6 @@ bool VoxelSpaceBase::make_structure_type(const Species &sp,
         throw AlreadyExists("never reach here.");
     }
     return retval.second;
-}
-
-boost::shared_ptr<VoxelPool> VoxelSpaceBase::get_voxel_pool(ParticleVoxel voxel)
-{
-    const Species &sp(voxel.species);
-
-    try
-    {
-        return find_voxel_pool(sp);
-    }
-    catch (const NotFound &_e)
-    {
-        // Create a new molecular pool
-
-        if (!make_molecular_type(sp, voxel.radius, voxel.D, voxel.loc))
-        {
-            throw IllegalState("never reach here");
-        }
-
-        molecule_pool_map_type::iterator itr = molecule_pools_.find(sp);
-
-        if (itr == molecule_pools_.end())
-        {
-            throw IllegalState("never reach here");
-        }
-
-        return itr->second;
-    }
 }
 
 } // namespace ecell4

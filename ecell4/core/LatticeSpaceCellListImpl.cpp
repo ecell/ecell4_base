@@ -22,22 +22,21 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species &sp) const
 }
 
 /*
- * Change the Species and coordinate of a ParticleVoxel with ParticleID, pid, to
- * v.species() and v.coordinate() respectively and return false.
- * If no ParticleVoxel with pid is found, create a new ParticleVoxel at
- * v.coordiante() and return ture.
+ * Change the Species and coordinate of a Voxel with ParticleID, pid, to
+ * species and coordinate respectively and return false.
+ * If no Voxel with pid is found, create a new Voxel at
+ * coordiante() and return true.
  */
 bool LatticeSpaceCellListImpl::update_voxel(const ParticleID &pid,
-                                            ParticleVoxel v)
+                                            const Species &species,
+                                            const coordinate_type to_coord)
 {
-    const coordinate_type &to_coord(v.coordinate);
     if (!is_in_range(to_coord))
     {
         throw NotSupported("Out of bounds");
     }
 
-    boost::shared_ptr<VoxelPool> new_vp(
-        get_voxel_pool(v)); // XXX: need MoleculeInfo
+    boost::shared_ptr<VoxelPool> new_vp(find_voxel_pool(species));
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())

@@ -12,7 +12,7 @@ OffLatticeSpace::OffLatticeSpace(const Real &voxel_radius,
     : base_type(voxel_radius), voxels_(), positions_(), adjoinings_()
 {
     vacant_ = boost::shared_ptr<VoxelPool>(
-        new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
+        new StructureType(species, boost::weak_ptr<VoxelPool>()));
 }
 
 OffLatticeSpace::OffLatticeSpace(
@@ -22,7 +22,7 @@ OffLatticeSpace::OffLatticeSpace(
     : base_type(voxel_radius), voxels_(), positions_(), adjoinings_()
 {
     vacant_ = boost::shared_ptr<VoxelPool>(
-        new StructureType(species, boost::weak_ptr<VoxelPool>(), voxel_radius));
+        new StructureType(species, boost::weak_ptr<VoxelPool>()));
     reset(positions, adjoining_pairs);
 }
 
@@ -94,31 +94,14 @@ OffLatticeSpace::get_coord(const ParticleID &pid) const
  */
 
 // Same as LatticeSpaceVectorImpl
-std::pair<ParticleID, ParticleVoxel>
-OffLatticeSpace::get_voxel_at(const coordinate_type &coord) const
+bool OffLatticeSpace::update_voxel(const ParticleID &pid,
+                                   const Species &species,
+                                   const coordinate_type to_coord)
 {
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-    return std::make_pair(vp->get_particle_id(coord),
-                          ParticleVoxel(vp->species(), coord, vp->radius(),
-                                        vp->D(), get_location_serial(vp)));
-}
-
-// Same as LatticeSpaceVectorImpl
-const Particle OffLatticeSpace::particle_at(const coordinate_type &coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-    return Particle(vp->species(), coordinate2position(coord), vp->radius(),
-                    vp->D());
-}
-
-// Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::update_voxel(const ParticleID &pid, ParticleVoxel v)
-{
-    const coordinate_type &to_coord(v.coordinate);
     if (!is_in_range(to_coord))
         throw NotSupported("Out of bounds");
 
-    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v));
+    boost::shared_ptr<VoxelPool> new_vp(find_voxel_pool(species));
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())

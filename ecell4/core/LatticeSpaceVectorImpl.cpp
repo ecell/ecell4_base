@@ -64,22 +64,10 @@ Integer LatticeSpaceVectorImpl::num_species() const
     return voxel_pools_.size() + molecule_pools_.size();
 }
 
-std::pair<ParticleID, ParticleVoxel>
-LatticeSpaceVectorImpl::get_voxel_at(const coordinate_type &coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-
-    return std::make_pair(vp->get_particle_id(coord),
-                          ParticleVoxel(vp->species(), coord, vp->radius(),
-                                        vp->D(), get_location_serial(vp)));
-}
-
 bool LatticeSpaceVectorImpl::update_structure(const Particle &p)
 {
-    // XXX: Particle does not have a location.
-    ParticleVoxel v(p.species(), position2coordinate(p.position()), p.radius(),
-                    p.D());
-    return update_voxel(ParticleID(), v);
+    return update_voxel(ParticleID(), p.species(),
+                        position2coordinate(p.position()));
 }
 
 /*
@@ -147,31 +135,24 @@ LatticeSpaceVectorImpl::list_coords(const Species &sp) const
     return retval;
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
-LatticeSpaceVectorImpl::list_voxels() const
+std::vector<VoxelView> LatticeSpaceVectorImpl::list_voxels() const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
 
     for (const auto &pool : molecule_pools_)
     {
         const boost::shared_ptr<MoleculePool> &vp(pool.second);
-
-        const std::string loc(get_location_serial(vp));
         const Species &sp(vp->species());
 
         for (const auto &voxel : *vp)
         {
-            retval.push_back(std::make_pair(
-                voxel.pid, ParticleVoxel(sp, voxel.coordinate, vp->radius(),
-                                         vp->D(), loc)));
+            retval.push_back(VoxelView(voxel.pid, sp, voxel.coordinate));
         }
     }
 
     for (const auto &pool : voxel_pools_)
     {
         const boost::shared_ptr<VoxelPool> &vp(pool.second);
-
-        const std::string loc(get_location_serial(vp));
         const Species &sp(vp->species());
 
         for (voxel_container::const_iterator i(voxels_.begin());
@@ -183,25 +164,22 @@ LatticeSpaceVectorImpl::list_voxels() const
             }
 
             const coordinate_type coord(std::distance(voxels_.begin(), i));
-            retval.push_back(std::make_pair(
-                ParticleID(),
-                ParticleVoxel(sp, coord, vp->radius(), vp->D(), loc)));
+            retval.push_back(VoxelView(ParticleID(), sp, coord));
         }
     }
     return retval;
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
+std::vector<VoxelView>
 LatticeSpaceVectorImpl::list_voxels_exact(const Species &sp) const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
 
     {
         voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
         if (itr != voxel_pools_.end())
         {
             const boost::shared_ptr<VoxelPool> &vp((*itr).second);
-            const std::string loc(get_location_serial(vp));
             for (voxel_container::const_iterator i(voxels_.begin());
                  i != voxels_.end(); ++i)
             {
@@ -211,9 +189,7 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species &sp) const
                 }
 
                 const coordinate_type coord(std::distance(voxels_.begin(), i));
-                retval.push_back(std::make_pair(
-                    ParticleID(),
-                    ParticleVoxel(sp, coord, vp->radius(), vp->D(), loc)));
+                retval.push_back(VoxelView(ParticleID(), sp, coord));
             }
             return retval;
         }
@@ -224,12 +200,9 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species &sp) const
         if (itr != molecule_pools_.end())
         {
             const boost::shared_ptr<MoleculePool> &vp((*itr).second);
-            const std::string loc(get_location_serial(vp));
             for (const auto &voxel : *vp)
             {
-                retval.push_back(std::make_pair(
-                    voxel.pid, ParticleVoxel(sp, voxel.coordinate, vp->radius(),
-                                             vp->D(), loc)));
+                retval.push_back(VoxelView(voxel.pid, sp, voxel.coordinate));
             }
             return retval;
         }
@@ -237,10 +210,10 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species &sp) const
     return retval; // an empty vector
 }
 
-std::vector<std::pair<ParticleID, ParticleVoxel>>
+std::vector<VoxelView>
 LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
 {
-    std::vector<std::pair<ParticleID, ParticleVoxel>> retval;
+    std::vector<VoxelView> retval;
     SpeciesExpressionMatcher sexp(sp);
 
     for (const auto &pool : voxel_pools_)
@@ -251,7 +224,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
         }
 
         const boost::shared_ptr<VoxelPool> &vp(pool.second);
-        const std::string loc(get_location_serial(vp));
+        const Species &sp(vp->species());
         for (voxel_container::const_iterator i(voxels_.begin());
              i != voxels_.end(); ++i)
         {
@@ -261,9 +234,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
             }
 
             const coordinate_type coord(std::distance(voxels_.begin(), i));
-            retval.push_back(std::make_pair(
-                ParticleID(),
-                ParticleVoxel(sp, coord, vp->radius(), vp->D(), loc)));
+            retval.push_back(VoxelView(ParticleID(), sp, coord));
         }
     }
 
@@ -275,12 +246,10 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
         }
 
         const boost::shared_ptr<MoleculePool> &vp(pool.second);
-        const std::string loc(get_location_serial(vp));
+        const Species &sp(vp->species());
         for (const auto &voxel : *vp)
         {
-            retval.push_back(std::make_pair(
-                voxel.pid, ParticleVoxel(sp, voxel.coordinate, vp->radius(),
-                                         vp->D(), loc)));
+            retval.push_back(VoxelView(voxel.pid, sp, voxel.coordinate));
         }
     }
 
@@ -464,22 +433,22 @@ LatticeSpaceVectorImpl::move_(coordinate_id_pair_type &info, coordinate_type to)
 }
 
 /*
- * Change the Species and coordinate of a ParticleVoxel with ParticleID, pid, to
- * v.species() and v.coordinate() respectively and return false.
- * If no ParticleVoxel with pid is found, create a new ParticleVoxel at
- * v.coordiante() and return ture.
+ * Change the Species and coordinate of a Voxel with ParticleID, pid, to
+ * species and coordinate respectively and return false.
+ * If no Voxel with pid is found, create a new Voxel at
+ * coordiante() and return true.
  */
 bool LatticeSpaceVectorImpl::update_voxel(const ParticleID &pid,
-                                          ParticleVoxel v)
+                                          const Species &species,
+                                          const coordinate_type to_coord)
 {
-    const coordinate_type &to_coord(v.coordinate);
     if (!is_in_range(to_coord))
     {
         throw NotSupported("Out of bounds");
     }
 
     boost::shared_ptr<VoxelPool> new_vp(
-        get_voxel_pool(v)); // XXX: need MoleculeInfo
+        find_voxel_pool(species)); // XXX: need MoleculeInfo
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())

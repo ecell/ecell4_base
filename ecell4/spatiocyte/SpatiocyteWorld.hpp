@@ -35,7 +35,6 @@ struct MoleculeInfo
     const std::string loc;
     const Shape::dimension_kind dimension;
 };
-
 class SpatiocyteWorld : public WorldInterface
 {
 public:
@@ -253,10 +252,10 @@ public:
     {
         for (const auto &space : spaces_)
         {
-            if (const auto &voxel = space->find_voxel(pid))
+            if (const auto &view = space->find_voxel(pid))
             {
-                return std::make_pair(pid,
-                                      gen_particle_from(space, voxel.get()));
+                return std::make_pair(
+                    pid, gen_particle_from(space, view->species, view->voxel));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
@@ -350,39 +349,23 @@ public:
         return total;
     }
 
-    std::vector<std::pair<ParticleID, ParticleVoxel>> list_voxels() const
+    std::vector<ParticleBase<Voxel>> list_voxels() const
     {
-        std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (const auto &space : spaces_)
-        {
-            auto voxels(space->list_voxels());
-            list.insert(list.end(), voxels.begin(), voxels.end());
-        }
-        return list;
+        return list_voxels_private(
+            [](const space_type &space) { return space->list_voxels(); });
     }
 
-    std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels(const Species &sp) const
+    std::vector<ParticleBase<Voxel>> list_voxels(const Species &sp) const
     {
-        std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (const auto &space : spaces_)
-        {
-            auto voxels(space->list_voxels(sp));
-            list.insert(list.end(), voxels.begin(), voxels.end());
-        }
-        return list;
+        return list_voxels_private(
+            [&sp](const space_type &space) { return space->list_voxels(sp); });
     }
 
-    std::vector<std::pair<ParticleID, ParticleVoxel>>
-    list_voxels_exact(const Species &sp) const
+    std::vector<ParticleBase<Voxel>> list_voxels_exact(const Species &sp) const
     {
-        std::vector<std::pair<ParticleID, ParticleVoxel>> list;
-        for (const auto &space : spaces_)
-        {
-            auto voxels(space->list_voxels_exact(sp));
-            list.insert(list.end(), voxels.begin(), voxels.end());
-        }
-        return list;
+        return list_voxels_private([&sp](const space_type &space) {
+            return space->list_voxels_exact(sp);
+        });
     }
 
     Species get_species_at(const Voxel &voxel) const
@@ -397,10 +380,8 @@ public:
 
     std::pair<ParticleID, Species> get_voxel_at(const Voxel &voxel) const
     {
-        std::pair<ParticleID, ParticleVoxel> id_voxel_pair(
-            voxel.space.lock()->get_voxel_at(voxel.coordinate));
-        return std::make_pair(id_voxel_pair.first,
-                              id_voxel_pair.second.species);
+        const auto view(voxel.space.lock()->get_voxel_at(voxel.coordinate));
+        return std::make_pair(view.pid, view.species);
     }
 
     boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &species)
@@ -466,17 +447,32 @@ public:
     }
 
     /*
-     * ParticleVoxel Manipulation
+     * Voxel Manipulation
      */
-    bool update_voxel(const ParticleID &pid, ParticleVoxel v)
+    bool update_voxel(const ParticleID &pid, const Species species,
+                      const Voxel voxel)
     {
+        const MoleculeInfo minfo(get_molecule_info(species));
+
+        const auto target_space = voxel.space.lock();
         for (const auto &space : spaces_)
         {
             if (space->has_voxel(pid))
-                return space->update_voxel(pid, v);
+            {
+                if (space != target_space)
+                {
+                    space->remove_voxel(pid);
+                }
+                return target_space->update_voxel(pid, species,
+                                                  voxel.coordinate);
+            }
         }
 
-        return get_space(v.coordinate)->update_voxel(pid, v);
+        if (!target_space->has_species(species))
+        {
+            target_space->make_molecular_type(species, minfo.loc);
+        }
+        return target_space->update_voxel(pid, species, voxel.coordinate);
     }
 
     bool remove_voxel(const ParticleID &pid)
@@ -673,10 +669,7 @@ public:
     bool update_particle(const ParticleID &pid, const Particle &p)
     {
         const MoleculeInfo minfo(get_molecule_info(p.species()));
-        return update_voxel(
-            pid, ParticleVoxel(p.species(),
-                               get_voxel_nearby(p.position()).coordinate,
-                               p.radius(), p.D(), minfo.loc));
+        return update_voxel(pid, p.species(), get_voxel_nearby(p.position()));
     }
 
     std::vector<Species> list_species() const
@@ -701,7 +694,7 @@ public:
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
-            space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
+            space->make_molecular_type(sp, minfo.loc);
         }
 
         ParticleID pid(sidgen_());
@@ -719,7 +712,7 @@ public:
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
-            space->make_molecular_type(sp, minfo.radius, minfo.D, minfo.loc);
+            space->make_structure_type(sp, minfo.loc);
         }
 
         ParticleID pid;
@@ -836,30 +829,60 @@ protected:
     bool is_surface_voxel(const Voxel &voxel,
                           const boost::shared_ptr<const Shape> shape) const;
 
-    Particle gen_particle_from(const space_type &space,
-                               const ParticleVoxel &voxel) const
+    Particle gen_particle_from(const space_type &space, const Species &species,
+                               const coordinate_type coordinate) const
     {
-        const auto coordinate = space->coordinate2position(voxel.coordinate);
-        return Particle(voxel.species,
-                        space->coordinate2position(voxel.coordinate),
-                        voxel.radius, voxel.D, voxel.loc);
+        const auto position = space->coordinate2position(coordinate);
+        const auto minfo_iter = molecule_info_cache_.find(species);
+        if (minfo_iter != molecule_info_cache_.end())
+        {
+            const auto &minfo = minfo_iter->second;
+            return Particle(species, position, minfo.radius, minfo.D,
+                            minfo.loc);
+        }
+        else
+        {
+            return Particle(species, position, 0.0, 0.0, "");
+        }
     }
 
 private:
-    template <typename F>
-    std::vector<std::pair<ParticleID, Particle>>
-    list_particles_private(F f) const
+    template <typename T, typename ListFn, typename Fn>
+    std::vector<T> map_voxels(ListFn list_f, Fn f) const
     {
-        std::vector<std::pair<ParticleID, Particle>> list;
+        std::vector<T> list;
         for (const auto &space : spaces_)
         {
-            for (const auto &pair : f(space))
+            const auto voxels(list_f(space));
+            list.reserve(list.size() + voxels.size());
+            for (const auto &item : voxels)
             {
-                list.push_back(std::make_pair(
-                    pair.first, gen_particle_from(space, pair.second)));
+                list.push_back(f(space, item));
             }
         }
         return list;
+    }
+
+    template <typename ListFn>
+    std::vector<std::pair<ParticleID, Particle>>
+    list_particles_private(ListFn list_fn) const
+    {
+        return map_voxels<std::pair<ParticleID, Particle>>(
+            list_fn, [this](const space_type &space, const VoxelView &view) {
+                return std::make_pair(
+                    view.pid,
+                    gen_particle_from(space, view.species, view.voxel));
+            });
+    }
+
+    template <typename ListFn>
+    std::vector<ParticleBase<Voxel>> list_voxels_private(ListFn list_fn) const
+    {
+        return map_voxels<ParticleBase<Voxel>>(
+            list_fn, [](const space_type &space, const VoxelView &view) {
+                return ParticleBase<Voxel>(view.pid, view.species,
+                                           Voxel(space, view.voxel));
+            });
     }
 
 public:

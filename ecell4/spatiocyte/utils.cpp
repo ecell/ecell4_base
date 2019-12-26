@@ -6,16 +6,15 @@ namespace ecell4
 namespace spatiocyte
 {
 
-const Real
-calculate_dimensional_factor(boost::shared_ptr<const VoxelPool> mt0,
-                             boost::shared_ptr<const VoxelPool> mt1,
-                             boost::shared_ptr<SpatiocyteWorld> world)
+const Real calculate_dimensional_factor(
+    boost::shared_ptr<const VoxelPool> mt0, const Real D_A,
+    boost::shared_ptr<const VoxelPool> mt1, const Real D_B,
+    boost::shared_ptr<SpatiocyteWorld> world)
 {
     const Real voxel_radius(world->voxel_radius());
     const Real unit_area(world->unit_area());
 
     const Species speciesA(mt0->species()), speciesB(mt1->species());
-    const Real D_A(mt0->D()), D_B(mt1->D());
     const Shape::dimension_kind dimensionA(world->get_dimension(speciesA)),
         dimensionB(world->get_dimension(speciesB));
     const Real Dtot(D_A + D_B);
@@ -94,11 +93,12 @@ const Real calculate_alpha(const ReactionRule &rr,
                     ;
                 }
             }
-            mt[i] = boost::shared_ptr<VoxelPool>(new MoleculePool(
-                species[i], location, info[i].radius, info[i].D));
+            mt[i] = boost::shared_ptr<VoxelPool>(
+                new MoleculePool(species[i], location));
         }
     }
-    const Real factor(calculate_dimensional_factor(mt[0], mt[1], world));
+    const Real factor(calculate_dimensional_factor(mt[0], info[0].D, mt[1],
+                                                   info[1].D, world));
     const Real alpha(1.0 / (factor * rr.k()));
     return alpha < 1.0 ? alpha : 1.0;
 }
