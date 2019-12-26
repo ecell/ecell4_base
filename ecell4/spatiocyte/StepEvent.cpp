@@ -49,7 +49,6 @@ void StepEvent3D::walk(const Real &alpha)
     for (const auto &info : voxels)
     {
         const Voxel voxel(world_->coordinate2voxel(info.coordinate));
-        const Integer rnd(rng->uniform_int(0, voxel.num_neighbors() - 1));
 
         if (voxel.get_voxel_pool() != mpool_)
         {
@@ -58,7 +57,7 @@ void StepEvent3D::walk(const Real &alpha)
             continue;
         }
 
-        const Voxel neighbor(voxel.get_neighbor(rnd));
+        const Voxel neighbor(voxel.get_neighbor_randomly(rng));
 
         if (world_->can_move(voxel, neighbor))
         {

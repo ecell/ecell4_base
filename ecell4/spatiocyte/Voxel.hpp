@@ -45,6 +45,13 @@ public:
     {
         return Voxel(space, space.lock()->get_neighbor(coordinate, nrand));
     }
+
+    Voxel get_neighbor_randomly(
+        const boost::shared_ptr<RandomNumberGenerator> &rng) const
+    {
+        const Integer idx(rng->uniform_int(0, num_neighbors() - 1));
+        return Voxel(space, space.lock()->get_neighbor(coordinate, idx));
+    }
 };
 
 } // namespace spatiocyte
