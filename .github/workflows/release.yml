@@ -17,3 +17,9 @@ jobs:
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
         working-directory: ./ecell4_base
+      - name: Archive codes into ecell4_base.tar.gz
+        run: |
+          tar -zcvf ecell4_base.tar.gz -X ecell4_base/exclude_files ecell4_base
+      - name: Test the archive is ok
+        run: |
+          ls -lh ecell4_base.tar.gz
