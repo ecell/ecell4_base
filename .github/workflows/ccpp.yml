@@ -63,7 +63,7 @@ jobs:
         submodules: true
 
     - name: Install dependencies
-      run: brew update && brew install boost gsl hdf5 cmake python
+      run: brew update && brew upgrade && brew install boost gsl hdf5 cmake python
 
     - name: Build and Install ecell4_base
       run: /usr/local/bin/python3 setup.py install
