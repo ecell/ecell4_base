@@ -6,8 +6,8 @@ executors:
       - image: quay.io/ecell/manylinuxbase
     environment:
       ECELLVER: "2.0.3"
-      BOOSTVER: "1.68.0"
-      BOOSTFILE: "boost_1_68_0"
+      BOOSTVER: "1.70.0"
+      BOOSTFILE: "boost_1_70_0"
 jobs:
   build:
     executor: default
