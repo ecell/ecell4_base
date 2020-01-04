@@ -41,25 +41,27 @@ Please refer to https://github.com/ecell/ecell4#quick-start
 Installation
 -------------
 
-E-Cell4 does NOT support Python2.
+E-Cell4 does NOT support Python2 and Python3 32-bit.
 
-ecell4_base does NOT support `pip install` on Windows and Mac. Please use `conda` instead.
+`ecell4_base` package does NOT support `pip install` on Windows and Mac. Please use `conda` instead.
 
 ### Windows, Mac, Linux
 
 Install Miniconda with Python 3.7 for **64-bit** (from https://docs.conda.io/en/latest/miniconda.html)
-and run these commands on your Terminal app.
+and run the following command in Terminal app. (On Windows, Start Menu -> Anaconda3 (64-bit) -> Anaconda Prompt or Anaconda Powershell Prompt)
 
 ```
-conda install -c conda-forge ecell4_base
-pip install ecell4
+conda install -c conda-forge ecell4
 ```
 
 ### Linux environment where you can NOT use conda (For example Google Colab)
+
 We provide `ecell4_base` **wheel** package only for Linux.
 
+(On Linux) You can install (or upgrade) `ecell4_base` and `ecell4` with
+
 ```
-python3 -m pip install ecell4 ecell4_base
+python3 -m pip install ecell4 -U
 ```
 
 ### If you need to compile ecell4_base by yourself
