@@ -1,0 +1,7 @@
+.*
+appveyor.yml
+azure-pipelines.yml
+exclude_files
+conda.recipe
+pybind11
+MANIFEST.in

@@ -11,27 +11,23 @@ build:
     - CXX
 
 source:
-  git_url: ../
+  # git_url: ../
+  path: ../
 
 requirements:
   build:
-    - python
-    - setuptools
-    - pybind11
+    - {{ compiler('cxx') }} # [not osx]
     - cmake
+
+  host:
+    - python
+    - pybind11
     - hdf5
     - gsl
     - boost
-    - blas
 
   run:
-    - libgcc-ng # [linux]
-    - libstdcxx-ng # [linux]
-    - gsl
-    - hdf5
-    - zlib
     - python
-    - vs2015_runtime  # [win]
 
 test:
   imports:

@@ -1,0 +1,72 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake
+        sudo python3 -m pip install -U pip setuptools
+
+    - name: Download hdf5
+      run: wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.4/src/hdf5-1.10.4.tar.bz2
+
+    - name: Cache hdf5
+      id: cache-hdf5
+      uses: actions/cache@v1
+      with:
+        path: hdf5-1.10.4
+        key: ${{ runner.OS }}-build-${{ hashFiles('hdf5-1.10.4.tar.bz2') }}
+
+    - name: Build hdf5
+      if: steps.cache-hdf5.outputs.cache-hit != 'true'
+      run: |
+        tar xf hdf5-1.10.4.tar.bz2
+        cd hdf5-1.10.4
+        ./configure --enable-cxx --prefix=/opt/hdf5
+        make
+        cd ..
+
+    - name: Install hdf5
+      run: cd hdf5-1.10.4 && sudo make install && cd ..
+
+    - name: setuppy
+      run: |
+        export HDF5_ROOT=/opt/hdf5
+        export LD_LIBRARY_PATH=/opt/hdf5/lib
+        python3 setup.py build
+        python3 setup.py test
+        sudo python3 setup.py install
+
+    - name: import_test
+      run: |
+        export LD_LIBRARY_PATH=/opt/hdf5/lib
+        python3 -c "from ecell4_base import core"
+
+  build-for-macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+      with:
+        submodules: true
+
+    - name: Install dependencies
+      run: brew update && brew upgrade && brew install boost gsl hdf5 cmake python
+
+    - name: Build and Install ecell4_base
+      run: /usr/local/bin/python3 setup.py install
+
+    - name: Test ecell4_base
+      run: /usr/local/bin/python3 setup.py test

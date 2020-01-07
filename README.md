@@ -3,11 +3,10 @@ E-Cell System version 4
 
 |   |  |
 | ------------- | ------------- |
-| Conda package for Windows | [![Build status](https://ci.appveyor.com/api/projects/status/8xxyc6q057dkn0vu/branch/master?svg=true)](https://ci.appveyor.com/project/ecell/ecell4-base-aj36m/branch/master) [![Anaconda-Server Badge](https://anaconda.org/ecell/ecell4_base/badges/version.svg)](https://anaconda.org/ecell/ecell4_base) |
-| Conda package for Mac and Linux | [![Build Status](https://travis-ci.org/ecell/ecell4_base.svg?branch=develop)](https://travis-ci.org/ecell/ecell4_base) [![Anaconda-Server Badge](https://anaconda.org/ecell/ecell4_base/badges/version.svg)](https://anaconda.org/ecell/ecell4_base) |
-| ManyLinux2010 wheel | [![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base) [![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base) |
-| Build only (without packaging)  | [![Build Status](https://dev.azure.com/ecellproject/ecell4_base/_apis/build/status/ecell.ecell4_base?branchName=master)](https://dev.azure.com/ecellproject/ecell4_base/_build/latest?definitionId=3&branchName=master) |
+| Conda package for Windows, Mac and Linux | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/ecell4_base.svg)](https://anaconda.org/conda-forge/ecell4_base) |
+| PyPI (wheel) package for Linux | [![PyPI](https://img.shields.io/pypi/v/ecell4_base.svg)](https://pypi.python.org/pypi/ecell4_base) |
 
+[![CircleCI](https://circleci.com/gh/ecell/ecell4_base.svg?style=svg)](https://circleci.com/gh/ecell/ecell4_base)
 [![Documentation Status](https://readthedocs.org/projects/ecell4/badge/?version=latest)](http://ecell4.readthedocs.org/en/latest/?badge=latest)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/87e076986e354b508f66af0a0ca3373d)](https://www.codacy.com/app/ecell/ecell4_base?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ecell/ecell4_base&amp;utm_campaign=Badge_Grade)
 [![Slack Status](https://img.shields.io/badge/chat-on%20slack-50baa6.svg)](https://ecell-project.herokuapp.com/)
@@ -42,36 +41,30 @@ Please refer to https://github.com/ecell/ecell4#quick-start
 Installation
 -------------
 
-E-Cell4 does NOT support Python2.
+E-Cell4 does NOT support Python2 and Python3 32-bit.
 
-E-Cell4 does NOT support `pip install` on Windows and Mac.
+`ecell4_base` package does NOT support `pip install` on Windows and Mac. Please use `conda` instead.
 
-### Windows
+### Windows, Mac, Linux
 
 Install Miniconda with Python 3.7 for **64-bit** (from https://docs.conda.io/en/latest/miniconda.html)
-and run this command on **Anaconda Prompt**.
+and run the following command in Terminal app. (On Windows, Start Menu -> Anaconda3 (64-bit) -> Anaconda Prompt or Anaconda Powershell Prompt)
 
 ```
-conda install -c ecell ecell4_base
+conda install -c conda-forge ecell4
 ```
 
-### Mac, Linux
-Install Miniconda with Python 3.7 for **64-bit** (from https://docs.conda.io/en/latest/miniconda.html)
-and run these commands on your Terminal app.
+### Linux environment where you can NOT use conda (For example Google Colab)
+
+We provide `ecell4_base` **wheel** package only for Linux.
+
+(On Linux) You can install (or upgrade) `ecell4_base` and `ecell4` with
 
 ```
-conda config --add channels conda-forge
-conda install -c ecell ecell4_base
+python3 -m pip install ecell4 -U
 ```
 
-### Linux environment where you can NOT use conda
-We provide `ecell4_base` wheel package only for Linux.
-
-```
-python3 -m pip install ecell4_base
-```
-
-### If you want to compile ecell4_base by yourself
+### If you need to compile ecell4_base by yourself
 
 Please refer to https://github.com/ecell/ecell4_base/blob/master/azure-pipelines.yml
 
