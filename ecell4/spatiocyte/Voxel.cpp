@@ -7,9 +7,13 @@ namespace ecell4
 namespace spatiocyte
 {
 
-Voxel Voxel::get_neighbor_randomly(
-    const boost::shared_ptr<RandomNumberGenerator> &rng,
-    Shape::dimension_kind dimension) const
+Voxel Voxel::get_neighbor_randomly() const
+{
+    const Integer idx(world->rng()->uniform_int(0, num_neighbors() - 1));
+    return get_neighbor(idx);
+}
+
+Voxel Voxel::get_neighbor_randomly(Shape::dimension_kind dimension) const
 {
     std::vector<Voxel> neighbors;
     for (Integer idx = 0; idx < num_neighbors(); ++idx)
@@ -23,7 +27,7 @@ Voxel Voxel::get_neighbor_randomly(
         neighbors.push_back(neighbor);
     }
 
-    const Integer idx(rng->uniform_int(0, neighbors.size() - 1));
+    const Integer idx(world->rng()->uniform_int(0, neighbors.size() - 1));
     return neighbors.at(idx);
 }
 

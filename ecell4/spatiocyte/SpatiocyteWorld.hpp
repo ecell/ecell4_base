@@ -750,7 +750,7 @@ public:
 
     const Species &draw_species(const Species &pttrn) const;
 
-    boost::shared_ptr<RandomNumberGenerator> rng() { return rng_; }
+    boost::shared_ptr<RandomNumberGenerator> rng() const { return rng_; }
 
     void bind_to(boost::shared_ptr<Model> model)
     {

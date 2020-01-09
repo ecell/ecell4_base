@@ -51,16 +51,9 @@ public:
                      space.lock()->get_neighbor(coordinate, nrand));
     }
 
-    Voxel get_neighbor_randomly(
-        const boost::shared_ptr<RandomNumberGenerator> &rng) const
-    {
-        const Integer idx(rng->uniform_int(0, num_neighbors() - 1));
-        return get_neighbor(idx);
-    }
+    Voxel get_neighbor_randomly() const;
 
-    Voxel
-    get_neighbor_randomly(const boost::shared_ptr<RandomNumberGenerator> &rng,
-                          Shape::dimension_kind dimension) const;
+    Voxel get_neighbor_randomly(Shape::dimension_kind dimension) const;
 };
 
 } // namespace spatiocyte
