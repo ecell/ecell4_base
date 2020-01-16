@@ -241,7 +241,7 @@ public:
         for (const auto &space : spaces_)
         {
             if (const auto coordinate = space->get_coordinate(pid))
-                return Voxel(this, space, *coordinate);
+                return Voxel(space, *coordinate);
         }
         return boost::none;
     }
@@ -444,7 +444,7 @@ public:
      */
     Voxel get_voxel_nearby(const Real3 &pos) const
     {
-        return Voxel(this, get_root(), get_root()->position2coordinate(pos));
+        return Voxel(get_root(), get_root()->position2coordinate(pos));
     }
 
     /*
@@ -746,6 +746,21 @@ public:
     boost::optional<Voxel> check_neighbor(const Voxel &voxel,
                                           const std::string &loc);
 
+    const Integer num_neighbors(const Voxel &voxel) const
+    {
+        return voxel.space.lock()->num_neighbors(voxel.coordinate);
+    }
+
+    const Voxel get_neighbor(const Voxel &voxel, Integer nrand) const
+    {
+        return Voxel(voxel.space,
+                     voxel.space.lock()->get_neighbor(voxel.coordinate, nrand));
+    }
+
+    const Voxel get_neighbor_randomly(const Voxel &voxel) const;
+    const Voxel get_neighbor_randomly(const Voxel &voxel,
+                                      Shape::dimension_kind dimension) const;
+
     // bool update_molecule(coordinate_type at, Species species);
 
     const Species &draw_species(const Species &pttrn) const;
@@ -897,7 +912,7 @@ private:
         return map_voxels<ParticleBase<Voxel>>(
             list_fn, [this](const space_type &space, const VoxelView &view) {
                 return ParticleBase<Voxel>(view.pid, view.species,
-                                           Voxel(this, space, view.voxel));
+                                           Voxel(space, view.voxel));
             });
     }
 
@@ -906,7 +921,7 @@ public:
     Voxel coordinate2voxel(const coordinate_type &coordinate)
     {
         coordinate_type coord(coordinate);
-        return Voxel(this, get_space(coord), coord);
+        return Voxel(get_space(coord), coord);
     }
 
 protected:

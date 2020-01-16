@@ -286,8 +286,8 @@ bool SpatiocyteWorld::is_surface_voxel(
     if (L > 0 || L < -2 * voxel_radius())
         return false;
 
-    for (Integer i(0); i < voxel.num_neighbors(); ++i)
-        if (shape->is_inside(voxel.get_neighbor(i).position()) > 0)
+    for (Integer i(0); i < num_neighbors(voxel); ++i)
+        if (shape->is_inside(get_neighbor(voxel, i).position()) > 0)
             return true;
 
     return false;
@@ -322,14 +322,14 @@ void SpatiocyteWorld::remove_molecules(const Species &sp, const Integer &num)
 boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
                                                        const std::string &loc)
 {
-    const std::size_t num_neighbors(voxel.num_neighbors());
+    const std::size_t num(num_neighbors(voxel));
 
     std::vector<Voxel> tmp;
-    tmp.reserve(num_neighbors);
+    tmp.reserve(num);
 
-    for (unsigned int rnd(0); rnd < num_neighbors; ++rnd)
+    for (unsigned int rnd(0); rnd < num; ++rnd)
     {
-        const Voxel neighbor(voxel.get_neighbor(rnd));
+        const Voxel neighbor(get_neighbor(voxel, rnd));
         boost::shared_ptr<const VoxelPool> mt(neighbor.get_voxel_pool());
         const std::string serial(mt->is_vacant() ? "" : mt->species().serial());
         if (serial == loc)
@@ -344,6 +344,31 @@ boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
     }
 
     return tmp[rng()->uniform_int(0, tmp.size() - 1)];
+}
+
+const Voxel SpatiocyteWorld::get_neighbor_randomly(const Voxel &voxel) const
+{
+    const Integer idx(rng()->uniform_int(0, num_neighbors(voxel) - 1));
+    return get_neighbor(voxel, idx);
+}
+
+const Voxel
+SpatiocyteWorld::get_neighbor_randomly(const Voxel &voxel,
+                                       Shape::dimension_kind dimension) const
+{
+    std::vector<Voxel> neighbors;
+    for (Integer idx = 0; idx < num_neighbors(voxel); ++idx)
+    {
+        const Voxel neighbor = get_neighbor(voxel, idx);
+        if (get_dimension(neighbor.get_voxel_pool()->species()) > dimension)
+        {
+            continue;
+        }
+        neighbors.push_back(neighbor);
+    }
+
+    const Integer idx(rng()->uniform_int(0, neighbors.size() - 1));
+    return neighbors.at(idx);
 }
 
 } // namespace spatiocyte

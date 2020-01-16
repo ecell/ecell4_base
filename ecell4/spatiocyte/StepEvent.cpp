@@ -57,7 +57,7 @@ void StepEvent3D::walk(const Real &alpha)
             continue;
         }
 
-        const Voxel neighbor(voxel.get_neighbor_randomly());
+        const Voxel neighbor(world_->get_neighbor_randomly(voxel));
 
         if (world_->can_move(voxel, neighbor))
         {
@@ -115,8 +115,7 @@ void StepEvent2D::walk(const Real &alpha)
             continue;
         }
 
-        const std::size_t num_neighbors(voxel.num_neighbors());
-        const Voxel neighbor(voxel.get_neighbor_randomly(Shape::TWO));
+        const Voxel neighbor(world_->get_neighbor_randomly(voxel, Shape::TWO));
 
         if (world_->can_move(voxel, neighbor))
         {

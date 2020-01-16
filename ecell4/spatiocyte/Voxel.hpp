@@ -17,13 +17,11 @@ struct Voxel
 {
     typedef Integer coordinate_type;
 
-    Voxel(const SpatiocyteWorld *world, boost::weak_ptr<VoxelSpaceBase> space,
-          coordinate_type coordinate)
-        : world(world), space(space), coordinate(coordinate)
+    Voxel(boost::weak_ptr<VoxelSpaceBase> space, coordinate_type coordinate)
+        : space(space), coordinate(coordinate)
     {
     }
 
-    const SpatiocyteWorld *world;
     boost::weak_ptr<VoxelSpaceBase> space;
     coordinate_type coordinate;
 
@@ -39,21 +37,6 @@ public:
     {
         return space.lock()->get_voxel_pool_at(coordinate);
     }
-
-    Integer num_neighbors() const
-    {
-        return space.lock()->num_neighbors(coordinate);
-    }
-
-    Voxel get_neighbor(Integer nrand) const
-    {
-        return Voxel(world, space,
-                     space.lock()->get_neighbor(coordinate, nrand));
-    }
-
-    Voxel get_neighbor_randomly() const;
-
-    Voxel get_neighbor_randomly(Shape::dimension_kind dimension) const;
 };
 
 } // namespace spatiocyte
