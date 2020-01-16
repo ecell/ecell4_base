@@ -247,7 +247,9 @@ SpatiocyteWorld::add_structure3(const Species &sp, const std::string &location,
         for (auto coord(0); coord < space->size(); ++coord)
         {
             const Voxel voxel(space, coord);
-            if (shape->is_inside(voxel.position()) > 0)
+            // should check if coord doesn't point at the boundary.
+            if (!space->is_inside(coord) ||
+                shape->is_inside(voxel.position()) > 0)
                 continue;
 
             if (voxel.get_voxel_pool()->species().serial() != location)
@@ -277,7 +279,8 @@ SpatiocyteWorld::add_structure2(const Species &sp, const std::string &location,
         for (auto coord(0); coord < space->size(); ++coord)
         {
             const Voxel voxel(space, coord);
-            if (!is_surface_voxel(voxel, shape))
+            // should check if coord doesn't point at the boundary.
+            if (!space->is_inside(coord) || !is_surface_voxel(voxel, shape))
                 continue;
             if (voxel.get_voxel_pool()->species().serial() != location)
             {

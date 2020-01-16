@@ -62,6 +62,12 @@ bool VoxelSpaceBase::has_voxel(const ParticleID &pid) const
 
 Integer VoxelSpaceBase::num_voxels_exact(const Species &sp) const
 {
+    // TODO: change the way of dealing vacant
+    if (sp.serial() == "")
+    {
+        return vacant_->size();
+    }
+
     {
         voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
         if (itr != voxel_pools_.end())
