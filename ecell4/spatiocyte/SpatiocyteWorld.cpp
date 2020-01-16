@@ -310,20 +310,24 @@ void SpatiocyteWorld::remove_molecules(const Species &sp, const Integer &num)
             "The number of molecules must be positive.");
     }
 
-    boost::shared_ptr<const MoleculePool> mtype(find_molecule_pool(sp));
-    if (mtype->size() < num)
+    if (const auto space_and_molecule_pool = find_space_and_molecule_pool(sp))
     {
-        throw std::invalid_argument(
-            "The number of molecules cannot be negative.");
-    }
+        const auto space = space_and_molecule_pool->first;
+        const auto molecule_pool = space_and_molecule_pool->second;
 
-    Integer count(0);
-    while (count < num)
-    {
-        const Integer idx(rng_->uniform_int(0, mtype->size() - 1));
-        if (coordinate2voxel(mtype->at(idx).coordinate).clear())
+        if (molecule_pool->size() < num)
+            throw std::invalid_argument(
+                "The number of molecules cannot be negative.");
+
+        auto count(0);
+        while (count < num)
         {
-            ++count;
+            const auto idx(rng_->uniform_int(0, molecule_pool->size() - 1));
+            const Voxel voxel(space, molecule_pool->at(idx).coordinate);
+            if (voxel.clear())
+            {
+                ++count;
+            }
         }
     }
 }

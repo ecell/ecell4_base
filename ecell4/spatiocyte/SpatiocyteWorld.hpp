@@ -454,6 +454,23 @@ public:
         throw "No MoleculePool corresponding to a given Species is found";
     }
 
+    boost::optional<
+        std::pair<space_type, boost::shared_ptr<const MoleculePool>>>
+    find_space_and_molecule_pool(const Species &species) const
+    {
+        for (const auto &space : spaces_)
+        {
+            if (space->has_molecule_pool(species))
+            {
+                const auto molecule_pool(space->find_molecule_pool(species));
+                return std::pair<space_type,
+                                 boost::shared_ptr<const MoleculePool>>(
+                    space, molecule_pool);
+            }
+        }
+        return boost::none;
+    }
+
     /*
      * Coordinate Transformation
      */
