@@ -156,21 +156,29 @@ bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num)
 
     const MoleculeInfo info(get_molecule_info(sp));
 
-    Integer count(0);
-    while (count < num)
+    if (const auto space_and_location =
+            find_space_and_voxel_pool(Species(info.loc)))
     {
-        const Voxel voxel(coordinate2voxel(rng()->uniform_int(0, size() - 1)));
+        const auto space = space_and_location->first;
+        const auto location = space_and_location->second;
 
-        if (voxel.get_voxel_pool()->species().serial() != info.loc)
+        if (location->size() < num)
+            return false;
+
+        auto count(0);
+        while (count < num)
         {
-            continue;
+            const Voxel voxel(space, rng()->uniform_int(0, space->size() - 1));
+
+            if (voxel.get_voxel_pool()->species().serial() != info.loc)
+                continue;
+
+            if (new_particle(sp, voxel))
+                ++count;
         }
-        else if (new_particle(sp, voxel))
-        {
-            ++count;
-        }
+        return true;
     }
-    return true;
+    return false;
 }
 
 bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num,

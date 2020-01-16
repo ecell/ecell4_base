@@ -407,7 +407,7 @@ public:
         throw "No VoxelPool corresponding to a given Species is found";
     }
 
-    boost::optional<std::pair<space_type, boost::shared_ptr<const VoxelPool>>>
+    boost::optional<std::pair<space_type, boost::shared_ptr<VoxelPool>>>
     find_space_and_voxel_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -415,8 +415,7 @@ public:
             if (space->has_species(species))
             {
                 const auto voxel_pool = space->find_voxel_pool(species);
-                return std::pair<space_type,
-                                 boost::shared_ptr<const VoxelPool>>(
+                return std::pair<space_type, boost::shared_ptr<VoxelPool>>(
                     space, voxel_pool);
             }
         }
@@ -454,8 +453,7 @@ public:
         throw "No MoleculePool corresponding to a given Species is found";
     }
 
-    boost::optional<
-        std::pair<space_type, boost::shared_ptr<const MoleculePool>>>
+    boost::optional<std::pair<space_type, boost::shared_ptr<MoleculePool>>>
     find_space_and_molecule_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -463,8 +461,7 @@ public:
             if (space->has_molecule_pool(species))
             {
                 const auto molecule_pool(space->find_molecule_pool(species));
-                return std::pair<space_type,
-                                 boost::shared_ptr<const MoleculePool>>(
+                return std::pair<space_type, boost::shared_ptr<MoleculePool>>(
                     space, molecule_pool);
             }
         }
@@ -941,14 +938,6 @@ private:
                 return ParticleBase<Voxel>(view.pid, view.species,
                                            Voxel(space, view.voxel));
             });
-    }
-
-public:
-    // TODO: Calling this function is invalid, and this should be removed.
-    Voxel coordinate2voxel(const coordinate_type &coordinate)
-    {
-        coordinate_type coord(coordinate);
-        return Voxel(get_space(coord), coord);
     }
 
 protected:

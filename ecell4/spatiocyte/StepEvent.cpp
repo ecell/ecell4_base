@@ -10,9 +10,19 @@ namespace spatiocyte
 StepEvent::StepEvent(boost::shared_ptr<Model> model,
                      boost::shared_ptr<SpatiocyteWorld> world,
                      const Species &species, const Real &t, const Real alpha)
-    : SpatiocyteEvent(t), model_(model), world_(world),
-      mpool_(world_->find_molecule_pool(species)), alpha_(alpha)
+    : SpatiocyteEvent(t), model_(model), world_(world), alpha_(alpha)
 {
+    if (const auto space_and_molecule_pool =
+            world_->find_space_and_molecule_pool(species))
+    {
+        space_ = space_and_molecule_pool->first;
+        mpool_ = space_and_molecule_pool->second;
+    }
+    else
+    {
+        throw "MoleculePool is not found";
+    }
+
     time_ = t;
 }
 
@@ -48,7 +58,7 @@ void StepEvent3D::walk(const Real &alpha)
     std::size_t idx(0);
     for (const auto &info : voxels)
     {
-        const Voxel voxel(world_->coordinate2voxel(info.coordinate));
+        const Voxel voxel(space_, info.coordinate);
 
         if (voxel.get_voxel_pool() != mpool_)
         {
@@ -105,8 +115,7 @@ void StepEvent2D::walk(const Real &alpha)
     std::size_t idx(0);
     for (const auto &info : voxels)
     {
-        // TODO: Calling coordinate2voxel is invalid
-        const Voxel voxel(world_->coordinate2voxel(info.coordinate));
+        const Voxel voxel(space_, info.coordinate);
 
         if (voxel.get_voxel_pool() != mpool_)
         {
@@ -135,8 +144,7 @@ void StepEvent::attempt_reaction_(
     const SpatiocyteWorld::coordinate_id_pair_type &info, const Voxel &dst,
     const Real &alpha)
 {
-    // TODO: Calling coordiante2voxel is invalid
-    const Voxel voxel(world_->coordinate2voxel(info.coordinate));
+    const Voxel voxel(space_, info.coordinate);
     boost::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
     boost::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
 

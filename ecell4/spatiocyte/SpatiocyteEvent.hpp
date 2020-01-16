@@ -66,6 +66,7 @@ protected:
 protected:
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
+    boost::weak_ptr<VoxelSpaceBase> space_;
     boost::shared_ptr<MoleculePool> mpool_;
 
     const Real alpha_;
