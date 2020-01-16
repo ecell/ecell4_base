@@ -13,7 +13,7 @@ void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> uniq_space)
 {
     boost::shared_ptr<VoxelSpaceBase> space(uniq_space.release());
 
-    for (coordinate_type i(0); i < space->size(); ++i)
+    for (auto i(0); i < space->size(); ++i)
     {
         const Voxel voxel(space, i);
         const auto position(voxel.position());

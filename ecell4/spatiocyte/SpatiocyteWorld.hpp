@@ -42,7 +42,6 @@ public:
     typedef LatticeSpaceVectorImpl default_root_type;
 
     typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef VoxelSpaceBase::coordinate_type coordinate_type;
 
     typedef boost::shared_ptr<VoxelSpaceBase> space_type;
     typedef std::vector<space_type> space_container_type;
@@ -725,7 +724,6 @@ public:
 
     std::vector<Species> list_non_structure_species() const;
     std::vector<Species> list_structure_species() const;
-    // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
     boost::optional<ParticleID> new_particle(const Species &sp,
                                              const Voxel &voxel)
@@ -789,8 +787,6 @@ public:
     const Voxel get_neighbor_randomly(const Voxel &voxel) const;
     const Voxel get_neighbor_randomly(const Voxel &voxel,
                                       Shape::dimension_kind dimension) const;
-
-    // bool update_molecule(coordinate_type at, Species species);
 
     const Species &draw_species(const Species &pttrn) const;
 
@@ -864,18 +860,6 @@ public:
 
 protected:
     space_type get_root() const { return spaces_.at(0); }
-
-    space_type get_space(coordinate_type &coordinate)
-    {
-        for (const auto &space : spaces_)
-        {
-            if (coordinate < space->size())
-                return space;
-
-            coordinate -= space->size();
-        }
-        return space_type();
-    }
 
     Integer add_structure2(const Species &sp, const std::string &location,
                            const boost::shared_ptr<const Shape> shape);
