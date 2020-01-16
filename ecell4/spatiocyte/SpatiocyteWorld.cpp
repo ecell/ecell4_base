@@ -234,26 +234,27 @@ SpatiocyteWorld::add_structure3(const Species &sp, const std::string &location,
                                 const boost::shared_ptr<const Shape> shape)
 {
     Integer count(0);
-    for (coordinate_type coord(0); coord < size(); ++coord)
+    for (const auto &space : spaces_)
     {
-        const Voxel voxel(coordinate2voxel(coord));
-
-        if (!this->is_inside(coord) || shape->is_inside(voxel.position()) > 0)
+        for (auto coord(0); coord < space->size(); ++coord)
         {
-            continue;
-        }
+            const Voxel voxel(space, coord);
+            if (shape->is_inside(voxel.position()) > 0)
+                continue;
 
-        if (voxel.get_voxel_pool()->species().serial() != location)
-        {
-            throw NotSupported("Mismatch in the location. Failed to place '" +
-                               sp.serial() + "' to '" +
-                               voxel.get_voxel_pool()->species().serial() +
-                               "'. " + "'" + location + "' is expected.");
-            continue;
-        }
+            if (voxel.get_voxel_pool()->species().serial() != location)
+            {
+                throw NotSupported(
+                    "Mismatch in the location. Failed to place '" +
+                    sp.serial() + "' to '" +
+                    voxel.get_voxel_pool()->species().serial() + "'. " + "'" +
+                    location + "' is expected.");
+                continue;
+            }
 
-        if (new_voxel_structure(sp, voxel))
-            ++count;
+            if (new_voxel_structure(sp, voxel))
+                ++count;
+        }
     }
     return count;
 }
@@ -263,25 +264,26 @@ SpatiocyteWorld::add_structure2(const Species &sp, const std::string &location,
                                 const boost::shared_ptr<const Shape> shape)
 {
     Integer count(0);
-    for (coordinate_type coord(0); coord < size(); ++coord)
+    for (const auto &space : spaces_)
     {
-        const Voxel voxel(coordinate2voxel(coord));
-        if (!this->is_inside(coord) || !is_surface_voxel(voxel, shape))
+        for (auto coord(0); coord < space->size(); ++coord)
         {
-            continue;
-        }
+            const Voxel voxel(space, coord);
+            if (!is_surface_voxel(voxel, shape))
+                continue;
+            if (voxel.get_voxel_pool()->species().serial() != location)
+            {
+                throw NotSupported(
+                    "Mismatch in the location. Failed to place '" +
+                    sp.serial() + "' to '" +
+                    voxel.get_voxel_pool()->species().serial() + "'. " + "'" +
+                    location + "' is expected.");
+                continue;
+            }
 
-        if (voxel.get_voxel_pool()->species().serial() != location)
-        {
-            throw NotSupported("Mismatch in the location. Failed to place '" +
-                               sp.serial() + "' to '" +
-                               voxel.get_voxel_pool()->species().serial() +
-                               "'. " + "'" + location + "' is expected.");
-            continue;
+            if (new_voxel_structure(sp, voxel))
+                ++count;
         }
-
-        if (new_voxel_structure(sp, voxel))
-            ++count;
     }
     return count;
 }

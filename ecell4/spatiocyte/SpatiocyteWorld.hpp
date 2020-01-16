@@ -834,11 +834,6 @@ public:
     }
 
 protected:
-    bool is_inside(const coordinate_type &coord) const
-    {
-        return get_root()->is_inside(coord);
-    }
-
     space_type get_root() const { return spaces_.at(0); }
 
     space_type get_space(coordinate_type &coordinate)
