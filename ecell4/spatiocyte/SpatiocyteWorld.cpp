@@ -9,33 +9,40 @@ namespace ecell4
 namespace spatiocyte
 {
 
-void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> space)
+void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> uniq_space)
 {
+    boost::shared_ptr<VoxelSpaceBase> space(uniq_space.release());
+
     for (coordinate_type i(0); i < space->size(); ++i)
     {
-        const Real3 position(space->coordinate2position(i));
-        const coordinate_type nearest(
-            get_root()->position2coordinate(position));
+        const Voxel voxel(space, i);
+        const auto position(voxel.position());
+        const Voxel nearest(get_root(),
+                            get_root()->position2coordinate(position));
 
-        for (Integer j(0); j < get_root()->num_neighbors(nearest); ++j)
+        for (Integer j(0); j < num_neighbors(nearest); ++j)
         {
-            const coordinate_type neighbor(
-                get_root()->get_neighbor(nearest, j));
-            if (length(get_root()->coordinate2position(neighbor) - position) <
-                voxel_radius() * 2)
-                interfaces_.add(neighbor, i + size_);
+            const auto neighbor(get_neighbor(nearest, j));
+            if (length(neighbor.position() - position) < voxel_radius() * 2)
+            {
+                interfaces_.add(neighbor, voxel);
+            }
         }
     }
 
     for (const auto &interface : interfaces_)
     {
-        std::vector<coordinate_type> neighbors;
-        for (Integer i(0); i < get_root()->num_neighbors(interface.first); ++i)
+        const Voxel voxel(interface.first);
+
+        std::vector<Voxel> neighbors;
+        for (auto i(0); i < num_neighbors(voxel); ++i)
         {
-            const coordinate_type neighbor(
-                get_root()->get_neighbor(interface.first, i));
+            const auto neighbor(get_neighbor(voxel, i));
+
             if (!interfaces_.find(neighbor))
+            {
                 neighbors.push_back(neighbor);
+            }
         }
 
         for (const auto &adjoining : interface.second)
@@ -45,7 +52,7 @@ void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> space)
     }
 
     size_ += space->size();
-    spaces_.push_back(space_type(space.release()));
+    spaces_.push_back(space);
 }
 
 void SpatiocyteWorld::set_value(const Species &sp, const Real value)

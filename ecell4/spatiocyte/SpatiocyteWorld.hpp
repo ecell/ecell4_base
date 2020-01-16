@@ -931,8 +931,8 @@ protected:
     std::size_t size_;
     space_container_type spaces_;
 
-    OneToManyMap<coordinate_type> interfaces_;
-    OneToManyMap<coordinate_type> neighbors_;
+    OneToManyMap<Voxel> interfaces_;
+    OneToManyMap<Voxel> neighbors_;
 
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
