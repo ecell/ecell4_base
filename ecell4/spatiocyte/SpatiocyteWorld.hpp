@@ -255,8 +255,7 @@ public:
         {
             if (const auto &view = space->find_voxel(pid))
             {
-                return std::make_pair(
-                    pid, gen_particle_from(space, view->species, view->voxel));
+                return std::make_pair(pid, gen_particle_from(space, *view));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
@@ -855,10 +854,12 @@ protected:
     bool is_surface_voxel(const Voxel &voxel,
                           const boost::shared_ptr<const Shape> shape) const;
 
-    Particle gen_particle_from(const space_type &space, const Species &species,
-                               const coordinate_type coordinate) const
+    Particle gen_particle_from(const space_type &space,
+                               const VoxelView &view) const
     {
-        const auto position = space->coordinate2position(coordinate);
+        const auto species = view.species;
+
+        const auto position = space->coordinate2position(view.voxel);
         const auto minfo_iter = molecule_info_cache_.find(species);
         if (minfo_iter != molecule_info_cache_.end())
         {
@@ -895,9 +896,7 @@ private:
     {
         return map_voxels<std::pair<ParticleID, Particle>>(
             list_fn, [this](const space_type &space, const VoxelView &view) {
-                return std::make_pair(
-                    view.pid,
-                    gen_particle_from(space, view.species, view.voxel));
+                return std::make_pair(view.pid, gen_particle_from(space, view));
             });
     }
 
