@@ -407,6 +407,22 @@ public:
         throw "No VoxelPool corresponding to a given Species is found";
     }
 
+    boost::optional<std::pair<space_type, boost::shared_ptr<const VoxelPool>>>
+    find_space_and_voxel_pool(const Species &species) const
+    {
+        for (const auto &space : spaces_)
+        {
+            if (space->has_species(species))
+            {
+                const auto voxel_pool = space->find_voxel_pool(species);
+                return std::pair<space_type,
+                                 boost::shared_ptr<const VoxelPool>>(
+                    space, voxel_pool);
+            }
+        }
+        return boost::none;
+    }
+
     bool has_molecule_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
