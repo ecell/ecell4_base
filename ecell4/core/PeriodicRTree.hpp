@@ -859,26 +859,42 @@ private:
             return; // nothing is needed.
         }
 
-        // copy index of objects
-        std::vector<std::size_t> eliminated_objs(node.entry.size());
-        std::copy(node.entry.begin(), node.entry.end(), eliminated_objs.begin());
+        // Leaf has too few entries. The tree structure should be balanced.
+        // Here, the naivest approach is chosen. First remove the leaf node
+        // that has too few children and re-insert all of them later.
+
+        // copy objects in the leaf node that is being removed to re-insert them later
+        std::vector<value_type> eliminated_objs;
+        eliminated_objs.reserve(node.entry.size());
+        for(const auto& idx: node.entry)
+        {
+            eliminated_objs.push_back(this->container_.at(idx));
+            this->erase_value(idx);
+        }
+
+        const auto parent_idx = node.parent;
+        assert(this->is_valid_node_index(parent_idx));
 
         // erase the node N from its parent and condense aabb
         auto found = std::find(this->tree_.at(node.parent).entry.begin(),
                                this->tree_.at(node.parent).entry.end(), N);
         assert(found != this->tree_.at(node.parent).entry.end());
 
-        this->tree_.at(node.parent).entry.erase(found);
-        this->condense_box(this->tree_.at(node.parent));
+        this->erase_node(*found);
+        assert(!this->is_valid_node_index(*found));
+        this->tree_.at(parent_idx).entry.erase(found);
 
-        // re-insert entries eliminated from node N
-        for(const auto idx : eliminated_objs)
+        // condense node parent box without the leaf node N.
+        this->condense_box(this->tree_.at(parent_idx));
+
+        // re-insert entries that were in node N
+        for(const auto obj : eliminated_objs)
         {
-            this->insert(this->container_.at(idx));
+            this->insert(obj);
         }
 
         // condense ancester nodes...
-        this->condense_node(node.parent);
+        this->condense_node(parent_idx);
         return;
     }
 
@@ -897,28 +913,32 @@ private:
             // root node should be the root node, no?
             this->root_ = node.entry.front();
             this->erase_node(N);
+            assert(!this->is_valid_node_index(N));
             return;
         }
 
         // collect index of nodes that are children of the node to be removed
-        std::vector<std::size_t> eliminated_nodes(node.entry.size());
-        std::copy(node.entry.begin(), node.entry.end(), eliminated_nodes.begin());
+        const std::vector<std::size_t> eliminated_nodes(
+                node.entry.begin(), node.entry.end());
+
+        const auto parent_idx = node.parent;
 
         // erase the node N from its parent and condense its aabb
-        auto found = std::find(this->tree_.at(node.parent).entry.begin(),
-                               this->tree_.at(node.parent).entry.end(), N);
-        assert(found != this->tree_.at(node.parent).entry.end());
+        auto found = std::find(this->tree_.at(parent_idx).entry.begin(),
+                               this->tree_.at(parent_idx).entry.end(), N);
+        assert(found != this->tree_.at(parent_idx).entry.end());
 
         // remove the node from its parent.entry
-        this->tree_.at(node.parent).entry.erase(found);
-        this->condense_box(this->tree_.at(node.parent));
+        this->erase_node(*found);
+        this->tree_.at(parent_idx).entry.erase(found);
+        this->condense_box(this->tree_.at(parent_idx));
 
         // re-insert nodes eliminated from node N
         for(const auto idx : eliminated_nodes)
         {
             this->re_insert(idx);
         }
-        this->condense_node(node.parent);
+        this->condense_node(parent_idx);
         return;
     }
 
