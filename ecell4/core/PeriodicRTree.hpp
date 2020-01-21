@@ -1056,9 +1056,9 @@ private:
         const auto dc = abs(this->restrict_direction(lc - rc));
 
         // if they are close along all the axes, they intersects each other.
-        return (dc[0] - r2[0] <= tol) &&
-               (dc[1] - r2[1] <= tol) &&
-               (dc[2] - r2[2] <= tol);
+        return ((dc[0] - r2[0]) <= tol) &&
+               ((dc[1] - r2[1]) <= tol) &&
+               ((dc[2] - r2[2]) <= tol);
     }
 
     // if lhs is inside of rhs, return true.
@@ -1071,11 +1071,11 @@ private:
         const auto rr = (rhs.upper() - rhs.lower()) * 0.5; // radius of rhs
 
         const auto dr = rr - lr; // radius difference
-        const auto dc = abs(this->restrict_direction(lc - rc));
+        const auto dc = abs(this->restrict_direction(lc - rc)); // distance between centers
 
-        return (dc[0] - dr[0] <= tol) &&
-               (dc[1] - dr[1] <= tol) &&
-               (dc[2] - dr[2] <= tol);
+        return ((dc[0] - dr[0]) <= tol || (edge_lengths_[0] * 0.5 <= rr[0])) &&
+               ((dc[1] - dr[1]) <= tol || (edge_lengths_[1] * 0.5 <= rr[1])) &&
+               ((dc[2] - dr[2]) <= tol || (edge_lengths_[2] * 0.5 <= rr[2]));
     }
 
     bool is_inside_of_boundary(const Real3 r) const noexcept
