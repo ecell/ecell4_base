@@ -74,6 +74,7 @@ struct Query
     }
 
   private:
+
     // AABB-sphere intersection query under the PBC
     Real distance_sq(const AABB& box, Real3 pos, const Real3& edge_lengths) const noexcept
     {
@@ -87,7 +88,7 @@ struct Query
             {
                 dist_sq += (v - box.lower()[i]) * (v - box.lower()[i]);
             }
-            if(box.upper()[i] < v)
+            else if(box.upper()[i] < v)
             {
                 dist_sq += (v - box.upper()[i]) * (v - box.upper()[i]);
             }
@@ -105,7 +106,7 @@ struct Query
             const Real edge_length(edges[dim]);
             const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
 
-            if (diff > half)
+            if (half < diff)
             {
                 retval[dim] += edge_length;
             }
@@ -149,9 +150,29 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
     BOOST_TEST_MESSAGE("objects are inserted");
 
     // ----------------------------------------------------------------------
-    // send a query and check all the possible collisions are detected
+    // send a query and check particle can be found
 
     std::vector<std::pair<ParticleID, Particle>> query_results;
+
+    const ParticleID nil = pidgen();
+    for(const auto& pidp : full_list)
+    {
+        BOOST_REQUIRE(tree.has(pidp.first));
+        BOOST_REQUIRE(tree.get(pidp.first) == pidp);
+
+        const Query q{nil, pidp.second.position(), pidp.second.radius()};
+
+        tree.query(q, std::back_inserter(query_results));
+        BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
+                    [&pidp](const std::pair<ParticleID, Particle>& lhs) -> bool {
+                        return lhs.first == pidp.first;
+                    }) != query_results.end()));
+        query_results.clear();
+    }
+
+    // ----------------------------------------------------------------------
+    // send a query and check all the possible collisions are detected
+
     for(std::size_t i=0; i<N; ++i)
     {
         const Real3 query_center(uni(mt), 2 * uni(mt), 3 * uni(mt));
@@ -188,6 +209,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
     {
         BOOST_TEST_MESSAGE("updating particle " << i << ", "
                 << full_list.at(i).first << ":" << full_list.at(i).second);
+
         const Real3 pos(uni(mt), 2 * uni(mt), 3 * uni(mt));
         const Particle p(sp, pos, radius, D);
 
