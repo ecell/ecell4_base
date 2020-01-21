@@ -424,7 +424,7 @@ private:
             new_root.entry.push_back(N);
             new_root.entry.push_back(NN);
             new_root.box = this->expand(tree_.at(N).box, tree_.at(NN).box);
-            this->root_  = this->add_node(new_root);
+            this->root_  = this->add_node(std::move(new_root));
 
             this->tree_.at( N).parent = this->root_;
             this->tree_.at(NN).parent = this->root_;
@@ -436,7 +436,8 @@ private:
             const auto& partner = tree_.at(NN);
             assert(node.parent == partner.parent);
 
-            auto& parent = tree_.at(node.parent);
+            const auto parent_idx = node.parent;
+            auto& parent = tree_.at(parent_idx);
             parent.box = this->expand(parent.box, node.box);
 
             if(parent.has_enough_storage())
@@ -446,14 +447,28 @@ private:
 
                 // NN is assigned to this node. expand AABBs of parent nodes
                 // if needed.
-                return this->adjust_tree(node.parent);
+                return this->adjust_tree(parent_idx);
             }
             else
             {
                 // NN cannot be assigned to this node.
                 // split node and rearrange the tree.
-                const auto PP = this->split_node(node.parent, NN);
-                return this->adjust_tree(node.parent, PP);
+                //
+                // parent -+-   N }- MaxEntry
+                //         +- ... }
+                //         +- (NN)
+                //
+                //         |
+                //         v
+                //
+                // -+-parent -+-   N
+                //  |         +- ...
+                //  +-PP     -+- ...
+                //            +-  NN
+                //
+                const auto PP = this->split_node(parent_idx, NN);
+                assert(parent_idx != PP);
+                return this->adjust_tree(parent_idx, PP);
             }
         }
     }
@@ -521,6 +536,7 @@ private:
             {
                 for(const auto idx_box : entries)
                 {
+                    tree_.at(idx_box.first).parent = P;
                     node.entry.push_back(idx_box.first);
                     node.box = this->expand(node.box, idx_box.second);
                 }
@@ -531,6 +547,7 @@ private:
             {
                 for(const auto idx_box : entries)
                 {
+                    tree_.at(idx_box.first).parent = PP;
                     partner.entry.push_back(idx_box.first);
                     partner.box = this->expand(partner.box, idx_box.second);
                 }
@@ -556,7 +573,6 @@ private:
         tree_.at(P)  = node;
         tree_.at(PP) = partner;
         return PP;
-
     }
 
     node_type split_leaf(const std::size_t N, const std::size_t vidx,
