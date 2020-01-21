@@ -982,6 +982,20 @@ private:
         return ;
     }
 
+    bool is_valid_value_index(const std::size_t i) const noexcept
+    {
+        return std::find(overwritable_values_.begin(),
+                         overwritable_values_.end(), i) ==
+            overwritable_values_.end();
+    }
+
+    bool is_valid_node_index(const std::size_t i) const noexcept
+    {
+        return std::find(overwritable_nodes_.begin(),
+                         overwritable_nodes_.end(), i) ==
+            overwritable_nodes_.end();
+    }
+
 private:
 
     // ------------------------------------------------------------------------
