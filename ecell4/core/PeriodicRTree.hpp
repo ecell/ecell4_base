@@ -208,6 +208,7 @@ public:
         else // the most appropreate node is already full. split it.
         {
             const auto LL = this->add_node(this->split_leaf(L, idx, box));
+            assert(L != LL);
             this->adjust_tree(L, LL);
         }
         return ;
@@ -413,6 +414,7 @@ private:
     }
     void adjust_tree(const std::size_t N, const std::size_t NN)
     {
+        assert(N != NN);
         // we hit the root. to assign a new node, we need to make tree deeper.
         if(tree_.at(N).parent == nil)
         {
@@ -457,7 +459,21 @@ private:
     // split nodes by quadratic algorithm
     std::size_t split_node(const std::size_t P, const std::size_t NN)
     {
+        // P -+-   N }- MaxEntry
+        //    +- ... }
+        //    +- (NN)
+        //
+        //         |
+        //         v
+        //
+        // -+-P  -+-   N
+        //  |     +- ...
+        //  +-PP -+- ...
+        //        +-  NN
+
         const std::size_t PP = this->add_node(node_type(false, tree_.at(P).parent));
+        assert(P  != PP);
+        assert(NN != PP);
         node_type& node    = tree_.at(P);
         node_type& partner = tree_.at(PP);
 
@@ -992,12 +1008,12 @@ private:
 
         assert(this->is_inside_of_boundary(lc));
         assert(this->is_inside_of_boundary(rc));
-        assert(lhs.lower()[0] < lhs.upper()[0]);
-        assert(lhs.lower()[1] < lhs.upper()[1]);
-        assert(lhs.lower()[2] < lhs.upper()[2]);
-        assert(rhs.lower()[0] < rhs.upper()[0]);
-        assert(rhs.lower()[1] < rhs.upper()[1]);
-        assert(rhs.lower()[2] < rhs.upper()[2]);
+        assert(lhs.lower()[0] <= lhs.upper()[0]);
+        assert(lhs.lower()[1] <= lhs.upper()[1]);
+        assert(lhs.lower()[2] <= lhs.upper()[2]);
+        assert(rhs.lower()[0] <= rhs.upper()[0]);
+        assert(rhs.lower()[1] <= rhs.upper()[1]);
+        assert(rhs.lower()[2] <= rhs.upper()[2]);
 
         Real3 up, lw;
         for(std::size_t i=0; i<3; ++i)
