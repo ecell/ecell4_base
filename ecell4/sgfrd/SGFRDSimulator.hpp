@@ -139,6 +139,8 @@ class SGFRDSimulator :
             // already initialized. do nothing.
             return;
         }
+
+        // add tight shells for each particle
         ParticleID pid; Particle p;
         for(const auto& pidp : this->world_->list_particles())
         {
@@ -146,11 +148,22 @@ class SGFRDSimulator :
             add_event(create_tight_domain(create_tight_shell(
                       pid, p, this->get_face_id(pid)), pid, p));
         }
+
+        // add birth domains for each 0-th order reaction rule
+        for(const auto& rule : this->model_->reaction_rules())
+        {
+            if(rule.reactants().empty()) // it is 0-th order
+            {
+                this->add_birth_event(rule);
+            }
+        }
         this->is_dirty_ = false;
         return ;
     }
     void finalize()
     {
+        assert(this->diagnosis());
+
         this->is_dirty_ = true;
 
         const Real tm(this->time());
@@ -158,10 +171,15 @@ class SGFRDSimulator :
         {
             this->burst_event(this->scheduler_.pop(), tm);
         }
+
+        // clear dt to correctly step in SimulatorBase::run();
+        this->dt_ = 0.0;
         return ;
     }
     void finalize(const Real t)
     {
+        assert(this->diagnosis());
+
         this->is_dirty_ = true;
 
         assert(t < this->next_event_time());
@@ -171,6 +189,9 @@ class SGFRDSimulator :
         {
             this->burst_event(this->scheduler_.pop(), tm);
         }
+
+        // clear dt to correctly step in SimulatorBase::run();
+        this->dt_ = 0.0;
         return ;
     }
 
@@ -620,7 +641,7 @@ class SGFRDSimulator :
             }
             else
             {
-                assert(false && "neither Pair::IV_ESCAPE/REACTION");
+                throw std::runtime_error("neither Pair::IV_ESCAPE/REACTION");
             }
         }
 
@@ -943,8 +964,8 @@ class SGFRDSimulator :
 
         const FaceID sh_fid = sh.structure_id();
         const Triangle&   f = this->polygon().triangle_at(sh_fid);
-        const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
 
+        const Real3 direction_com = rotate(theta_com, f.normal(), f.represent());
         const Real3 disp_com = direction_com * (l_com / length(direction_com));
         const Real3 disp_ipv = rotate(theta_ipv, f.normal(), dom.ipv()) *
                                (l_ipv / length(dom.ipv()));
@@ -960,23 +981,24 @@ class SGFRDSimulator :
         const ParticleID pid1 = dom.particle_id_at(0);
         const ParticleID pid2 = dom.particle_id_at(1);
 
-        const Real3&  pos_com(sh.position());
-        const FaceID& fid_com(sh.structure_id());
+        const std::pair<Real3, FaceID> pos_com(sh.position(), sh.structure_id());
+
         // ipv is a vector from p1 to p2
-        Real3 disp_p1 = disp_com + disp_ipv * (-p1.D() / (p1.D() + p2.D()));
-        Real3 disp_p2 = disp_com + disp_ipv * ( p2.D() / (p1.D() + p2.D()));
-        std::pair<Real3, FaceID> pos_p1(pos_com, fid_com);
-        std::pair<Real3, FaceID> pos_p2(pos_com, fid_com);
+        const Real3 disp_p1 = disp_com + disp_ipv * (-p1.D() / (p1.D() + p2.D()));
+        const Real3 disp_p2 = disp_com + disp_ipv * ( p2.D() / (p1.D() + p2.D()));
+        std::pair<Real3, FaceID> pos_p1(pos_com);
+        std::pair<Real3, FaceID> pos_p2(pos_com);
         SGFRD_TRACE(tracer_.write("p1 is on face %1%, p2 is on face %2%",
                                   get_face_id(pid1), get_face_id(pid2)))
 
         pos_p1 = ecell4::polygon::travel(this->polygon(), pos_p1, disp_p1, 2);
         pos_p2 = ecell4::polygon::travel(this->polygon(), pos_p2, disp_p2, 2);
 
+        // check distance between p1 and p2; it should be the same as l_ipv
         SGFRD_TRACE(tracer_.write("distance after travel = %1%",
                     ecell4::polygon::distance(this->polygon(), pos_p1, pos_p2)))
-        SGFRD_TRACE(tracer_.write("now p1 is on face %1%, p2 is on face %2%",
-                                  pos_p1.second, pos_p2.second))
+        assert(std::abs(ecell4::polygon::distance(
+                this->polygon(), pos_p1, pos_p2) - l_ipv) < l_ipv * 1e-6);
 
         p1.position() = pos_p1.first;
         p2.position() = pos_p2.first;
@@ -1448,8 +1470,7 @@ class SGFRDSimulator :
                     }
                     else
                     {
-                        std::cerr << "unknown reaction record found" << std::endl;
-                        assert(false);
+                        throw std::runtime_error("unknown reaction record found");
                     }
                 }
 
@@ -1534,10 +1555,54 @@ class SGFRDSimulator :
 
     void fire_birth(const Birth& dom, DomainID did)
     {
-        //TODO
+        SGFRD_SCOPE(ns, fire_birth, tracer_);
+
+        const auto& rule = dom.rule();
+        assert(rule.products().size() == 1);
+
+        const auto&     sp = rule.products().front();
+        const auto molinfo = this->world_->get_molecule_info(sp);
+
+        constexpr std::size_t max_retry_position = 1000;  // 1 means no retry.
+        for(std::size_t i = 0; i < max_retry_position; ++i)
+        {
+            FaceID fid;
+            const Real3 pos = this->polygon().draw_position(this->world_->rng(), fid);
+            const Particle p(sp, pos, molinfo.radius, molinfo.D);
+
+            const bool no_overlap = this->burst_and_shrink_overlaps(p, fid, did);
+            if(no_overlap)
+            {
+                const auto pp = this->create_particle(p, fid);
+                assert(pp.second);
+
+                const auto pid = pp.first.first;
+
+                // record this birth reaction
+                last_reactions_.emplace_back(rule, make_synthesis_reaction_info(
+                        this->time(), pid, pp.first.second));
+
+                // add tight shell for the new particle
+                add_event(create_tight_domain(
+                          create_tight_shell(pid, p, fid), pid, p));
+                break;
+            }
+        }
+
+        // anyway, re-register the Birth reaction for the next time
+
+        add_birth_event(rule);
         return;
     }
 
+    DomainID add_birth_event(const ReactionRule& rule)
+    {
+        const auto rnd = this->rng_.uniform(0, 1);
+        const auto dt  = std::log(1.0 / rnd) /
+                         (rule.k() * this->polygon().total_area());
+        Birth new_event(dt, this->time(), rule);
+        return this->add_event(new_event);
+    }
 
 // -----------------------------------------------------------------------------
 
@@ -1867,6 +1932,13 @@ class SGFRDSimulator :
             {
                 return this->burst_multi(boost::get<Multi>(dom), tm);
             }
+            case event_type::birth_domain:
+            {
+                // birth domain have nothing inside and particle appears only
+                // when the domain is fired. Thus when it is bursted, nothing
+                // happens.
+                return {};
+            }
             default:
             {
                 throw std::runtime_error((boost::format(
@@ -1942,28 +2014,23 @@ class SGFRDSimulator :
 
     // the second value is distance between
     // the point `pos` and the surface of a domain
-    std::vector<std::pair<DomainID, Real> >
+    std::vector<std::pair<DomainID, Real>>
     get_intrusive_domains(const std::pair<Real3, FaceID>& pos,
                           const Real radius) const
     {
         SGFRD_SCOPE(us, get_intrusive_domains_position, tracer_);
 
-        const std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
-            > shells(shell_container_.list_shells_within_radius(pos, radius));
+        const auto shells(shell_container_.list_shells_within_radius(pos, radius));
 
         SGFRD_TRACE(tracer_.write("collected %1% shells in radius %2%",
                     shells.size(), radius));
 
-        std::vector<std::pair<DomainID, Real> > domains;
+        std::vector<std::pair<DomainID, Real>> domains;
         domains.reserve(shells.size());
-
-        for(std::vector<std::pair<std::pair<ShellID, shell_type>, Real>
-                >::const_iterator iter(shells.begin()), iend(shells.end());
-                iter != iend; ++iter)
+        for(const auto& shid_sh : shells)
         {
-            std::pair<ShellID, shell_type> shell_id_pair;
-            Real dist;
-            std::tie(shell_id_pair, dist) = *iter;
+            const auto& shell_id_pair = shid_sh.first;
+            const auto  dist          = shid_sh.second;
 
             SGFRD_TRACE(tracer_.write("shell %1% = {%2%} is at %3% distant",
                         shell_id_pair.first, shell_id_pair.second, dist));
@@ -1975,21 +2042,20 @@ class SGFRDSimulator :
                         shell_id_pair.first, did));
 
             // filter by domainID to be unique
-            std::vector<std::pair<DomainID, Real> >::iterator found =
-                std::find_if(domains.begin(), domains.end(),
-                    ecell4::utils::pair_first_element_unary_predicator<
-                    DomainID, Real>(did));
+            auto found = std::find_if(domains.begin(), domains.end(),
+                [did](const std::pair<DomainID, Real>& did_dist) noexcept -> bool {
+                    return did_dist.first == did;
+                });
             if(found == domains.end())
             {
                 SGFRD_TRACE(tracer_.write("domain %1% is assigned to retval", did));
-                domains.push_back(std::make_pair(did, dist));
+                domains.emplace_back(did, dist);
             }
             else
             {
                 // choose the nearer one from the domain that contains multiple
                 // shells.
                 found->second = std::min(found->second, dist);
-
                 SGFRD_TRACE(tracer_.write("domain %1% is already assigned", did));
             }
         }
@@ -2066,28 +2132,23 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("position = %1%, %2%", pos.first, pos.second));
 
         Real lensq = std::numeric_limits<Real>::max();
-        const std::array<ecell4::Segment, 6>& barrier =
-            world_->barrier_at(pos.second);
-
-        for(std::size_t i=0; i<6; ++i)
+        for(const auto& barrier : world_->barrier_at(pos.second))
         {
-            const Real dist2 = ecell4::sgfrd::distance_sq(pos.first, barrier[i]);
+            const Real dist2 = ecell4::sgfrd::distance_sq(pos.first, barrier);
             if(dist2 < lensq)
             {
                 lensq = dist2;
             }
         }
-        SGFRD_TRACE(tracer_.write("distance to barrier = %1%", lensq));
+        SGFRD_TRACE(tracer_.write("distance to barrier = %1%", std::sqrt(lensq)));
         return std::sqrt(lensq);
     }
     Real get_max_cone_size(const VertexID& vid) const
     {
         Real min_len = std::numeric_limits<Real>::max();
-        std::vector<Polygon::EdgeID> outs = this->polygon().outgoing_edges(vid);
-        for(typename std::vector<Polygon::EdgeID>::const_iterator
-                i(outs.begin()), e(outs.end()); i!=e; ++i)
+        for(const auto eid : this->polygon().outgoing_edges(vid))
         {
-            min_len = std::min(min_len, this->polygon().length_of(*i));
+            min_len = std::min(min_len, this->polygon().length_of(eid));
         }
         return min_len * 0.5;
     }

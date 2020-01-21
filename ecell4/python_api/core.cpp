@@ -1115,7 +1115,8 @@ void define_shape(py::module& m)
     py::class_<Polygon, Shape, PyShapeImpl<Polygon>, boost::shared_ptr<Polygon>>(m, "Polygon")
         .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))
         .def(py::init<const Real3&, const std::vector<Triangle>&>(), py::arg("edge_lengths"), py::arg("triangles"))
-        .def("reset", &Polygon::reset);
+        .def("reset", &Polygon::reset)
+        .def("triangles", &Polygon::triangles);
 
     py::enum_<ecell4::STLFormat>(m, "STLFormat", py::arithmetic())
         .value("Ascii",  ecell4::STLFormat::Ascii)
