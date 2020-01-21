@@ -248,9 +248,11 @@ public:
     {
         std::vector<std::pair<ObjectID, Object>> retval = container_;
 
-        // to keep indices valid while removing values, it reverses the list.
-        for(auto ri=overwritable_values_.crbegin();
-                ri!=overwritable_values_.crend(); ++ri)
+        std::vector<std::size_t> overwritable(overwritable_values_.begin(),
+                                              overwritable_values_.end());
+
+        std::sort(overwritable.begin(), overwritable.end());
+        for(auto ri=overwritable.crbegin();  ri!=overwritable.crend(); ++ri)
         {
             retval.erase(retval.begin() + *ri);
         }
