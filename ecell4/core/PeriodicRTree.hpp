@@ -268,21 +268,67 @@ public:
 
     bool diagnosis() const
     {
+#define ECELL4_PERIODIC_RTREE_ASSERT(x)\
+        do{\
+            if(!(x)){this->dump(std::cerr);}\
+            assert((x));\
+        }while(false);
+
+        std::size_t num_objects = 0;
+        std::size_t num_inodes  = 1;
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
+            if(!this->is_valid_node_index(i)){continue;}
+
+            if(this->tree_.at(i).is_leaf)
+            {
+                num_objects += this->tree_.at(i).entry.size();
+            }
+            else
+            {
+                num_inodes += this->tree_.at(i).entry.size();
+            }
+        }
+        ECELL4_PERIODIC_RTREE_ASSERT(this->list_objects().size() == num_objects);
+        ECELL4_PERIODIC_RTREE_ASSERT(this->tree_.size() - this->overwritable_nodes_.size() == num_inodes);
+
+        bool root_found = false;
+        for(std::size_t i=0; i<tree_.size(); ++i)
+        {
+            if(!this->is_valid_node_index(i)){continue;}
+
+            if(this->tree_.at(i).parent == nil)
+            {
+                ECELL4_PERIODIC_RTREE_ASSERT(!root_found);
+                root_found = true;
+            }
+            else
+            {
+                const auto& e = this->tree_.at(this->tree_.at(i).parent).entry;
+                ECELL4_PERIODIC_RTREE_ASSERT(this->is_valid_node_index(this->tree_.at(i).parent));
+                ECELL4_PERIODIC_RTREE_ASSERT(!this->tree_.at(this->tree_.at(i).parent).is_leaf);
+                if(std::find(e.begin(), e.end(), i) == e.end())
+                {
+                    std::cerr << "node " << i << " is not found in the list of entries in parent, " << this->tree_.at(i).parent << std::endl;
+                }
+                ECELL4_PERIODIC_RTREE_ASSERT(std::find(e.begin(), e.end(), i) != e.end());
+            }
+        }
+
+        for(std::size_t i=0; i<tree_.size(); ++i)
+        {
+            if(!this->is_valid_node_index(i)) {continue;}
             if(tree_.at(i).is_leaf && !diagnosis_rec(i))
             {
                 std::cerr << "AABB does not wrap the leaf node" << std::endl;
                 return false;
             }
         }
+
         for(std::size_t i=0; i<container_.size(); ++i)
         {
-            if(std::find(overwritable_values_.begin(), overwritable_values_.end(), i) !=
-                    overwritable_values_.end())
-            {
-                continue;
-            }
+            if(!this->is_valid_value_index(i)) {continue;}
+
             if(rmap_.count(container_.at(i).first) != 0)
             {
                 if(rmap_.at(container_.at(i).first) != i)
@@ -298,6 +344,7 @@ public:
                 return false;
             }
         }
+#undef ECELL4_PERIODIC_RTREE_ASSERT
         return true;
     }
 
@@ -308,6 +355,8 @@ public:
             const auto& node = this->tree_.at(node_idx);
             if(!(this->is_inside(node.box, tree_.at(node.parent).box)))
             {
+                std::cerr << "AABB of node " << node_idx << ", " << node.box
+                          << ", is not within that of its parent, " << tree_.at(node.parent).box << "." << std::endl;
                 return false;
             }
             node_idx = node.parent;
