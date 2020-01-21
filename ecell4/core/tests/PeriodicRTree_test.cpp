@@ -58,11 +58,14 @@ struct Query
     Real3      center;
     Real       radius;
 
-    bool operator()(const std::pair<ParticleID, Particle>& pidp, const Real3& edges) const noexcept
+    bool operator()(const std::pair<ParticleID, Particle>& pidp,
+                    const Real3& edges) const noexcept
     {
+        if(pidp.first == ignore) {return false;}
+        const auto rr = radius + pidp.second.radius();
         const auto rhs = this->periodic_transpose(pidp.second.position(),
                                                   center, edges);
-        return pidp.first != ignore && length_sq(rhs - center) < radius * radius;
+        return length_sq(rhs - center) < rr * rr;
     }
 
     bool operator()(const AABB& box, const Real3& edge_lengths) const noexcept
