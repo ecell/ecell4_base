@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <vector>
 #include <limits>
+#include <sstream>
 #include <set>
 
 #ifdef WITH_HDF5
@@ -312,6 +313,44 @@ public:
             node_idx = node.parent;
         }
         return true;
+    }
+
+    void dump(std::ostream& os) const
+    {
+        os << "-------------------------------------------------------\n";
+        std::ostringstream oss;
+        if(this->is_valid_node_index(this->root_)) {oss << ' ';} else {oss << '!';}
+        oss << '(' << std::setw(3) << this->root_ << ") ";
+        this->dump_rec(this->root_, os, oss.str());
+        os << "-------------------------------------------------------\n";
+        os << std::flush;
+        return ;
+    }
+
+private:
+
+    void dump_rec(const std::size_t node_idx, std::ostream& os, std::string prefix) const
+    {
+        const auto& node = tree_.at(node_idx);
+        if(node.is_leaf)
+        {
+            for(const std::size_t entry : node.entry)
+            {
+                os << prefix;
+                if(!this->is_valid_value_index(entry)){os << '!';} else {os << ' ';}
+                os << '[' << std::setw(3) << entry << "]\n";
+            }
+            return;
+        }
+
+        for(const std::size_t entry : node.entry)
+        {
+            std::ostringstream oss;
+            if(!this->is_valid_node_index(entry)){oss << '!';} else {oss << ' ';}
+            oss << '(' << std::setw(3) << entry << ") ";
+            dump_rec(entry, os, prefix + oss.str());
+        }
+        return;
     }
 
 private:
