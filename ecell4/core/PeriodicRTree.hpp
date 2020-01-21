@@ -954,7 +954,7 @@ private:
                                    this->margin_);
             for(auto i = std::next(entries.begin()); i != entries.end(); ++i)
             {
-                node.box = expand(node.box,
+                node.box = this->expand(node.box,
                     box_getter_(container_.at(*i).second, this->margin_));
             }
             return;
@@ -964,7 +964,7 @@ private:
             node.box = this->tree_.at(node.entry.front()).box;
             for(auto i = std::next(entries.begin()); i != entries.end(); ++i)
             {
-                node.box = expand(node.box, this->tree_.at(*i).box);
+                node.box = this->expand(node.box, this->tree_.at(*i).box);
             }
         }
         return;
@@ -984,7 +984,7 @@ private:
         {
             tree_.at(L).entry.push_back(N);
             tree_.at(N).parent = L;
-            this->expand(tree_.at(L).box, entry);
+            tree_.at(L).box    = this->expand(tree_.at(L).box, entry);
             this->adjust_tree(L);
         }
         else
