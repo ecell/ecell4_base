@@ -186,6 +186,10 @@ public:
         }
         return false;
     }
+    bool update(const value_type& v)
+    {
+        return this->update(v.first, v.second);
+    }
 
     void insert(const ObjectID& id, const Object& obj)
     {
@@ -212,6 +216,11 @@ public:
         return ;
     }
 
+    void erase(const ObjectID& id, const Object& obj)
+    {
+        this->erase(std::make_pair(id, obj));
+        return;
+    }
     void erase(const value_type& v)
     {
         if(this->root_ == nil)
