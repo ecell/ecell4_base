@@ -215,6 +215,30 @@ public:
         return ;
     }
 
+    // Note: In the original R-Tree, without periodic boundary condition,
+    //       we don't need to adjust tree after we remove an object. It is
+    //       because node AABB always shrink after erasing its entry. But under
+    //       the periodic condition, AABB may slide to reduce its size.
+    //           Let's consider the following case. When we remove the 3rd
+    //       object, the node AABB slides to the left side. By removing the
+    //       object, the region that was not covered by the node AABB, between
+    //       object 1 and 2, will be covered.
+    //
+    //       .--------- boundary --------.      .--------- boundary --------.
+    //       :  _____       _   ___    _ :  =>  :  _____       _          _ :
+    //       : |  1  |     |2| | 3 |  |4|:  =>  : |  1  |     |2|        |4|:
+    //       : |_____|     |_| |___|  |_|:  =>  : |_____|     |_|        |_|:
+    //       --------]     [--node AABB---  =>  --node AABB-----]        [---
+    //
+    //           We need to choose a strategy to handle this problem. There can
+    //       be several possible ways. First, we can keep the original AABB
+    //       after removing an object. Apparently, since the older AABB covers
+    //       all the child objects, we can keep the AABB. But it enlarges AABB
+    //       and makes the whole R-Tree inefficient. Second, we can adjust all
+    //       the ancester nodes. It might also causes inefficiency because it
+    //       requires additional calculation when erasing an object. But it make
+    //       node AABB smaller and the total efficiency can increase compared to
+    //       the former solution.
     void erase(const value_type& v)
     {
         if(this->root_ == nil)
