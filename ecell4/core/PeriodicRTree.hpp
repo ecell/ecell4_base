@@ -133,10 +133,12 @@ public:
 
     // collect values when the filter returns true.
     // ```cpp
-    // struct QueryFilter {
+    // struct QueryFilter
+    // {
     //     // skip based on some attribute values in a value.
-    //     // return true if the value should be collected.
-    //     bool operator(const std::pair<ObjectID, Object>&, const Real3& edges);
+    //     // If it matches, you can put an additional information to the result.
+    //     boost::optional<UserDefinedInfo>
+    //     operator(const std::pair<ObjectID, Object>&, const Real3& edges);
     //
     //     // to skip non-interacting nodes purely geometric criteria.
     //     bool operator(const AABB&,       const Real3& edges);
@@ -439,9 +441,9 @@ private:
             for(const std::size_t entry : node.entry)
             {
                 const auto& value = container_.at(entry);
-                if(matches(value, this->edge_lengths_))
+                if(const auto info = matches(value, this->edge_lengths_))
                 {
-                    *out = value;
+                    *out = info;
                     ++out;
                 }
             }
