@@ -443,7 +443,7 @@ private:
                 const auto& value = container_.at(entry);
                 if(const auto info = matches(value, this->edge_lengths_))
                 {
-                    *out = info;
+                    *out = *info;
                     ++out;
                 }
             }
