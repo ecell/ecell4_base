@@ -292,6 +292,7 @@ public:
     // box margin.
     Real margin() const noexcept {return margin_;}
 
+    // check the tree structure and relationships between nodes
     bool diagnosis() const
     {
         std::size_t num_objects = 0;
@@ -433,7 +434,6 @@ private:
             }
             return out;
         }
-
         // internal node. search recursively...
         for(const std::size_t entry : node.entry)
         {
@@ -451,12 +451,12 @@ private:
     // ------------------------------------------------------------------------
     // get node. In the debug mode (w/o -DNDEBUG), it checks the requrested node
     // is available.
-    node_type&       node_at(const std::size_t i)       noexcept
+    node_type&       node_at(const std::size_t i)
     {
         assert(this->is_valid_node_index(i));
         return tree_.at(i);
     }
-    node_type const& node_at(const std::size_t i) const noexcept
+    node_type const& node_at(const std::size_t i) const
     {
         assert(this->is_valid_node_index(i));
         return tree_.at(i);
