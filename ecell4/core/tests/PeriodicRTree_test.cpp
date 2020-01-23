@@ -59,14 +59,20 @@ struct Query
     Real3      center;
     Real       radius;
 
-    bool operator()(const std::pair<ParticleID, Particle>& pidp,
-                    const Real3& edges) const noexcept
+    boost::optional<std::pair<std::pair<ParticleID, Particle>, Real>>
+    operator()(const std::pair<ParticleID, Particle>& pidp,
+               const Real3& edges) const noexcept
     {
-        if(pidp.first == ignore) {return false;}
+        if(pidp.first == ignore) {return boost::none;}
         const auto rr = radius + pidp.second.radius();
         const auto rhs = this->periodic_transpose(pidp.second.position(),
                                                   center, edges);
-        return length_sq(rhs - center) < rr * rr;
+        const auto dist_sq = length_sq(rhs - center);
+        if(rr * rr < dist_sq)
+        {
+            return boost::none;
+        }
+        return std::make_pair(pidp, std::sqrt(dist_sq));
     }
 
     bool operator()(const AABB& box, const Real3& edge_lengths) const noexcept
@@ -153,7 +159,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
     // ----------------------------------------------------------------------
     // send a query and check particle can be found
 
-    std::vector<std::pair<ParticleID, Particle>> query_results;
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> query_results;
+    using query_result_type = typename decltype(query_results)::value_type;
 
     const ParticleID nil = pidgen();
     for(const auto& pidp : full_list)
@@ -165,8 +172,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
 
         tree.query(q, std::back_inserter(query_results));
         BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
-                    [&pidp](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                        return lhs.first == pidp.first;
+                    [&pidp](const query_result_type& lhs) -> bool {
+                        return lhs.first.first == pidp.first;
                     }) != query_results.end()));
         query_results.clear();
     }
@@ -189,8 +196,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
             {
                 const auto found = std::find_if(
                     query_results.begin(), query_results.end(),
-                    [&pidp](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                        return lhs.first == pidp.first;
+                    [&pidp](const query_result_type& lhs) -> bool {
+                        return lhs.first.first == pidp.first;
                     });
                 if(found == query_results.end())
                 {
@@ -225,8 +232,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
             const Query q{nil, old.second.position(), old.second.radius()};
             tree.query(q, std::back_inserter(query_results));
             BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
-                        [&old](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                            return lhs.first == old.first;
+                        [&old](const query_result_type& lhs) -> bool {
+                            return lhs.first.first == old.first;
                         }) == query_results.end()));
             query_results.clear();
             BOOST_TEST_MESSAGE("old value successfully removed");
@@ -244,8 +251,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
             const Query q{nil, novel.second.position(), novel.second.radius()};
             tree.query(q, std::back_inserter(query_results));
             BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
-                        [&novel](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                            return lhs.first == novel.first;
+                        [&novel](const query_result_type& lhs) -> bool {
+                            return lhs.first.first == novel.first;
                         }) != query_results.end()));
             query_results.clear();
             BOOST_TEST_MESSAGE("new value successfully inserted");
@@ -270,8 +277,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
             {
                 const auto found = std::find_if(
                     query_results.begin(), query_results.end(),
-                    [&pidp](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                        return lhs.first == pidp.first;
+                    [&pidp](const query_result_type& lhs) -> bool {
+                        return lhs.first.first == pidp.first;
                     });
 
                 BOOST_CHECK(found != query_results.end());
@@ -303,8 +310,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
             const Query q{nil, novel.second.position(), novel.second.radius()};
             tree.query(q, std::back_inserter(query_results));
             BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
-                        [&novel](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                            return lhs.first == novel.first;
+                        [&novel](const query_result_type& lhs) -> bool {
+                            return lhs.first.first == novel.first;
                         }) != query_results.end()));
             query_results.clear();
             BOOST_TEST_MESSAGE("new value successfully inserted");
@@ -326,8 +333,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
             {
                 const auto found = std::find_if(
                     query_results.begin(), query_results.end(),
-                    [&pidp](const std::pair<ParticleID, Particle>& lhs) -> bool {
-                        return lhs.first == pidp.first;
+                    [&pidp](const query_result_type& lhs) -> bool {
+                        return lhs.first.first == pidp.first;
                     });
 
                 BOOST_CHECK(found != query_results.end());
