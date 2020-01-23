@@ -12,6 +12,7 @@
 #include <limits>
 #include <sstream>
 #include <set>
+#include <map>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -199,7 +200,6 @@ public:
         const auto box = this->box_getter_(v.second, this->margin_);
         const auto L   = this->choose_leaf(box);
 
-        // TODO bug here maybe
         if(node_at(L).has_enough_storage())
         {
             node_at(L).entry.push_back(idx);
@@ -294,59 +294,48 @@ public:
 
     bool diagnosis() const
     {
-#define ECELL4_PERIODIC_RTREE_ASSERT(x)\
-        do{\
-            if(!(x)){this->dump(std::cerr);}\
-            assert((x));\
-        }while(false);
-
         std::size_t num_objects = 0;
-        std::size_t num_inodes  = 1;
+        std::size_t num_inodes  = 1; // +1 for the root
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
             if(!this->is_valid_node_index(i)){continue;}
 
-            if(this->tree_.at(i).is_leaf)
+            if(this->node_at(i).is_leaf)
             {
-                num_objects += this->tree_.at(i).entry.size();
+                num_objects += this->node_at(i).entry.size();
             }
             else
             {
-                num_inodes += this->tree_.at(i).entry.size();
+                num_inodes += this->node_at(i).entry.size();
             }
         }
-        ECELL4_PERIODIC_RTREE_ASSERT(this->list_objects().size() == num_objects);
-        ECELL4_PERIODIC_RTREE_ASSERT(this->tree_.size() - this->overwritable_nodes_.size() == num_inodes);
+        assert(list_objects().size() == num_objects);
+        assert(tree_.size() - overwritable_nodes_.size() == num_inodes);
 
         bool root_found = false;
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
             if(!this->is_valid_node_index(i)){continue;}
 
-            if(this->tree_.at(i).parent == nil)
+            if(this->node_at(i).parent == nil)
             {
-                ECELL4_PERIODIC_RTREE_ASSERT(!root_found);
+                assert(!root_found);
                 root_found = true;
             }
             else
             {
-                const auto& e = this->tree_.at(this->tree_.at(i).parent).entry;
-                ECELL4_PERIODIC_RTREE_ASSERT(this->is_valid_node_index(this->tree_.at(i).parent));
-                ECELL4_PERIODIC_RTREE_ASSERT(!this->tree_.at(this->tree_.at(i).parent).is_leaf);
-                if(std::find(e.begin(), e.end(), i) == e.end())
-                {
-                    std::cerr << "node " << i << " is not found in the list of entries in parent, " << this->tree_.at(i).parent << std::endl;
-                }
-                ECELL4_PERIODIC_RTREE_ASSERT(std::find(e.begin(), e.end(), i) != e.end());
+                const auto& e = this->node_at(this->node_at(i).parent).entry;
+                assert(this->is_valid_node_index(this->node_at(i).parent));
+                assert(!this->node_at(this->node_at(i).parent).is_leaf);
+                assert(std::find(e.begin(), e.end(), i) != e.end());
             }
         }
 
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
             if(!this->is_valid_node_index(i)) {continue;}
-            if(tree_.at(i).is_leaf && !diagnosis_rec(i))
+            if(node_at(i).is_leaf && !diagnosis_rec(i))
             {
-                std::cerr << "AABB does not wrap the leaf node" << std::endl;
                 return false;
             }
         }
@@ -359,30 +348,25 @@ public:
             {
                 if(rmap_.at(container_.at(i).first) != i)
                 {
-                    std::cerr << "key->index map broken: should be " << i << " but got " << rmap_.at(container_.at(i).first) << std::endl;
                     return false;
                 }
             }
 
             if(!this->find_leaf(this->root_, container_.at(i)))
             {
-                std::cerr << "object with ID " << container_.at(i).first << " is not found by find_leaf" << std::endl;
                 return false;
             }
         }
-#undef ECELL4_PERIODIC_RTREE_ASSERT
         return true;
     }
 
     bool diagnosis_rec(std::size_t node_idx) const
     {
-        while(tree_.at(node_idx).parent != nil)
+        while(node_at(node_idx).parent != nil)
         {
-            const auto& node = this->tree_.at(node_idx);
-            if(!(this->is_inside(node.box, tree_.at(node.parent).box)))
+            const auto& node = this->node_at(node_idx);
+            if(!(this->is_inside(node.box, node_at(node.parent).box)))
             {
-                std::cerr << "AABB of node " << node_idx << ", " << node.box
-                          << ", is not within that of its parent, " << tree_.at(node.parent).box << "." << std::endl;
                 return false;
             }
             node_idx = node.parent;
@@ -392,12 +376,10 @@ public:
 
     void dump(std::ostream& os) const
     {
-        os << "-------------------------------------------------------\n";
         std::ostringstream oss;
         if(this->is_valid_node_index(this->root_)) {oss << ' ';} else {oss << '!';}
         oss << '(' << std::setw(3) << this->root_ << ") ";
         this->dump_rec(this->root_, os, oss.str());
-        os << "-------------------------------------------------------\n";
         os << std::flush;
         return ;
     }
