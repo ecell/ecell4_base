@@ -216,6 +216,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
         const auto old = full_list.at(i);
         tree.erase(old);
 
+        BOOST_REQUIRE(tree.diagnosis());
+        BOOST_TEST_MESSAGE("tree is still okay");
+
         {
             // make sure that the tree no longer contains full_list.at(i).
             const Query q{nil, old.second.position(), old.second.radius()};
