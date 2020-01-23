@@ -162,7 +162,7 @@ public:
         const auto value_idx = *(found->second);
 
         const auto tight_box = this->box_getter_(obj, 0.0);
-        const auto& node_box = this->tree_.at(node_idx).box;
+        const auto& node_box = this->node_at(node_idx).box;
 
         if(this->is_inside(tight_box, /* is inside of */ node_box))
         {
@@ -177,10 +177,10 @@ public:
 
             // erasing the object in a node.
             // remove the entry, then condence the AABB.
-            this->tree_.at(node_idx).entry.erase(found->second);
+            this->node_at(node_idx).entry.erase(found->second);
             this->erase_value(value_idx);
 
-            this->condense_box(this->tree_.at(node_idx));
+            this->condense_box(this->node_at(node_idx));
             this->condense_leaf(node_idx);
             // done.
 
@@ -200,10 +200,10 @@ public:
         const auto L   = this->choose_leaf(box);
 
         // TODO bug here maybe
-        if(tree_.at(L).has_enough_storage())
+        if(node_at(L).has_enough_storage())
         {
-            tree_.at(L).entry.push_back(idx);
-            tree_.at(L).box = this->expand(tree_.at(L).box, box);
+            node_at(L).entry.push_back(idx);
+            node_at(L).box = this->expand(node_at(L).box, box);
             this->adjust_tree(L);
         }
         else // the most appropreate node is already full. split it.
@@ -226,10 +226,12 @@ public:
         {
             const auto node_idx  =   found->first;
             const auto value_idx = *(found->second);
-            this->tree_.at(node_idx).entry.erase(found->second);
+
+            this->node_at(node_idx).entry.erase(found->second);
             this->erase_value(value_idx);
 
-            this->condense_box(this->tree_.at(node_idx));
+            this->condense_box(this->node_at(node_idx));
+            this->adjust_tree(node_idx);
             this->condense_leaf(node_idx);
             return;
         }
@@ -411,7 +413,7 @@ private:
     OutputIterator query_recursive(
             const std::size_t node_idx, F matches, OutputIterator& out) const
     {
-        const node_type& node = this->tree_.at(node_idx);
+        const node_type& node = this->node_at(node_idx);
         if(node.is_leaf)
         {
             for(const std::size_t entry : node.entry)
@@ -429,7 +431,7 @@ private:
         // internal node. search recursively...
         for(const std::size_t entry : node.entry)
         {
-            const auto& node_aabb = tree_.at(entry).box;
+            const auto& node_aabb = node_at(entry).box;
             if(matches(node_aabb, this->edge_lengths_))
             {
                 this->query_recursive(entry, matches, out);
@@ -439,6 +441,20 @@ private:
     }
 
 private:
+
+    // ------------------------------------------------------------------------
+    // get node. In the debug mode (w/o -DNDEBUG), it checks the requrested node
+    // is available.
+    node_type&       node_at(const std::size_t i)       noexcept
+    {
+        assert(this->is_valid_node_index(i));
+        return tree_.at(i);
+    }
+    node_type const& node_at(const std::size_t i) const noexcept
+    {
+        assert(this->is_valid_node_index(i));
+        return tree_.at(i);
+    }
 
     // ------------------------------------------------------------------------
     // construct and manage RTree structure.
@@ -456,16 +472,16 @@ private:
 
         // choose a leaf where entry will be inserted.
         std::size_t node_idx = this->root_;
-        while(!(this->tree_.at(node_idx).is_leaf))
+        while(!(this->node_at(node_idx).is_leaf))
         {
             // find minimum expansion
             Real diff_area_min = std::numeric_limits<Real>::max();
             Real area_min      = std::numeric_limits<Real>::max();
 
-            const auto& node = this->tree_.at(node_idx);
+            const auto& node = this->node_at(node_idx);
             for(const std::size_t i : node.entry)
             {
-                const auto& current_box = this->tree_.at(i).box;
+                const auto& current_box = this->node_at(i).box;
 
                 const Real area_initial  = this->area(current_box);
                 const Real area_expanded = this->area(this->expand(current_box, entry));
@@ -483,13 +499,15 @@ private:
         return node_idx;
     }
 
-    // node has another value.
+
+    // It adjusts AABBs of all the ancester nodes of `node_idx` to make sure
+    // that all the ancester nodes covers the node of `node_idx`.
     void adjust_tree(std::size_t node_idx)
     {
-        while(tree_.at(node_idx).parent != nil)
+        while(node_at(node_idx).parent != nil)
         {
-            const auto& node   = this->tree_.at(node_idx);
-            auto&       parent = this->tree_.at(node.parent);
+            const auto& node   = this->node_at(node_idx);
+            auto&       parent = this->node_at(node.parent);
 
             // if node.box is already inside of parent.box, then we don't need
             // to expand node AABBs.
@@ -502,30 +520,31 @@ private:
         }
         return;
     }
+
     void adjust_tree(const std::size_t N, const std::size_t NN)
     {
         assert(N != NN);
         // we hit the root. to assign a new node, we need to make tree deeper.
-        if(tree_.at(N).parent == nil)
+        if(node_at(N).parent == nil)
         {
             node_type new_root(/*is_leaf = */false, /*parent = */ nil);
             new_root.entry.push_back(N);
             new_root.entry.push_back(NN);
-            new_root.box = this->expand(tree_.at(N).box, tree_.at(NN).box);
+            new_root.box = this->expand(node_at(N).box, node_at(NN).box);
             this->root_  = this->add_node(std::move(new_root));
 
-            this->tree_.at( N).parent = this->root_;
-            this->tree_.at(NN).parent = this->root_;
+            this->node_at( N).parent = this->root_;
+            this->node_at(NN).parent = this->root_;
             return;
         }
         else
         {
-            const auto& node    = tree_.at(N);
-            const auto& partner = tree_.at(NN);
+            const auto& node    = node_at(N);
+            const auto& partner = node_at(NN);
             assert(node.parent == partner.parent);
 
             const auto parent_idx = node.parent;
-            auto& parent = tree_.at(parent_idx);
+            auto& parent = node_at(parent_idx);
             parent.box = this->expand(parent.box, node.box);
 
             if(parent.has_enough_storage())
@@ -576,22 +595,22 @@ private:
         //  +-PP -+- ...
         //        +-  NN
 
-        const std::size_t PP = this->add_node(node_type(false, tree_.at(P).parent));
+        const std::size_t PP = this->add_node(node_type(false, node_at(P).parent));
         assert(P  != PP);
         assert(NN != PP);
-        node_type& node    = tree_.at(P);
-        node_type& partner = tree_.at(PP);
+        node_type& node    = node_at(P);
+        node_type& partner = node_at(PP);
 
         assert(!node.is_leaf);
         assert(!partner.is_leaf);
 
         boost::container::static_vector<
             std::pair<std::size_t, box_type>, max_entry + 1> entries;
-        entries.emplace_back(NN, tree_.at(NN).box);
+        entries.emplace_back(NN, node_at(NN).box);
 
         for(const auto& entry_idx : node.entry)
         {
-            entries.emplace_back(entry_idx, tree_.at(entry_idx).box);
+            entries.emplace_back(entry_idx, node_at(entry_idx).box);
         }
         node.entry.clear();
         partner.entry.clear();
@@ -604,8 +623,8 @@ private:
             node   .entry.push_back(entries.at(seeds[0]).first);
             partner.entry.push_back(entries.at(seeds[1]).first);
 
-            tree_.at(entries.at(seeds[0]).first).parent = P;
-            tree_.at(entries.at(seeds[1]).first).parent = PP;
+            node_at(entries.at(seeds[0]).first).parent = P;
+            node_at(entries.at(seeds[1]).first).parent = PP;
 
             node   .box = entries.at(seeds[0]).second;
             partner.box = entries.at(seeds[1]).second;
@@ -624,7 +643,7 @@ private:
             {
                 for(const auto idx_box : entries)
                 {
-                    tree_.at(idx_box.first).parent = P;
+                    node_at(idx_box.first).parent = P;
                     node.entry.push_back(idx_box.first);
                     node.box = this->expand(node.box, idx_box.second);
                 }
@@ -635,7 +654,7 @@ private:
             {
                 for(const auto idx_box : entries)
                 {
-                    tree_.at(idx_box.first).parent = PP;
+                    node_at(idx_box.first).parent = PP;
                     partner.entry.push_back(idx_box.first);
                     partner.box = this->expand(partner.box, idx_box.second);
                 }
@@ -647,26 +666,26 @@ private:
             if(next.second)
             {
                 node.entry.push_back(entries.at(next.first).first);
-                tree_.at(entries.at(next.first).first).parent = P;
+                node_at(entries.at(next.first).first).parent = P;
                 node.box = this->expand(node.box, entries.at(next.first).second);
             }
             else
             {
                 partner.entry.push_back(entries.at(next.first).first);
-                tree_.at(entries.at(next.first).first).parent = PP;
+                node_at(entries.at(next.first).first).parent = PP;
                 partner.box = this->expand(partner.box, entries.at(next.first).second);
             }
             entries.erase(entries.begin() + next.first);
         }
-        tree_.at(P)  = node;
-        tree_.at(PP) = partner;
+        node_at(P)  = node;
+        node_at(PP) = partner;
         return PP;
     }
 
     node_type split_leaf(const std::size_t N, const std::size_t vidx,
                          const box_type& entry)
     {
-        node_type& node = tree_.at(N);
+        node_type& node = node_at(N);
         node_type  partner(true, node.parent);
         assert(node.is_leaf);
 
@@ -812,7 +831,7 @@ private:
         typename boost::container::static_vector<std::size_t, max_entry>::const_iterator>>
     find_leaf(std::size_t node_idx, const value_type& entry) const
     {
-        const node_type& node = tree_.at(node_idx);
+        const node_type& node = node_at(node_idx);
         const auto tight_box  = box_getter_(entry.second, 0.0);
 
         if(!(this->is_inside(tight_box, node.box)))
@@ -836,7 +855,7 @@ private:
         {
             for(auto i=node.entry.begin(), e=node.entry.end(); i!=e; ++i)
             {
-                if(!(this->is_inside(tight_box, this->tree_.at(*i).box)))
+                if(!(this->is_inside(tight_box, this->node_at(*i).box)))
                 {
                     continue;
                 }
@@ -851,7 +870,7 @@ private:
 
     void condense_leaf(const std::size_t N)
     {
-        const node_type& node = this->tree_.at(N);
+        const node_type& node = this->node_at(N);
         assert(node.is_leaf);
 
         if(node.has_enough_entry() || node.parent == nil)
@@ -873,26 +892,24 @@ private:
         }
 
         const auto parent_idx = node.parent;
-        assert(this->is_valid_node_index(parent_idx));
 
         // erase the node N from its parent and condense aabb
-        auto found = std::find(this->tree_.at(node.parent).entry.begin(),
-                               this->tree_.at(node.parent).entry.end(), N);
-        assert(found != this->tree_.at(node.parent).entry.end());
+        auto found = std::find(this->node_at(node.parent).entry.begin(),
+                               this->node_at(node.parent).entry.end(), N);
+        assert(found != this->node_at(node.parent).entry.end());
 
         this->erase_node(*found);
-        assert(!this->is_valid_node_index(*found));
-        this->tree_.at(parent_idx).entry.erase(found);
+        this->node_at(parent_idx).entry.erase(found);
 
         // condense node parent box without the leaf node N.
-        this->condense_box(this->tree_.at(parent_idx));
+        this->condense_box(this->node_at(parent_idx));
+        this->adjust_tree(parent_idx);
 
         // re-insert entries that were in node N
         for(const auto obj : eliminated_objs)
         {
             this->insert(obj);
         }
-
         // condense ancester nodes...
         this->condense_node(parent_idx);
         return;
@@ -900,7 +917,7 @@ private:
 
     void condense_node(const std::size_t N)
     {
-        const node_type& node = this->tree_.at(N);
+        const node_type& node = this->node_at(N);
         assert(node.is_leaf == false);
 
         if(node.has_enough_entry())
@@ -924,14 +941,14 @@ private:
         const auto parent_idx = node.parent;
 
         // erase the node N from its parent and condense its aabb
-        auto found = std::find(this->tree_.at(parent_idx).entry.begin(),
-                               this->tree_.at(parent_idx).entry.end(), N);
-        assert(found != this->tree_.at(parent_idx).entry.end());
+        auto found = std::find(this->node_at(parent_idx).entry.begin(),
+                               this->node_at(parent_idx).entry.end(), N);
+        assert(found != this->node_at(parent_idx).entry.end());
 
         // remove the node from its parent.entry
         this->erase_node(*found);
-        this->tree_.at(parent_idx).entry.erase(found);
-        this->condense_box(this->tree_.at(parent_idx));
+        this->node_at(parent_idx).entry.erase(found);
+        this->condense_box(this->node_at(parent_idx));
 
         // re-insert nodes eliminated from node N
         for(const auto idx : eliminated_nodes)
@@ -961,10 +978,10 @@ private:
         }
         else
         {
-            node.box = this->tree_.at(node.entry.front()).box;
+            node.box = this->node_at(node.entry.front()).box;
             for(auto i = std::next(entries.begin()); i != entries.end(); ++i)
             {
-                node.box = this->expand(node.box, this->tree_.at(*i).box);
+                node.box = this->expand(node.box, this->node_at(*i).box);
             }
         }
         return;
@@ -977,14 +994,14 @@ private:
         // insert node to its proper parent. to find the parent of this node N,
         // add 1 to level. root node should NOT come here.
         const std::size_t level = this->level_of(N) + 1;
-        const box_type&   entry = this->tree_.at(N).box;
+        const box_type&   entry = this->node_at(N).box;
         const std::size_t L = this->choose_node_with_level(entry, level);
 
-        if(tree_.at(L).has_enough_storage())
+        if(node_at(L).has_enough_storage())
         {
-            tree_.at(L).entry.push_back(N);
-            tree_.at(N).parent = L;
-            tree_.at(L).box    = this->expand(tree_.at(L).box, entry);
+            node_at(L).entry.push_back(N);
+            node_at(N).parent = L;
+            node_at(L).box    = this->expand(node_at(L).box, entry);
             this->adjust_tree(L);
         }
         else
@@ -1009,10 +1026,10 @@ private:
             Real diff_area_min = std::numeric_limits<Real>::max();
             Real area_min      = std::numeric_limits<Real>::max();
 
-            const node_type& node = this->tree_.at(node_idx);
+            const node_type& node = this->node_at(node_idx);
             for(const auto& entry_idx : node.entry)
             {
-                const auto& entry_box = tree_.at(entry_idx).box;
+                const auto& entry_box = node_at(entry_idx).box;
                 const Real area_initial = this->area(entry_box);
                 const box_type      box = this->expand(entry_box, entry);
 
@@ -1034,10 +1051,10 @@ private:
     std::size_t level_of(std::size_t node_idx) const
     {
         std::size_t level = 0;
-        while(!(tree_.at(node_idx).is_leaf))
+        while(!(node_at(node_idx).is_leaf))
         {
             ++level;
-            node_idx = tree_.at(node_idx).entry.front();
+            node_idx = node_at(node_idx).entry.front();
         }
         return level;
     }
@@ -1063,14 +1080,15 @@ private:
         }
         const std::size_t new_index = overwritable_nodes_.back();
         overwritable_nodes_.pop_back();
-        tree_.at(new_index) = n;
+        node_at(new_index) = n;
         return new_index;
     }
     // mark index `i` overritable and fill old value by the default value.
     void erase_node(const std::size_t i)
     {
+        node_at(i) = node_type(false, 0xDEADBEEF);
         overwritable_nodes_.push_back(i);
-        tree_.at(i) = node_type(false, nil);
+        assert(!this->is_valid_node_index(i));
         return;
     }
 
@@ -1094,7 +1112,6 @@ private:
     void erase_value(const std::size_t i)
     {
         using std::swap;
-
         overwritable_values_.push_back(i);
         value_type old; // default value
         swap(this->container_.at(i), old);
@@ -1102,7 +1119,6 @@ private:
         const auto status = rmap_.erase(old.first);
         assert(status == 1);
         (void)status;
-
         return ;
     }
 
@@ -1197,6 +1213,8 @@ private:
         const auto dr = rr - lr; // radius difference
         const auto dc = abs(this->restrict_direction(lc - rc)); // distance between centers
 
+        // if the radius (of the right hand side) is larger than the half width,
+        // that means that the right hand side wraps the whole world.
         return ((dc[0] - dr[0]) <= tol || (edge_lengths_[0] * 0.5 <= rr[0])) &&
                ((dc[1] - dr[1]) <= tol || (edge_lengths_[1] * 0.5 <= rr[1])) &&
                ((dc[2] - dr[2]) <= tol || (edge_lengths_[2] * 0.5 <= rr[2]));
