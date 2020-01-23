@@ -487,10 +487,13 @@ private:
     //       node AABB smaller and the total efficiency can increase compared to
     //       the former solution.
     void erase_impl(const std::size_t node_idx,
-                    const typename node_type::const_iterator value_idx)
+                    const typename node_type::const_iterator value_iter)
     {
-        this->node_at(node_idx).entry.erase(found->second);
+        const auto value_idx = *value_iter;
+        this->node_at(node_idx).entry.erase(value_iter);
         this->erase_value(value_idx);
+
+        assert(!is_valid_value_index(value_idx));
 
         this->condense_box(this->node_at(node_idx));
         this->adjust_tree(node_idx);
