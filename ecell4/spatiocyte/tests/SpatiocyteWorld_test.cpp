@@ -27,7 +27,7 @@ struct Fixture
 
     Fixture()
         : edge_lengths(1e-6, 1e-6, 1e-6), voxel_radius(1e-8),
-          rng(new GSLRandomNumberGenerator()), model(new NetworkModel),
+          rng(new GSLRandomNumberGenerator()), model(new NetworkModel()),
           world(edge_lengths, voxel_radius, rng)
     {
         world.bind_to(model);
@@ -61,6 +61,26 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_list_particles)
     std::vector<std::pair<ParticleID, Particle>> particles(
         world.list_particles());
     BOOST_CHECK_EQUAL(particles.size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_get_molecule_info)
+{
+    const Species m("M", voxel_radius, 0.0);
+    const Species a("A", voxel_radius, 1.0, "M");
+    model->add_species_attribute(m);
+    model->add_species_attribute(a);
+
+    const auto info_m = world.get_molecule_info(m);
+    BOOST_CHECK_EQUAL(info_m.radius, voxel_radius);
+    BOOST_CHECK_EQUAL(info_m.D, 0.0);
+    BOOST_CHECK_EQUAL(info_m.loc, "");
+    BOOST_CHECK_EQUAL(info_m.dimension, Shape::THREE);
+
+    const auto info_a = world.get_molecule_info(a);
+    BOOST_CHECK_EQUAL(info_a.radius, voxel_radius);
+    BOOST_CHECK_EQUAL(info_a.D, 1.0);
+    BOOST_CHECK_EQUAL(info_a.loc, "M");
+    BOOST_CHECK_EQUAL(info_a.dimension, Shape::THREE);
 }
 
 BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_update_particles)
