@@ -13,6 +13,7 @@
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/PeriodicRTree.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/Identifier.hpp>
 #include <tuple>
 #include <random>
 
