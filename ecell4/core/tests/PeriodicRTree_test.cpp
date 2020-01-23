@@ -203,23 +203,108 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
     BOOST_TEST_MESSAGE("query is tested");
 
     // ----------------------------------------------------------------------
-    // check query results after update and re-insertion
+    // check query results after erase/insert
+
+    for(std::size_t i=0; i<N; ++i)
+    {
+        BOOST_TEST_MESSAGE("erase/insert particle " << i << ", "
+                << full_list.at(i).first << ":" << full_list.at(i).second);
+
+        const Real3 pos(uni(mt), 2 * uni(mt), 3 * uni(mt));
+        const Particle p(sp, pos, radius, D);
+
+        const auto old = full_list.at(i);
+        tree.erase(old);
+
+        {
+            // make sure that the tree no longer contains full_list.at(i).
+            const Query q{nil, old.second.position(), old.second.radius()};
+            tree.query(q, std::back_inserter(query_results));
+            BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
+                        [&old](const std::pair<ParticleID, Particle>& lhs) -> bool {
+                            return lhs.first == old.first;
+                        }) == query_results.end()));
+            query_results.clear();
+            BOOST_TEST_MESSAGE("old value successfully removed");
+        }
+
+        BOOST_REQUIRE(tree.diagnosis());
+        BOOST_TEST_MESSAGE("tree is still okay");
+
+        full_list.at(i).second = p;
+        tree.insert(full_list.at(i));
+
+        const auto novel = full_list.at(i);
+
+        {
+            const Query q{nil, novel.second.position(), novel.second.radius()};
+            tree.query(q, std::back_inserter(query_results));
+            BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
+                        [&novel](const std::pair<ParticleID, Particle>& lhs) -> bool {
+                            return lhs.first == novel.first;
+                        }) != query_results.end()));
+            query_results.clear();
+            BOOST_TEST_MESSAGE("new value successfully inserted");
+        }
+
+        BOOST_REQUIRE(tree.diagnosis());
+        BOOST_TEST_MESSAGE("tree is still okay");
+    }
+    BOOST_TEST_MESSAGE("objects are updated");
+
+    for(std::size_t i=0; i<N; ++i)
+    {
+        const Real3 query_center(uni(mt), 2 * uni(mt), 3 * uni(mt));
+        const Real  query_range = uni(mt) * L * 0.1;
+        const Query query{full_list.front().first, query_center, query_range};
+
+        tree.query(query, std::back_inserter(query_results));
+
+        for(const auto& pidp : full_list)
+        {
+            if(query(pidp, edge_lengths))
+            {
+                const auto found = std::find_if(
+                    query_results.begin(), query_results.end(),
+                    [&pidp](const std::pair<ParticleID, Particle>& lhs) -> bool {
+                        return lhs.first == pidp.first;
+                    });
+
+                BOOST_CHECK(found != query_results.end());
+            }
+        }
+        query_results.clear();
+    }
+
+    // ----------------------------------------------------------------------
+    // update()
 
     for(std::size_t i=0; i<N; ++i)
     {
         BOOST_TEST_MESSAGE("updating particle " << i << ", "
                 << full_list.at(i).first << ":" << full_list.at(i).second);
 
+        const auto id = full_list.at(i).first;
         const Real3 pos(uni(mt), 2 * uni(mt), 3 * uni(mt));
         const Particle p(sp, pos, radius, D);
 
-        tree.erase(full_list.at(i));
         full_list.at(i).second = p;
-        tree.insert(full_list.at(i));
+        tree.update(id, p);
 
-//         const auto newly_inserted = tree.update(full_list.at(i).first, p);
-//         BOOST_TEST(!newly_inserted);
         BOOST_REQUIRE(tree.diagnosis());
+        BOOST_TEST_MESSAGE("tree is still okay");
+
+        const auto novel = full_list.at(i);
+        {
+            const Query q{nil, novel.second.position(), novel.second.radius()};
+            tree.query(q, std::back_inserter(query_results));
+            BOOST_TEST((std::find_if(query_results.begin(), query_results.end(),
+                        [&novel](const std::pair<ParticleID, Particle>& lhs) -> bool {
+                            return lhs.first == novel.first;
+                        }) != query_results.end()));
+            query_results.clear();
+            BOOST_TEST_MESSAGE("new value successfully inserted");
+        }
     }
     BOOST_TEST_MESSAGE("objects are updated");
 
