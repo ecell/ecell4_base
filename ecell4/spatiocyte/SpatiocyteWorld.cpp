@@ -355,8 +355,7 @@ boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
     {
         const Voxel neighbor(get_neighbor(voxel, rnd));
         boost::shared_ptr<const VoxelPool> mt(neighbor.get_voxel_pool());
-        const std::string serial(mt->is_vacant() ? "" : mt->species().serial());
-        if (serial == loc)
+        if (mt->species().serial() == loc)
         {
             tmp.push_back(neighbor);
         }
