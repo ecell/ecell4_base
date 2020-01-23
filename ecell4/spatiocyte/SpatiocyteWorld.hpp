@@ -30,10 +30,10 @@ namespace spatiocyte
 
 struct MoleculeInfo
 {
-    const Real radius;
-    const Real D;
-    const std::string loc;
-    const Shape::dimension_kind dimension;
+    Real radius;
+    Real D;
+    std::string loc;
+    Shape::dimension_kind dimension;
 };
 
 class SpatiocyteWorld : public WorldInterface
@@ -559,11 +559,13 @@ public:
      */
     const MoleculeInfo get_molecule_info(const Species &sp)
     {
-        boost::optional<Real> diffusion_coef;
-        boost::optional<Real> radius;
-        boost::optional<std::string> location;
-        Shape::dimension_kind dimension =
-            Shape::THREE; // The default dimension is 3
+        // Default
+        MoleculeInfo info = {
+            /* radius = */ voxel_radius(),
+            /* D = */ 0.0,
+            /* loc = */ "",
+            /* dimension = */ Shape::THREE,
+        };
 
         const auto itr = molecule_info_cache_.find(sp);
         if (itr != molecule_info_cache_.end())
@@ -571,10 +573,7 @@ public:
             // return itr->second;
             // TODO: the below code is only for warning.
             //       In the future, the value should be returned immediately.
-            diffusion_coef = itr->second.D;
-            radius = itr->second.radius;
-            location = itr->second.loc;
-            dimension = itr->second.dimension;
+            info = itr->second;
         }
         else if (const auto model = lock_model())
         {
@@ -582,70 +581,54 @@ public:
 
             if (species_from_model.has_attribute("D"))
             {
-                diffusion_coef = species_from_model.get_attribute_as<Real>("D");
+                info.D = species_from_model.get_attribute_as<Real>("D");
             }
 
             if (species_from_model.has_attribute("radius"))
             {
-                radius = species_from_model.get_attribute_as<Real>("radius");
+                info.radius =
+                    species_from_model.get_attribute_as<Real>("radius");
             }
 
             if (species_from_model.has_attribute("location"))
             {
-                location = species_from_model.get_attribute_as<std::string>(
+                info.loc = species_from_model.get_attribute_as<std::string>(
                     "location");
             }
 
-            dimension = extras::get_dimension_from_model(sp, model);
+            info.dimension = extras::get_dimension_from_model(sp, model);
         }
 
         if (sp.has_attribute("D"))
         {
             const auto new_value = sp.get_attribute_as<Real>("D");
-            if (diffusion_coef && *diffusion_coef != new_value)
+            if (info.D != new_value)
             {
                 warning("D");
-                diffusion_coef = new_value;
+                info.D = new_value;
             }
         }
 
         if (sp.has_attribute("radius"))
         {
             const auto new_value = sp.get_attribute_as<Real>("radius");
-            if (radius && *radius != new_value)
+            if (info.radius != new_value)
             {
                 warning("radius");
-                radius = new_value;
+                info.radius = new_value;
             }
         }
 
         if (sp.has_attribute("location"))
         {
             const auto new_value = sp.get_attribute_as<std::string>("location");
-            if (location && *location != new_value)
+            if (info.loc != new_value)
             {
                 warning("location");
-                location = new_value;
+                info.loc = new_value;
             }
         }
 
-        if (diffusion_coef == boost::none)
-        {
-            diffusion_coef = 0.0;
-        }
-
-        if (radius == boost::none)
-        {
-            radius = voxel_radius();
-        }
-
-        if (location == boost::none)
-        {
-            location = "";
-        }
-
-        const MoleculeInfo info = {*radius, *diffusion_coef, *location,
-                                   dimension};
         molecule_info_cache_.insert(
             molecule_info_cache_t::value_type(sp, info));
         return info;
@@ -939,7 +922,7 @@ protected:
 
     boost::weak_ptr<Model> model_;
     molecule_info_cache_t molecule_info_cache_;
-};
+}; // namespace spatiocyte
 
 inline SpatiocyteWorld *create_spatiocyte_world_cell_list_impl(
     const Real3 &edge_lengths, const Real &voxel_radius,
