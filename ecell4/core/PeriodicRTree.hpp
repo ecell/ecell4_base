@@ -127,6 +127,7 @@ public:
     }
     value_type get(const ObjectID& id) const
     {
+        assert(id == container_.at(rmap_.at(id)).first);
         return container_.at(rmap_.at(id));
     }
 
