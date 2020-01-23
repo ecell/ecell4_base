@@ -318,7 +318,7 @@ public:
             if(!this->is_valid_node_index(i)){continue;}
 
             const auto& box = this->node_at(i).box;
-            const auto center = (box.upper + box.lower) * 0.5;
+            const auto center = (box.upper() + box.lower()) * 0.5;
             assert(this->is_inside_of_boundary(center));
         }
 
