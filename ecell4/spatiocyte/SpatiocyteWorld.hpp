@@ -767,9 +767,8 @@ public:
                      voxel.space.lock()->get_neighbor(voxel.coordinate, nrand));
     }
 
-    const Voxel get_neighbor_randomly(const Voxel &voxel) const;
     const Voxel get_neighbor_randomly(const Voxel &voxel,
-                                      Shape::dimension_kind dimension) const;
+                                      Shape::dimension_kind dimension);
 
     const Species &draw_species(const Species &pttrn) const;
 

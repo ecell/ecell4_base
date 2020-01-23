@@ -361,6 +361,17 @@ boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
         }
     }
 
+    if (const auto neighbors = neighbors_.find(voxel))
+    {
+        for (const auto &neighbor : *neighbors)
+        {
+            if (neighbor.get_voxel_pool()->species().serial() == loc)
+            {
+                tmp.push_back(neighbor);
+            }
+        }
+    }
+
     if (tmp.size() == 0)
     {
         return boost::none;
@@ -369,15 +380,9 @@ boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
     return tmp[rng()->uniform_int(0, tmp.size() - 1)];
 }
 
-const Voxel SpatiocyteWorld::get_neighbor_randomly(const Voxel &voxel) const
-{
-    const Integer idx(rng()->uniform_int(0, num_neighbors(voxel) - 1));
-    return get_neighbor(voxel, idx);
-}
-
 const Voxel
 SpatiocyteWorld::get_neighbor_randomly(const Voxel &voxel,
-                                       Shape::dimension_kind dimension) const
+                                       Shape::dimension_kind dimension)
 {
     std::vector<Voxel> neighbors;
     for (Integer idx = 0; idx < num_neighbors(voxel); ++idx)
@@ -391,7 +396,15 @@ SpatiocyteWorld::get_neighbor_randomly(const Voxel &voxel,
     }
 
     const Integer idx(rng()->uniform_int(0, neighbors.size() - 1));
-    return neighbors.at(idx);
+    const auto neighbor = neighbors.at(idx);
+
+    if (const auto neighbors = interfaces_.find(neighbor))
+    {
+        const auto idx(rng()->uniform_int(0, neighbors->size() - 1));
+        return neighbors->at(idx);
+    }
+
+    return neighbor;
 }
 
 } // namespace spatiocyte

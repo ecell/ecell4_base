@@ -67,7 +67,8 @@ void StepEvent3D::walk(const Real &alpha)
             continue;
         }
 
-        const Voxel neighbor(world_->get_neighbor_randomly(voxel));
+        const Voxel neighbor(
+            world_->get_neighbor_randomly(voxel, Shape::THREE));
 
         if (world_->can_move(voxel, neighbor))
         {
@@ -147,11 +148,6 @@ void StepEvent::attempt_reaction_(
     const Voxel voxel(space_, info.coordinate);
     boost::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
     boost::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
-
-    if (to_mt->is_vacant())
-    {
-        return;
-    }
 
     const Species &speciesA(from_mt->species());
     const Species &speciesB(to_mt->species());
