@@ -54,6 +54,8 @@ public:
     using rtree_value_type      = std::pair<box_type, std::size_t>;
     using value_type            = std::pair<ObjectID, Object>;
     using container_type        = std::vector<value_type>;
+    using iterator              = typename container_type::iterator;
+    using const_iterator        = typename container_type::const_iterator;
     using key_to_value_map_type = std::unordered_map<ObjectID, std::size_t>;
 
     static constexpr std::size_t min_entry = MinEntry;
@@ -222,6 +224,11 @@ public:
 
     void erase(const ObjectID& id, const Object& obj)
     {
+        this->erase(id, this->container_.at(this->rmap_.at(id)));
+        return;
+    }
+    void erase(const ObjectID& id, const Object& obj)
+    {
         this->erase(std::make_pair(id, obj));
         return;
     }
@@ -245,6 +252,7 @@ public:
     }
 
     Real3 const& edge_lengths() const noexcept {return edge_lengths_;}
+    Real3&       edge_lengths()       noexcept {return edge_lengths_;}
 
     // user-defined AABBGetter may be stateful (unlikely).
     AABBGetter const& get_aabb_getter() const noexcept {return box_getter_;}
@@ -421,8 +429,8 @@ private:
     // recursively search nodes. if the node is a leaf, check values inside it.
 
     template<typename F, typename OutputIterator>
-    OutputIterator query_recursive(
-            const std::size_t node_idx, F matches, OutputIterator& out) const
+    OutputIterator query_recursive(const std::size_t node_idx,
+            const F& matches, OutputIterator& out) const
     {
         const node_type& node = this->node_at(node_idx);
         if(node.is_leaf)
