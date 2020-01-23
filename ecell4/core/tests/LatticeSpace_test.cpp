@@ -40,6 +40,8 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_constructor) { ; }
 BOOST_AUTO_TEST_CASE(CheckVacantSize)
 {
     BOOST_CHECK_EQUAL(space.actual_size(), space.vacant()->size());
+    BOOST_CHECK_EQUAL(space.num_voxels_exact(Species("")),
+                      space.vacant()->size());
 }
 
 BOOST_AUTO_TEST_CASE(GetVoxel)
