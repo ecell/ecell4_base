@@ -202,7 +202,7 @@ VoxelSpaceBase::list_voxels_exact(const Species &sp) const
 
 boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
 {
-    if (sp.serial() == "")
+    if (sp == vacant_->species())
         return vacant_;
 
     voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
@@ -216,7 +216,7 @@ boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
 boost::shared_ptr<const VoxelPool>
 VoxelSpaceBase::find_voxel_pool(const Species &sp) const
 {
-    if (sp.serial() == "")
+    if (sp == vacant_->species())
         return vacant_;
 
     voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));

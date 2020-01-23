@@ -170,7 +170,7 @@ bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num)
         {
             const Voxel voxel(space, rng()->uniform_int(0, space->size() - 1));
 
-            if (voxel.get_voxel_pool()->species().serial() != info.loc)
+            if (voxel.get_voxel_pool() != location)
                 continue;
 
             if (new_particle(sp, voxel))
