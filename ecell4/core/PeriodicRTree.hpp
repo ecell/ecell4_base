@@ -223,7 +223,7 @@ public:
         return ;
     }
 
-    void erase(const ObjectID& id, const Object& obj)
+    void erase(const ObjectID& id)
     {
         this->erase(id, this->container_.at(this->rmap_.at(id)));
         return;
