@@ -101,7 +101,11 @@ public:
     PeriodicRTree& operator=(PeriodicRTree const&) = default;
     PeriodicRTree& operator=(PeriodicRTree &&)     = default;
 
-    std::size_t size() const noexcept {return container_.size();}
+    std::size_t size() const noexcept
+    {
+        return this->container_.size() - this->overwritable_values_.size();
+    }
+
     bool       empty() const noexcept {return this->root_ == nil;}
     void       clear()
     {
