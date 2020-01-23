@@ -1,28 +1,28 @@
 #include <ecell4/core/ParticleSpaceRTreeImpl.hpp>
 #include <ecell4/core/comparators.hpp>
-#include <boost/geometry/algorithms/within.hpp>
 
 namespace ecell4
 {
 
 void ParticleSpaceRTreeImpl::reset(const Real3& edge_lengths)
 {
-    base_type::t_ = 0.0;
-    particles_.clear();
-    idx_map_.clear();
-    particle_pool_.clear();
-    rtree_.clear();
-
-    this->edge_lengths_ = edge_lengths;
+    this->t_ = 0.0;
+    this->particle_pool_.clear();
+    this->rtree_.clear();
+    this->rtree_.edge_lengths() = edge_lengths;
+    return;
 }
 
 std::vector<Species> ParticleSpaceRTreeImpl::list_species() const
 {
     std::vector<Species> retval;
-    for(per_species_particle_id_set::const_iterator
-        i(particle_pool_.begin()), e(particle_pool_.end()); i != e; ++i)
+    for (const auto& pidp : rtree_.list_objects())
     {
-        retval.push_back(Species(i->first));
+        const Species& sp(pidp.second.species());
+        if(std::find(retval.begin(), retval.end(), sp) == retval.end())
+        {
+            retval.push_back(sp);
+        }
     }
     return retval;
 }
@@ -31,13 +31,12 @@ Integer ParticleSpaceRTreeImpl::num_particles(const Species& sp) const
 {
     Integer retval(0);
     SpeciesExpressionMatcher sexp(sp);
-    for(per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()), e(particle_pool_.end()); i != e; ++i)
+    for(const auto& idset : particle_pool_)
     {
-        const Species target(i->first);
+        const Species target(idset.first);
         if(sexp.match(target))
         {
-            retval += i->second.size();
+            retval += idset.second.size();
         }
     }
     return retval;
@@ -45,9 +44,7 @@ Integer ParticleSpaceRTreeImpl::num_particles(const Species& sp) const
 
 Integer ParticleSpaceRTreeImpl::num_particles_exact(const Species& sp) const
 {
-    const per_species_particle_id_set::const_iterator
-        i = particle_pool_.find(sp.serial());
-
+    const auto i = particle_pool_.find(sp.serial());
     return (i == particle_pool_.end()) ? 0 : i->second.size();
 }
 
@@ -55,11 +52,10 @@ Integer ParticleSpaceRTreeImpl::num_molecules(const Species& sp) const
 {
     Integer retval(0);
     SpeciesExpressionMatcher sexp(sp);
-    for(per_species_particle_id_set::const_iterator
-            i(particle_pool_.begin()), e(particle_pool_.end()); i != e; ++i)
+    for(const auto& idset : particle_pool_)
     {
-        const Species target(i->first);
-        retval += sexp.count(target) * i->second.size();
+        const Species target(idset.first);
+        retval += sexp.count(target) * idset.second.size();
     }
     return retval;
 }
@@ -69,186 +65,76 @@ Integer ParticleSpaceRTreeImpl::num_molecules_exact(const Species& sp) const
     return num_particles_exact(sp);
 }
 
-std::vector<std::pair<ParticleID, Particle> >
+std::vector<std::pair<ParticleID, Particle>>
 ParticleSpaceRTreeImpl::list_particles(const Species& sp) const
 {
-    std::vector<std::pair<ParticleID, Particle> > retval;
+    std::vector<std::pair<ParticleID, Particle>> retval;
     SpeciesExpressionMatcher sexp(sp);
 
-    for(particle_container_type::const_iterator
-            i(particles_.begin()), e(particles_.end()); i != e; ++i)
+    for(const auto& pidp : rtree_.list_objects())
     {
-        if(sexp.match(i->second.species()))
+        if(sexp.match(pidp.second.species()))
         {
-            retval.push_back(*i);
+            retval.push_back(pidp);
         }
     }
-
     return retval;
 }
 std::vector<std::pair<ParticleID, Particle> >
 ParticleSpaceRTreeImpl::list_particles_exact(const Species& sp) const
 {
-    std::vector<std::pair<ParticleID, Particle> > retval;
+    std::vector<std::pair<ParticleID, Particle>> retval;
 
-    for(particle_container_type::const_iterator
-            i(particles_.begin()), e(particles_.end()); i != e; ++i)
+    for(const auto& pidp : rtree_.list_objects())
     {
-        if (i->second.species() == sp)
+        if (pidp.second.species() == sp)
         {
-            retval.push_back(*i);
+            retval.push_back(pidp);
         }
     }
-
     return retval;
 }
 
-std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
 ParticleSpaceRTreeImpl::list_particles_within_radius(
         const Real3& pos, const Real& radius) const
 {
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    if(this->particles_.empty())
-    {
-        return retval;
-    }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> list;
+    this->query_impl(make_intersection_query(pos, radius,
+        [](const value_type&) noexcept -> bool {
+            return false;
+        }), std::back_inserter(list));
 
-    query_boxes_container_type
-        boxes(1, self_type::make_box(pos, radius+this->max_radius_));
-
-    const box_type boundary(Real3(0,0,0), this->edge_lengths_);
-    if(not boost::geometry::within(boxes.front(), boundary))
-    {// if the query box is out of periodic-boundary, split the query box
-        this->split_box_by_boundary<0>(boxes);
-        this->split_box_by_boundary<1>(boxes);
-        this->split_box_by_boundary<2>(boxes);
-    }
-
-    for(query_boxes_container_type::const_iterator
-            bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
-    {
-        query_result_container_type tmp;
-        this->rtree_.query(boost::geometry::index::intersects(*bxi),
-                           std::back_inserter(tmp));
-
-        for(query_result_container_type::const_iterator
-                i(tmp.begin()), e(tmp.end()); i != e; ++i)
-        {
-            const ParticleID& pid = boost::get<1>(*i);
-            const Particle&   p   = boost::get<2>(*i);
-            const Real dist = this->distance(p.position(), pos) - p.radius();
-
-            if(dist <= radius)
-            {
-                retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
-            }
-        }
-    }
-    std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
-            std::pair<ParticleID, Particle>, Real>());
-    return retval;
+    return list;
 }
 
-std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
 ParticleSpaceRTreeImpl::list_particles_within_radius(
-        const Real3& pos, const Real& radius, const ParticleID& ignore) const
+    const Real3& pos, const Real& radius, const ParticleID& ignore) const
 {
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    if(this->particles_.empty())
-    {
-        return retval;
-    }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> list;
 
-    query_boxes_container_type
-        boxes(1, self_type::make_box(pos, radius+this->max_radius_));
+    this->query_impl(make_intersection_query(pos, radius,
+        [&ignore](const value_type& pidp) noexcept -> bool {
+            return pidp.first == ignore;
+        }), std::back_inserter(list));
 
-    const box_type boundary(Real3(0,0,0), this->edge_lengths_);
-    if(not boost::geometry::within(boxes.front(), boundary))
-    {// if the query box is out of periodic-boundary, split the query box
-        this->split_box_by_boundary<0>(boxes);
-        this->split_box_by_boundary<1>(boxes);
-        this->split_box_by_boundary<2>(boxes);
-    }
-
-    for(query_boxes_container_type::const_iterator
-            bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
-    {
-        query_result_container_type tmp;
-        this->rtree_.query(boost::geometry::index::intersects(*bxi) &&
-            boost::geometry::index::satisfies(particle_id_excluder(ignore)),
-            std::back_inserter(tmp));
-
-        for(query_result_container_type::const_iterator
-                i(tmp.begin()), e(tmp.end()); i != e; ++i)
-        {
-            const ParticleID& pid = boost::get<1>(*i);
-            const Particle&   p   = boost::get<2>(*i);
-            const Real dist = this->distance(p.position(), pos) - p.radius();
-
-            BOOST_ASSERT(pid != ignore);
-
-            if(dist <= radius)
-            {
-                retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
-            }
-        }
-    }
-    std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
-            std::pair<ParticleID, Particle>, Real>());
-    return retval;
+    return list;
 }
 
-std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
+std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
 ParticleSpaceRTreeImpl::list_particles_within_radius(
-        const Real3& pos, const Real& radius,
-        const ParticleID& ignore1, const ParticleID& ignore2) const
+    const Real3& pos, const Real& radius, const ParticleID& ignore1,
+    const ParticleID& ignore2) const
 {
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real> > retval;
-    if(this->particles_.empty())
-    {
-        return retval;
-    }
+    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> list;
 
-    query_boxes_container_type
-        boxes(1, self_type::make_box(pos, radius+this->max_radius_));
+    this->query_impl(make_intersection_query(pos, radius,
+        [&ignore1, &ignore2](const value_type& pidp) noexcept -> bool {
+            return pidp.first == ignore1 || pidp.first == ignore2;
+        }), std::back_inserter(list));
 
-    const box_type boundary(Real3(0,0,0), this->edge_lengths_);
-
-    if(not boost::geometry::within(boxes.front(), boundary))
-    {// if the query box is out of periodic-boundary, split the query box
-        this->split_box_by_boundary<0>(boxes);
-        this->split_box_by_boundary<1>(boxes);
-        this->split_box_by_boundary<2>(boxes);
-    }
-
-    for(query_boxes_container_type::const_iterator
-            bxi(boxes.begin()), bxe(boxes.end()); bxi != bxe; ++bxi)
-    {
-        query_result_container_type tmp;
-        this->rtree_.query(boost::geometry::index::intersects(*bxi) &&
-            boost::geometry::index::satisfies(particle_id2_excluder(ignore1, ignore2)),
-            std::back_inserter(tmp));
-
-        for(query_result_container_type::const_iterator
-                i(tmp.begin()), e(tmp.end()); i != e; ++i)
-        {
-            const ParticleID& pid = boost::get<1>(*i);
-            const Particle&   p   = boost::get<2>(*i);
-            const Real dist = this->distance(p.position(), pos) - p.radius();
-
-            BOOST_ASSERT(pid != ignore1);
-            BOOST_ASSERT(pid != ignore2);
-
-            if(dist <= radius)
-            {
-                retval.push_back(std::make_pair(std::make_pair(pid, p), dist));
-            }
-        }
-    }
-    std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
-            std::pair<ParticleID, Particle>, Real>());
-
-    return retval;
+    return list;
 }
 
 } // ecell4
