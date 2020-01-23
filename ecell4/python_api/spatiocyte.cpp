@@ -155,7 +155,10 @@ static inline void define_spatiocyte_world(py::module &m)
         .def("add_offlattice",
              [](SpatiocyteWorld &self, const Species &species,
                 const OffLattice &offlattice) {
-                 self.add_space(offlattice.generate_space(species));
+                 const auto info = self.get_molecule_info(species);
+                 const auto updated = Species(species.serial(), info.radius,
+                                              info.D, info.loc, info.dimension);
+                 self.add_space(offlattice.generate_space(updated));
              })
         .def_static("calculate_voxel_volume",
                     &SpatiocyteWorld::calculate_voxel_volume)
