@@ -11,8 +11,7 @@
 #include <vector>
 #include <limits>
 #include <sstream>
-#include <set>
-#include <map>
+#include <algorithm>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -50,12 +49,12 @@ template<typename ObjectID, typename Object, typename AABBGetter,
 class PeriodicRTree
 {
 public:
-    typedef AABB                                      box_type;
-    typedef AABBGetter                                box_getter_type;
-    typedef std::pair<box_type, std::size_t>          rtree_value_type;
-    typedef std::pair<ObjectID, Object>               value_type;
-    typedef std::vector<value_type>                   container_type;
-    typedef std::unordered_map<ObjectID, std::size_t> key_to_value_map_type;
+    using box_type              = AABB;
+    using box_getter_type       = AABBGetter;
+    using rtree_value_type      = std::pair<box_type, std::size_t>;
+    using value_type            = std::pair<ObjectID, Object>;
+    using container_type        = std::vector<value_type>;
+    using key_to_value_map_type = std::unordered_map<ObjectID, std::size_t>;
 
     static constexpr std::size_t min_entry = MinEntry;
     static constexpr std::size_t max_entry = MaxEntry;
@@ -63,8 +62,10 @@ public:
 
     struct node_type
     {
-        typedef boost::container::static_vector<std::size_t, max_entry>
-                entry_type;
+        using entry_type =
+            boost::container::static_vector<std::size_t, max_entry>;
+        using iterator       = typename entry_type::iterator;
+        using const_iterator = typename entry_type::const_iterator;
 
         node_type(const bool is_leaf_, const std::size_t parent_)
             : is_leaf(is_leaf_), parent(parent_)
@@ -128,10 +129,10 @@ public:
     // struct QueryFilter {
     //     // skip based on some attribute values in a value.
     //     // return true if the value should be collected.
-    //     bool operator(const value_type&, const Real3& edge_lengths);
+    //     bool operator(const std::pair<ObjectID, Object>&, const Real3& edges);
     //
     //     // to skip non-interacting nodes purely geometric criteria.
-    //     bool operator(const AABB&,       const Real3& edge_lengths);
+    //     bool operator(const AABB&,       const Real3& edges);
     // }
     // ```
     template<typename F, typename OutputIterator>
@@ -144,17 +145,22 @@ public:
         return query_recursive(root_, matches, out);
     }
 
+    // update an object. If the object corresponds to id already exists,
+    // it reshapes the tree structure.
+    //
+    // When it reshape the structure, it considers the margin. If the node AABB
+    // covers the tight (i.e. margin == 0) object AABB, we don't need to reshape
+    // it. When the tight AABB of the object sticks out of the node AABB, we
+    // need to re-shape it.
     bool update(const ObjectID& id, const Object& obj)
     {
-        const auto v = std::make_pair(id, obj);
         if(!this->has(id))
         {
-            this->insert(v);
+            this->insert(id, obj);
             return true;
         }
-        const auto old_v = this->container_.at(this->rmap_.at(id));
-
-        const auto found = this->find_leaf(this->root_, old_v);
+        const auto found = this->find_leaf(this->root_,
+                this->container_.at(this->rmap_.at(id)));
         if(!found)
         {
             throw std::logic_error("[error] internal error in PeriodicRTree");
@@ -175,17 +181,8 @@ public:
         {
             // The updated object sticks out of the node.
             // We need to expand the box and update the tree.
-
-            // erasing the object in a node.
-            // remove the entry, then condence the AABB.
-            this->node_at(node_idx).entry.erase(found->second);
-            this->erase_value(value_idx);
-
-            this->condense_box(this->node_at(node_idx));
-            this->condense_leaf(node_idx);
-            // done.
-
-            this->insert(v);
+            this->erase_impl(node_idx, found->second);
+            this->insert(id, obj);
         }
         return false;
     }
@@ -215,48 +212,17 @@ public:
         return ;
     }
 
-    // Note: In the original R-Tree, without periodic boundary condition,
-    //       we don't need to adjust tree after we remove an object. It is
-    //       because node AABB always shrink after erasing its entry. But under
-    //       the periodic condition, AABB may slide to reduce its size.
-    //           Let's consider the following case. When we remove the 3rd
-    //       object, the node AABB slides to the left side. By removing the
-    //       object, the region that was not covered by the node AABB, between
-    //       object 1 and 2, will be covered.
-    //
-    //       .--------- boundary --------.      .--------- boundary --------.
-    //       :  _____       _   ___    _ :  =>  :  _____       _          _ :
-    //       : |  1  |     |2| | 3 |  |4|:  =>  : |  1  |     |2|        |4|:
-    //       : |_____|     |_| |___|  |_|:  =>  : |_____|     |_|        |_|:
-    //       --------]     [--node AABB---  =>  --node AABB-----]        [---
-    //
-    //           We need to choose a strategy to handle this problem. There can
-    //       be several possible ways. First, we can keep the original AABB
-    //       after removing an object. Apparently, since the older AABB covers
-    //       all the child objects, we can keep the AABB. But it enlarges AABB
-    //       and makes the whole R-Tree inefficient. Second, we can adjust all
-    //       the ancester nodes. It might also causes inefficiency because it
-    //       requires additional calculation when erasing an object. But it make
-    //       node AABB smaller and the total efficiency can increase compared to
-    //       the former solution.
     void erase(const value_type& v)
     {
         if(this->root_ == nil)
         {
             throw std::out_of_range("PeriodicRTree::erase: tree is empty.");
         }
+
         // find_leaf returns pair{leaf_node_idx, iterator of leaf_node.entry}
         if(const auto found = this->find_leaf(this->root_, v))
         {
-            const auto node_idx  =   found->first;
-            const auto value_idx = *(found->second);
-
-            this->node_at(node_idx).entry.erase(found->second);
-            this->erase_value(value_idx);
-
-            this->condense_box(this->node_at(node_idx));
-            this->adjust_tree(node_idx);
-            this->condense_leaf(node_idx);
+            this->erase_impl(found->first, found->second);
             return;
         }
         else
@@ -266,6 +232,12 @@ public:
     }
 
     Real3 const& edge_lengths() const noexcept {return edge_lengths_;}
+
+    // user-defined AABBGetter may be stateful (unlikely).
+    AABBGetter const& get_aabb_getter() const noexcept {return box_getter_;}
+
+    // box margin.
+    Real margin() const noexcept {return margin_;}
 
     // it does not return a reference, but returns a copy.
     // Since this class handles values via index, some values can be in a
@@ -286,15 +258,11 @@ public:
         return retval;
     }
 
-    // user-defined AABBGetter may be stateful (unlikely).
-    AABBGetter const& get_aabb_getter() const noexcept {return box_getter_;}
-
-    // box margin.
-    Real margin() const noexcept {return margin_;}
-
     // check the tree structure and relationships between nodes
     bool diagnosis() const
     {
+        // -------------------------------------------------------------------
+        // check number of active objects and internal nodes
         std::size_t num_objects = 0;
         std::size_t num_inodes  = 1; // +1 for the root
         for(std::size_t i=0; i<tree_.size(); ++i)
@@ -313,6 +281,8 @@ public:
         assert(list_objects().size() == num_objects);
         assert(tree_.size() - overwritable_nodes_.size() == num_inodes);
 
+        // -------------------------------------------------------------------
+        // check the parent of a node exists and the parent contains the node
         bool root_found = false;
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
@@ -332,6 +302,19 @@ public:
             }
         }
 
+        // -------------------------------------------------------------------
+        // check all the centroid of all the node AABBs are within the boundary
+        for(std::size_t i=0; i<tree_.size(); ++i)
+        {
+            if(!this->is_valid_node_index(i)){continue;}
+
+            const auto& box = this->node_at(i).box;
+            const auto center = (box.upper + box.lower) * 0.5;
+            assert(this->is_inside_of_boundary(center));
+        }
+
+        // -------------------------------------------------------------------
+        // check all the ancester node AABBs covers the child AABBs
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
             if(!this->is_valid_node_index(i)) {continue;}
@@ -341,6 +324,8 @@ public:
             }
         }
 
+        // -------------------------------------------------------------------
+        // check consistency between id->index map and the tree
         for(std::size_t i=0; i<container_.size(); ++i)
         {
             if(!this->is_valid_value_index(i)) {continue;}
@@ -361,6 +346,22 @@ public:
         return true;
     }
 
+    // -------------------------------------------------------------------
+    // dump parent-child relationship
+    void dump(std::ostream& os) const
+    {
+        std::ostringstream oss;
+        if(this->is_valid_node_index(this->root_)) {oss << ' ';} else {oss << '!';}
+        oss << '(' << std::setw(3) << this->root_ << ") ";
+        this->dump_rec(this->root_, os, oss.str());
+        os << std::flush;
+        return ;
+    }
+
+private:
+
+    // -------------------------------------------------------------------
+    // check all the ancester node AABBs covers the child AABBs recursively
     bool diagnosis_rec(std::size_t node_idx) const
     {
         while(node_at(node_idx).parent != nil)
@@ -375,18 +376,8 @@ public:
         return true;
     }
 
-    void dump(std::ostream& os) const
-    {
-        std::ostringstream oss;
-        if(this->is_valid_node_index(this->root_)) {oss << ' ';} else {oss << '!';}
-        oss << '(' << std::setw(3) << this->root_ << ") ";
-        this->dump_rec(this->root_, os, oss.str());
-        os << std::flush;
-        return ;
-    }
-
-private:
-
+    // -------------------------------------------------------------------
+    // dump parent-child relationship
     void dump_rec(const std::size_t node_idx, std::ostream& os, std::string prefix) const
     {
         const auto& node = tree_.at(node_idx);
@@ -414,7 +405,7 @@ private:
 private:
 
     // ------------------------------------------------------------------------
-    // recursively check nodes. if the node is a leaf, check values inside it.
+    // recursively search nodes. if the node is a leaf, check values inside it.
 
     template<typename F, typename OutputIterator>
     OutputIterator query_recursive(
@@ -462,9 +453,47 @@ private:
         return tree_.at(i);
     }
 
-    // ------------------------------------------------------------------------
-    // construct and manage RTree structure.
+    // Note: In the original R-Tree, without periodic boundary condition,
+    //       we don't need to adjust tree after we remove an object. It is
+    //       because node AABB always shrink after erasing its entry. But under
+    //       the periodic condition, AABB may slide to reduce its size.
+    //           Let's consider the following case. When we remove the 3rd
+    //       object, the node AABB slides to the left side. By removing the
+    //       object, the region that was not covered by the node AABB, between
+    //       object 1 and 2, will be covered.
+    //
+    //       .--------- boundary --------.      .--------- boundary --------.
+    //       :  _____       _   ___    _ :  =>  :  _____       _          _ :
+    //       : |  1  |     |2| | 3 |  |4|:  =>  : |  1  |     |2|        |4|:
+    //       : |_____|     |_| |___|  |_|:  =>  : |_____|     |_|        |_|:
+    //       --------]     [--node AABB---  =>  --node AABB-----]        [---
+    //
+    //           We need to choose a strategy to handle this problem. There can
+    //       be several possible ways. First, we can keep the original AABB
+    //       after removing an object. Apparently, since the older AABB covers
+    //       all the child objects, we can keep the AABB. But it enlarges AABB
+    //       and makes the whole R-Tree inefficient. Second, we can adjust all
+    //       the ancester nodes. It might also causes inefficiency because it
+    //       requires additional calculation when erasing an object. But it make
+    //       node AABB smaller and the total efficiency can increase compared to
+    //       the former solution.
+    void erase_impl(const std::size_t node_idx,
+                    const typename node_type::const_iterator value_idx)
+    {
+        this->node_at(node_idx).entry.erase(found->second);
+        this->erase_value(value_idx);
 
+        this->condense_box(this->node_at(node_idx));
+        this->adjust_tree(node_idx);
+        this->condense_leaf(node_idx);
+        return;
+    }
+
+    // ========================================================================
+    // below: construct and manage RTree structure.
+
+    // It choose leaf object to contain the entry. It is an implementation of
+    // the quadratic algorithm introduced in the paper by Guttman A. (1984)
     std::size_t choose_leaf(const box_type& entry)
     {
         // if it's empty, the entry will be inserted in a root node.
@@ -480,7 +509,7 @@ private:
         std::size_t node_idx = this->root_;
         while(!(this->node_at(node_idx).is_leaf))
         {
-            // find minimum expansion
+            // find the node that can cover the entry with minimum expansion
             Real diff_area_min = std::numeric_limits<Real>::max();
             Real area_min      = std::numeric_limits<Real>::max();
 
@@ -505,7 +534,6 @@ private:
         return node_idx;
     }
 
-
     // It adjusts AABBs of all the ancester nodes of `node_idx` to make sure
     // that all the ancester nodes covers the node of `node_idx`.
     void adjust_tree(std::size_t node_idx)
@@ -527,9 +555,11 @@ private:
         return;
     }
 
+    // It adjusts node AABBs and add a new node to proper location.
     void adjust_tree(const std::size_t N, const std::size_t NN)
     {
         assert(N != NN);
+
         // we hit the root. to assign a new node, we need to make tree deeper.
         if(node_at(N).parent == nil)
         {
@@ -586,7 +616,7 @@ private:
         }
     }
 
-    // split nodes by quadratic algorithm
+    // split internal nodes by the quadratic algorithm introduced by Guttman, A. (1984)
     std::size_t split_node(const std::size_t P, const std::size_t NN)
     {
         // P -+-   N }- MaxEntry
@@ -688,6 +718,7 @@ private:
         return PP;
     }
 
+    // split leaf nodes by the quadratic algorithm introduced by Guttman, A. (1984)
     node_type split_leaf(const std::size_t N, const std::size_t vidx,
                          const box_type& entry)
     {
@@ -761,6 +792,7 @@ private:
         return partner;
     }
 
+    // auxiliary function for the quadratic algorithm.
     std::array<std::size_t, 2>
     pick_seeds(const boost::container::static_vector<
             std::pair<std::size_t, box_type>, max_entry+1>& entries) const
@@ -801,6 +833,7 @@ private:
         return retval;
     }
 
+    // auxiliary function for the quadratic algorithm.
     std::pair<std::size_t, bool> pick_next(const boost::container::static_vector<
             std::pair<std::size_t, box_type>, max_entry+1>& entries,
             const box_type& node, const box_type& ptnr) const
@@ -874,6 +907,8 @@ private:
         }
     }
 
+    // check the number of entries in the Nth leaf node. If it has too few
+    // entries, it removes the node and balance the tree.
     void condense_leaf(const std::size_t N)
     {
         const node_type& node = this->node_at(N);
@@ -921,6 +956,8 @@ private:
         return;
     }
 
+    // check the number of entries in the Nth internal node. If it has too few
+    // entries, it removes the node and balance the tree.
     void condense_node(const std::size_t N)
     {
         const node_type& node = this->node_at(N);
@@ -965,7 +1002,8 @@ private:
         return;
     }
 
-    // re-calculate the AABB of a node
+    // re-calculate the AABB of a node to make sure that the node covers all the
+    // child nodes.
     void condense_box(node_type& node) const
     {
         assert(!node.entry.empty());
@@ -993,6 +1031,9 @@ private:
         return;
     }
 
+    // re-insert nodes that are temporary removed from its (previous) parent
+    // node to balance the number of nodes. This will only be called from
+    // `condense_node`.
     void re_insert(const std::size_t N)
     {
         // reset connection to the parent!
@@ -1018,6 +1059,8 @@ private:
         return;
     }
 
+    // choose where the node should be inserted by using the box size and
+    // the level of the node.
     std::size_t
     choose_node_with_level(const box_type& entry, const std::size_t level)
     {
@@ -1053,7 +1096,7 @@ private:
         return node_idx;
     }
 
-    // the naive approach; going down until it hits leaf
+    // the naivest approach; going down until it hits leaf
     std::size_t level_of(std::size_t node_idx) const
     {
         std::size_t level = 0;
@@ -1068,12 +1111,15 @@ private:
 
 private:
 
-    // ------------------------------------------------------------------------
+    // ========================================================================
     // utility member methods to handle `container_` and `tree_`.
     //
     // RTree represents nodes and values by their index in a container_.
     // Thus the indices should be kept when we insert a new node/value or
     // remove an old node/value.
+
+    // ------------------------------------------------------------------------
+    // for nodes
 
     // re-use overwritable region if it exists.
     std::size_t add_node(const node_type& n)
@@ -1092,11 +1138,20 @@ private:
     // mark index `i` overritable and fill old value by the default value.
     void erase_node(const std::size_t i)
     {
-        node_at(i) = node_type(false, 0xDEADBEEF);
+        node_at(i) = node_type(false, nil);
         overwritable_nodes_.push_back(i);
         assert(!this->is_valid_node_index(i));
         return;
     }
+    bool is_valid_node_index(const std::size_t i) const noexcept
+    {
+        return std::find(overwritable_nodes_.begin(),
+                         overwritable_nodes_.end(), i) ==
+            overwritable_nodes_.end();
+    }
+
+    // ------------------------------------------------------------------------
+    // for values
 
     // the same thing as above + assign it to rmap.
     std::size_t add_value(const value_type& v)
@@ -1127,19 +1182,11 @@ private:
         (void)status;
         return ;
     }
-
     bool is_valid_value_index(const std::size_t i) const noexcept
     {
         return std::find(overwritable_values_.begin(),
                          overwritable_values_.end(), i) ==
             overwritable_values_.end();
-    }
-
-    bool is_valid_node_index(const std::size_t i) const noexcept
-    {
-        return std::find(overwritable_nodes_.begin(),
-                         overwritable_nodes_.end(), i) ==
-            overwritable_nodes_.end();
     }
 
 private:
@@ -1168,15 +1215,6 @@ private:
         const auto l2 = lc + dc - rr; // boundary-adjusted rhs' lower bound
         const auto u2 = lc + dc + rr; // ditto
 
-        assert(this->is_inside_of_boundary(lc));
-        assert(this->is_inside_of_boundary(rc));
-        assert(lhs.lower()[0] <= lhs.upper()[0]);
-        assert(lhs.lower()[1] <= lhs.upper()[1]);
-        assert(lhs.lower()[2] <= lhs.upper()[2]);
-        assert(rhs.lower()[0] <= rhs.upper()[0]);
-        assert(rhs.lower()[1] <= rhs.upper()[1]);
-        assert(rhs.lower()[2] <= rhs.upper()[2]);
-
         Real3 up, lw;
         for(std::size_t i=0; i<3; ++i)
         {
@@ -1199,7 +1237,7 @@ private:
         const auto rr = (rhs.upper() - rhs.lower()) * 0.5; // radius of rhs
 
         const auto r2 = lr + rr;
-        const auto dc = abs(this->restrict_direction(lc - rc));
+        const auto dc = ecell4::abs(this->restrict_direction(lc - rc));
 
         // if they are close along all the axes, they intersects each other.
         return ((dc[0] - r2[0]) <= tol) &&
