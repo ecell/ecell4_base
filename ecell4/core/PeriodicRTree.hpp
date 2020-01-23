@@ -1033,8 +1033,16 @@ private:
     // child nodes.
     void condense_box(node_type& node) const
     {
-        assert(!node.entry.empty());
-
+        if(node.entry.empty())
+        {
+            // If the entry is empty, the node will soon be eliminated from its
+            // parent node via `condense_leaf` or `condense_node`.
+            // We can delete this operation and just return from this method,
+            // but I'm not completely sure yet.
+            const auto center = (node.box.upper() + node.box.lower()) * 0.5;
+            node.box = box_type(center, center);
+            return;
+        }
         const auto& entries = node.entry;
         if(node.is_leaf)
         {
