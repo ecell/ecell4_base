@@ -35,9 +35,9 @@ namespace python_api
             PYBIND11_OVERLOAD(bool, Base, update_species_attribute, sp);
         }
 
-        void add_species_attribute(const Species& sp) override
+        void add_species_attribute(const Species& sp, const bool proceed = false) override
         {
-            PYBIND11_OVERLOAD(void, Base, add_species_attribute, sp);
+            PYBIND11_OVERLOAD(void, Base, add_species_attribute, sp, proceed);
         }
 
         bool has_species_attribute(const Species& sp) const override

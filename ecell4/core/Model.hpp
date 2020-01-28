@@ -68,7 +68,7 @@ public:
      * this function is a part of the trait of Model.
      * @param species a new Species
      */
-    virtual void add_species_attribute(const Species& sp)
+    virtual void add_species_attribute(const Species& sp, const bool proceed = false)
     {
         throw NotSupported(
             "add_species_attribute is not supported in this model class");

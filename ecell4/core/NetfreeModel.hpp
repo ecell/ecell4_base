@@ -33,7 +33,7 @@ public:
 public:
 
     NetfreeModel()
-        : base_type(), species_attributes_(), reaction_rules_(), effective_(false)
+        : base_type(), species_attributes_(), species_attributes_proceed_(), reaction_rules_(), effective_(false)
     {
         ;
     }
@@ -68,7 +68,7 @@ public:
     // NetfreeModelTraits
 
     bool update_species_attribute(const Species& sp);
-    void add_species_attribute(const Species& sp);
+    void add_species_attribute(const Species& sp, const bool proceed = false);
     bool has_species_attribute(const Species& sp) const;
     bool has_species_attribute_exact(const Species& sp) const;
     void remove_species_attribute(const Species& sp);
@@ -109,6 +109,7 @@ public:
 protected:
 
     species_container_type species_attributes_;
+    std::vector<bool> species_attributes_proceed_;  //XXX:
     reaction_rule_container_type reaction_rules_;
 
     bool effective_;
