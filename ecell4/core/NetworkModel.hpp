@@ -99,8 +99,6 @@ public:
     void remove_reaction_rule(const ReactionRule& rr);
     bool has_reaction_rule(const ReactionRule& rr) const;
 
-    // Optional functions
-
     const reaction_rule_container_type& reaction_rules() const
     {
         return reaction_rules_;
@@ -109,6 +107,11 @@ public:
     const species_container_type& species_attributes() const
     {
         return species_attributes_;
+    }
+
+    const std::vector<bool>& species_attributes_proceed() const
+    {
+        return species_attributes_proceed_;
     }
 
 protected:

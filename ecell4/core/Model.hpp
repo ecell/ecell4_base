@@ -150,6 +150,7 @@ public:
 
     virtual const reaction_rule_container_type& reaction_rules() const = 0;
     virtual const species_container_type& species_attributes() const = 0;
+    virtual const std::vector<bool>& species_attributes_proceed() const = 0;
 
     const Integer num_reaction_rules() const
     {

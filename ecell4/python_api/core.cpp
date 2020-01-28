@@ -483,6 +483,7 @@ void define_model(py::module& m)
         .def("has_reaction_rule", &Model::has_reaction_rule)
         .def("reaction_rules", &Model::reaction_rules)
         .def("species_attributes", &Model::species_attributes)
+        .def("species_attributes_proceed", &Model::species_attributes_proceed)
         .def("num_reaction_rules", &Model::num_reaction_rules)
         .def("expand", (boost::shared_ptr<Model> (Model::*)(
                 const std::vector<Species>&, const Integer, const std::map<Species, Integer>&) const) &Model::expand)
