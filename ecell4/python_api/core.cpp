@@ -490,7 +490,8 @@ void define_model(py::module& m)
         .def("expand", (boost::shared_ptr<Model> (Model::*)(const std::vector<Species>&, const Integer) const) &Model::expand)
         .def("expand", (boost::shared_ptr<Model> (Model::*)(const std::vector<Species>&) const) &Model::expand)
         .def("list_species", &Model::list_species)
-        .def("add_species_attributes", &Model::add_species_attributes)
+        .def("add_species_attributes", (void (Model::*)(const std::vector<Species>&)) &Model::add_species_attributes)
+        .def("add_species_attributes", (void (Model::*)(const std::vector<std::pair<Species, bool> >&)) &Model::add_species_attributes)
         .def("add_reaction_rules", &Model::add_reaction_rules);
 
     py::class_<NetworkModel, Model, PyModelImpl<NetworkModel>,
