@@ -139,3 +139,39 @@ BOOST_AUTO_TEST_CASE(NetworkModel_test_query_reaction_rules2)
     BOOST_CHECK_EQUAL(model.query_reaction_rules(sp1, sp2).size(), 1);
     BOOST_CHECK_EQUAL(model.query_reaction_rules(sp2, sp1).size(), 1);
 }
+
+BOOST_AUTO_TEST_CASE(NetworkModel_test_proceed)
+{
+    {
+        NetworkModel model;
+        Species A("A");
+        model.add_species_attribute(A, false);
+        A.set_attribute("foo", "bar");
+        model.add_species_attribute(A, false);
+        BOOST_CHECK(!model.apply_species_attributes(Species("A")).has_attribute("foo"));
+    }
+    {
+        NetworkModel model;
+        Species A("A");
+        model.add_species_attribute(A, true);
+        A.set_attribute("foo", "bar");
+        model.add_species_attribute(A, false);
+        BOOST_CHECK(model.apply_species_attributes(Species("A")).has_attribute("foo"));
+    }
+    {
+        NetworkModel model;
+        Species X("_");
+        X.set_attribute("foo", "bar");
+        X.set_attribute("hoge", "fuga");
+        model.add_species_attribute(X, true);
+        Species A("A");
+        A.set_attribute("foo", "BAR");
+        model.add_species_attribute(A, false);
+        BOOST_CHECK(model.apply_species_attributes(Species("A")).has_attribute("foo"));
+        BOOST_CHECK_EQUAL(model.apply_species_attributes(Species("A")).get_attribute_as<std::string>("foo"), "BAR");
+        BOOST_CHECK(model.apply_species_attributes(Species("A")).has_attribute("hoge"));
+        BOOST_CHECK(model.apply_species_attributes(Species("B")).has_attribute("foo"));
+        BOOST_CHECK_EQUAL(model.apply_species_attributes(Species("B")).get_attribute_as<std::string>("foo"), "bar");
+        BOOST_CHECK(model.apply_species_attributes(Species("B")).has_attribute("hoge"));
+    }
+}
