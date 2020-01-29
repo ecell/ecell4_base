@@ -169,8 +169,8 @@ public:
     {
         std::vector<Species> retval;
 
-        const species_container_type& attrs(species_attributes());
-        std::copy(attrs.begin(), attrs.end(), std::back_inserter(retval));  //XXX: This copies attributes too.
+       //  const species_container_type& attrs(species_attributes());
+       //  std::copy(attrs.begin(), attrs.end(), std::back_inserter(retval));  //XXX: This copies attributes too.
 
         const reaction_rule_container_type& rrs(reaction_rules());
         for (reaction_rule_container_type::const_iterator i(rrs.begin());
