@@ -68,7 +68,7 @@ public:
      * this function is a part of the trait of Model.
      * @param species a new Species
      */
-    virtual void add_species_attribute(const Species& sp)
+    virtual void add_species_attribute(const Species& sp, const bool proceed = false)
     {
         throw NotSupported(
             "add_species_attribute is not supported in this model class");
@@ -150,6 +150,7 @@ public:
 
     virtual const reaction_rule_container_type& reaction_rules() const = 0;
     virtual const species_container_type& species_attributes() const = 0;
+    virtual const std::vector<bool>& species_attributes_proceed() const = 0;
 
     const Integer num_reaction_rules() const
     {
@@ -168,8 +169,8 @@ public:
     {
         std::vector<Species> retval;
 
-        const species_container_type& attrs(species_attributes());
-        std::copy(attrs.begin(), attrs.end(), std::back_inserter(retval));  //XXX: This copies attributes too.
+       //  const species_container_type& attrs(species_attributes());
+       //  std::copy(attrs.begin(), attrs.end(), std::back_inserter(retval));  //XXX: This copies attributes too.
 
         const reaction_rule_container_type& rrs(reaction_rules());
         for (reaction_rule_container_type::const_iterator i(rrs.begin());

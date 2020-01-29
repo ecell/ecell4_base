@@ -33,7 +33,7 @@ public:
 public:
 
     NetfreeModel()
-        : base_type(), species_attributes_(), reaction_rules_(), effective_(false)
+        : base_type(), species_attributes_(), species_attributes_proceed_(), reaction_rules_(), effective_(false)
     {
         ;
     }
@@ -68,7 +68,7 @@ public:
     // NetfreeModelTraits
 
     bool update_species_attribute(const Species& sp);
-    void add_species_attribute(const Species& sp);
+    void add_species_attribute(const Species& sp, const bool proceed = false);
     bool has_species_attribute(const Species& sp) const;
     bool has_species_attribute_exact(const Species& sp) const;
     void remove_species_attribute(const Species& sp);
@@ -77,17 +77,22 @@ public:
     void remove_reaction_rule(const ReactionRule& rr);
     bool has_reaction_rule(const ReactionRule& rr) const;
 
-    // Optional functions
+    const species_container_type& species_attributes() const
+    {
+        return species_attributes_;
+    }
+
+    const std::vector<bool>& species_attributes_proceed() const
+    {
+        return species_attributes_proceed_;
+    }
 
     const reaction_rule_container_type& reaction_rules() const
     {
         return reaction_rules_;
     }
 
-    const species_container_type& species_attributes() const
-    {
-        return species_attributes_;
-    }
+    // Optional functions
 
     boost::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr,
@@ -109,6 +114,7 @@ public:
 protected:
 
     species_container_type species_attributes_;
+    std::vector<bool> species_attributes_proceed_;  //XXX:
     reaction_rule_container_type reaction_rules_;
 
     bool effective_;

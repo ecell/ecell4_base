@@ -120,7 +120,7 @@ bool ODESimulator::step(const Real &upto)
                 typedef odeint::runge_kutta_cash_karp54<state_type> error_stepper_type;
                 steps = (
                     odeint::integrate_adaptive(
-                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_),
+                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_, max_dt_),
                         system.first, x, t(), ntime, dt,
                         StateAndTimeBackInserter(x_vec, times)));
             }
@@ -130,7 +130,7 @@ bool ODESimulator::step(const Real &upto)
                 typedef odeint::rosenbrock4<state_type::value_type> error_stepper_type;
                 steps = (
                     odeint::integrate_adaptive(
-                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_),
+                        odeint::make_controlled<error_stepper_type>(abs_tol_, rel_tol_, max_dt_),
                         system, x, t(), ntime, dt,
                         StateAndTimeBackInserter(x_vec, times)));
             }

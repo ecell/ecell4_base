@@ -41,7 +41,7 @@ protected:
 public:
 
     NetworkModel()
-        : base_type(), species_attributes_(), reaction_rules_(),
+        : base_type(), species_attributes_(), species_attributes_proceed_(), reaction_rules_(),
         first_order_reaction_rules_map_(), second_order_reaction_rules_map_()
     {
         ;
@@ -91,15 +91,13 @@ public:
     }
 
     bool update_species_attribute(const Species& sp);
-    void add_species_attribute(const Species& sp);
+    void add_species_attribute(const Species& sp, const bool proceed = false);
     bool has_species_attribute(const Species& sp) const;
     void remove_species_attribute(const Species& sp);
 
     void add_reaction_rule(const ReactionRule& rr);
     void remove_reaction_rule(const ReactionRule& rr);
     bool has_reaction_rule(const ReactionRule& rr) const;
-
-    // Optional functions
 
     const reaction_rule_container_type& reaction_rules() const
     {
@@ -111,6 +109,11 @@ public:
         return species_attributes_;
     }
 
+    const std::vector<bool>& species_attributes_proceed() const
+    {
+        return species_attributes_proceed_;
+    }
+
 protected:
 
     void remove_reaction_rule(const reaction_rule_container_type::iterator i);
@@ -118,6 +121,7 @@ protected:
 protected:
 
     species_container_type species_attributes_;
+    std::vector<bool> species_attributes_proceed_;  //XXX:
     reaction_rule_container_type reaction_rules_;
 
     first_order_reaction_rules_map_type first_order_reaction_rules_map_;
