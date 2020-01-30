@@ -32,8 +32,7 @@ jobs:
           name: Install auditwheel from source
           command: |
             git clone https://github.com/pypa/auditwheel.git
-            cd auditwheel && /opt/python/<< parameters.pyver >>/bin/python setup.py install
-            /opt/python/<< parameters.pyver >>/bin/pip install pyelftools
+            /opt/python/<< parameters.pyver >>/bin/python -m pip install ./auditwheel
       - run:
           name: Build E-Cell4
           command: |
@@ -59,4 +58,3 @@ workflows:
       - build:
           name: build_py38
           pyver: cp38-cp38
-          
