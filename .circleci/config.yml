@@ -33,7 +33,7 @@ jobs:
           command: |
             git clone https://github.com/pypa/auditwheel.git
             cd auditwheel && /opt/python/<< parameters.pyver >>/bin/python setup.py install
-            /opt/python/<< parameters.pyver >>/bin/pip install pyelftools
+            /opt/python/<< parameters.pyver >>/bin/pip install pyelftools wheel
       - run:
           name: Check the version of wheel
           command: python -c 'import wheel; print(wheel.__version__)'
