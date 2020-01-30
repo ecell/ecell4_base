@@ -10,9 +10,19 @@ namespace spatiocyte
 StepEvent::StepEvent(boost::shared_ptr<Model> model,
                      boost::shared_ptr<SpatiocyteWorld> world,
                      const Species &species, const Real &t, const Real alpha)
-    : SpatiocyteEvent(t), model_(model), world_(world),
-      mpool_(world_->find_molecule_pool(species)), alpha_(alpha)
+    : SpatiocyteEvent(t), model_(model), world_(world), alpha_(alpha)
 {
+    if (const auto space_and_molecule_pool =
+            world_->find_space_and_molecule_pool(species))
+    {
+        space_ = space_and_molecule_pool->first;
+        mpool_ = space_and_molecule_pool->second;
+    }
+    else
+    {
+        throw "MoleculePool is not found";
+    }
+
     time_ = t;
 }
 
@@ -48,8 +58,7 @@ void StepEvent3D::walk(const Real &alpha)
     std::size_t idx(0);
     for (const auto &info : voxels)
     {
-        const Voxel voxel(world_->coordinate2voxel(info.coordinate));
-        const Integer rnd(rng->uniform_int(0, voxel.num_neighbors() - 1));
+        const Voxel voxel(space_, info.coordinate);
 
         if (voxel.get_voxel_pool() != mpool_)
         {
@@ -58,7 +67,8 @@ void StepEvent3D::walk(const Real &alpha)
             continue;
         }
 
-        const Voxel neighbor(voxel.get_neighbor(rnd));
+        const Voxel neighbor(
+            world_->get_neighbor_randomly(voxel, Shape::THREE));
 
         if (world_->can_move(voxel, neighbor))
         {
@@ -90,10 +100,6 @@ StepEvent2D::StepEvent2D(boost::shared_ptr<Model> model,
         dt_ = R * R / D * alpha_;
 
     time_ = t + dt_;
-
-    nids_.clear();
-    for (unsigned int i(0); i < 12; ++i)
-        nids_.push_back(i);
 }
 
 void StepEvent2D::walk(const Real &alpha)
@@ -110,8 +116,7 @@ void StepEvent2D::walk(const Real &alpha)
     std::size_t idx(0);
     for (const auto &info : voxels)
     {
-        // TODO: Calling coordinate2voxel is invalid
-        const Voxel voxel(world_->coordinate2voxel(info.coordinate));
+        const Voxel voxel(space_, info.coordinate);
 
         if (voxel.get_voxel_pool() != mpool_)
         {
@@ -120,32 +125,18 @@ void StepEvent2D::walk(const Real &alpha)
             continue;
         }
 
-        const std::size_t num_neighbors(voxel.num_neighbors());
+        const Voxel neighbor(world_->get_neighbor_randomly(voxel, Shape::TWO));
 
-        ecell4::shuffle(*(rng.get()), nids_);
-        for (const auto &index : nids_)
+        if (world_->can_move(voxel, neighbor))
         {
-            if (index >= num_neighbors)
-                continue;
-
-            const Voxel neighbor(voxel.get_neighbor(index));
-            boost::shared_ptr<const VoxelPool> target(
-                neighbor.get_voxel_pool());
-
-            if (world_->get_dimension(target->species()) > Shape::TWO)
-                continue;
-
-            if (world_->can_move(voxel, neighbor))
-            {
-                if (rng->uniform(0, 1) <= alpha)
-                    world_->move(voxel, neighbor, /*candidate=*/idx);
-            }
-            else
-            {
-                attempt_reaction_(info, neighbor, alpha);
-            }
-            break;
+            if (rng->uniform(0, 1) <= alpha)
+                world_->move(voxel, neighbor, /*candidate=*/idx);
         }
+        else
+        {
+            attempt_reaction_(info, neighbor, alpha);
+        }
+
         ++idx;
     }
 }
@@ -154,15 +145,9 @@ void StepEvent::attempt_reaction_(
     const SpatiocyteWorld::coordinate_id_pair_type &info, const Voxel &dst,
     const Real &alpha)
 {
-    // TODO: Calling coordiante2voxel is invalid
-    const Voxel voxel(world_->coordinate2voxel(info.coordinate));
+    const Voxel voxel(space_, info.coordinate);
     boost::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
     boost::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
-
-    if (to_mt->is_vacant())
-    {
-        return;
-    }
 
     const Species &speciesA(from_mt->species());
     const Species &speciesB(to_mt->species());

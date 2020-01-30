@@ -24,9 +24,12 @@ void ZerothOrderReactionEvent::fire_()
     {
         const MoleculeInfo info(world_->get_molecule_info(sp));
 
-        if (boost::shared_ptr<VoxelPool> location =
-                world_->find_voxel_pool(Species(info.loc)))
+        if (const auto space_and_location =
+                world_->find_space_and_voxel_pool(Species(info.loc)))
         {
+            const auto space = space_and_location->first;
+            const auto location = space_and_location->second;
+
             if (location->size() == 0)
             {
                 time_ += draw_dt();
@@ -35,8 +38,8 @@ void ZerothOrderReactionEvent::fire_()
 
             while (true)
             {
-                const Voxel voxel(world_->coordinate2voxel(
-                    world_->rng()->uniform_int(0, world_->size() - 1)));
+                const Voxel voxel(
+                    space, world_->rng()->uniform_int(0, space->size() - 1));
 
                 if (voxel.get_voxel_pool() != location)
                 {

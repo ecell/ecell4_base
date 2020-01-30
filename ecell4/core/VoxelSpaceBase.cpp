@@ -21,6 +21,14 @@ Integer VoxelSpaceBase::num_molecules(const Species &sp) const
     Integer count(0);
     SpeciesExpressionMatcher sexp(sp);
 
+    {
+        const auto cnt = sexp.count(vacant_->species());
+        if (cnt > 0)
+        {
+            count += vacant_->size() * cnt;
+        }
+    }
+
     for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
          itr != voxel_pools_.end(); ++itr)
     {
@@ -62,6 +70,11 @@ bool VoxelSpaceBase::has_voxel(const ParticleID &pid) const
 
 Integer VoxelSpaceBase::num_voxels_exact(const Species &sp) const
 {
+    if (sp == vacant_->species())
+    {
+        return vacant_->size();
+    }
+
     {
         voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
         if (itr != voxel_pools_.end())
@@ -87,6 +100,11 @@ Integer VoxelSpaceBase::num_voxels(const Species &sp) const
     Integer count(0);
     SpeciesExpressionMatcher sexp(sp);
 
+    if (sexp.match(vacant_->species()))
+    {
+        count += vacant_->size();
+    }
+
     for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
          itr != voxel_pools_.end(); ++itr)
     {
@@ -111,6 +129,11 @@ Integer VoxelSpaceBase::num_voxels(const Species &sp) const
 Integer VoxelSpaceBase::num_voxels() const
 {
     Integer count(0);
+
+    if (vacant_->species().serial() != "")
+    {
+        count += vacant_->size();
+    }
 
     for (voxel_pool_map_type::const_iterator itr(voxel_pools_.begin());
          itr != voxel_pools_.end(); ++itr)
@@ -179,7 +202,7 @@ VoxelSpaceBase::list_voxels_exact(const Species &sp) const
 
 boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
 {
-    if (sp.serial() == "")
+    if (sp == vacant_->species())
         return vacant_;
 
     voxel_pool_map_type::iterator itr(voxel_pools_.find(sp));
@@ -193,7 +216,7 @@ boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
 boost::shared_ptr<const VoxelPool>
 VoxelSpaceBase::find_voxel_pool(const Species &sp) const
 {
-    if (sp.serial() == "")
+    if (sp == vacant_->species())
         return vacant_;
 
     voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));

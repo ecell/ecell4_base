@@ -66,6 +66,7 @@ protected:
 protected:
     boost::shared_ptr<Model> model_;
     boost::shared_ptr<SpatiocyteWorld> world_;
+    boost::weak_ptr<VoxelSpaceBase> space_;
     boost::shared_ptr<MoleculePool> mpool_;
 
     const Real alpha_;
@@ -87,9 +88,6 @@ struct StepEvent2D : StepEvent
                 const Species &species, const Real &t, const Real alpha = 1.0);
 
     void walk(const Real &alpha);
-
-protected:
-    std::vector<unsigned int> nids_; // neighbor indexes
 };
 
 struct ZerothOrderReactionEvent : SpatiocyteEvent
@@ -123,15 +121,20 @@ protected:
     ReactionInfo::Item choice()
     {
         const Species &species(rule_.reactants().at(0));
-        boost::shared_ptr<const MoleculePool> mt(
-            world_->find_molecule_pool(species));
+        if (const auto space_and_molecule_pool =
+                world_->find_space_and_molecule_pool(species))
+        {
+            const auto space = space_and_molecule_pool->first;
+            const auto molecule_pool = space_and_molecule_pool->second;
 
-        const Integer i(rng_.lock()->uniform_int(0, mt->size() - 1));
-        const SpatiocyteWorld::coordinate_id_pair_type &info(mt->at(i));
+            const auto i =
+                rng_.lock()->uniform_int(0, molecule_pool->size() - 1);
+            const auto &info = molecule_pool->at(i);
 
-        // TODO: Calling coordinate2voxel() is invalid
-        return ReactionInfo::Item(info.pid, species,
-                                  world_->coordinate2voxel(info.coordinate));
+            return ReactionInfo::Item(info.pid, species,
+                                      Voxel(space, info.coordinate));
+        }
+        throw "MoleculePool is not found";
     }
 
     boost::shared_ptr<SpatiocyteWorld> world_;

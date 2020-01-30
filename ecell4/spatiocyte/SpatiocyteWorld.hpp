@@ -30,18 +30,18 @@ namespace spatiocyte
 
 struct MoleculeInfo
 {
-    const Real radius;
-    const Real D;
-    const std::string loc;
-    const Shape::dimension_kind dimension;
+    Real radius;
+    Real D;
+    std::string loc;
+    Shape::dimension_kind dimension;
 };
+
 class SpatiocyteWorld : public WorldInterface
 {
 public:
     typedef LatticeSpaceVectorImpl default_root_type;
 
     typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
-    typedef VoxelSpaceBase::coordinate_type coordinate_type;
 
     typedef boost::shared_ptr<VoxelSpaceBase> space_type;
     typedef std::vector<space_type> space_container_type;
@@ -254,8 +254,7 @@ public:
         {
             if (const auto &view = space->find_voxel(pid))
             {
-                return std::make_pair(
-                    pid, gen_particle_from(space, view->species, view->voxel));
+                return std::make_pair(pid, gen_particle_from(space, *view));
             }
         }
         throw "No particle corresponding to a given ParticleID is found.";
@@ -407,6 +406,21 @@ public:
         throw "No VoxelPool corresponding to a given Species is found";
     }
 
+    boost::optional<std::pair<space_type, boost::shared_ptr<VoxelPool>>>
+    find_space_and_voxel_pool(const Species &species) const
+    {
+        for (const auto &space : spaces_)
+        {
+            if (space->has_species(species))
+            {
+                const auto voxel_pool = space->find_voxel_pool(species);
+                return std::pair<space_type, boost::shared_ptr<VoxelPool>>(
+                    space, voxel_pool);
+            }
+        }
+        return boost::none;
+    }
+
     bool has_molecule_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -436,6 +450,21 @@ public:
                 return space->find_molecule_pool(species);
         }
         throw "No MoleculePool corresponding to a given Species is found";
+    }
+
+    boost::optional<std::pair<space_type, boost::shared_ptr<MoleculePool>>>
+    find_space_and_molecule_pool(const Species &species) const
+    {
+        for (const auto &space : spaces_)
+        {
+            if (space->has_molecule_pool(species))
+            {
+                const auto molecule_pool(space->find_molecule_pool(species));
+                return std::pair<space_type, boost::shared_ptr<MoleculePool>>(
+                    space, molecule_pool);
+            }
+        }
+        return boost::none;
     }
 
     /*
@@ -513,6 +542,16 @@ public:
      * SpatiocyteWorld API
      */
 
+    const MoleculeInfo get_molecule_info(const Species &sp) const
+    {
+        const auto itr = molecule_info_cache_.find(sp);
+        if (itr != molecule_info_cache_.end())
+        {
+            return itr->second;
+        }
+        throw NotFound("MoleculeInfo not found");
+    }
+
     /**
      * draw attributes of species and return it as a molecule info.
      * @param sp a species
@@ -520,11 +559,13 @@ public:
      */
     const MoleculeInfo get_molecule_info(const Species &sp)
     {
-        boost::optional<Real> diffusion_coef;
-        boost::optional<Real> radius;
-        boost::optional<std::string> location;
-        Shape::dimension_kind dimension =
-            Shape::THREE; // The default dimension is 3
+        // Default
+        MoleculeInfo info = {
+            /* radius = */ voxel_radius(),
+            /* D = */ 0.0,
+            /* loc = */ "",
+            /* dimension = */ Shape::THREE,
+        };
 
         const auto itr = molecule_info_cache_.find(sp);
         if (itr != molecule_info_cache_.end())
@@ -532,10 +573,7 @@ public:
             // return itr->second;
             // TODO: the below code is only for warning.
             //       In the future, the value should be returned immediately.
-            diffusion_coef = itr->second.D;
-            radius = itr->second.radius;
-            location = itr->second.loc;
-            dimension = itr->second.dimension;
+            info = itr->second;
         }
         else if (const auto model = lock_model())
         {
@@ -543,70 +581,54 @@ public:
 
             if (species_from_model.has_attribute("D"))
             {
-                diffusion_coef = species_from_model.get_attribute_as<Real>("D");
+                info.D = species_from_model.get_attribute_as<Real>("D");
             }
 
             if (species_from_model.has_attribute("radius"))
             {
-                radius = species_from_model.get_attribute_as<Real>("radius");
+                info.radius =
+                    species_from_model.get_attribute_as<Real>("radius");
             }
 
             if (species_from_model.has_attribute("location"))
             {
-                location = species_from_model.get_attribute_as<std::string>(
+                info.loc = species_from_model.get_attribute_as<std::string>(
                     "location");
             }
 
-            dimension = extras::get_dimension_from_model(sp, model);
+            info.dimension = extras::get_dimension_from_model(sp, model);
         }
 
         if (sp.has_attribute("D"))
         {
             const auto new_value = sp.get_attribute_as<Real>("D");
-            if (diffusion_coef && *diffusion_coef != new_value)
+            if (info.D != new_value)
             {
                 warning("D");
-                diffusion_coef = new_value;
+                info.D = new_value;
             }
         }
 
         if (sp.has_attribute("radius"))
         {
             const auto new_value = sp.get_attribute_as<Real>("radius");
-            if (radius && *radius != new_value)
+            if (info.radius != new_value)
             {
                 warning("radius");
-                radius = new_value;
+                info.radius = new_value;
             }
         }
 
         if (sp.has_attribute("location"))
         {
             const auto new_value = sp.get_attribute_as<std::string>("location");
-            if (location && *location != new_value)
+            if (info.loc != new_value)
             {
                 warning("location");
-                location = new_value;
+                info.loc = new_value;
             }
         }
 
-        if (diffusion_coef == boost::none)
-        {
-            diffusion_coef = 0.0;
-        }
-
-        if (radius == boost::none)
-        {
-            radius = voxel_radius();
-        }
-
-        if (location == boost::none)
-        {
-            location = "";
-        }
-
-        const MoleculeInfo info = {*radius, *diffusion_coef, *location,
-                                   dimension};
         molecule_info_cache_.insert(
             molecule_info_cache_t::value_type(sp, info));
         return info;
@@ -685,7 +707,6 @@ public:
 
     std::vector<Species> list_non_structure_species() const;
     std::vector<Species> list_structure_species() const;
-    // std::vector<coordinate_type> list_coords(const Species& sp) const;
 
     boost::optional<ParticleID> new_particle(const Species &sp,
                                              const Voxel &voxel)
@@ -735,11 +756,23 @@ public:
     boost::optional<Voxel> check_neighbor(const Voxel &voxel,
                                           const std::string &loc);
 
-    // bool update_molecule(coordinate_type at, Species species);
+    const Integer num_neighbors(const Voxel &voxel) const
+    {
+        return voxel.space.lock()->num_neighbors(voxel.coordinate);
+    }
+
+    const Voxel get_neighbor(const Voxel &voxel, Integer nrand) const
+    {
+        return Voxel(voxel.space,
+                     voxel.space.lock()->get_neighbor(voxel.coordinate, nrand));
+    }
+
+    const Voxel get_neighbor_randomly(const Voxel &voxel,
+                                      Shape::dimension_kind dimension);
 
     const Species &draw_species(const Species &pttrn) const;
 
-    boost::shared_ptr<RandomNumberGenerator> rng() { return rng_; }
+    boost::shared_ptr<RandomNumberGenerator> rng() const { return rng_; }
 
     void bind_to(boost::shared_ptr<Model> model)
     {
@@ -775,6 +808,11 @@ public:
         return get_molecule_info(species).dimension;
     }
 
+    Shape::dimension_kind get_dimension(const Species &species) const
+    {
+        return get_molecule_info(species).dimension;
+    }
+
     /**
      * static members
      */
@@ -803,24 +841,7 @@ public:
     }
 
 protected:
-    bool is_inside(const coordinate_type &coord) const
-    {
-        return get_root()->is_inside(coord);
-    }
-
     space_type get_root() const { return spaces_.at(0); }
-
-    space_type get_space(coordinate_type &coordinate)
-    {
-        for (const auto &space : spaces_)
-        {
-            if (coordinate < space->size())
-                return space;
-
-            coordinate -= space->size();
-        }
-        return space_type();
-    }
 
     Integer add_structure2(const Species &sp, const std::string &location,
                            const boost::shared_ptr<const Shape> shape);
@@ -829,10 +850,12 @@ protected:
     bool is_surface_voxel(const Voxel &voxel,
                           const boost::shared_ptr<const Shape> shape) const;
 
-    Particle gen_particle_from(const space_type &space, const Species &species,
-                               const coordinate_type coordinate) const
+    Particle gen_particle_from(const space_type &space,
+                               const VoxelView &view) const
     {
-        const auto position = space->coordinate2position(coordinate);
+        const auto species = view.species;
+
+        const auto position = space->coordinate2position(view.voxel);
         const auto minfo_iter = molecule_info_cache_.find(species);
         if (minfo_iter != molecule_info_cache_.end())
         {
@@ -869,9 +892,7 @@ private:
     {
         return map_voxels<std::pair<ParticleID, Particle>>(
             list_fn, [this](const space_type &space, const VoxelView &view) {
-                return std::make_pair(
-                    view.pid,
-                    gen_particle_from(space, view.species, view.voxel));
+                return std::make_pair(view.pid, gen_particle_from(space, view));
             });
     }
 
@@ -879,18 +900,10 @@ private:
     std::vector<ParticleBase<Voxel>> list_voxels_private(ListFn list_fn) const
     {
         return map_voxels<ParticleBase<Voxel>>(
-            list_fn, [](const space_type &space, const VoxelView &view) {
+            list_fn, [this](const space_type &space, const VoxelView &view) {
                 return ParticleBase<Voxel>(view.pid, view.species,
                                            Voxel(space, view.voxel));
             });
-    }
-
-public:
-    // TODO: Calling this function is invalid, and this should be removed.
-    Voxel coordinate2voxel(const coordinate_type &coordinate)
-    {
-        coordinate_type coord(coordinate);
-        return Voxel(get_space(coord), coord);
     }
 
 protected:
@@ -900,15 +913,15 @@ protected:
     std::size_t size_;
     space_container_type spaces_;
 
-    OneToManyMap<coordinate_type> interfaces_;
-    OneToManyMap<coordinate_type> neighbors_;
+    OneToManyMap<Voxel> interfaces_;
+    OneToManyMap<Voxel> neighbors_;
 
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
     boost::weak_ptr<Model> model_;
     molecule_info_cache_t molecule_info_cache_;
-};
+}; // namespace spatiocyte
 
 inline SpatiocyteWorld *create_spatiocyte_world_cell_list_impl(
     const Real3 &edge_lengths, const Real &voxel_radius,

@@ -12,8 +12,7 @@ namespace spatiocyte
 inline const std::string get_serial(boost::shared_ptr<SpatiocyteWorld> world,
                                     const Voxel &voxel)
 {
-    boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
-    return mtype->is_vacant() ? "" : mtype->species().serial();
+    return voxel.get_voxel_pool()->species().serial();
 }
 
 inline const std::string get_location(boost::shared_ptr<SpatiocyteWorld> world,
@@ -22,8 +21,7 @@ inline const std::string get_location(boost::shared_ptr<SpatiocyteWorld> world,
     boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
     if (mtype->is_vacant())
         return "";
-    boost::shared_ptr<const VoxelPool> ltype(mtype->location());
-    return ltype->is_vacant() ? "" : ltype->species().serial();
+    return mtype->location()->species().serial();
 }
 
 static inline void make_product(boost::shared_ptr<SpatiocyteWorld> world,
@@ -444,7 +442,7 @@ apply_second_order_reaction(boost::shared_ptr<SpatiocyteWorld> world,
         return apply_vanishment(world, reactant_item0, reactant_item1);
     case 1:
         return apply_ab2c(world, reactant_item0, reactant_item1,
-                          *(products.begin()));
+                          products.at(0));
     case 2:
         return apply_ab2cd(world, reactant_item0, reactant_item1,
                            products.at(0), products.at(1));

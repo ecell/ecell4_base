@@ -41,7 +41,7 @@ struct Fixture
         for (int i(1); i < 10; ++i)
             adjoining_pairs.push_back(std::make_pair(i - 1, i));
         space = OffLatticeSpace(voxel_radius, base, positions, adjoining_pairs);
-        space.make_molecular_type(species, "");
+        space.make_molecular_type(species, "Base");
     }
 };
 
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(OffLatticeSpace_test_voxelspacebase)
     BOOST_CHECK_EQUAL(space.list_species().size(), 1);
     BOOST_CHECK_EQUAL(space.num_voxels_exact(species), 1);
     BOOST_CHECK_EQUAL(space.num_voxels(species), 1);
-    BOOST_CHECK_EQUAL(space.num_voxels(), 1);
+    BOOST_CHECK_EQUAL(space.num_voxels(), 10);
 
     BOOST_CHECK(space.has_voxel(pid));
     BOOST_CHECK(!space.has_voxel(sidgen()));
