@@ -201,6 +201,15 @@ public:
         }
     }
 
+    void add_species_attributes(const std::vector<std::pair<Species, bool> >& attrs)
+    {
+        for (std::vector<std::pair<Species, bool> >::const_iterator i(attrs.begin());
+            i != attrs.end(); ++i)
+        {
+            add_species_attribute((*i).first, (*i).second);
+        }
+    }
+
     void add_reaction_rules(const std::vector<ReactionRule>& rrs)
     {
         for (std::vector<ReactionRule>::const_iterator i(rrs.begin());
