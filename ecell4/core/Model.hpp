@@ -210,6 +210,21 @@ public:
         }
     }
 
+    void add_species_attributes(const std::vector<Species>& attrs, const std::vector<bool>& proceeds)
+    {
+        if (attrs.size() != proceeds.size())
+        {
+            throw IllegalArgument("The size of lists must be the same.");
+        }
+
+        std::vector<Species>::const_iterator i(attrs.begin());
+        std::vector<bool>::const_iterator j(proceeds.begin());
+        for (; i != attrs.end() && j != proceeds.end(); ++i, ++j)
+        {
+            add_species_attribute(*i, *j);
+        }
+    }
+
     void add_reaction_rules(const std::vector<ReactionRule>& rrs)
     {
         for (std::vector<ReactionRule>::const_iterator i(rrs.begin());

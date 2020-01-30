@@ -35,9 +35,24 @@ const Integer Observer::num_steps() const
     return num_steps_;
 }
 
+void Observer::set_num_steps(const Integer nsteps)
+{
+    num_steps_ = nsteps;
+}
+
 const Real FixedIntervalObserver::next_time() const
 {
     return t0_ + dt_ * count_;
+}
+
+const Real FixedIntervalObserver::dt() const
+{
+    return dt_;
+}
+
+const Real FixedIntervalObserver::t0() const
+{
+    return t0_;
 }
 
 const Integer FixedIntervalObserver::count() const
@@ -245,6 +260,8 @@ const Real TimingObserver::next_time() const
 
 void TimingObserver::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
 {
+    base_type::initialize(world, model);
+
     while (next_time() < world->t())
     {
         ++count_;
@@ -253,14 +270,13 @@ void TimingObserver::initialize(const boost::shared_ptr<WorldInterface>& world, 
 
 bool TimingObserver::fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world)
 {
-    ++num_steps_;
     ++count_;
-    return true;
+    return base_type::fire(sim, world);
 }
 
 void TimingObserver::reset()
 {
-    num_steps_ = 0;
+    base_type::reset();
     count_ = 0;
 }
 
