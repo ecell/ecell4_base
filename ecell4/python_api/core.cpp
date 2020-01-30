@@ -636,6 +636,22 @@ void define_reaction_rule_descriptor(py::module& m)
 static inline
 void define_observers(py::module& m)
 {
+    py::class_<NumberLogger>(m, "NumberLogger")
+        .def(py::pickle(
+            [](const NumberLogger& obj) {
+                return py::make_tuple(obj.targets, obj.data, obj.all_species);
+                },
+            [](py::tuple state) {
+                if (state.size() != 3)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = NumberLogger();
+                obj.data = state[1].cast<std::vector<std::vector<Real> > >();
+                obj.targets = state[0].cast<std::vector<Species> >();
+                obj.all_species = state[2].cast<bool>();
+                return obj;
+                }
+            ));
+
     py::class_<Observer, PyObserver<>, boost::shared_ptr<Observer>>(m, "Observer")
         .def("next_time", &Observer::next_time)
         .def("reset", &Observer::reset)
@@ -661,7 +677,19 @@ void define_observers(py::module& m)
         .def(py::init<const std::vector<std::string>&>(), py::arg("species"))
         .def("data", &NumberObserver::data)
         .def("targets", &NumberObserver::targets)
-        .def("save", &NumberObserver::save);
+        .def("save", &NumberObserver::save)
+        .def(py::pickle(
+            [](const NumberObserver& obj) {
+                return py::make_tuple(obj.logger());
+                },
+            [](py::tuple state) {
+                if (state.size() != 1)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = NumberObserver();
+                obj.set_logger(state[0].cast<NumberLogger>());
+                return obj;
+                }
+            ));
 
     py::class_<TimingNumberObserver, Observer, PyObserver<TimingNumberObserver>,
         boost::shared_ptr<TimingNumberObserver>>(m, "TimingNumberObserver")

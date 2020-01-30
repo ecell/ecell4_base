@@ -136,9 +136,9 @@ struct NumberLogger
     void log(const boost::shared_ptr<WorldInterface>& world);
     void save(const std::string& filename) const;
 
-    data_container_type data;
     species_container_type targets;
-    const bool all_species;
+    data_container_type data;
+    bool all_species;
 };
 
 class FixedIntervalNumberObserver
@@ -215,6 +215,16 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    const NumberLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const NumberLogger& logger)
+    {
+        logger_ = logger;
+    }
 
     void save(const std::string& filename) const
     {
