@@ -13,7 +13,11 @@ class OffLatticeTest(unittest.TestCase):
 
     def test_constructor(self):
         species = Species('Base')
+        model = NetworkModel()
+        model.add_species_attribute(species)
+
         world = SpatiocyteWorld(ones(), self.voxel_radius)
+        world.bind_to(model)
         world.add_offlattice(species, self.offlattice)
 
     def test_add_molecules(self):
