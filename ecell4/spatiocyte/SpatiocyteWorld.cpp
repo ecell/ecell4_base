@@ -380,15 +380,29 @@ boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
     return tmp[rng()->uniform_int(0, tmp.size() - 1)];
 }
 
-const Voxel
-SpatiocyteWorld::get_neighbor_randomly(const Voxel &voxel,
-                                       Shape::dimension_kind dimension)
+template <>
+const Voxel SpatiocyteWorld::get_neighbor_randomly<3>(const Voxel &voxel)
+{
+    const auto idx(rng()->uniform_int(0, num_neighbors(voxel) - 1));
+    const auto neighbor = get_neighbor(voxel, idx);
+
+    if (const auto neighbors = interfaces_.find(neighbor))
+    {
+        const auto idx(rng()->uniform_int(0, neighbors->size() - 1));
+        return neighbors->at(idx);
+    }
+
+    return neighbor;
+}
+
+template <>
+const Voxel SpatiocyteWorld::get_neighbor_randomly<2>(const Voxel &voxel)
 {
     std::vector<Voxel> neighbors;
     for (Integer idx = 0; idx < num_neighbors(voxel); ++idx)
     {
         const Voxel neighbor = get_neighbor(voxel, idx);
-        if (get_dimension(neighbor.get_voxel_pool()->species()) > dimension)
+        if (get_dimension(neighbor.get_voxel_pool()->species()) > Shape::TWO)
         {
             continue;
         }

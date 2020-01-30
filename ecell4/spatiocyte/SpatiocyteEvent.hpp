@@ -3,6 +3,7 @@
 
 #include "SpatiocyteReactions.hpp"
 #include "SpatiocyteWorld.hpp"
+#include "utils.hpp"
 #include <ecell4/core/EventScheduler.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/ReactionRule.hpp>
@@ -40,12 +41,39 @@ protected:
     std::vector<reaction_type> reactions_;
 };
 
+template <int Dimension>
+const Real calc_dt(const Real R, const Real D);
+
+template <int Dimension>
 struct StepEvent : SpatiocyteEvent
 {
     StepEvent(boost::shared_ptr<Model> model,
               boost::shared_ptr<SpatiocyteWorld> world, const Species &species,
-              const Real &t, const Real alpha = 1.0);
-    virtual ~StepEvent() {}
+              const Real &t, const Real alpha = 1.0)
+        : SpatiocyteEvent(t), model_(model), world_(world), alpha_(alpha)
+    {
+        if (const auto space_and_molecule_pool =
+                world_->find_space_and_molecule_pool(species))
+        {
+            space_ = space_and_molecule_pool->first;
+            mpool_ = space_and_molecule_pool->second;
+        }
+        else
+        {
+            throw "MoleculePool is not found";
+        }
+
+        const MoleculeInfo minfo(world_->get_molecule_info(species));
+        const Real D(minfo.D);
+        const Real R(world_->voxel_radius());
+
+        if (D <= 0)
+            dt_ = inf;
+        else
+            dt_ = calc_dt<Dimension>(R, D) * alpha_;
+
+        time_ = t + dt_;
+    }
 
     Species const &species() const { return mpool_->species(); }
 
@@ -79,8 +107,8 @@ struct StepEvent : SpatiocyteEvent
                 continue;
             }
 
-            const Voxel neighbor(
-                world_->get_neighbor_randomly(voxel, dimension()));
+            const Voxel neighbor =
+                world_->get_neighbor_randomly<Dimension>(voxel);
 
             if (world_->can_move(voxel, neighbor))
             {
@@ -96,11 +124,60 @@ struct StepEvent : SpatiocyteEvent
         }
     }
 
-    virtual const Shape::dimension_kind dimension() const = 0;
-
 protected:
     void attempt_reaction_(const SpatiocyteWorld::coordinate_id_pair_type &info,
-                           const Voxel &dst, const Real &alpha);
+                           const Voxel &dst, const Real &alpha)
+    {
+        const Voxel voxel(space_, info.coordinate);
+        boost::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
+        boost::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
+
+        const Species &speciesA(from_mt->species());
+        const Species &speciesB(to_mt->species());
+
+        const std::vector<ReactionRule> rules(
+            model_->query_reaction_rules(speciesA, speciesB));
+
+        if (rules.empty())
+        {
+            return;
+        }
+
+        const Real from_D(world_->get_molecule_info(speciesA).D);
+        const Real to_D(world_->get_molecule_info(speciesB).D);
+        const Real factor(
+            calculate_dimensional_factor(from_mt, from_D, to_mt, to_D, world_));
+        const Real rnd(world_->rng()->uniform(0, 1));
+        Real accp(0.0);
+
+        for (const auto &rule : rules)
+        {
+            const Real k(rule.k());
+            const Real P(k * factor * alpha);
+            accp += P;
+            if (accp > 1 && k != std::numeric_limits<Real>::infinity())
+            {
+                std::cerr << "The total acceptance probability [" << accp
+                          << "] exceeds 1 for '" << speciesA.serial()
+                          << "' and '" << speciesB.serial() << "'."
+                          << std::endl;
+            }
+            if (accp >= rnd)
+            {
+                ReactionInfo rinfo(apply_second_order_reaction(
+                    world_, rule,
+                    ReactionInfo::Item(info.pid, from_mt->species(), voxel),
+                    ReactionInfo::Item(to_mt->get_particle_id(dst.coordinate),
+                                       to_mt->species(), dst)));
+                if (rinfo.has_occurred())
+                {
+                    reaction_type reaction(std::make_pair(rule, rinfo));
+                    push_reaction(reaction);
+                }
+                return;
+            }
+        }
+    }
 
 protected:
     boost::shared_ptr<Model> model_;
@@ -109,24 +186,6 @@ protected:
     boost::shared_ptr<MoleculePool> mpool_;
 
     const Real alpha_;
-};
-
-struct StepEvent3D : StepEvent
-{
-    StepEvent3D(boost::shared_ptr<Model> model,
-                boost::shared_ptr<SpatiocyteWorld> world,
-                const Species &species, const Real &t, const Real alpha = 1.0);
-
-    const Shape::dimension_kind dimension() const { return Shape::THREE; }
-};
-
-struct StepEvent2D : StepEvent
-{
-    StepEvent2D(boost::shared_ptr<Model> model,
-                boost::shared_ptr<SpatiocyteWorld> world,
-                const Species &species, const Real &t, const Real alpha = 1.0);
-
-    const Shape::dimension_kind dimension() const { return Shape::TWO; }
 };
 
 struct ZerothOrderReactionEvent : SpatiocyteEvent

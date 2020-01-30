@@ -95,12 +95,12 @@ SpatiocyteSimulator::create_step_event(const Species &species, const Real &t,
     if (dimension == Shape::THREE)
     {
         return boost::shared_ptr<SpatiocyteEvent>(
-            new StepEvent3D(model_, world_, species, t, alpha));
+            new StepEvent<3>(model_, world_, species, t, alpha));
     }
     else if (dimension == Shape::TWO)
     {
         return boost::shared_ptr<SpatiocyteEvent>(
-            new StepEvent2D(model_, world_, species, t, alpha));
+            new StepEvent<2>(model_, world_, species, t, alpha));
     }
     else
     {
@@ -133,12 +133,19 @@ void SpatiocyteSimulator::finalize()
     {
         const auto &event(item.second);
         const Real queued_time(event->time() - event->dt());
-        StepEvent *step_event(dynamic_cast<StepEvent *>(event.get()));
-        if (step_event != NULL && queued_time < t())
+        auto *step3_event(dynamic_cast<StepEvent<3> *>(event.get()));
+        if (step3_event != NULL && queued_time < t())
         {
             const Real factor((t() - queued_time) / event->dt());
             // assert(factor <= 1);
-            step_event->walk(step_event->alpha() * factor);
+            step3_event->walk(step3_event->alpha() * factor);
+        }
+        auto *step2_event(dynamic_cast<StepEvent<2> *>(event.get()));
+        if (step2_event != NULL && queued_time < t())
+        {
+            const Real factor((t() - queued_time) / event->dt());
+            // assert(factor <= 1);
+            step2_event->walk(step2_event->alpha() * factor);
         }
     }
 
