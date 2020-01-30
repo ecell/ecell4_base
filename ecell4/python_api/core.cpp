@@ -500,15 +500,20 @@ void define_model(py::module& m)
         .def(py::pickle(
             [](const NetworkModel& self)
             {
-                return py::make_tuple(self.species_attributes(), self.reaction_rules());
+                return py::make_tuple(
+                        self.species_attributes(),
+                        self.species_attributes_proceed(),
+                        self.reaction_rules());
             },
             [](py::tuple t)
             {
-                if (t.size() != 2)
+                if (t.size() != 3)
                     throw std::runtime_error("Invalid state");
                 NetworkModel model;
-                model.add_species_attributes(t[0].cast<Model::species_container_type>());
-                model.add_reaction_rules(t[1].cast<Model::reaction_rule_container_type>());
+                model.add_species_attributes(
+                        t[0].cast<Model::species_container_type>(),
+                        t[1].cast<std::vector<bool> >());
+                model.add_reaction_rules(t[2].cast<Model::reaction_rule_container_type>());
                 return model;
             }
         ));
@@ -521,15 +526,20 @@ void define_model(py::module& m)
         .def(py::pickle(
             [](const NetfreeModel& self)
             {
-                return py::make_tuple(self.species_attributes(), self.reaction_rules());
+                return py::make_tuple(
+                        self.species_attributes(),
+                        self.species_attributes_proceed(),
+                        self.reaction_rules());
             },
             [](py::tuple t)
             {
-                if (t.size() != 2)
+                if (t.size() != 3)
                     throw std::runtime_error("Invalid state");
                 NetfreeModel model;
-                model.add_species_attributes(t[0].cast<Model::species_container_type>());
-                model.add_reaction_rules(t[1].cast<Model::reaction_rule_container_type>());
+                model.add_species_attributes(
+                        t[0].cast<Model::species_container_type>(),
+                        t[1].cast<std::vector<bool> >());
+                model.add_reaction_rules(t[2].cast<Model::reaction_rule_container_type>());
                 return model;
             }
         ));
