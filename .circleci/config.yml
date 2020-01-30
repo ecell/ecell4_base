@@ -35,6 +35,9 @@ jobs:
             cd auditwheel && /opt/python/<< parameters.pyver >>/bin/python setup.py install
             /opt/python/<< parameters.pyver >>/bin/pip install pyelftools
       - run:
+          name: Check the version of wheel
+          command: python -c 'import wheel; print(wheel.__version__)'
+      - run:
           name: Build E-Cell4
           command: |
             export BOOST_INCLUDEDIR=/root/circle/$BOOSTFILE
@@ -59,4 +62,3 @@ workflows:
       - build:
           name: build_py38
           pyver: cp38-cp38
-          
