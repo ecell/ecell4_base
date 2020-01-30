@@ -29,8 +29,8 @@ class Observer
 {
 public:
 
-    Observer(const bool e)
-        : every_(e), num_steps_(0)
+    Observer(const bool e, const Integer num_steps = 0)
+        : every_(e), num_steps_(num_steps)
     {
         ;
     }
@@ -49,6 +49,7 @@ public:
     // virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world) = 0;
 
     const Integer num_steps() const;
+    void set_num_steps(const Integer nsteps);
 
     bool every()
     {
@@ -79,12 +80,21 @@ public:
         ;
     }
 
+    FixedIntervalObserver(const Real& dt, const Real& t0, const Integer count)
+        : base_type(false), t0_(t0), dt_(dt), count_(count)
+    {
+        ;
+    }
+
     virtual ~FixedIntervalObserver()
     {
         ;
     }
 
     const Real next_time() const;
+
+    const Real dt() const;
+    const Real t0() const;
     const Integer count() const;
     virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world);
@@ -246,7 +256,13 @@ public:
 public:
 
     TimingObserver(const std::vector<Real>& t)
-        : base_type(false), t_(t), num_steps_(0), count_(0)
+        : base_type(false), t_(t), count_(0)
+    {
+        ;
+    }
+
+    TimingObserver(const std::vector<Real>& t, const Integer num_steps, const Integer count)
+        : base_type(false, num_steps), t_(t), count_(count)
     {
         ;
     }
@@ -258,9 +274,14 @@ public:
 
     const Real next_time() const;
 
-    const Integer num_steps() const
+    const std::vector<Real>& timings() const
     {
-        return num_steps_;
+        return t_;
+    }
+
+    const Integer count() const
+    {
+        return count_;
     }
 
     virtual void initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model);
@@ -270,7 +291,6 @@ public:
 protected:
 
     std::vector<Real> t_;
-    Integer num_steps_;
     Integer count_;
 };
 
@@ -296,6 +316,12 @@ public:
         ;
     }
 
+    TimingNumberObserver(const std::vector<Real>& t, const Integer num_steps, const Integer count)
+        : base_type(t, num_steps, count), logger_()
+    {
+        ;
+    }
+
     virtual ~TimingNumberObserver()
     {
         ;
@@ -306,6 +332,16 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    const NumberLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const NumberLogger& logger)
+    {
+        logger_ = logger;
+    }
 
     void save(const std::string& filename) const
     {
@@ -328,6 +364,12 @@ public:
 
     FixedIntervalHDF5Observer(const Real& dt, const std::string& filename)
         : base_type(dt), prefix_(filename)
+    {
+        ;
+    }
+
+    FixedIntervalHDF5Observer(const Real& dt, const Real& t0, const Integer count, const std::string& filename)
+        : base_type(dt, t0, count), prefix_(filename)
     {
         ;
     }

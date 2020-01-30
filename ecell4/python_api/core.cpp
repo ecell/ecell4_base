@@ -690,13 +690,14 @@ void define_observers(py::module& m)
         .def("save", &NumberObserver::save)
         .def(py::pickle(
             [](const NumberObserver& obj) {
-                return py::make_tuple(obj.logger());
+                return py::make_tuple(obj.logger(), obj.num_steps());
                 },
             [](py::tuple state) {
-                if (state.size() != 1)
+                if (state.size() != 2)
                     throw std::runtime_error("Invalid state!");
                 auto obj = NumberObserver();
                 obj.set_logger(state[0].cast<NumberLogger>());
+                obj.set_num_steps(state[1].cast<Integer>());
                 return obj;
                 }
             ));
@@ -708,7 +709,23 @@ void define_observers(py::module& m)
                 py::arg("t"), py::arg("species"))
         .def("data", &TimingNumberObserver::data)
         .def("targets", &TimingNumberObserver::targets)
-        .def("save", &TimingNumberObserver::save);
+        .def("save", &TimingNumberObserver::save)
+        .def(py::pickle(
+            [](const TimingNumberObserver& obj) {
+                return py::make_tuple(obj.logger(), obj.timings(), obj.num_steps(), obj.count());
+                },
+            [](py::tuple state) {
+                if (state.size() != 4)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = TimingNumberObserver(
+                        state[1].cast<std::vector<Real> >(),
+                        state[2].cast<Integer>(),
+                        state[3].cast<Integer>());
+                obj.set_logger(state[0].cast<NumberLogger>());
+                // obj.set_num_steps(state[4].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalHDF5Observer, Observer, PyObserver<FixedIntervalHDF5Observer>,
         boost::shared_ptr<FixedIntervalHDF5Observer>>(m, "FixedIntervalHDF5Observer")
@@ -716,7 +733,23 @@ void define_observers(py::module& m)
                 py::arg("dt"), py::arg("filename"))
         .def("prefix", &FixedIntervalHDF5Observer::prefix)
         .def("filename", (const std::string (FixedIntervalHDF5Observer::*)() const) &FixedIntervalHDF5Observer::filename)
-        .def("filename", (const std::string (FixedIntervalHDF5Observer::*)(const Integer) const) &FixedIntervalHDF5Observer::filename);
+        .def("filename", (const std::string (FixedIntervalHDF5Observer::*)(const Integer) const) &FixedIntervalHDF5Observer::filename)
+        .def(py::pickle(
+            [](const FixedIntervalHDF5Observer& obj) {
+                return py::make_tuple(obj.dt(), obj.t0(), obj.count(), obj.prefix(), obj.num_steps());
+                },
+            [](py::tuple state) {
+                if (state.size() != 5)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalHDF5Observer(
+                        state[0].cast<Real>(),
+                        state[1].cast<Real>(),
+                        state[2].cast<Integer>(),
+                        state[3].cast<std::string>());
+                obj.set_num_steps(state[4].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalCSVObserver, Observer, PyObserver<FixedIntervalCSVObserver>,
         boost::shared_ptr<FixedIntervalCSVObserver>>(m, "FixedIntervalCSVObserver")
