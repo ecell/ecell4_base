@@ -44,46 +44,6 @@ StepEvent3D::StepEvent3D(boost::shared_ptr<Model> model,
     time_ = t + dt_;
 }
 
-void StepEvent3D::walk(const Real &alpha)
-{
-    if (alpha < 0 || alpha > 1)
-    {
-        return; // INVALID ALPHA VALUE
-    }
-
-    const boost::shared_ptr<RandomNumberGenerator> &rng(world_->rng());
-    MoleculePool::container_type voxels;
-    copy(mpool_->begin(), mpool_->end(), back_inserter(voxels));
-
-    std::size_t idx(0);
-    for (const auto &info : voxels)
-    {
-        const Voxel voxel(space_, info.coordinate);
-
-        if (voxel.get_voxel_pool() != mpool_)
-        {
-            // should skip if a voxel is not the target species.
-            // when reaction has occured before, a voxel can be changed.
-            continue;
-        }
-
-        const Voxel neighbor(
-            world_->get_neighbor_randomly(voxel, Shape::THREE));
-
-        if (world_->can_move(voxel, neighbor))
-        {
-            if (rng->uniform(0, 1) <= alpha)
-                world_->move(voxel, neighbor, /*candidate=*/idx);
-        }
-        else
-        {
-            attempt_reaction_(info, neighbor, alpha);
-        }
-
-        ++idx;
-    }
-}
-
 StepEvent2D::StepEvent2D(boost::shared_ptr<Model> model,
                          boost::shared_ptr<SpatiocyteWorld> world,
                          const Species &species, const Real &t,
@@ -100,45 +60,6 @@ StepEvent2D::StepEvent2D(boost::shared_ptr<Model> model,
         dt_ = R * R / D * alpha_;
 
     time_ = t + dt_;
-}
-
-void StepEvent2D::walk(const Real &alpha)
-{
-    if (alpha < 0 || alpha > 1)
-    {
-        return; // INVALID ALPHA VALUE
-    }
-
-    const boost::shared_ptr<RandomNumberGenerator> &rng(world_->rng());
-    MoleculePool::container_type voxels;
-    copy(mpool_->begin(), mpool_->end(), back_inserter(voxels));
-
-    std::size_t idx(0);
-    for (const auto &info : voxels)
-    {
-        const Voxel voxel(space_, info.coordinate);
-
-        if (voxel.get_voxel_pool() != mpool_)
-        {
-            // should skip if a voxel is not the target species.
-            // when reaction has occured before, a voxel can be changed.
-            continue;
-        }
-
-        const Voxel neighbor(world_->get_neighbor_randomly(voxel, Shape::TWO));
-
-        if (world_->can_move(voxel, neighbor))
-        {
-            if (rng->uniform(0, 1) <= alpha)
-                world_->move(voxel, neighbor, /*candidate=*/idx);
-        }
-        else
-        {
-            attempt_reaction_(info, neighbor, alpha);
-        }
-
-        ++idx;
-    }
 }
 
 void StepEvent::attempt_reaction_(
