@@ -34,9 +34,6 @@ jobs:
             git clone https://github.com/pypa/auditwheel.git
             /opt/python/<< parameters.pyver >>/bin/python -m pip install ./auditwheel
       - run:
-          name: Check the version of wheel
-          command: /opt/python/<< parameters.pyver >>/bin/python -c 'import wheel; print(wheel.__version__)'
-      - run:
           name: Build E-Cell4
           command: |
             export BOOST_INCLUDEDIR=/root/circle/$BOOSTFILE
