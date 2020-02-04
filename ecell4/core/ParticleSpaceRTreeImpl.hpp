@@ -265,21 +265,20 @@ protected:
         {
             if(ignores(pidp)){return boost::none;}
 
-            const auto rr  = this->radius + pidp.second.radius();
+            // use the same algorithm as the ParticleSpaceVectorImpl.
             const auto rhs = this->periodic_transpose(pidp.second.position(),
-                                                      center, edges);
-            const auto dist_sq = length_sq(rhs - center);
-            if(rr * rr < dist_sq)
+                                                      this->center, edges);
+            const auto dist = length(this->center - rhs) - pidp.second.radius();
+            if(dist <= this->radius)
             {
-                return boost::none;
+                return std::make_pair(pidp, dist);
             }
-            // returns a distance from this->center to the *surface* of a particle
-            return std::make_pair(pidp, std::sqrt(dist_sq) - pidp.second.radius());
+            return boost::none;
         }
 
         bool operator()(const AABB& box, const Real3& edges) const noexcept
         {
-            return this->distance_sq(box, this->center, edges) <
+            return this->distance_sq(box, this->center, edges) <=
                    this->radius * this->radius;
         }
 
