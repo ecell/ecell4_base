@@ -105,8 +105,10 @@ public:
     {
         if(!rtree_.has(pid))
         {
-            throw NotFound("ParticleSpaceRTreeImpl::get_particle(): "
-                           "particle not found.");
+            std::ostringstream oss;
+            oss << "ParticleSpaceRTreeImpl::get_particle: No such particle ("
+                << pid << ").";
+            throw NotFound(oss.str());
         }
         return rtree_.get(pid);
     }
