@@ -278,10 +278,11 @@ public:
         std::vector<std::size_t> overwritable(overwritable_values_.begin(),
                                               overwritable_values_.end());
 
-        std::sort(overwritable.begin(), overwritable.end());
-        for(auto ri=overwritable.crbegin();  ri!=overwritable.crend(); ++ri)
+        std::sort(overwritable.begin(), overwritable.end(),
+                  std::greater<std::size_t>());
+        for(const auto i : overwritable)
         {
-            retval.erase(retval.begin() + *ri);
+            retval.erase(retval.begin() + i);
         }
         return retval;
     }
