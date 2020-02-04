@@ -4,6 +4,7 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/AABB.hpp>
+#include <ecell4/core/exceptions.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/optional.hpp>
 #include <utility>
@@ -239,7 +240,7 @@ public:
     {
         if(this->root_ == nil)
         {
-            throw std::out_of_range("PeriodicRTree::erase: tree is empty.");
+            throw NotFound("PeriodicRTree::erase: tree is empty.");
         }
 
         // find_leaf returns pair{leaf_node_idx, iterator of leaf_node.entry}
@@ -250,7 +251,7 @@ public:
         }
         else
         {
-            throw std::out_of_range("PeriodicRTree::erase: value not found.");
+            throw NotFound("PeriodicRTree::erase: value not found.");
         }
     }
 
