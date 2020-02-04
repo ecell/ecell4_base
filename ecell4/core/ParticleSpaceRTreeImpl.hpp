@@ -196,6 +196,31 @@ public:
     list_particles_within_radius(const Real3& pos, const Real& radius,
             const ParticleID& ignore1, const ParticleID& ignore2) const;
 
+    bool diagnosis() const
+    {
+        bool is_ok = true;
+        const auto ps = this->list_particles();
+        for(std::size_t i=0; i+1<ps.size(); ++i)
+        {
+            const auto& pi = ps.at(i).second;
+            for(std::size_t j=i+1; j<ps.size(); ++j)
+            {
+                const auto& pj = ps.at(j).second;
+                const auto d2 = this->distance_sq(pi.position(), pj.position());
+                const auto dist = std::sqrt(d2) - pi.radius() - pj.radius();
+
+                if(dist < 0.0)
+                {
+                    std::cerr << "particle " << ps.at(i).first;
+                    std::cerr << " and " << ps.at(j).first;
+                    std::cerr << " collide with each other" << std::endl;
+                    is_ok = false;
+                }
+            }
+        }
+        return is_ok;
+    }
+
 protected:
 
     template<typename Query, typename OutputIterator>
