@@ -271,7 +271,10 @@ public:
     std::vector<std::pair<ObjectID, Object>> list_objects() const
     {
         std::vector<std::pair<ObjectID, Object>> retval = container_;
-
+        if(overwritable_values_.empty())
+        {
+            return retval;
+        }
         std::vector<std::size_t> overwritable(overwritable_values_.begin(),
                                               overwritable_values_.end());
 
