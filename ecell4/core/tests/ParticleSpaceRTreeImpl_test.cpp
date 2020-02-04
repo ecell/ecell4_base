@@ -14,6 +14,7 @@
 
 using namespace ecell4;
 
+// a set of parameters used in the test cases below
 struct Fixture
 {
     typedef ParticleSpaceRTreeImpl particle_space_type;
@@ -27,7 +28,7 @@ struct Fixture
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
+BOOST_FIXTURE_TEST_SUITE(suite, Fixture) // submit parameters
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 {
