@@ -123,9 +123,17 @@ public:
                 particle_pool_[oldp.species_serial()].erase (pid);
                 particle_pool_[newp.species_serial()].insert(pid);
             }
+            // if species does not change, then we don't need to do anything.
         }
-        particle_pool_[newp.species_serial()].insert(pid);
-        return rtree_.update(pid, newp);
+        else
+        {
+            // if `newp` is completely new, we need to insert it to the pool.
+            particle_pool_[newp.species_serial()].insert(pid);
+        }
+        const auto retval = rtree_.update(pid, newp);
+        assert(rtree_.diagnosis());
+        assert(this->diagnosis());
+        return retval;
     }
     bool has_particle(const ParticleID& pid) const
     {
