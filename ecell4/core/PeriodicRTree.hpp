@@ -5,10 +5,10 @@
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/AABB.hpp>
 #include <ecell4/core/exceptions.hpp>
+#include <ecell4/core/get_mapper_mf.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/optional.hpp>
 #include <utility>
-#include <unordered_map>
 #include <vector>
 #include <limits>
 #include <sstream>
@@ -57,7 +57,7 @@ public:
     using container_type        = std::vector<value_type>;
     using iterator              = typename container_type::iterator;
     using const_iterator        = typename container_type::const_iterator;
-    using key_to_value_map_type = std::unordered_map<ObjectID, std::size_t>;
+    using key_to_value_map_type = typename utils::get_mapper_mf<ObjectID, std::size_t>::type;
 
     static constexpr std::size_t min_entry = MinEntry;
     static constexpr std::size_t max_entry = MaxEntry;
