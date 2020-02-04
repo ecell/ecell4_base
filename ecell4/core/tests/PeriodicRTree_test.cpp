@@ -215,9 +215,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
 
     for(std::size_t i=0; i<N; ++i)
     {
-        BOOST_TEST_MESSAGE("erase/insert particle " << i << ", "
-                << full_list.at(i).first << ":" << full_list.at(i).second);
-
         const Real3 pos(uni(mt), 2 * uni(mt), 3 * uni(mt));
         const Particle p(sp, pos, radius, D);
 
@@ -225,7 +222,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
         tree.erase(old);
 
         BOOST_REQUIRE(tree.diagnosis());
-        BOOST_TEST_MESSAGE("tree is still okay");
 
         {
             // make sure that the tree no longer contains full_list.at(i).
@@ -236,11 +232,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
                             return lhs.first.first == old.first;
                         }) == query_results.end()));
             query_results.clear();
-            BOOST_TEST_MESSAGE("old value successfully removed");
         }
 
         BOOST_REQUIRE(tree.diagnosis());
-        BOOST_TEST_MESSAGE("tree is still okay");
 
         full_list.at(i).second = p;
         tree.insert(full_list.at(i));
@@ -255,11 +249,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
                             return lhs.first.first == novel.first;
                         }) != query_results.end()));
             query_results.clear();
-            BOOST_TEST_MESSAGE("new value successfully inserted");
         }
 
         BOOST_REQUIRE(tree.diagnosis());
-        BOOST_TEST_MESSAGE("tree is still okay");
     }
     BOOST_TEST_MESSAGE("objects are updated");
 
@@ -292,9 +284,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
 
     for(std::size_t i=0; i<N; ++i)
     {
-        BOOST_TEST_MESSAGE("updating particle " << i << ", "
-                << full_list.at(i).first << ":" << full_list.at(i).second);
-
         const auto id = full_list.at(i).first;
         const Real3 pos(uni(mt), 2 * uni(mt), 3 * uni(mt));
         const Particle p(sp, pos, radius, D);
@@ -303,7 +292,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
         tree.update(id, p);
 
         BOOST_REQUIRE(tree.diagnosis());
-        BOOST_TEST_MESSAGE("tree is still okay");
 
         const auto novel = full_list.at(i);
         {
@@ -314,7 +302,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
                             return lhs.first.first == novel.first;
                         }) != query_results.end()));
             query_results.clear();
-            BOOST_TEST_MESSAGE("new value successfully inserted");
         }
     }
     BOOST_TEST_MESSAGE("objects are updated");
