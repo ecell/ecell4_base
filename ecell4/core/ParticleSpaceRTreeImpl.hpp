@@ -133,6 +133,13 @@ public:
     }
     void remove_particle(const ParticleID& pid)
     {
+        if(!rtree_.has(pid))
+        {
+            std::ostringstream oss;
+            oss << "ParticleSpaceRTreeImpl::remove_particle: No such particle ("
+                << pid << ").";
+            throw NotFound(oss.str());
+        }
         const auto& p = rtree_.get(pid).second;
         particle_pool_[p.species_serial()].erase(pid);
         rtree_.erase(pid, p);
