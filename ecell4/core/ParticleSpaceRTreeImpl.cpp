@@ -105,6 +105,8 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
             return false;
         }), std::back_inserter(list));
 
+    std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
+              std::pair<ParticleID, Particle>, Real>());
     return list;
 }
 
@@ -118,6 +120,9 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         [&ignore](const value_type& pidp) noexcept -> bool {
             return pidp.first == ignore;
         }), std::back_inserter(list));
+
+    std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
+              std::pair<ParticleID, Particle>, Real>());
 
     return list;
 }
@@ -133,6 +138,9 @@ ParticleSpaceRTreeImpl::list_particles_within_radius(
         [&ignore1, &ignore2](const value_type& pidp) noexcept -> bool {
             return pidp.first == ignore1 || pidp.first == ignore2;
         }), std::back_inserter(list));
+
+    std::sort(list.begin(), list.end(), utils::pair_second_element_comparator<
+              std::pair<ParticleID, Particle>, Real>());
 
     return list;
 }
