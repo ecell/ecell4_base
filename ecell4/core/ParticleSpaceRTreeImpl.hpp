@@ -240,7 +240,8 @@ protected:
             {
                 return boost::none;
             }
-            return std::make_pair(pidp, std::sqrt(dist_sq));
+            // returns a distance from this->center to the *surface* of a particle
+            return std::make_pair(pidp, std::sqrt(dist_sq) - pidp.second.radius());
         }
 
         bool operator()(const AABB& box, const Real3& edges) const noexcept
