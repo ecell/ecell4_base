@@ -35,9 +35,9 @@ namespace python_api
             PYBIND11_OVERLOAD(bool, Base, update_species_attribute, sp);
         }
 
-        void add_species_attribute(const Species& sp) override
+        void add_species_attribute(const Species& sp, const bool proceed = false) override
         {
-            PYBIND11_OVERLOAD(void, Base, add_species_attribute, sp);
+            PYBIND11_OVERLOAD(void, Base, add_species_attribute, sp, proceed);
         }
 
         bool has_species_attribute(const Species& sp) const override
@@ -79,6 +79,11 @@ namespace python_api
         {
             PYBIND11_OVERLOAD_PURE(const Model::species_container_type&, Base, species_attributes,);
         }
+        const std::vector<bool>& species_attributes_proceed() const override
+        {
+            PYBIND11_OVERLOAD_PURE(const std::vector<bool>&, Base, species_attributes_proceed,);
+        }
+
 
         boost::shared_ptr<Model> expand(
             const std::vector<Species>& sp, const Integer max_itr,
@@ -123,6 +128,11 @@ namespace python_api
         const Model::species_container_type& species_attributes() const override
         {
             PYBIND11_OVERLOAD(const Model::species_container_type&, Base, species_attributes,);
+        }
+
+        const std::vector<bool>& species_attributes_proceed() const override
+        {
+            PYBIND11_OVERLOAD(const std::vector<bool>&, Base, species_attributes_proceed,);
         }
 
         boost::shared_ptr<Model> expand(

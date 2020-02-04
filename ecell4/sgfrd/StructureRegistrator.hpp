@@ -96,9 +96,11 @@ void StructureRegistrator<Te, Ts>::emplace(
         const element_id_type& eid, const structure_id_type& sid)
 {
     if(this->have(eid))
+    {
         throw std::logic_error("already have");
+    }
     const std::size_t idx = this->to_index(sid);
-    if(container_.size() <= idx) container_.resize(idx+1);
+    if(container_.size() <= idx) {container_.resize(idx+1);}
     elemid_to_strid_map_[eid] = sid;
 
     value_type& contained = container_[idx];
@@ -113,7 +115,7 @@ void StructureRegistrator<Te, Ts>::update(
         const element_id_type& eid, const structure_id_type& sid)
 {
     const std::size_t idx = this->to_index(sid);
-    if(container_.size() <= idx) container_.resize(idx+1);
+    if(container_.size() <= idx) {container_.resize(idx+1);}
 
     // cleanup eid->sid map
     const structure_id_type old_sid = elemid_to_strid_map_[eid];
@@ -220,28 +222,22 @@ StructureRegistrator<Te, Ts>::structure_id_at(std::size_t i) const
 template<typename Te, typename Ts>
 void StructureRegistrator<Te, Ts>::dump(std::ostream& os) const
 {
-//     elemid_to_strid_map_type           elemid_to_strid_map_;   //ex {pID -> fID}
-//     container_type                     container_;  //ex {<fid, {pid,...}>, ...}
+//  elemid_to_strid_map_type elemid_to_strid_map_;   //ex {pID -> fID}
+//  container_type           container_;  //ex {<fid, {pid,...}>, ...}
     os << "StructureRegistrator::dump\n";
     os << "{element ID -> structure ID}\n";
-    for(typename elemid_to_strid_map_type::const_iterator
-        i(elemid_to_strid_map_.begin()), e(elemid_to_strid_map_.end()); i!=e; ++i)
+    for(const auto& eid_sid : this->elemid_to_strid_map_)
     {
-        os << "{ " << i->first << " -> " << i->second << " }\n";
+        os << "{ " << eid_sid.first << " -> " << eid_sid.second << " }\n";
     }
     os << std::endl;
 
     os << "{structure ID -> {list of elements...}}\n";
-    for(typename container_type::const_iterator
-        i(container_.begin()), e(container_.end()); i!=e; ++i)
+    for(const auto& sid_es : this->container_)
     {
-        os << "{ " << i->first << " -> { ";
-        for(typename element_id_array_type::const_iterator
-            ei(i->second.begin()), ee(i->second.end()); ei != ee; ++ei)
-        {
-            os << *ei << ' ';
-        }
-        os << " } }\n";
+        os << "{ " << sid_es.first << " -> { ";
+        for(const auto& eid : sid_es.second) {os << eid << ' ';}
+        os << "}}\n";
     }
     os << std::endl;
     return ;

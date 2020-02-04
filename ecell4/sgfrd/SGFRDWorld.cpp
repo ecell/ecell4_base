@@ -22,10 +22,15 @@ SGFRDWorld::new_particle(const Particle& p)
 std::pair<std::pair<ParticleID, Particle>, bool>
 SGFRDWorld::new_particle(const Particle& p, const FaceID& fid)
 {
+    if(p.radius() > this->estimated_possible_largest_particle_radius_)
+    {
+        throw NotSupported("[error] Particle size exceeds the estimated limit. "
+                "particle size must be smaller than the width of triangles");
+    }
+
     const ParticleID pid = pidgen_();
     // now this consider only 2D particles
-    const std::vector<std::pair<std::pair<ParticleID, Particle>, Real> >
-        overlap2d(list_particles_within_radius(
+    const auto overlap2d(list_particles_within_radius(
             std::make_pair(p.position(), fid), p.radius()));
 
     if(!overlap2d.empty())

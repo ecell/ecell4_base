@@ -497,7 +497,7 @@ public:
         const boost::shared_ptr<ODEWorld>& world,
         const boost::shared_ptr<Model>& model,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(world, model), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
+        : base_type(world, model), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0),
           solver_type_(solver_type)
     {
         initialize();
@@ -506,7 +506,7 @@ public:
     ODESimulator(
         const boost::shared_ptr<ODEWorld>& world,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6),
+        : base_type(world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0),
           solver_type_(solver_type)
     {
         initialize();
@@ -595,6 +595,20 @@ public:
             throw std::invalid_argument("A tolerance must be positive or zero.");
         }
         rel_tol_ = rel_tol;
+    }
+
+    Real maximum_step_interval() const
+    {
+        return max_dt_;
+    }
+
+    void set_maximum_step_interval(const Real max_dt)
+    {
+        if (max_dt < 0)
+        {
+            throw std::invalid_argument("A maximum step interval must be positive or zero.");
+        }
+        max_dt_ = max_dt;
     }
 
     std::vector<Real> derivatives() const
@@ -715,7 +729,7 @@ protected:
     // boost::shared_ptr<ODEWorld> world_;
     Real dt_;
     // Integer num_steps_;
-    Real abs_tol_, rel_tol_;
+    Real abs_tol_, rel_tol_, max_dt_;
     ODESolverType solver_type_;
 
     // ODENetworkModel::ode_reaction_rule_container_type ode_reaction_rules_;

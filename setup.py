@@ -19,6 +19,18 @@ class CMakeExtension(Extension):
 
 
 class CMakeBuild(build_ext):
+    user_options = [
+        ('jobs=', 'j', 'Specify the number of build jobs at once'),
+    ]
+
+    def initialize_options(self):
+        super().initialize_options()
+        self.jobs = None
+
+    def finalize_options(self):
+        super().finalize_options()
+        assert self.jobs is None or self.jobs.isdecimal(), 'Invalid argument for --jobs or -j'
+
     def run(self):
         try:
             out = subprocess.check_output(['cmake', '--version'])
@@ -43,6 +55,8 @@ class CMakeBuild(build_ext):
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
+        if self.jobs:
+            build_args += ['-j', self.jobs]
 
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
@@ -72,7 +86,7 @@ class CMakeBuild(build_ext):
 
 class CustomTestCommand(test):
     def run(self):
-        super(CustomTestCommand, self).run()
+        super().run()
         build_py = self.get_finalized_command('build_ext')
         if platform.system() == "Windows":
             subprocess.check_call(['ctest', '--output-on-failure', '--build-config', 'Release'], cwd=build_py.build_temp)

@@ -15,42 +15,28 @@ bool NetworkModel::update_species_attribute(const Species& sp)
         add_species_attribute(sp);
         return true;
     }
-    // for (Species::attributes_container_type::const_iterator
-    //     j(sp.attributes().begin()); j != sp.attributes().end(); ++j)
-    // {
-    //     if ((*i).has_attribute((*j).first))
-    //     {
-    //         std::ostringstream message;
-    //         message << "Attribute '" << (*j).first << "' of '" << sp.serial()
-    //             << "' is going to be updated from '" << (*i).get_attribute((*j).first)
-    //             << "' to '" << (*j).second << "'";
-    //         throw AlreadyExists(message.str()); // use boost::format if it's allowed
-    //     }
-    //     (*i).set_attribute((*j).first, (*j).second);
-    // }
     (*i).overwrite_attributes(sp);
     return false;
 }
 
-void NetworkModel::add_species_attribute(const Species& sp)
+void NetworkModel::add_species_attribute(const Species& sp, const bool proceed)
 {
-    if (has_species_attribute(sp))
-    {
-        throw AlreadyExists("species already exists");
-    }
     species_attributes_.push_back(sp);
+    species_attributes_proceed_.push_back(proceed);
 }
 
 void NetworkModel::remove_species_attribute(const Species& sp)
 {
-    species_container_type::iterator i(std::remove(species_attributes_.begin(), species_attributes_.end(), sp));
+    species_container_type::iterator i(std::find(species_attributes_.begin(), species_attributes_.end(), sp));
     if (i == species_attributes_.end())
     {
         std::ostringstream message;
         message << "The given Speices [" << sp.serial() << "] was not found";
         throw NotFound(message.str()); // use boost::format if it's allowed
     }
-    species_attributes_.erase(i, species_attributes_.end());
+    species_attributes_proceed_.erase(
+        species_attributes_proceed_.begin() + std::distance(species_attributes_.begin(), i));
+    species_attributes_.erase(i);
 }
 
 bool NetworkModel::has_species_attribute(const Species& sp) const
@@ -62,17 +48,22 @@ bool NetworkModel::has_species_attribute(const Species& sp) const
 
 Species NetworkModel::apply_species_attributes(const Species& sp) const
 {
-    for (species_container_type::const_iterator
-        i(species_attributes_.begin()); i != species_attributes_.end(); ++i)
+    Species ret(sp);
+    species_container_type::const_iterator i(species_attributes_.begin());
+    std::vector<bool>::const_iterator j(species_attributes_proceed_.begin());
+    for (; i != species_attributes_.end() && j != species_attributes_proceed_.end(); ++i, ++j)
     {
-        if ((*i).serial() == "_" || sp == (*i))
+        if ((*i).serial() != "_" && sp != (*i))
         {
-            Species ret(sp);
-            ret.set_attributes(*i);
-            return ret;
+            continue;
+        }
+        ret.overwrite_attributes(*i);
+        if (!(*j))
+        {
+            break;
         }
     }
-    return sp;
+    return ret;
 }
 
 Integer NetworkModel::apply(const Species& pttrn, const Species& sp) const

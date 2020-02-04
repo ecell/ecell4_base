@@ -474,7 +474,7 @@ void define_model(py::module& m)
         .def("query_reaction_rules", (std::vector<ReactionRule> (Model::*)(const Species&, const Species&) const)
                 &Model::query_reaction_rules)
         .def("update_species_attribute", &Model::update_species_attribute)
-        .def("add_species_attribute", &Model::add_species_attribute)
+        .def("add_species_attribute", &Model::add_species_attribute, py::arg("sp"), py::arg("proceed") = false)
         .def("has_species_attribute", &Model::has_species_attribute)
         .def("remove_species_attribute", &Model::remove_species_attribute)
         .def("apply_species_attributes", &Model::apply_species_attributes)
@@ -483,13 +483,15 @@ void define_model(py::module& m)
         .def("has_reaction_rule", &Model::has_reaction_rule)
         .def("reaction_rules", &Model::reaction_rules)
         .def("species_attributes", &Model::species_attributes)
+        .def("species_attributes_proceed", &Model::species_attributes_proceed)
         .def("num_reaction_rules", &Model::num_reaction_rules)
         .def("expand", (boost::shared_ptr<Model> (Model::*)(
                 const std::vector<Species>&, const Integer, const std::map<Species, Integer>&) const) &Model::expand)
         .def("expand", (boost::shared_ptr<Model> (Model::*)(const std::vector<Species>&, const Integer) const) &Model::expand)
         .def("expand", (boost::shared_ptr<Model> (Model::*)(const std::vector<Species>&) const) &Model::expand)
         .def("list_species", &Model::list_species)
-        .def("add_species_attributes", &Model::add_species_attributes)
+        .def("add_species_attributes", (void (Model::*)(const std::vector<Species>&)) &Model::add_species_attributes)
+        .def("add_species_attributes", (void (Model::*)(const std::vector<std::pair<Species, bool> >&)) &Model::add_species_attributes)
         .def("add_reaction_rules", &Model::add_reaction_rules);
 
     py::class_<NetworkModel, Model, PyModelImpl<NetworkModel>,
@@ -498,15 +500,20 @@ void define_model(py::module& m)
         .def(py::pickle(
             [](const NetworkModel& self)
             {
-                return py::make_tuple(self.species_attributes(), self.reaction_rules());
+                return py::make_tuple(
+                        self.species_attributes(),
+                        self.species_attributes_proceed(),
+                        self.reaction_rules());
             },
             [](py::tuple t)
             {
-                if (t.size() != 2)
+                if (t.size() != 3)
                     throw std::runtime_error("Invalid state");
                 NetworkModel model;
-                model.add_species_attributes(t[0].cast<Model::species_container_type>());
-                model.add_reaction_rules(t[1].cast<Model::reaction_rule_container_type>());
+                model.add_species_attributes(
+                        t[0].cast<Model::species_container_type>(),
+                        t[1].cast<std::vector<bool> >());
+                model.add_reaction_rules(t[2].cast<Model::reaction_rule_container_type>());
                 return model;
             }
         ));
@@ -519,15 +526,20 @@ void define_model(py::module& m)
         .def(py::pickle(
             [](const NetfreeModel& self)
             {
-                return py::make_tuple(self.species_attributes(), self.reaction_rules());
+                return py::make_tuple(
+                        self.species_attributes(),
+                        self.species_attributes_proceed(),
+                        self.reaction_rules());
             },
             [](py::tuple t)
             {
-                if (t.size() != 2)
+                if (t.size() != 3)
                     throw std::runtime_error("Invalid state");
                 NetfreeModel model;
-                model.add_species_attributes(t[0].cast<Model::species_container_type>());
-                model.add_reaction_rules(t[1].cast<Model::reaction_rule_container_type>());
+                model.add_species_attributes(
+                        t[0].cast<Model::species_container_type>(),
+                        t[1].cast<std::vector<bool> >());
+                model.add_reaction_rules(t[2].cast<Model::reaction_rule_container_type>());
                 return model;
             }
         ));
@@ -634,6 +646,22 @@ void define_reaction_rule_descriptor(py::module& m)
 static inline
 void define_observers(py::module& m)
 {
+    py::class_<NumberLogger>(m, "NumberLogger")
+        .def(py::pickle(
+            [](const NumberLogger& obj) {
+                return py::make_tuple(obj.targets, obj.data, obj.all_species);
+                },
+            [](py::tuple state) {
+                if (state.size() != 3)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = NumberLogger();
+                obj.data = state[1].cast<std::vector<std::vector<Real> > >();
+                obj.targets = state[0].cast<std::vector<Species> >();
+                obj.all_species = state[2].cast<bool>();
+                return obj;
+                }
+            ));
+
     py::class_<Observer, PyObserver<>, boost::shared_ptr<Observer>>(m, "Observer")
         .def("next_time", &Observer::next_time)
         .def("reset", &Observer::reset)
@@ -659,7 +687,20 @@ void define_observers(py::module& m)
         .def(py::init<const std::vector<std::string>&>(), py::arg("species"))
         .def("data", &NumberObserver::data)
         .def("targets", &NumberObserver::targets)
-        .def("save", &NumberObserver::save);
+        .def("save", &NumberObserver::save)
+        .def(py::pickle(
+            [](const NumberObserver& obj) {
+                return py::make_tuple(obj.logger(), obj.num_steps());
+                },
+            [](py::tuple state) {
+                if (state.size() != 2)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = NumberObserver();
+                obj.set_logger(state[0].cast<NumberLogger>());
+                obj.set_num_steps(state[1].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<TimingNumberObserver, Observer, PyObserver<TimingNumberObserver>,
         boost::shared_ptr<TimingNumberObserver>>(m, "TimingNumberObserver")
@@ -668,7 +709,23 @@ void define_observers(py::module& m)
                 py::arg("t"), py::arg("species"))
         .def("data", &TimingNumberObserver::data)
         .def("targets", &TimingNumberObserver::targets)
-        .def("save", &TimingNumberObserver::save);
+        .def("save", &TimingNumberObserver::save)
+        .def(py::pickle(
+            [](const TimingNumberObserver& obj) {
+                return py::make_tuple(obj.logger(), obj.timings(), obj.num_steps(), obj.count());
+                },
+            [](py::tuple state) {
+                if (state.size() != 4)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = TimingNumberObserver(
+                        state[1].cast<std::vector<Real> >(),
+                        state[2].cast<Integer>(),
+                        state[3].cast<Integer>());
+                obj.set_logger(state[0].cast<NumberLogger>());
+                // obj.set_num_steps(state[4].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalHDF5Observer, Observer, PyObserver<FixedIntervalHDF5Observer>,
         boost::shared_ptr<FixedIntervalHDF5Observer>>(m, "FixedIntervalHDF5Observer")
@@ -676,7 +733,23 @@ void define_observers(py::module& m)
                 py::arg("dt"), py::arg("filename"))
         .def("prefix", &FixedIntervalHDF5Observer::prefix)
         .def("filename", (const std::string (FixedIntervalHDF5Observer::*)() const) &FixedIntervalHDF5Observer::filename)
-        .def("filename", (const std::string (FixedIntervalHDF5Observer::*)(const Integer) const) &FixedIntervalHDF5Observer::filename);
+        .def("filename", (const std::string (FixedIntervalHDF5Observer::*)(const Integer) const) &FixedIntervalHDF5Observer::filename)
+        .def(py::pickle(
+            [](const FixedIntervalHDF5Observer& obj) {
+                return py::make_tuple(obj.dt(), obj.t0(), obj.count(), obj.prefix(), obj.num_steps());
+                },
+            [](py::tuple state) {
+                if (state.size() != 5)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalHDF5Observer(
+                        state[0].cast<Real>(),
+                        state[1].cast<Real>(),
+                        state[2].cast<Integer>(),
+                        state[3].cast<std::string>());
+                obj.set_num_steps(state[4].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalCSVObserver, Observer, PyObserver<FixedIntervalCSVObserver>,
         boost::shared_ptr<FixedIntervalCSVObserver>>(m, "FixedIntervalCSVObserver")
@@ -1115,7 +1188,8 @@ void define_shape(py::module& m)
     py::class_<Polygon, Shape, PyShapeImpl<Polygon>, boost::shared_ptr<Polygon>>(m, "Polygon")
         .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))
         .def(py::init<const Real3&, const std::vector<Triangle>&>(), py::arg("edge_lengths"), py::arg("triangles"))
-        .def("reset", &Polygon::reset);
+        .def("reset", &Polygon::reset)
+        .def("triangles", &Polygon::triangles);
 
     py::enum_<ecell4::STLFormat>(m, "STLFormat", py::arithmetic())
         .value("Ascii",  ecell4::STLFormat::Ascii)
