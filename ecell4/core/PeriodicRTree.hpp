@@ -214,7 +214,14 @@ public:
         if(node_at(L).has_enough_storage())
         {
             node_at(L).entry.push_back(idx);
-            node_at(L).box = this->expand(node_at(L).box, box);
+            if(node_at(L).entry.empty())
+            {
+                node_at(L).box = box;
+            }
+            else
+            {
+                node_at(L).box = this->expand(node_at(L).box, box);
+            }
             this->adjust_tree(L);
         }
         else // the most appropreate node is already full. split it.
