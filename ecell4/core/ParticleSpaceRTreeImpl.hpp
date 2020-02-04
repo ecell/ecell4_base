@@ -113,6 +113,7 @@ public:
         return rtree_.get(pid);
     }
 
+    // returns true if it adds a new particle
     bool update_particle(const ParticleID& pid, const Particle& newp)
     {
         if(rtree_.has(pid))
@@ -256,7 +257,6 @@ protected:
         IntersectionQuery& operator=(const IntersectionQuery&) = default;
         IntersectionQuery& operator=(IntersectionQuery&&)      = default;
         ~IntersectionQuery() = default;
-
 
         // If it does not matches, return boost::none.
         // If it matches, return pairof(pidp, distance).
