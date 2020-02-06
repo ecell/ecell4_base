@@ -9,6 +9,7 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 
+#include "../OffLattice.hpp"
 #include "../SpatiocyteWorld.hpp"
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Sphere.hpp>
@@ -219,6 +220,36 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
 #ifdef WITH_HDF5
     world.save("structure.h5");
 #endif
+}
+
+BOOST_AUTO_TEST_CASE(SpatiocyteWorld_offlattice)
+{
+    const Species membrane("M", voxel_radius, 0.0);
+    const Species speciesA("A", voxel_radius, 1e-12, "M");
+    model->add_species_attribute(membrane);
+    model->add_species_attribute(speciesA);
+
+    std::vector<Real3> positions;
+    for (auto i = 0; i < 100; ++i)
+    {
+        for (auto j = 0; j < 100; ++j)
+        {
+            positions.push_back(Real3(i * 1e-8, j * 1e-8, 0.5e-6));
+        }
+    }
+
+    const OffLattice offlattice(voxel_radius, positions);
+    world.add_space(offlattice.generate_space(membrane));
+    BOOST_CHECK_EQUAL(world.num_particles(membrane), 10000);
+
+    // Check whether molecules can be placed at OffLattice.
+    BOOST_CHECK(world.add_molecules(speciesA, 100));
+    BOOST_CHECK_EQUAL(world.num_particles(speciesA), 100);
+    BOOST_CHECK_EQUAL(world.num_particles(membrane), 9900);
+
+    // Check whether neighbor voxels can be accessed across spaces.
+    const auto voxel = world.list_voxels_exact(speciesA).at(0).voxel;
+    BOOST_CHECK(world.check_neighbor(voxel, ""));
 }
 
 BOOST_AUTO_TEST_SUITE_END()
