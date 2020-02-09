@@ -3,13 +3,12 @@
 
 #include "VoxelPool.hpp"
 
-namespace ecell4 {
+namespace ecell4
+{
 
-class MoleculePool
-    : public VoxelPool
+class MoleculePool : public VoxelPool
 {
 public:
-
     typedef VoxelPool base_type;
 
     typedef std::vector<coordinate_id_pair_type> container_type;
@@ -17,35 +16,25 @@ public:
     typedef container_type::iterator iterator;
 
 public:
-
-    MoleculePool(
-        const Species& species, boost::weak_ptr<VoxelPool> location,
-        const Real& radius=0.0, const Real& D=0.0)
-        : base_type(species, location, radius, D)
+    MoleculePool(const Species &species, boost::weak_ptr<VoxelPool> location)
+        : base_type(species, location)
     {
         ;
     }
 
-    virtual ~MoleculePool()
-    {
-        ;
-    }
+    virtual ~MoleculePool() { ; }
 
-    virtual voxel_type_type const voxel_type() const
-    {
-        return DEFAULT;
-    }
+    virtual voxel_type_type const voxel_type() const { return DEFAULT; }
 
 public:
-
-    virtual void add_voxel(const coordinate_id_pair_type& info)
+    virtual void add_voxel(const coordinate_id_pair_type &info)
     {
         voxels_.push_back(info);
     }
 
-    virtual void replace_voxel(
-        const coordinate_type& from_coord, const coordinate_type& to_coord,
-        const std::size_t candidate = 0)
+    virtual void replace_voxel(const coordinate_type &from_coord,
+                               const coordinate_type &to_coord,
+                               const std::size_t candidate = 0)
     {
         container_type::iterator itr(find(from_coord, candidate));
         if (itr == voxels_.end())
@@ -57,7 +46,7 @@ public:
         (*itr).coordinate = to_coord;
     }
 
-    virtual bool remove_voxel_if_exists(const coordinate_type& coord)
+    virtual bool remove_voxel_if_exists(const coordinate_type &coord)
     {
         container_type::iterator itr(find(coord));
         if (itr != voxels_.end())
@@ -68,7 +57,7 @@ public:
         return false;
     }
 
-    virtual const ParticleID get_particle_id(const coordinate_type& coord) const
+    virtual const ParticleID get_particle_id(const coordinate_type &coord) const
     {
         container_type::const_iterator i(this->find(coord));
         if (i == voxels_.end())
@@ -79,15 +68,14 @@ public:
     }
 
 public:
-
-    void remove_voxel(const container_type::iterator& position)
+    void remove_voxel(const container_type::iterator &position)
     {
         // voxels_.erase(position);
         (*position) = voxels_.back();
         voxels_.pop_back();
     }
 
-    coordinate_id_pair_type pop(const coordinate_type& coord)
+    coordinate_id_pair_type pop(const coordinate_type &coord)
     {
         container_type::iterator position(this->find(coord));
         const coordinate_id_pair_type info(*position);
@@ -95,8 +83,8 @@ public:
         return info;
     }
 
-    void replace_voxel(
-        const coordinate_type& from_coord, const coordinate_id_pair_type& to_info)
+    void replace_voxel(const coordinate_type &from_coord,
+                       const coordinate_id_pair_type &to_info)
     {
         container_type::iterator itr(find(from_coord));
         if (itr == voxels_.end())
@@ -107,7 +95,8 @@ public:
         (*itr) = to_info;
     }
 
-    void swap(const container_type::iterator& a, const container_type::iterator& b)
+    void swap(const container_type::iterator &a,
+              const container_type::iterator &b)
     {
         if (a == b)
         {
@@ -119,57 +108,36 @@ public:
         (*a) = info;
     }
 
-    coordinate_id_pair_type& at(const Integer& index)
+    coordinate_id_pair_type &at(const Integer &index)
     {
         return voxels_.at(index);
     }
 
-    coordinate_id_pair_type const& at(const Integer& index) const
+    coordinate_id_pair_type const &at(const Integer &index) const
     {
         return voxels_.at(index);
     }
 
-    coordinate_id_pair_type& operator[](const Integer& n)
+    coordinate_id_pair_type &operator[](const Integer &n) { return voxels_[n]; }
+
+    coordinate_id_pair_type const &operator[](const Integer &n) const
     {
         return voxels_[n];
     }
 
-    coordinate_id_pair_type const& operator[](const Integer& n) const
-    {
-        return voxels_[n];
-    }
+    const Integer size() const { return voxels_.size(); }
 
-    const Integer size() const
-    {
-        return voxels_.size();
-    }
+    void shuffle(RandomNumberGenerator &rng) { ecell4::shuffle(rng, voxels_); }
 
-    void shuffle(RandomNumberGenerator& rng)
-    {
-        ecell4::shuffle(rng, voxels_);
-    }
+    container_type::iterator begin() { return voxels_.begin(); }
 
-    container_type::iterator begin()
-    {
-        return voxels_.begin();
-    }
+    container_type::const_iterator begin() const { return voxels_.begin(); }
 
-    container_type::const_iterator begin() const
-    {
-        return voxels_.begin();
-    }
+    container_type::iterator end() { return voxels_.end(); }
 
-    container_type::iterator end()
-    {
-        return voxels_.end();
-    }
+    container_type::const_iterator end() const { return voxels_.end(); }
 
-    container_type::const_iterator end() const
-    {
-        return voxels_.end();
-    }
-
-    container_type::iterator find(const ParticleID& pid)
+    container_type::iterator find(const ParticleID &pid)
     {
         container_type::iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -182,7 +150,7 @@ public:
         return itr;
     }
 
-    container_type::const_iterator find(const ParticleID& pid) const
+    container_type::const_iterator find(const ParticleID &pid) const
     {
         container_type::const_iterator itr;
         for (itr = voxels_.begin(); itr != voxels_.end(); ++itr)
@@ -196,9 +164,8 @@ public:
     }
 
 protected:
-
-    container_type::iterator find(
-        coordinate_type coord, const std::size_t candidate = 0)
+    container_type::iterator find(coordinate_type coord,
+                                  const std::size_t candidate = 0)
     {
         container_type::iterator itr;
         if (candidate < voxels_.size())
@@ -217,8 +184,8 @@ protected:
         return itr;
     }
 
-    container_type::const_iterator find(
-        coordinate_type coord, const std::size_t candidate = 0) const
+    container_type::const_iterator find(coordinate_type coord,
+                                        const std::size_t candidate = 0) const
     {
         container_type::const_iterator itr;
         if (candidate < voxels_.size())
@@ -238,10 +205,9 @@ protected:
     }
 
 protected:
-
     container_type voxels_;
 };
 
-} // ecell4
+} // namespace ecell4
 
 #endif

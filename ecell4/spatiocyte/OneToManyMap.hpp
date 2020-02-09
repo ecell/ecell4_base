@@ -1,9 +1,9 @@
 #ifndef ECELL4_SPATIOCYTE_INTERFACE_CONTAINER
 #define ECELL4_SPATIOCYTE_INTERFACE_CONTAINER
 
-#include <vector>
 #include <boost/optional.hpp>
 #include <ecell4/core/get_mapper_mf.hpp>
+#include <vector>
 
 namespace ecell4
 {
@@ -11,13 +11,11 @@ namespace ecell4
 namespace spatiocyte
 {
 
-template<typename T>
-class OneToManyMap
-{
+template <typename T> class OneToManyMap {
 
 protected:
-    typedef typename utils::get_mapper_mf<T, std::vector<T> >::type
-            container_type;
+    typedef
+        typename utils::get_mapper_mf<T, std::vector<T>>::type container_type;
 
     typedef typename container_type::iterator iterator;
 
@@ -41,12 +39,13 @@ public:
         iterator itr(container_.find(key));
 
         if (itr != container_.end())
-            std::copy(values.begin(), values.end(), back_inserter((*itr).second));
+            std::copy(values.begin(), values.end(),
+                      back_inserter((*itr).second));
         else
             container_.insert(std::make_pair(key, values));
     }
 
-    boost::optional<const std::vector<T>&> find(const T& key) const
+    boost::optional<const std::vector<T> &> find(const T &key) const
     {
         const_iterator itr(container_.find(key));
 

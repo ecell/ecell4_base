@@ -10,14 +10,15 @@ namespace spatiocyte
 {
 
 const Real calculate_dimensional_factor(
-    boost::shared_ptr<const VoxelPool> mt0, boost::shared_ptr<const VoxelPool> mt1,
+    boost::shared_ptr<const VoxelPool> mt0, const Real D_A,
+    boost::shared_ptr<const VoxelPool> mt1, const Real D_B,
     boost::shared_ptr<SpatiocyteWorld> world);
 
-const Real calculate_alpha(
-    const ReactionRule& rr, const boost::shared_ptr<SpatiocyteWorld>& world);
+const Real calculate_alpha(const ReactionRule &rr,
+                           const boost::shared_ptr<SpatiocyteWorld> &world);
 
-} // spatiocyte
+} // namespace spatiocyte
 
-} // ecell4
+} // namespace ecell4
 
 #endif /* ECELL4_SPATIOCYTE_UTILS_HPP */
