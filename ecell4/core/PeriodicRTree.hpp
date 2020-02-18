@@ -109,8 +109,8 @@ public:
         return this->container_.size() - this->overwritable_values_.size();
     }
 
-    bool       empty() const noexcept {return this->root_ == nil;}
-    void       clear()
+    bool empty() const noexcept {return this->root_ == nil;}
+    void clear()
     {
         this->root_ = nil;
         this->margin_ = 0.0;
