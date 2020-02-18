@@ -1354,9 +1354,10 @@ private:
 
     bool is_inside_of_boundary(const Real3 r, const Real tol = 1e-8) const noexcept
     {
-        if(r[0] < -tol || edge_lengths_[0] + tol < r[0]) {return false;}
-        if(r[1] < -tol || edge_lengths_[1] + tol < r[1]) {return false;}
-        if(r[2] < -tol || edge_lengths_[2] + tol < r[2]) {return false;}
+        const auto rel_tol = edge_lengths_ * tol;
+        if(r[0] < -rel_tol[0] || edge_lengths_[0] + rel_tol[0] < r[0]) {return false;}
+        if(r[1] < -rel_tol[1] || edge_lengths_[1] + rel_tol[1] < r[1]) {return false;}
+        if(r[2] < -rel_tol[2] || edge_lengths_[2] + rel_tol[2] < r[2]) {return false;}
         return true;
     }
 
