@@ -296,10 +296,8 @@ public:
             this->erase_impl(found->first, found->second);
             return;
         }
-        else
-        {
-            throw NotFound("PeriodicRTree::erase: value not found.");
-        }
+
+        throw NotFound("PeriodicRTree::erase: value not found.");
     }
 
     Real3 const& edge_lengths() const noexcept {return edge_lengths_;}
@@ -640,7 +638,7 @@ private:
         assert(N != NN);
 
         // we hit the root. to assign a new node, we need to make tree deeper.
-        if(node_at(N).parent == nil)
+        if(this->node_at(N).parent == nil)
         {
             node_type new_root(internal_entry_type{N, NN}, /*parent = */ nil,
                                this->expand(node_at(N).box, node_at(NN).box));
@@ -1117,7 +1115,6 @@ private:
                 node.box = this->expand(node.box,
                     box_getter_(container_.at(rmap_.at(*i)).second, margin_));
             }
-            return;
         }
         else
         {
