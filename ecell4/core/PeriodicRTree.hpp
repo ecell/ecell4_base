@@ -253,7 +253,6 @@ public:
 
         if(node_at(L).has_enough_storage())
         {
-            this->node_at(L).leaf_entry().push_back(v.first);
             if(node_at(L).empty())
             {
                 node_at(L).box = box;
@@ -262,13 +261,16 @@ public:
             {
                 node_at(L).box = this->expand(node_at(L).box, box);
             }
+            this->node_at(L).leaf_entry().push_back(v.first);
             this->adjust_tree(L);
+            assert(this->diagnosis());
         }
         else // the most appropreate node is already full. split it.
         {
             const auto LL = this->add_node(this->split_leaf(L, v.first, box));
             assert(L != LL);
             this->adjust_tree(L, LL);
+            assert(this->diagnosis());
         }
         return ;
     }
@@ -294,6 +296,7 @@ public:
         if(const auto found = this->find_leaf(this->root_, v))
         {
             this->erase_impl(found->first, found->second);
+            assert(this->diagnosis());
             return;
         }
 
@@ -622,7 +625,7 @@ private:
 
             // if node.box is already inside of parent.box, then we don't need
             // to expand node AABBs.
-            if(this->is_inside(node.box, parent.box))
+            if(this->is_inside(node.box, parent.box, 0.0))
             {
                 break;
             }
@@ -1035,14 +1038,13 @@ private:
         // condense node parent box without the leaf node N.
         this->condense_box(this->node_at(parent_idx));
         this->adjust_tree(parent_idx);
+        this->condense_node(parent_idx);
 
         // re-insert entries that were in node N
         for(const auto& obj : eliminated_objs)
         {
             this->insert(obj);
         }
-        // condense ancester nodes...
-        this->condense_node(parent_idx);
         return;
     }
 
