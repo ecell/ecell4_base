@@ -207,8 +207,6 @@ public:
             return true;
         }
 
-        std::cerr << "updating object " << id << ":" << obj << std::endl;
-
         const auto value_idx = this->rmap_.at(id);
         const auto found = this->find_leaf(this->root_,
                                            this->container_.at(value_idx));
