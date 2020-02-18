@@ -6,8 +6,6 @@
 #include <numeric>
 #include <map>
 #include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
-#include <boost/scoped_array.hpp>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
@@ -93,7 +91,7 @@ public:
                 // Calculation! XXX
                 if (i->ratelaw.expired())
                 {
-                    boost::scoped_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
+                    std::unique_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
                     flux = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t);
                 }
                 else
@@ -188,7 +186,7 @@ public:
 
                 if (i->ratelaw.expired())
                 {
-                    boost::scoped_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
+                    std::unique_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
                     Real flux_0 = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t);
                     // Differentiate by time
                     {
@@ -400,7 +398,7 @@ public:
 
                 if (i->ratelaw.expired())
                 {
-                    boost::scoped_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
+                    std::unique_ptr<ReactionRuleDescriptor> temporary_ratelaw_obj(new ReactionRuleDescriptorMassAction(i->k, i->reactant_coefficients, i->product_coefficients));
                     Real flux_0 = temporary_ratelaw_obj->propensity(reactants_states, products_states, volume_, t);
                     // Differentiate by each Reactants
                     for(std::size_t j(0); j < reactants_states.size(); j++)

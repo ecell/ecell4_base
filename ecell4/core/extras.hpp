@@ -2,7 +2,6 @@
 #define ECELL4_EXTRAS_HPP
 
 #include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
 
 #include <ecell4/core/config.h>
 

@@ -123,11 +123,11 @@ public:
     void save(const std::string &filename) const
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File> fout(
+        std::unique_ptr<H5::H5File> fout(
             new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         sidgen_.save(fout.get());
-        boost::scoped_ptr<H5::Group> group(
+        std::unique_ptr<H5::Group> group(
             new H5::Group(fout->createGroup("LatticeSpace")));
         get_root()->save_hdf5(group.get()); // TODO
         extras::save_version_information(fout.get(),
@@ -142,7 +142,7 @@ public:
     void load(const std::string &filename)
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File> fin(
+        std::unique_ptr<H5::H5File> fin(
             new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
         const std::string required = "ecell4-spatiocyte-0.0";

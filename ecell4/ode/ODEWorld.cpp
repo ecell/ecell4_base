@@ -26,9 +26,9 @@ void ODEWorld::bind_to(boost::shared_ptr<Model> model)
 void ODEWorld::save(const std::string& filename) const
 {
 #ifdef WITH_HDF5
-    boost::scoped_ptr<H5::H5File>
+    std::unique_ptr<H5::H5File>
         fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
-    boost::scoped_ptr<H5::Group>
+    std::unique_ptr<H5::Group>
         group(new H5::Group(fout->createGroup("CompartmentSpace")));
     save_compartment_space<ODEWorldHDF5Traits<ODEWorld> >(*this, group.get());
 
@@ -45,7 +45,7 @@ void ODEWorld::save(const std::string& filename) const
 void ODEWorld::load(const std::string& filename)
 {
 #ifdef WITH_HDF5
-    boost::scoped_ptr<H5::H5File>
+    std::unique_ptr<H5::H5File>
         fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
     const std::string required = "ecell4-ode-0.0";

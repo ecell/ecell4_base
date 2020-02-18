@@ -4,7 +4,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/multi_array.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -143,22 +142,22 @@ void save_subvolume_space(const Tspace_ &space, H5::Group *root)
 
     hsize_t dim1[] = {species.size(), num_subvolumes};
     H5::DataSpace dataspace1(RANK1, dim1);
-    boost::scoped_ptr<H5::DataSet> dataset1(new H5::DataSet(root->createDataSet(
+    std::unique_ptr<H5::DataSet> dataset1(new H5::DataSet(root->createDataSet(
         "num_molecules", H5::PredType::STD_I64LE, dataspace1)));
 
     hsize_t dim2[] = {species.size()};
     H5::DataSpace dataspace2(RANK2, dim2);
-    boost::scoped_ptr<H5::DataSet> dataset2(new H5::DataSet(root->createDataSet(
+    std::unique_ptr<H5::DataSet> dataset2(new H5::DataSet(root->createDataSet(
         "species", traits_type::get_species_comp_type(), dataspace2)));
 
     hsize_t dim3[] = {structures.size(), num_subvolumes};
     H5::DataSpace dataspace3(RANK1, dim3);
-    boost::scoped_ptr<H5::DataSet> dataset3(new H5::DataSet(root->createDataSet(
+    std::unique_ptr<H5::DataSet> dataset3(new H5::DataSet(root->createDataSet(
         "stcoordinates", H5::PredType::IEEE_F64LE, dataspace3)));
 
     hsize_t dim4[] = {structures.size()};
     H5::DataSpace dataspace4(RANK2, dim4);
-    boost::scoped_ptr<H5::DataSet> dataset4(new H5::DataSet(root->createDataSet(
+    std::unique_ptr<H5::DataSet> dataset4(new H5::DataSet(root->createDataSet(
         "structures", traits_type::get_structures_comp_type(), dataspace4)));
 
     dataset1->write(h5_num_table.data(), dataset1->getDataType());

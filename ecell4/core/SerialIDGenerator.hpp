@@ -2,8 +2,8 @@
 #define ECELL4_SERIAL_ID_GENERATOR_HPP
 
 #include <functional>
+#include <memory>
 #include <boost/type_traits/is_integral.hpp>
-#include <boost/scoped_ptr.hpp>
 
 #include <ecell4/core/config.h>
 
@@ -328,11 +328,11 @@ public:
     {
         using namespace H5;
 
-        boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
+        std::unique_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
         hsize_t bufsize(sizeof(identifier_type));
         DataSpace dataspace(1, &bufsize);
         optype->setTag("SerialIDGenerator state type");
-        boost::scoped_ptr<DataSet> dataset(
+        std::unique_ptr<DataSet> dataset(
             new DataSet(root->createDataSet("idgen", *optype, dataspace)));
         dataset->write((unsigned char*)(&next_), *optype);
     }
@@ -342,7 +342,7 @@ public:
         using namespace H5;
 
         const DataSet dataset(DataSet(root.openDataSet("idgen")));
-        boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
+        std::unique_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
         optype->setTag("SerialIDGenerator state type");
         identifier_type state;
         dataset.read((unsigned char*)(&state), *optype);

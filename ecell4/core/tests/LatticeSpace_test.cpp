@@ -595,7 +595,7 @@ BOOST_AUTO_TEST_CASE(LatticeSpace_test_save_and_load)
         space.update_voxel(sidgen(), Species("B", 2.5e-9, 1e-12), point));
 
     H5::H5File fout("data.h5", H5F_ACC_TRUNC);
-    boost::scoped_ptr<H5::Group> group(
+    std::unique_ptr<H5::Group> group(
         new H5::Group(fout.createGroup("VoxelSpaceBase")));
     space.save_hdf5(group.get());
     fout.close();

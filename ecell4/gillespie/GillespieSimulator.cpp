@@ -9,8 +9,6 @@
 #include <cstring>
 #include <cmath>
 
-#include <boost/scoped_array.hpp>
-
 namespace ecell4
 {
 

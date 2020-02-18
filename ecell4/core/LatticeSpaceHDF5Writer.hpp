@@ -3,7 +3,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -58,7 +57,7 @@ struct LatticeSpaceHDF5Traits
                                 std::vector<VoxelView> voxels, H5::Group *group)
     {
         const Species species(mtb->species());
-        boost::scoped_ptr<H5::Group> mtgroup(
+        std::unique_ptr<H5::Group> mtgroup(
             new H5::Group(group->createGroup(species.serial().c_str())));
 
         h5_species_struct property;
@@ -102,7 +101,7 @@ struct LatticeSpaceHDF5Traits
         H5::CompType voxel_comp_type(get_voxel_comp());
         hsize_t dims[] = {(hsize_t)num_voxels};
         H5::DataSpace dspace(/* RANK= */ 1, dims);
-        boost::scoped_ptr<H5::DataSet> dset(new H5::DataSet(
+        std::unique_ptr<H5::DataSet> dset(new H5::DataSet(
             mtgroup->createDataSet("voxels", voxel_comp_type, dspace)));
         dset->write(h5_voxel_array.get(), dset->getDataType());
     }
@@ -146,7 +145,7 @@ void save_lattice_space(const Tspace_ &space, H5::Group *root,
 {
     typedef LatticeSpaceHDF5Traits traits_type;
 
-    boost::scoped_ptr<H5::Group> spgroup(
+    std::unique_ptr<H5::Group> spgroup(
         new H5::Group(root->createGroup("species")));
 
     const std::vector<Species> species(space.list_species());
