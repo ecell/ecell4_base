@@ -8,6 +8,7 @@
 #include <ecell4/core/get_mapper_mf.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 #include <utility>
 #include <vector>
 #include <limits>
@@ -50,6 +51,10 @@ template<typename ObjectID, typename Object, typename AABBGetter,
 class PeriodicRTree
 {
 public:
+    static_assert(!std::is_same<ObjectID, std::size_t>::value,
+                  "Since node uses std::size_t as a internal node elements, "
+                  "ObjectID should be distinguishable from std::size_t.");
+
     using box_type              = AABB;
     using box_getter_type       = AABBGetter;
     using rtree_value_type      = std::pair<box_type, std::size_t>;
@@ -65,13 +70,23 @@ public:
 
     struct node_type
     {
-        using entry_type =
-            boost::container::static_vector<std::size_t, max_entry>;
-        using iterator       = typename entry_type::iterator;
-        using const_iterator = typename entry_type::const_iterator;
+        using internal_entry_type = boost::container::static_vector<std::size_t, max_entry>;
+        using leaf_entry_type     = boost::container::static_vector<ObjectID,    max_entry>;
+        using entry_type          = boost::variant<internal_entry_type, leaf_entry_type>;
 
-        node_type(const bool is_leaf_, const std::size_t parent_)
-            : is_leaf(is_leaf_), parent(parent_)
+        struct size_invoker: boost::static_visitor<std::size_t>
+        {
+            template<typename T>
+            std::size_t operator()(const T& v) const noexcept {return v.size();}
+        };
+
+        node_type(const internal_entry_type& inode, const std::size_t parent_,
+                  const box_type& b)
+            : parent(parent_), entry(inode), box(b)
+        {}
+        node_type(const leaf_entry_type& leaf, const std::size_t parent_,
+                  const box_type& b)
+            : parent(parent_), entry(leaf), box(b)
         {}
         ~node_type() = default;
         node_type(node_type const&) = default;
@@ -79,17 +94,39 @@ public:
         node_type& operator=(node_type const&) = default;
         node_type& operator=(node_type &&)     = default;
 
-        bool has_enough_storage() const noexcept {return entry.size() < max_entry;}
-        bool has_enough_entry()   const noexcept {return min_entry <= entry.size();}
+        bool is_leaf() const noexcept {return entry.which() == 1;}
+        bool empty() const noexcept
+        {
+            return boost::apply_visitor(size_invoker(), this->entry) == 0;
+        }
+        bool has_enough_storage() const noexcept
+        {
+            return boost::apply_visitor(size_invoker(), this->entry) < max_entry;
+        }
+        bool has_enough_entry()   const noexcept
+        {
+            return min_entry <= boost::apply_visitor(size_invoker(), this->entry);
+        }
 
-        bool        is_leaf;
+        std::size_t size() const noexcept
+        {
+            return boost::apply_visitor(size_invoker(), this->entry);
+        }
+
+        internal_entry_type const& inode_entry() const {return boost::get<internal_entry_type>(entry);}
+        internal_entry_type&       inode_entry()       {return boost::get<internal_entry_type>(entry);}
+        leaf_entry_type const&     leaf_entry()  const {return boost::get<leaf_entry_type>(entry);}
+        leaf_entry_type&           leaf_entry()        {return boost::get<leaf_entry_type>(entry);}
+
         std::size_t parent;
         entry_type  entry;
         box_type    box;
     };
 
-    typedef std::vector<node_type>   tree_type;
-    typedef std::vector<std::size_t> index_buffer_type;
+    using internal_entry_type = typename node_type::internal_entry_type;
+    using leaf_entry_type     = typename node_type::leaf_entry_type;
+    using tree_type           = std::vector<node_type>;
+    using index_buffer_type   = std::vector<std::size_t>;
 
 public:
 
@@ -106,18 +143,16 @@ public:
 
     std::size_t size() const noexcept
     {
-        return this->container_.size() - this->overwritable_values_.size();
+        return this->container_.size();
     }
 
     bool empty() const noexcept {return this->root_ == nil;}
     void clear()
     {
         this->root_ = nil;
-        this->margin_ = 0.0;
         this->tree_.clear();
         this->container_.clear();
         this->rmap_.clear();
-        this->overwritable_values_.clear();
         this->overwritable_nodes_.clear();
         return;
     }
@@ -133,6 +168,8 @@ public:
     }
 
     // collect values when the filter returns true.
+    //
+    // For example, see ParticleContainerRTreeImpl.
     // ```cpp
     // struct QueryFilter
     // {
@@ -169,16 +206,20 @@ public:
             this->insert(id, obj);
             return true;
         }
+
+        std::cerr << "updating object " << id << ":" << obj << std::endl;
+
+        const auto value_idx = this->rmap_.at(id);
         const auto found = this->find_leaf(this->root_,
-                this->container_.at(this->rmap_.at(id)));
+                                           this->container_.at(value_idx));
         if(!found)
         {
             throw std::logic_error("[error] internal error in PeriodicRTree");
         }
-        const auto node_idx  =   found->first;
-        const auto value_idx = *(found->second);
+        const auto node_idx = found->first;
+        assert(*(found->second) == id);
 
-        const auto tight_box = this->box_getter_(obj, 0.0);
+        const auto tight_box = this->box_getter_(obj, /*margin = */ 0.0);
         const auto& node_box = this->node_at(node_idx).box;
 
         if(this->is_inside(tight_box, /* is inside of */ node_box))
@@ -191,7 +232,7 @@ public:
         {
             // The updated object sticks out of the node.
             // We need to expand the box and update the tree.
-            this->erase_impl(node_idx, found->second);
+            this->erase_impl(found->first, found->second);
             this->insert(id, obj);
         }
         return false;
@@ -207,14 +248,15 @@ public:
     }
     void insert(const value_type& v)
     {
-        const auto idx = this->add_value(v);
+        this->add_value(v);
         const auto box = this->box_getter_(v.second, this->margin_);
         const auto L   = this->choose_leaf(box);
+        assert(node_at(L).is_leaf());
 
         if(node_at(L).has_enough_storage())
         {
-            node_at(L).entry.push_back(idx);
-            if(node_at(L).entry.empty())
+            this->node_at(L).leaf_entry().push_back(v.first);
+            if(node_at(L).empty())
             {
                 node_at(L).box = box;
             }
@@ -226,7 +268,7 @@ public:
         }
         else // the most appropreate node is already full. split it.
         {
-            const auto LL = this->add_node(this->split_leaf(L, idx, box));
+            const auto LL = this->add_node(this->split_leaf(L, v.first, box));
             assert(L != LL);
             this->adjust_tree(L, LL);
         }
@@ -271,51 +313,30 @@ public:
     // box margin.
     Real margin() const noexcept {return margin_;}
 
-    // it does not return a reference, but returns a copy.
-    // Since this class handles values via index, some values can be in a
-    // invalid state. Before returning it, we need to remove those
-    // "already-removed" values.
-    std::vector<std::pair<ObjectID, Object>> list_objects() const
-    {
-        std::vector<std::pair<ObjectID, Object>> retval = container_;
-        if(overwritable_values_.empty())
-        {
-            return retval;
-        }
-        std::vector<std::size_t> overwritable(overwritable_values_.begin(),
-                                              overwritable_values_.end());
-
-        std::sort(overwritable.begin(), overwritable.end(),
-                  std::greater<std::size_t>());
-        for(const auto i : overwritable)
-        {
-            retval.erase(retval.begin() + i);
-        }
-        return retval;
-    }
+    // container = std::vector<std::pair<ObjectID, Object>>.
+    container_type const& list_objects() const {return container_;}
 
     // check the tree structure and relationships between nodes
     bool diagnosis() const
     {
         // -------------------------------------------------------------------
-        // check number of active objects and internal nodes
-        std::size_t num_objects = 0;
+        // check number of active internal nodes
         std::size_t num_inodes  = 1; // +1 for the root
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
             if(!this->is_valid_node_index(i)){continue;}
 
-            if(this->node_at(i).is_leaf)
+            if(!this->node_at(i).is_leaf())
             {
-                num_objects += this->node_at(i).entry.size();
-            }
-            else
-            {
-                num_inodes += this->node_at(i).entry.size();
+                num_inodes += this->node_at(i).inode_entry().size();
             }
         }
-        assert(list_objects().size() == num_objects);
-        assert(tree_.size() - overwritable_nodes_.size() == num_inodes);
+        if(tree_.size() - overwritable_nodes_.size() != num_inodes)
+        {
+            std::cerr << "tree_.size() is not consistent with number of "
+                         "internal nodes" << std::endl;
+            return false;
+        }
 
         // -------------------------------------------------------------------
         // check the parent of a node exists and the parent contains the node
@@ -331,9 +352,9 @@ public:
             }
             else
             {
-                const auto& e = this->node_at(this->node_at(i).parent).entry;
+                const auto& e = this->node_at(this->node_at(i).parent).inode_entry();
                 assert(this->is_valid_node_index(this->node_at(i).parent));
-                assert(!this->node_at(this->node_at(i).parent).is_leaf);
+                assert(!this->node_at(this->node_at(i).parent).is_leaf());
                 assert(std::find(e.begin(), e.end(), i) != e.end());
             }
         }
@@ -346,6 +367,11 @@ public:
 
             const auto& box = this->node_at(i).box;
             const auto center = (box.upper() + box.lower()) * 0.5;
+            if(!is_inside_of_boundary(center))
+            {
+                std::cerr << "box: " << box.lower() << ":" << box.upper() << std::endl;
+                std::cerr << "center: " << center << std::endl;
+            }
             assert(this->is_inside_of_boundary(center));
         }
 
@@ -354,8 +380,13 @@ public:
         for(std::size_t i=0; i<tree_.size(); ++i)
         {
             if(!this->is_valid_node_index(i)) {continue;}
-            if(node_at(i).is_leaf && !diagnosis_rec(i))
+            if(!node_at(i).is_leaf()) {continue;}
+
+            if(!diagnosis_rec(i))
             {
+                std::cerr << "node " << i << " is not covered by its ancestors"
+                          << std::endl;
+                this->dump(std::cerr);
                 return false;
             }
         }
@@ -364,18 +395,20 @@ public:
         // check consistency between id->index map and the tree
         for(std::size_t i=0; i<container_.size(); ++i)
         {
-            if(!this->is_valid_value_index(i)) {continue;}
-
             if(rmap_.count(container_.at(i).first) != 0)
             {
                 if(rmap_.at(container_.at(i).first) != i)
                 {
+                    std::cerr << "Object index in a container and reverse-map "
+                                 "are not consistent" << std::endl;
                     return false;
                 }
             }
-
             if(!this->find_leaf(this->root_, container_.at(i)))
             {
+                std::cerr << "Object " << container_.at(i).first << ":"
+                          << container_.at(i).second << " is not found in the "
+                          << "tree" << std::endl;
                 return false;
             }
         }
@@ -405,6 +438,12 @@ private:
             const auto& node = this->node_at(node_idx);
             if(!(this->is_inside(node.box, node_at(node.parent).box)))
             {
+                std::cerr << "parent  AABB: " << node_at(node.parent).box.lower()
+                          << " -> " << node_at(node.parent).box.upper()
+                          << std::endl;
+                std::cerr << "current AABB: " << node.box.lower()
+                          << " -> " << node.box.upper()
+                          << std::endl;
                 return false;
             }
             node_idx = node.parent;
@@ -417,23 +456,24 @@ private:
     void dump_rec(const std::size_t node_idx, std::ostream& os, std::string prefix) const
     {
         const auto& node = tree_.at(node_idx);
-        if(node.is_leaf)
+        if(node.is_leaf())
         {
-            for(const std::size_t entry : node.entry)
+            for(const auto& entry_id : node.leaf_entry())
             {
                 os << prefix;
-                if(!this->is_valid_value_index(entry)){os << '!';} else {os << ' ';}
-                os << '[' << std::setw(3) << entry << "]\n";
+                os << '[' << std::setw(3) << entry_id << "]\n";
             }
             return;
         }
-
-        for(const std::size_t entry : node.entry)
+        else
         {
-            std::ostringstream oss;
-            if(!this->is_valid_node_index(entry)){oss << '!';} else {oss << ' ';}
-            oss << '(' << std::setw(3) << entry << ") ";
-            dump_rec(entry, os, prefix + oss.str());
+            for(const std::size_t entry : node.inode_entry())
+            {
+                std::ostringstream oss;
+                if(!this->is_valid_node_index(entry)){oss << '!';} else {oss << ' ';}
+                oss << '(' << std::setw(3) << entry << ") ";
+                dump_rec(entry, os, prefix + oss.str());
+            }
         }
         return;
     }
@@ -448,11 +488,11 @@ private:
             const F& matches, OutputIterator& out) const
     {
         const node_type& node = this->node_at(node_idx);
-        if(node.is_leaf)
+        if(node.is_leaf())
         {
-            for(const std::size_t entry : node.entry)
+            for(const auto& entry : node.leaf_entry())
             {
-                const auto& value = container_.at(entry);
+                const auto& value = container_.at(rmap_.at(entry));
                 if(const auto info = matches(value, this->edge_lengths_))
                 {
                     *out = *info;
@@ -462,7 +502,7 @@ private:
             return out;
         }
         // internal node. search recursively...
-        for(const std::size_t entry : node.entry)
+        for(const std::size_t entry : node.inode_entry())
         {
             const auto& node_aabb = node_at(entry).box;
             if(matches(node_aabb, this->edge_lengths_))
@@ -489,7 +529,7 @@ private:
         return tree_.at(i);
     }
 
-    // Note: In the original R-Tree, without periodic boundary condition,
+    // Note: In the original R-Tree, i.e. without periodic boundary condition,
     //       we don't need to adjust tree after we remove an object. It is
     //       because node AABB always shrink after erasing its entry. But under
     //       the periodic condition, AABB may slide to reduce its size.
@@ -514,13 +554,11 @@ private:
     //       node AABB smaller and the total efficiency can increase compared to
     //       the former solution.
     void erase_impl(const std::size_t node_idx,
-                    const typename node_type::const_iterator value_iter)
+        const typename node_type::leaf_entry_type::const_iterator value_iter)
     {
-        const auto value_idx = *value_iter;
-        this->node_at(node_idx).entry.erase(value_iter);
-        this->erase_value(value_idx);
-
-        assert(!is_valid_value_index(value_idx));
+        const auto value_id = *value_iter;
+        this->node_at(node_idx).leaf_entry().erase(value_iter);
+        this->erase_value(rmap_.at(value_id));
 
         this->condense_box(this->node_at(node_idx));
         this->adjust_tree(node_idx);
@@ -538,22 +576,26 @@ private:
         // if it's empty, the entry will be inserted in a root node.
         if(this->root_ == nil)
         {
-            node_type n(/*is_leaf = */true, /*parent = */ nil);
-            n.box = entry;
+            node_type n(leaf_entry_type{/*empty*/}, /*parent = */ nil, entry);
             this->root_ = this->add_node(n);
             return this->root_;
         }
 
         // choose a leaf where entry will be inserted.
+        //
+        // search node that can contain the new entry with minimum expansion
+        // until it found a leaf.
         std::size_t node_idx = this->root_;
-        while(!(this->node_at(node_idx).is_leaf))
+        while(!(this->node_at(node_idx).is_leaf()))
         {
             // find the node that can cover the entry with minimum expansion
             Real diff_area_min = std::numeric_limits<Real>::max();
             Real area_min      = std::numeric_limits<Real>::max();
 
+            // look all the child nodes and find the node that can contain the
+            // new entry with minimum expansion
             const auto& node = this->node_at(node_idx);
-            for(const std::size_t i : node.entry)
+            for(const std::size_t i : node.inode_entry())
             {
                 const auto& current_box = this->node_at(i).box;
 
@@ -573,11 +615,11 @@ private:
         return node_idx;
     }
 
-    // It adjusts AABBs of all the ancester nodes of `node_idx` to make sure
-    // that all the ancester nodes covers the node of `node_idx`.
+    // It expands AABBs of all the ancester nodes to make sure that
+    // all the ancester nodes of `node_idx` covers the node of `node_idx`.
     void adjust_tree(std::size_t node_idx)
     {
-        while(node_at(node_idx).parent != nil)
+        while(this->node_at(node_idx).parent != nil)
         {
             const auto& node   = this->node_at(node_idx);
             auto&       parent = this->node_at(node.parent);
@@ -602,10 +644,8 @@ private:
         // we hit the root. to assign a new node, we need to make tree deeper.
         if(node_at(N).parent == nil)
         {
-            node_type new_root(/*is_leaf = */false, /*parent = */ nil);
-            new_root.entry.push_back(N);
-            new_root.entry.push_back(NN);
-            new_root.box = this->expand(node_at(N).box, node_at(NN).box);
+            node_type new_root(internal_entry_type{N, NN}, /*parent = */ nil,
+                               this->expand(node_at(N).box, node_at(NN).box));
             this->root_  = this->add_node(std::move(new_root));
 
             this->node_at( N).parent = this->root_;
@@ -614,21 +654,22 @@ private:
         }
         else
         {
-            const auto& node    = node_at(N);
-            const auto& partner = node_at(NN);
+            const auto& node    = this->node_at(N);
+            const auto& partner = this->node_at(NN);
             assert(node.parent == partner.parent);
+            assert(!node_at(node.parent).is_leaf());
 
             const auto parent_idx = node.parent;
-            auto& parent = node_at(parent_idx);
+            auto& parent = this->node_at(parent_idx);
             parent.box = this->expand(parent.box, node.box);
 
             if(parent.has_enough_storage())
             {
                 parent.box = this->expand(parent.box, partner.box); // assign NN
-                parent.entry.push_back(NN);
+                parent.inode_entry().push_back(NN);
 
-                // NN is assigned to this node. expand AABBs of parent nodes
-                // if needed.
+                // NN is assigned to this node.
+                // expand AABBs of parent nodes if needed.
                 return this->adjust_tree(parent_idx);
             }
             else
@@ -643,10 +684,11 @@ private:
                 //         |
                 //         v
                 //
-                // -+-parent -+-   N
-                //  |         +- ...
-                //  +-PP     -+- ...
-                //            +-  NN
+                // -+-parent -+-   N }- less than MaxEntry
+                //  |         +- ... }
+                //  |
+                //  +-PP     -+- ... }- less than MaxEntry
+                //            +-  NN }
                 //
                 const auto PP = this->split_node(parent_idx, NN);
                 assert(parent_idx != PP);
@@ -671,41 +713,47 @@ private:
         //  +-PP -+- ...
         //        +-  NN
 
-        const std::size_t PP = this->add_node(node_type(false, node_at(P).parent));
+        const std::size_t PP = this->add_node(
+            node_type(internal_entry_type{}, node_at(P).parent, box_type()));
+
         assert(P  != PP);
         assert(NN != PP);
-        node_type& node    = node_at(P);
-        node_type& partner = node_at(PP);
 
-        assert(!node.is_leaf);
-        assert(!partner.is_leaf);
+        node_type& node    = this->node_at(P);
+        node_type& partner = this->node_at(PP);
+        // these are internal nodes.
+        assert(!node.is_leaf());
+        assert(!partner.is_leaf());
 
         boost::container::static_vector<
             std::pair<std::size_t, box_type>, max_entry + 1> entries;
         entries.emplace_back(NN, node_at(NN).box);
 
-        for(const auto& entry_idx : node.entry)
+        for(const auto& entry_idx : node.inode_entry())
         {
-            entries.emplace_back(entry_idx, node_at(entry_idx).box);
+            entries.emplace_back(entry_idx, this->node_at(entry_idx).box);
         }
-        node.entry.clear();
-        partner.entry.clear();
+        node   .inode_entry().clear();
+        partner.inode_entry().clear();
 
         // assign first 2 entries to node and partner
         {
             const auto seeds = this->pick_seeds(entries);
             assert(seeds[0] != seeds[1]);
 
-            node   .entry.push_back(entries.at(seeds[0]).first);
-            partner.entry.push_back(entries.at(seeds[1]).first);
+            node   .inode_entry().push_back(entries.at(seeds[0]).first);
+            partner.inode_entry().push_back(entries.at(seeds[1]).first);
 
-            node_at(entries.at(seeds[0]).first).parent = P;
-            node_at(entries.at(seeds[1]).first).parent = PP;
+            this->node_at(entries.at(seeds[0]).first).parent = P;
+            this->node_at(entries.at(seeds[1]).first).parent = PP;
 
             node   .box = entries.at(seeds[0]).second;
             partner.box = entries.at(seeds[1]).second;
 
-            // remove them from entries pool. the order should be kept.
+            // Remove them from entries pool. the order should be kept.
+            //
+            // Remove the one corresponds to the larger index first. Otherwise,
+            // after removing one, index of the other one would be changed.
             entries.erase(entries.begin() + std::max(seeds[0], seeds[1]));
             entries.erase(entries.begin() + std::min(seeds[0], seeds[1]));
         }
@@ -714,24 +762,24 @@ private:
         {
             // If we need all the rest of entries to achieve min_entry,
             // use all of them.
-            if(min_entry > node.entry.size() &&
-               min_entry - node.entry.size() >= entries.size())
+            if(min_entry > node.size() &&
+               min_entry - node.size() >= entries.size())
             {
                 for(const auto idx_box : entries)
                 {
-                    node_at(idx_box.first).parent = P;
-                    node.entry.push_back(idx_box.first);
+                    this->node_at(idx_box.first).parent = P;
+                    node.inode_entry().push_back(idx_box.first);
                     node.box = this->expand(node.box, idx_box.second);
                 }
                 return PP;
             }
-            if(min_entry > partner.entry.size() &&
-               min_entry - partner.entry.size() >= entries.size())
+            if(min_entry > partner.size() &&
+               min_entry - partner.size() >= entries.size())
             {
                 for(const auto idx_box : entries)
                 {
-                    node_at(idx_box.first).parent = PP;
-                    partner.entry.push_back(idx_box.first);
+                    this->node_at(idx_box.first).parent = PP;
+                    partner.inode_entry().push_back(idx_box.first);
                     partner.box = this->expand(partner.box, idx_box.second);
                 }
                 return PP;
@@ -741,76 +789,79 @@ private:
             const auto next = this->pick_next(entries, node.box, partner.box);
             if(next.second)
             {
-                node.entry.push_back(entries.at(next.first).first);
-                node_at(entries.at(next.first).first).parent = P;
+                node.inode_entry().push_back(entries.at(next.first).first);
+                this->node_at(entries.at(next.first).first).parent = P;
                 node.box = this->expand(node.box, entries.at(next.first).second);
             }
             else
             {
-                partner.entry.push_back(entries.at(next.first).first);
-                node_at(entries.at(next.first).first).parent = PP;
+                partner.inode_entry().push_back(entries.at(next.first).first);
+                this->node_at(entries.at(next.first).first).parent = PP;
                 partner.box = this->expand(partner.box, entries.at(next.first).second);
             }
             entries.erase(entries.begin() + next.first);
         }
-        node_at(P)  = node;
-        node_at(PP) = partner;
+        this->node_at(P)  = node;
+        this->node_at(PP) = partner;
         return PP;
     }
 
     // split leaf nodes by the quadratic algorithm introduced by Guttman, A. (1984)
-    node_type split_leaf(const std::size_t N, const std::size_t vidx,
+    node_type split_leaf(const std::size_t N, const ObjectID& vid,
                          const box_type& entry)
     {
         node_type& node = node_at(N);
-        node_type  partner(true, node.parent);
-        assert(node.is_leaf);
+        node_type  partner(leaf_entry_type{}, node.parent, box_type());
+        assert(node.is_leaf());
 
         boost::container::static_vector<
-            std::pair<std::size_t, box_type>, max_entry + 1> entries;
-        entries.push_back(std::make_pair(vidx, entry));
+            std::pair<ObjectID, box_type>, max_entry + 1> entries;
+        entries.push_back(std::make_pair(vid, entry));
 
-        for(const auto& entry_idx : node.entry)
+        for(const auto& entry_id : node.leaf_entry())
         {
-            entries.emplace_back(entry_idx,
-                    box_getter_(container_.at(entry_idx).second, this->margin_));
+            entries.emplace_back(entry_id,
+                box_getter_(container_.at(rmap_.at(entry_id)).second, margin_));
         }
 
-        node   .entry.clear();
-        partner.entry.clear();
+        node   .leaf_entry().clear();
+        partner.leaf_entry().clear();
 
         // assign first 2 entries to node and partner
         {
             const auto seeds = this->pick_seeds(entries);
-            node   .entry.push_back(entries.at(seeds[0]).first);
-            partner.entry.push_back(entries.at(seeds[1]).first);
+            node   .leaf_entry().push_back(entries.at(seeds[0]).first);
+            partner.leaf_entry().push_back(entries.at(seeds[1]).first);
 
             node   .box = entries.at(seeds[0]).second;
             partner.box = entries.at(seeds[1]).second;
 
             // remove them from entries pool
+            //
+            // Remove the one corresponds to the larger index first. Otherwise,
+            // after removing one, index of the other one would be changed.
             entries.erase(entries.begin() + std::max(seeds[0], seeds[1]));
             entries.erase(entries.begin() + std::min(seeds[0], seeds[1]));
         }
 
         while(!entries.empty())
         {
-            if(min_entry > node.entry.size() &&
-               min_entry - node.entry.size() >= entries.size())
+            if(min_entry > node.size() &&
+               min_entry - node.size() >= entries.size())
             {
                 for(const auto& idx_box : entries)
                 {
-                    node.entry.push_back(idx_box.first);
+                    node.leaf_entry().push_back(idx_box.first);
                     node.box = this->expand(node.box, idx_box.second);
                 }
                 return partner;
             }
-            if(min_entry > partner.entry.size() &&
-               min_entry - partner.entry.size() >= entries.size())
+            if(min_entry > partner.size() &&
+               min_entry - partner.size() >= entries.size())
             {
                 for(const auto& idx_box : entries)
                 {
-                    partner.entry.push_back(idx_box.first);
+                    partner.leaf_entry().push_back(idx_box.first);
                     partner.box = this->expand(partner.box, idx_box.second);
                 }
                 return partner;
@@ -819,12 +870,12 @@ private:
             const auto next = this->pick_next(entries, node.box, partner.box);
             if(next.second) // next is for node
             {
-                node.entry.push_back(entries.at(next.first).first);
+                node.leaf_entry().push_back(entries.at(next.first).first);
                 node.box = this->expand(node.box, entries.at(next.first).second);
             }
             else // next is for partner
             {
-                partner.entry.push_back(entries.at(next.first).first);
+                partner.leaf_entry().push_back(entries.at(next.first).first);
                 partner.box = this->expand(partner.box, entries.at(next.first).second);
             }
             entries.erase(entries.begin() + next.first);
@@ -833,9 +884,10 @@ private:
     }
 
     // auxiliary function for the quadratic algorithm.
+    template<typename T>
     std::array<std::size_t, 2>
     pick_seeds(const boost::container::static_vector<
-            std::pair<std::size_t, box_type>, max_entry+1>& entries) const
+            std::pair<T, box_type>, max_entry+1>& entries) const
     {
         assert(entries.size() >= 2);
 
@@ -874,8 +926,10 @@ private:
     }
 
     // auxiliary function for the quadratic algorithm.
-    std::pair<std::size_t, bool> pick_next(const boost::container::static_vector<
-            std::pair<std::size_t, box_type>, max_entry+1>& entries,
+    template<typename T>
+    std::pair<std::size_t, bool>
+    pick_next(const boost::container::static_vector<
+            std::pair<T, box_type>, max_entry+1>& entries,
             const box_type& node, const box_type& ptnr) const
     {
         assert(!entries.empty());
@@ -906,24 +960,23 @@ private:
     // find leaf node that contains the entry value in a recursive manner.
     //
     // returns pairof{leaf-node-index, entry-index-in-node}
-    boost::optional<std::pair<std::size_t,
-        typename boost::container::static_vector<std::size_t, max_entry>::const_iterator>>
+    boost::optional<std::pair<std::size_t, typename
+                              node_type::leaf_entry_type::const_iterator>>
     find_leaf(std::size_t node_idx, const value_type& entry) const
     {
-        const node_type& node = node_at(node_idx);
-        const auto tight_box  = box_getter_(entry.second, 0.0);
+        const node_type& node = this->node_at(node_idx);
+        const auto tight_box  = this->box_getter_(entry.second, 0.0);
 
         if(!(this->is_inside(tight_box, node.box)))
         {
             return boost::none;
         }
-
-        if(node.is_leaf)
+        if(node.is_leaf())
         {
-            for(auto i=node.entry.begin(), e=node.entry.end(); i!=e; ++i)
+            for(auto i=node.leaf_entry().begin(), e=node.leaf_entry().end(); i!=e; ++i)
             {
                 // if the ID is the same, then the objects should be the same.
-                if(container_.at(*i).first == entry.first)
+                if(container_.at(rmap_.at(*i)).first == entry.first)
                 {
                     return std::make_pair(node_idx, i);
                 }
@@ -932,7 +985,7 @@ private:
         }
         else // node is an internal node
         {
-            for(auto i=node.entry.begin(), e=node.entry.end(); i!=e; ++i)
+            for(auto i=node.inode_entry().begin(), e=node.inode_entry().end(); i!=e; ++i)
             {
                 if(!(this->is_inside(tight_box, this->node_at(*i).box)))
                 {
@@ -952,7 +1005,7 @@ private:
     void condense_leaf(const std::size_t N)
     {
         const node_type& node = this->node_at(N);
-        assert(node.is_leaf);
+        assert(node.is_leaf());
 
         if(node.has_enough_entry() || node.parent == nil)
         {
@@ -965,9 +1018,10 @@ private:
 
         // copy objects in the leaf node that is being removed to re-insert them later
         std::vector<value_type> eliminated_objs;
-        eliminated_objs.reserve(node.entry.size());
-        for(const auto& idx: node.entry)
+        eliminated_objs.reserve(node.size());
+        for(const auto& id: node.leaf_entry())
         {
+            const std::size_t idx = rmap_.at(id);
             eliminated_objs.push_back(this->container_.at(idx));
             this->erase_value(idx);
         }
@@ -975,19 +1029,19 @@ private:
         const auto parent_idx = node.parent;
 
         // erase the node N from its parent and condense aabb
-        auto found = std::find(this->node_at(node.parent).entry.begin(),
-                               this->node_at(node.parent).entry.end(), N);
-        assert(found != this->node_at(node.parent).entry.end());
+        auto found = std::find(this->node_at(node.parent).inode_entry().begin(),
+                               this->node_at(node.parent).inode_entry().end(), N);
+        assert(found != this->node_at(node.parent).inode_entry().end());
 
         this->erase_node(*found);
-        this->node_at(parent_idx).entry.erase(found);
+        this->node_at(parent_idx).inode_entry().erase(found);
 
         // condense node parent box without the leaf node N.
         this->condense_box(this->node_at(parent_idx));
         this->adjust_tree(parent_idx);
 
         // re-insert entries that were in node N
-        for(const auto obj : eliminated_objs)
+        for(const auto& obj : eliminated_objs)
         {
             this->insert(obj);
         }
@@ -1001,17 +1055,17 @@ private:
     void condense_node(const std::size_t N)
     {
         const node_type& node = this->node_at(N);
-        assert(node.is_leaf == false);
+        assert(!node.is_leaf());
 
         if(node.has_enough_entry())
         {
             return; // if the node has enough number of entries, then it's okay.
         }
-        if(node.parent == nil && node.entry.size() == 1)
+        if(node.parent == nil && node.size() == 1)
         {
             // if the root has only one entry, then the child node of the current
             // root node should be the root node, no?
-            this->root_ = node.entry.front();
+            this->root_ = node.inode_entry().front();
             this->erase_node(N);
             assert(!this->is_valid_node_index(N));
             return;
@@ -1019,22 +1073,21 @@ private:
 
         // collect index of nodes that are children of the node to be removed
         const std::vector<std::size_t> eliminated_nodes(
-                node.entry.begin(), node.entry.end());
-
+                node.inode_entry().begin(), node.inode_entry().end());
         const auto parent_idx = node.parent;
 
         // erase the node N from its parent and condense its aabb
-        auto found = std::find(this->node_at(parent_idx).entry.begin(),
-                               this->node_at(parent_idx).entry.end(), N);
-        assert(found != this->node_at(parent_idx).entry.end());
+        auto found = std::find(this->node_at(parent_idx).inode_entry().begin(),
+                               this->node_at(parent_idx).inode_entry().end(), N);
+        assert(found != this->node_at(parent_idx).inode_entry().end());
 
         // remove the node from its parent.entry
         this->erase_node(*found);
-        this->node_at(parent_idx).entry.erase(found);
+        this->node_at(parent_idx).inode_entry().erase(found);
         this->condense_box(this->node_at(parent_idx));
 
         // re-insert nodes eliminated from node N
-        for(const auto idx : eliminated_nodes)
+        for(const auto& idx : eliminated_nodes)
         {
             this->re_insert(idx);
         }
@@ -1046,7 +1099,7 @@ private:
     // child nodes.
     void condense_box(node_type& node) const
     {
-        if(node.entry.empty())
+        if(node.empty())
         {
             // If the entry is empty, the node will soon be eliminated from its
             // parent node via `condense_leaf` or `condense_node`.
@@ -1056,21 +1109,22 @@ private:
             node.box = box_type(center, center);
             return;
         }
-        const auto& entries = node.entry;
-        if(node.is_leaf)
+        if(node.is_leaf())
         {
-            node.box = box_getter_(this->container_.at(entries.front()).second,
-                                   this->margin_);
+            const auto& entries = node.leaf_entry();
+            node.box = box_getter_(
+                this->container_.at(rmap_.at(entries.front())).second, margin_);
             for(auto i = std::next(entries.begin()); i != entries.end(); ++i)
             {
                 node.box = this->expand(node.box,
-                    box_getter_(container_.at(*i).second, this->margin_));
+                    box_getter_(container_.at(rmap_.at(*i)).second, margin_));
             }
             return;
         }
         else
         {
-            node.box = this->node_at(node.entry.front()).box;
+            const auto& entries = node.inode_entry();
+            node.box = this->node_at(entries.front()).box;
             for(auto i = std::next(entries.begin()); i != entries.end(); ++i)
             {
                 node.box = this->expand(node.box, this->node_at(*i).box);
@@ -1091,12 +1145,13 @@ private:
         const std::size_t level = this->level_of(N) + 1;
         const box_type&   entry = this->node_at(N).box;
         const std::size_t L = this->choose_node_with_level(entry, level);
+        assert(!this->node_at(L).is_leaf());
 
         if(node_at(L).has_enough_storage())
         {
-            node_at(L).entry.push_back(N);
+            node_at(L).inode_entry().push_back(N);
             node_at(N).parent = L;
-            node_at(L).box    = this->expand(node_at(L).box, entry);
+            node_at(L).box    = this->expand(this->node_at(L).box, entry);
             this->adjust_tree(L);
         }
         else
@@ -1115,7 +1170,7 @@ private:
         std::size_t node_idx = this->root_;
         if(this->level_of(node_idx) < level)
         {
-            throw std::logic_error("the root has its parent node!?");
+            throw std::logic_error("PeriodicRTree: No such a high level node.");
         }
 
         while(this->level_of(node_idx) != level)
@@ -1124,7 +1179,7 @@ private:
             Real area_min      = std::numeric_limits<Real>::max();
 
             const node_type& node = this->node_at(node_idx);
-            for(const auto& entry_idx : node.entry)
+            for(const auto& entry_idx : node.inode_entry())
             {
                 const auto& entry_box = node_at(entry_idx).box;
                 const Real area_initial = this->area(entry_box);
@@ -1144,30 +1199,30 @@ private:
         return node_idx;
     }
 
-    // the naivest approach; going down until it hits leaf
+    // the naivest approach; going down until it hits leaf.
+    // If the node is a leaf, level == 0.
     std::size_t level_of(std::size_t node_idx) const
     {
         std::size_t level = 0;
-        while(!(node_at(node_idx).is_leaf))
+        while(!(node_at(node_idx).is_leaf()))
         {
             ++level;
-            node_idx = node_at(node_idx).entry.front();
+            node_idx = node_at(node_idx).inode_entry().front();
         }
         return level;
     }
-
 
 private:
 
     // ========================================================================
     // utility member methods to handle `container_` and `tree_`.
-    //
-    // RTree represents nodes and values by their index in a container_.
-    // Thus the indices should be kept when we insert a new node/value or
-    // remove an old node/value.
 
     // ------------------------------------------------------------------------
     // for nodes
+    //
+    // RTree stores nodes by their index in a container, `tree_`.
+    // Thus the indices should be kept when we insert a new node or remove an
+    // old node.
 
     // re-use overwritable region if it exists.
     std::size_t add_node(const node_type& n)
@@ -1186,7 +1241,7 @@ private:
     // mark index `i` overritable and fill old value by the default value.
     void erase_node(const std::size_t i)
     {
-        node_at(i) = node_type(false, nil);
+        node_at(i) = node_type(internal_entry_type{}, nil, box_type());
         overwritable_nodes_.push_back(i);
         assert(!this->is_valid_node_index(i));
         return;
@@ -1201,40 +1256,27 @@ private:
     // ------------------------------------------------------------------------
     // for values
 
-    // the same thing as above + assign it to rmap.
     std::size_t add_value(const value_type& v)
     {
-        if(overwritable_values_.empty())
-        {
-            const std::size_t new_index = container_.size();
-            container_.push_back(v);
-            rmap_[v.first] = new_index;
-            return new_index;
-        }
-        const std::size_t new_index = overwritable_values_.back();
-        overwritable_values_.pop_back();
-        container_.at(new_index) = v;
+        const std::size_t new_index = container_.size();
+        container_.push_back(v);
         rmap_[v.first] = new_index;
         return new_index;
     }
-    // the same thing as above + remove corresponding key from rmap.
     void erase_value(const std::size_t i)
     {
         using std::swap;
-        overwritable_values_.push_back(i);
-        value_type old; // default value
-        swap(this->container_.at(i), old);
+        swap(container_.at(i), container_.back());
 
-        const auto status = rmap_.erase(old.first);
+        assert(rmap_.at(container_.at(i).first) == container_.size() - 1);
+        rmap_[container_.at(i).first] = i;
+
+        const auto status = rmap_.erase(container_.back().first);
         assert(status == 1);
         (void)status;
+
+        container_.pop_back();
         return ;
-    }
-    bool is_valid_value_index(const std::size_t i) const noexcept
-    {
-        return std::find(overwritable_values_.begin(),
-                         overwritable_values_.end(), i) ==
-            overwritable_values_.end();
     }
 
 private:
@@ -1312,11 +1354,11 @@ private:
                ((dc[2] - dr[2]) <= tol || (edge_lengths_[2] * 0.5 <= rr[2]));
     }
 
-    bool is_inside_of_boundary(const Real3 r) const noexcept
+    bool is_inside_of_boundary(const Real3 r, const Real tol = 1e-8) const noexcept
     {
-        if(r[0] < 0 || edge_lengths_[0] < r[0]) {return false;}
-        if(r[1] < 0 || edge_lengths_[1] < r[1]) {return false;}
-        if(r[2] < 0 || edge_lengths_[2] < r[2]) {return false;}
+        if(r[0] < -tol || edge_lengths_[0] + tol < r[0]) {return false;}
+        if(r[1] < -tol || edge_lengths_[1] + tol < r[1]) {return false;}
+        if(r[2] < -tol || edge_lengths_[2] + tol < r[2]) {return false;}
         return true;
     }
 
@@ -1341,14 +1383,13 @@ private:
 
 private:
 
-    std::size_t           root_;                // index of the root node in tree_
+    std::size_t           root_;                // index of the root node.
     Real                  margin_;              // margin of the Box.
-    Real3                 edge_lengths_;        // (Lx, Ly, Lz) of PBC
+    Real3                 edge_lengths_;        // (Lx, Ly, Lz) of PBC.
     tree_type             tree_;                // vector of nodes.
-    container_type        container_;           // vector of values to contain.
-    key_to_value_map_type rmap_;                // map: ObjectID -> Object
-    index_buffer_type     overwritable_values_; // list of "already-removed" values
-    index_buffer_type     overwritable_nodes_;  // ditto.
+    container_type        container_;           // vector of Objects.
+    key_to_value_map_type rmap_;                // map from ObjectID to index
+    index_buffer_type     overwritable_nodes_;  // list "already-removed" nodes
     box_getter_type       box_getter_;          // AABBGetter can be stateful.
 };
 
