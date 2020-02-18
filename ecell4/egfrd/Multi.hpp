@@ -1,7 +1,6 @@
 #ifndef MULTI_HPP
 #define MULTI_HPP
 
-#include <boost/scoped_ptr.hpp>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
@@ -498,7 +497,7 @@ public:
 
     void step()
     {
-        boost::scoped_ptr<
+        std::unique_ptr<
             typename multi_particle_container_type::transaction_type>
                 tx(pc_.create_transaction());
         // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;

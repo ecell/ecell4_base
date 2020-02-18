@@ -162,7 +162,7 @@
 // 
 //     virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
 //     {
-//         boost::scoped_ptr<particle_space_type>
+//         std::unique_ptr<particle_space_type>
 //             newps(new particle_space_type(lengths, sizes));
 //         ps_.swap(newps);
 // 
@@ -319,7 +319,7 @@
 // 
 // protected:
 // 
-//     boost::scoped_ptr<particle_space_type> ps_;
+//     std::unique_ptr<particle_space_type> ps_;
 // };
 // 
 // template<typename Tderived_, typename Ttraits_>

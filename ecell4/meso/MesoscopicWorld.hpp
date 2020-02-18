@@ -3,7 +3,6 @@
 
 #include <numeric>
 #include <sstream>
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
@@ -96,10 +95,10 @@ public:
     void save(const std::string& filename) const
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("SubvolumeSpace")));
         cs_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), std::string("ecell4-meso-") + std::string(VERSION_INFO));
@@ -112,7 +111,7 @@ public:
     void load(const std::string& filename)
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
         const std::string required = "ecell4-meso-0.0";
@@ -412,7 +411,7 @@ public:
 
 private:
 
-    boost::scoped_ptr<SubvolumeSpace> cs_;
+    std::unique_ptr<SubvolumeSpace> cs_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
 
     boost::weak_ptr<Model> model_;

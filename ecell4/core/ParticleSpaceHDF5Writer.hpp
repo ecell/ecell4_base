@@ -2,7 +2,6 @@
 #define ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
-#include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <hdf5.h>
@@ -151,13 +150,13 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
     const int RANK = 1;
     hsize_t dim1[] = {num_particles};
     H5::DataSpace dataspace1(RANK, dim1);
-    boost::scoped_ptr<H5::DataSet> dataset1(new H5::DataSet(
+    std::unique_ptr<H5::DataSet> dataset1(new H5::DataSet(
         root->createDataSet(
             "particles", traits_type::get_particle_comp_type(), dataspace1)));
 
     hsize_t dim2[] = {species.size()};
     H5::DataSpace dataspace2(RANK, dim2);
-    boost::scoped_ptr<H5::DataSet> dataset2(new H5::DataSet(
+    std::unique_ptr<H5::DataSet> dataset2(new H5::DataSet(
         root->createDataSet(
             "species", traits_type::get_species_comp_type(), dataspace2)));
 

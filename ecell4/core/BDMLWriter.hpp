@@ -3,7 +3,6 @@
 
 #include <cstring>
 #include <boost/scoped_array.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <sstream>
 
@@ -151,11 +150,11 @@ void save_bd5(
     void* client_data;
     H5::Exception::getAutoPrint(func, &client_data);
 
-    boost::scoped_ptr<H5::H5File> fout;
+    std::unique_ptr<H5::H5File> fout;
     bool file_exists = false;
     if (trunc)
     {
-        boost::scoped_ptr<H5::H5File> tmp(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+        std::unique_ptr<H5::H5File> tmp(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         fout.swap(tmp);
     }
     else
@@ -163,7 +162,7 @@ void save_bd5(
         H5::Exception::dontPrint();
         try
         {
-            boost::scoped_ptr<H5::H5File> tmp(new H5::H5File(filename.c_str(), H5F_ACC_RDWR));
+            std::unique_ptr<H5::H5File> tmp(new H5::H5File(filename.c_str(), H5F_ACC_RDWR));
             fout.swap(tmp);
             H5::Exception::setAutoPrint(func, client_data);
             file_exists = true;
@@ -171,16 +170,16 @@ void save_bd5(
         catch (H5::FileIException &file_exists_err)
         {
             H5::Exception::setAutoPrint(func, client_data);
-            boost::scoped_ptr<H5::H5File> tmp(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
+            std::unique_ptr<H5::H5File> tmp(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
             fout.swap(tmp);
         }
     }
 
-    boost::scoped_ptr<H5::Group> data;
+    std::unique_ptr<H5::Group> data;
 
     if (!file_exists)
     {
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             tmp(new H5::Group(fout->createGroup("data")));
         data.swap(tmp);
 
@@ -193,7 +192,7 @@ void save_bd5(
             const int RANK = 1;
             hsize_t dim[] = {1};
             H5::DataSpace dataspace(RANK, dim);
-            boost::scoped_ptr<H5::DataSet> objectDef(
+            std::unique_ptr<H5::DataSet> objectDef(
                 new H5::DataSet(data->createDataSet("objectDef", traits_type::get_bdml_objectDef_comp_type(), dataspace)));
             objectDef->write(objectDef_table.get(), objectDef->getDataType());
         }
@@ -212,14 +211,14 @@ void save_bd5(
             const int RANK = 1;
             hsize_t dim[] = {1};
             H5::DataSpace dataspace(RANK, dim);
-            boost::scoped_ptr<H5::DataSet> scaleUnit(
+            std::unique_ptr<H5::DataSet> scaleUnit(
                 new H5::DataSet(data->createDataSet("scaleUnit", traits_type::get_bdml_scaleUnit_comp_type(), dataspace)));
             scaleUnit->write(scaleUnit_table.get(), scaleUnit->getDataType());
         }
     }
     else
     {
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             tmp(new H5::Group(fout->openGroup("data")));
         data.swap(tmp);
     }
@@ -237,9 +236,9 @@ void save_bd5(
     {
         H5::Exception::setAutoPrint(func, client_data);
 
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             data_zero(new H5::Group(data->createGroup(group_name.c_str())));
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             data_zero_object(new H5::Group(data_zero->createGroup("object")));
 
         typedef std::vector<std::pair<ParticleID, Particle> >
@@ -274,7 +273,7 @@ void save_bd5(
             const int RANK = 1;
             hsize_t dim[] = {NUM_MOL};
             H5::DataSpace dataspace(RANK, dim);
-            boost::scoped_ptr<H5::DataSet> data_zero_object_zero(
+            std::unique_ptr<H5::DataSet> data_zero_object_zero(
                 new H5::DataSet(data_zero_object->createDataSet(
                     "0", traits_type::get_bdml_sphere_comp_type(), dataspace)));
             data_zero_object_zero->write(data_table.get(), data_zero_object_zero->getDataType());
@@ -304,7 +303,7 @@ void save_bd5(
             const int RANK = 1;
             hsize_t dim[] = {NUM_MOL};
             H5::DataSpace dataspace(RANK, dim);
-            boost::scoped_ptr<H5::DataSet> data_zero_object_zero(
+            std::unique_ptr<H5::DataSet> data_zero_object_zero(
                 new H5::DataSet(data_zero_object->createDataSet(
                     "0", traits_type::get_bdml_point_comp_type(), dataspace)));
             data_zero_object_zero->write(data_table.get(), data_zero_object_zero->getDataType());

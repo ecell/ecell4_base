@@ -13,7 +13,6 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/collision.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/make_shared.hpp>
 #include <boost/weak_ptr.hpp>
@@ -162,16 +161,16 @@ class SGFRDWorld
     void save(const std::string& filename) const override
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         pidgen_.save(fout.get());
 
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             group1(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save_hdf5(group1.get());
 
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             group2(new H5::Group(fout->createGroup("Polygon")));
         this->polygon_->save_hdf5(group2.get());
 
@@ -187,7 +186,7 @@ class SGFRDWorld
     void load(const std::string& filename) override
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
         const std::string required = "ecell4-sgfrd-0.0";
@@ -837,7 +836,7 @@ class SGFRDWorld
 
   private:
 
-    boost::scoped_ptr<particle_space_type>   ps_;
+    std::unique_ptr<particle_space_type>   ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     boost::weak_ptr<Model>                   model_;
     boost::shared_ptr<polygon_type>          polygon_;

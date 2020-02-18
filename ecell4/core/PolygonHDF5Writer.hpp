@@ -2,7 +2,6 @@
 #define ECELL4_POLYGON_HDF5_WRITER_HPP
 
 #include <cstring>
-#include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <hdf5.h>
@@ -83,7 +82,7 @@ save_triangles_polygon(const T& p, H5::Group* root)
     const int     RANK   = 1;
     const hsize_t dim1[] = {num_triangles};
     H5::DataSpace dataspace(RANK, dim1);
-    boost::scoped_ptr<H5::DataSet> dataset(new H5::DataSet(
+    std::unique_ptr<H5::DataSet> dataset(new H5::DataSet(
         root->createDataSet(
             "triangles", traits_type::get_triangle_comp_type(), dataspace)));
     dataset->write(h5_triangle_table.get(), dataset->getDataType());

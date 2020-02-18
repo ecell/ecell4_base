@@ -10,7 +10,6 @@
 #include <boost/range/end.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
-#include <boost/scoped_ptr.hpp>
 #include "Defs.hpp"
 #include "generator.hpp"
 #include "exceptions.hpp"

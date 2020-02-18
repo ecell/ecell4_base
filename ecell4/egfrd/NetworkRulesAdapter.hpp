@@ -4,7 +4,6 @@
 #include <map>
 #include <numeric>
 #include <vector>
-#include <boost/scoped_ptr.hpp>
 #include "twofold_container.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "exceptions.hpp"

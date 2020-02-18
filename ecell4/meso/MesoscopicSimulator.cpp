@@ -7,8 +7,6 @@
 #include <cstdio>
 #include <cstring>
 
-#include <boost/scoped_array.hpp>
-
 #include "MesoscopicSimulator.hpp"
 
 

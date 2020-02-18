@@ -417,11 +417,11 @@ public:
     virtual void save(const std::string& filename) const
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         pidgen_.save(fout.get());
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         //  ps_->save(group.get());
         ecell4::save_particle_space(*this, group.get());
@@ -454,7 +454,7 @@ public:
         //XXX: structures will be lost.
         //XXX: the order of particles in MatrixSpace will be lost.
         //XXX: initialize Simulator
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
         const std::string required = "ecell4-egfrd-0.0";
@@ -504,7 +504,7 @@ public:
 
     virtual void reset(const position_type& lengths, const matrix_sizes_type& sizes)
     {
-        boost::scoped_ptr<particle_space_type>
+        std::unique_ptr<particle_space_type>
             newps(new particle_space_type(lengths, sizes));
         ps_.swap(newps);
 
@@ -1132,7 +1132,7 @@ protected:
 
 protected:
 
-    boost::scoped_ptr<particle_space_type> ps_;
+    std::unique_ptr<particle_space_type> ps_;
 
     Polygon<position_type> polygon_;
 

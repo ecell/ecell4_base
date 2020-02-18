@@ -1,4 +1,3 @@
-#include <boost/scoped_ptr.hpp>
 #include <gsl/gsl_rng.h>
 #include <sstream>
 
@@ -16,11 +15,11 @@ void GSLRandomNumberGenerator::save(H5::H5Location* root) const
 {
     using namespace H5;
 
-    boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
+    std::unique_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
     hsize_t bufsize(gsl_rng_size(rng_.get()));
     DataSpace dataspace(1, &bufsize);
     optype->setTag("GSLRandomNumberGenerator state type");
-    boost::scoped_ptr<DataSet> dataset(
+    std::unique_ptr<DataSet> dataset(
         new DataSet(root->createDataSet("rng", *optype, dataspace)));
     dataset->write((unsigned char*)(gsl_rng_state(rng_.get())), *optype);
 }
@@ -31,7 +30,7 @@ void GSLRandomNumberGenerator::load(const H5::H5Location& root)
 
     const DataSet dataset(DataSet(root.openDataSet("rng")));
     // size_t bufsize(gsl_rng_size(rng_.get()));
-    boost::scoped_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
+    std::unique_ptr<DataType> optype(new DataType(H5T_OPAQUE, 1));
     optype->setTag("GSLRandomNumberGenerator state type");
     unsigned char* state = (unsigned char*)(gsl_rng_state(rng_.get()));
     dataset.read(state, *optype);
@@ -39,7 +38,7 @@ void GSLRandomNumberGenerator::load(const H5::H5Location& root)
 
 void GSLRandomNumberGenerator::save(const std::string& filename) const
 {
-    boost::scoped_ptr<H5::H5File>
+    std::unique_ptr<H5::H5File>
         fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
     this->save(fout.get());
     extras::save_version_information(fout.get(), std::string("ecell4-gsl_number_generator-") + std::string(VERSION_INFO));
@@ -47,7 +46,7 @@ void GSLRandomNumberGenerator::save(const std::string& filename) const
 
 void GSLRandomNumberGenerator::load(const std::string& filename)
 {
-    boost::scoped_ptr<H5::H5File>
+    std::unique_ptr<H5::H5File>
         fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
     this->load(*fin);
 }
