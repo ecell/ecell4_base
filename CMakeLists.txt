@@ -58,5 +58,8 @@ if(NOT pybind11_FOUND)
     add_subdirectory(pybind11)
 endif()
 
+include(CheckIncludeFileCXX)
+check_include_file_cxx(chrono HAVE_CHRONO)
+
 add_subdirectory(greens_functions)
 add_subdirectory(ecell4)
