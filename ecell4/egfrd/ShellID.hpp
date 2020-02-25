@@ -1,8 +1,7 @@
 #ifndef SHELL_ID_HPP
 #define SHELL_ID_HPP
 
-#include <ecell4/core/hash.hpp>
-
+#include <functional>
 #include <ostream>
 // #include "Identifier.hpp"
 #include <ecell4/core/Identifier.hpp>
@@ -15,8 +14,7 @@ struct ShellID: public ecell4::Identifier<ShellID, unsigned long long, int>
         : base_type(value) {}
 };
 
-ECELL4_DEFINE_HASH_BEGIN()
-
+namespace std {
 template<>
 struct hash<ShellID>
 {
@@ -25,8 +23,7 @@ struct hash<ShellID>
         return static_cast<std::size_t>(val().first ^ val().second);
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,

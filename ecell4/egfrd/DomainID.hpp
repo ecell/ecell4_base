@@ -1,9 +1,8 @@
 #ifndef DOMAIN_ID_HPP
 #define DOMAIN_ID_HPP
 
-#include <ecell4/core/hash.hpp>
-
 #include <ostream>
+#include <functional>
 // #include "Identifier.hpp"
 #include <ecell4/core/Identifier.hpp>
 
@@ -15,7 +14,7 @@ struct DomainID: public ecell4::Identifier<DomainID, unsigned long long, int>
         : base_type(value) {}
 };
 
-ECELL4_DEFINE_HASH_BEGIN()
+namespace std {
 
 template<>
 struct hash<DomainID>
@@ -26,7 +25,7 @@ struct hash<DomainID>
     }
 };
 
-ECELL4_DEFINE_HASH_END()
+} // std
 
 template<typename Tstrm_>
 inline std::basic_ostream<Tstrm_>& operator<<(std::basic_ostream<Tstrm_>& strm,

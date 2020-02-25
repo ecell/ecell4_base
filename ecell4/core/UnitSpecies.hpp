@@ -3,10 +3,9 @@
 
 #include <iostream>
 #include <string>
+#include <functional>
 
 #include <ecell4/core/config.h>
-
-#include "hash.hpp"
 
 #include "types.hpp"
 #include "get_mapper_mf.hpp"
@@ -168,8 +167,7 @@ protected:
 
 } // ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
-
+namespace std {
 template<>
 struct hash<ecell4::UnitSpecies>
 {
@@ -178,8 +176,7 @@ struct hash<ecell4::UnitSpecies>
         return hash<ecell4::UnitSpecies::serial_type>()(val.serial());
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif /* ECELL4_UNIT_SPECIES_HPP */
 

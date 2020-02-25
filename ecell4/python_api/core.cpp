@@ -243,7 +243,7 @@ void define_species(py::module& m)
         .def("__hash__",
             [](const UnitSpecies& self)
             {
-                return ECELL4_HASH_STRUCT<UnitSpecies>()(self);
+                return std::hash<UnitSpecies>()(self);
             }
         )
         .def(py::pickle(
@@ -296,7 +296,7 @@ void define_species(py::module& m)
         .def("__hash__",
             [](const Species& self)
             {
-                return ECELL4_HASH_STRUCT<Species>()(self);
+                return std::hash<Species>()(self);
             }
         )
         .def(py::pickle(

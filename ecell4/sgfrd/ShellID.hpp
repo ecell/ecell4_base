@@ -1,8 +1,8 @@
 #ifndef ECELL4_SGFRD_SHELL_ID
 #define ECELL4_SGFRD_SHELL_ID
 #include <ecell4/core/config.h>
-#include <ecell4/core/hash.hpp>
 #include <ecell4/core/Identifier.hpp>
+#include <functional>
 #include <ostream>
 
 namespace ecell4
@@ -28,7 +28,7 @@ operator<<(std::basic_ostream<charT, traitsT>& strm, const ShellID& v)
 } // sgfrd
 } // ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
+namespace std {
 
 template<>
 struct hash<ecell4::sgfrd::ShellID>
@@ -42,7 +42,6 @@ struct hash<ecell4::sgfrd::ShellID>
     }
 };
 
-ECELL4_DEFINE_HASH_END()
-
+} // std
 
 #endif /* ECELL4_SGFRD_SHELL_ID */
