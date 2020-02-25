@@ -176,10 +176,10 @@ public:
     //     // skip based on some attribute values in a value.
     //     // If it matches, you can put an additional information to the result.
     //     boost::optional<UserDefinedInfo>
-    //     operator(const std::pair<ObjectID, Object>&, const Real3& edges);
+    //     operator()(const std::pair<ObjectID, Object>&, const Real3& edges);
     //
     //     // to skip non-interacting nodes purely geometric criteria.
-    //     bool operator(const AABB&,       const Real3& edges);
+    //     bool operator()(const AABB&,       const Real3& edges);
     // }
     // ```
     template<typename F, typename OutputIterator>
