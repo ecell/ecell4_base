@@ -1,6 +1,5 @@
 #include "Context.hpp"
 #include "VoxelSpaceBase.hpp"
-#include "get_mapper_mf.hpp" // for retrieve_keys(map, keys)
 
 namespace ecell4
 {
@@ -12,8 +11,14 @@ namespace ecell4
 std::vector<Species> VoxelSpaceBase::list_species() const
 {
     std::vector<Species> keys;
-    utils::retrieve_keys(voxel_pools_, keys);
-    utils::retrieve_keys(molecule_pools_, keys);
+    for(const auto& kv : voxel_pools_)
+    {
+        keys.push_back(kv.first);
+    }
+    for(const auto& kv : molecule_pools_)
+    {
+        keys.push_back(kv.first);
+    }
     return keys;
 }
 
