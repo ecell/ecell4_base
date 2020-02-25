@@ -8,17 +8,7 @@
 //#include "utils/range.hpp"
 #include "./range.hpp"
 
-#if defined(HAVE_UNORDERED_MAP)
 #include <unordered_map>
-#endif
-
-#if defined(HAVE_TR1_UNORDERED_MAP)
-#include <tr1/unordered_map>
-#endif
-
-#if defined(HAVE_BOOST_UNORDERED_MAP_HPP)
-#include <boost/unordered_map.hpp>
-#endif
 
 #define COMMA ,
 #define SPECIALIZE_BOOST_SIZE(T) \
@@ -53,20 +43,8 @@ SPECIALIZE_BOOST_SIZE(std::map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_>)
 template<typename T1_, typename T2_, typename T3_>
 SPECIALIZE_BOOST_SIZE(std::set<T1_ COMMA  T2_ COMMA  T3_>)
 
-#if defined(HAVE_UNORDERED_MAP)
 template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
 SPECIALIZE_BOOST_SIZE(std::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-#endif
-
-#if defined(HAVE_TR1_UNORDERED_MAP)
-template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
-SPECIALIZE_BOOST_SIZE(std::tr1::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-#endif
-
-#if defined(HAVE_BOOST_UNORDERED_MAP_HPP)
-template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
-SPECIALIZE_BOOST_SIZE(boost::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-#endif
 
 } // namespace boost
 
@@ -82,26 +60,10 @@ SPECIALIZE_RANGE_SIZE(std::set<T1_ COMMA  T2_ COMMA  T3_>)
 template<typename T1_, typename T2_, typename T3_>
 SPECIALIZE_RANGE_SIZE_RETRIEVER(std::set<T1_ COMMA  T2_ COMMA  T3_>)
 
-#if defined(HAVE_UNORDERED_MAP)
 template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
 SPECIALIZE_RANGE_SIZE(std::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
 template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
 SPECIALIZE_RANGE_SIZE_RETRIEVER(std::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-#endif
-
-#if defined(HAVE_TR1_UNORDERED_MAP)
-template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
-SPECIALIZE_RANGE_SIZE(std::tr1::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
-SPECIALIZE_RANGE_SIZE_RETRIEVER(std::tr1::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-#endif
-
-#if defined(HAVE_BOOST_UNORDERED_MAP_HPP)
-template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
-SPECIALIZE_RANGE_SIZE(boost::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
-SPECIALIZE_RANGE_SIZE_RETRIEVER(boost::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
-#endif
 
 #undef SPECIALIZE_BOOST_SIZE
 #undef SPECIALIZE_RANGE_SIZE_RETRIEVER
