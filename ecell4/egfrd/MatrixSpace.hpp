@@ -13,7 +13,6 @@
 #include "Real3Type.hpp"
 #include "sorted_list.hpp"
 #include "utils/array_helper.hpp"
-#include "utils/get_default_impl.hpp"
 #include "utils/range.hpp"
 #include "utils/unassignable_adapter.hpp"
 
@@ -31,7 +30,6 @@ public:
     typedef ecell4::Real3 position_type;
 
     // typedef std::pair<const key_type, mapped_type> value_type;
-    // typedef unassignable_adapter<value_type, get_default_impl::std::vector> all_values_type;
     typedef std::pair<key_type, mapped_type> value_type;
     typedef std::vector<value_type> all_values_type;
 
