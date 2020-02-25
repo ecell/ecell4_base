@@ -33,9 +33,6 @@
 #include <iostream>
 #endif
 
-#include "swap.hpp"
-
-
 namespace ecell4
 {
 
@@ -471,7 +468,8 @@ inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(i
     policy_type::pop(index, item.first, items_.back().first);
 
     // 2. pop the item from the items_.
-    blit_swap(item, items_.back());
+    using std::swap; // ADL-based specialization
+    swap(item, items_.back());
     items_.pop_back();
 
     const index_type removed_pos(position_vector_[index]);
