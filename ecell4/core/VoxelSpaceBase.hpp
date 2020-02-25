@@ -6,6 +6,7 @@
 #include <set>
 #include <stdexcept>
 #include <vector>
+#include <unordered_map>
 
 #include "Context.hpp"
 #include "Integer3.hpp"
@@ -15,7 +16,6 @@
 #include "VacantType.hpp"
 #include "VoxelPool.hpp"
 #include "VoxelView.hpp"
-#include "get_mapper_mf.hpp"
 
 #ifdef WITH_HDF5
 #include "LatticeSpaceHDF5Writer.hpp"
@@ -47,10 +47,10 @@ public:
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
-    typedef utils::get_mapper_mf<Species, boost::shared_ptr<VoxelPool>>::type
+    typedef std::unordered_map<Species, boost::shared_ptr<VoxelPool>>
         voxel_pool_map_type;
 
-    typedef utils::get_mapper_mf<Species, boost::shared_ptr<MoleculePool>>::type
+    typedef std::unordered_map<Species, boost::shared_ptr<MoleculePool>>
         molecule_pool_map_type;
 
 public:

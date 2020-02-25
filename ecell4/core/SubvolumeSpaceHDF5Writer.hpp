@@ -235,7 +235,7 @@ void load_subvolume_space(const H5::Group &root, Tspace_ *space)
         num_dset.read(h5_num_table.data(), H5::PredType::STD_I64LE);
         num_dset.close();
 
-        typedef utils::get_mapper_mf<unsigned int, unsigned int>::type
+        typedef std::unordered_map<unsigned int, unsigned int>
             species_id_map_type;
         species_id_map_type species_id_map;
         for (unsigned int i(0); i < num_species; ++i)
@@ -283,7 +283,7 @@ void load_subvolume_space(const H5::Group &root, Tspace_ *space)
                                H5::PredType::IEEE_F64LE);
         stcoordinate_dset.close();
 
-        typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
+        typedef std::unordered_map<unsigned int, Species::serial_type>
             structures_id_map_type;
         structures_id_map_type structures_id_map;
         for (unsigned int i(0); i < num_structures; ++i)

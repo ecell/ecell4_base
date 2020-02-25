@@ -8,8 +8,8 @@
 #include <ecell4/core/config.h>
 
 #include "types.hpp"
-#include "get_mapper_mf.hpp"
 
+#include <unordered_map>
 #include <vector>
 #include <algorithm>
 

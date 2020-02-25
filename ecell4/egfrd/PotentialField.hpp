@@ -3,7 +3,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
@@ -110,7 +109,7 @@ public:
     typedef typename base_type::pid_particle_pair pid_particle_pair;
     typedef typename base_type::rng_type rng_type;
 
-    typedef typename ecell4::utils::get_mapper_mf<ParticleID, Real3>::type particle_id_position_map_type;
+    typedef std::unordered_map<ParticleID, Real3> particle_id_position_map_type;
 
 public:
 

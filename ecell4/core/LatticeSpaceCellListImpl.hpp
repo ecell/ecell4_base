@@ -34,9 +34,9 @@ public:
         structure_container_type;
 
 protected:
-    typedef utils::get_mapper_mf<Species, boost::shared_ptr<VoxelPool>>::type
+    typedef std::unordered_map<Species, boost::shared_ptr<VoxelPool>>
         voxel_pool_map_type;
-    typedef utils::get_mapper_mf<Species, boost::shared_ptr<MoleculePool>>::type
+    typedef std::unordered_map<Species, boost::shared_ptr<MoleculePool>>
         molecule_pool_map_type;
     // typedef std::map<
     //     Species, boost::shared_ptr<VoxelPool> > voxel_pool_map_type;

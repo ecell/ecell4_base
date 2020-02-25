@@ -15,7 +15,6 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -291,7 +290,7 @@ public:
     /**
      * ParticleContainerBase
      */
-    typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
+    typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
     typedef ecell4::ParticleSpaceCellListImpl particle_space_type;

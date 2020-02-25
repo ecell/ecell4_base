@@ -1,5 +1,6 @@
 #include "Context.hpp"
 #include "VoxelSpaceBase.hpp"
+#include "get_mapper_mf.hpp" // for retrieve_keys(map, keys)
 
 namespace ecell4
 {

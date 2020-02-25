@@ -53,8 +53,8 @@ protected:
 
     typedef std::vector<Real> num_molecules_container_type;
     typedef std::vector<Species> species_container_type;
-    typedef utils::get_mapper_mf<
-        Species, num_molecules_container_type::size_type>::type species_map_type;
+    typedef std::unordered_map<
+        Species, num_molecules_container_type::size_type> species_map_type;
 
 public:
 

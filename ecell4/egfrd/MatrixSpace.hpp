@@ -16,14 +16,11 @@
 #include "utils/get_default_impl.hpp"
 #include "utils/range.hpp"
 #include "utils/unassignable_adapter.hpp"
-#include "utils/get_default_impl.hpp"
 
 #include <ecell4/core/Integer3.hpp>
 
 
-template<typename Tobj_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_ =
-            get_default_impl::std::template map>
+template<typename Tobj_, typename Tkey_>
 class MatrixSpace
 {
 public:
@@ -45,7 +42,7 @@ public:
             cell_index_type;
     typedef boost::array<typename matrix_type::difference_type, 3>
             cell_offset_type;
-    typedef typename MFget_mapper_<key_type, typename all_values_type::size_type>::type
+    typedef std::unordered_map<key_type, typename all_values_type::size_type>
             key_to_value_mapper_type;
 
     typedef typename all_values_type::iterator iterator;
@@ -600,14 +597,13 @@ private:
     all_values_type values_;
 };
 
-template<typename T_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-static inline typename MatrixSpace<T_, Tkey_, MFget_mapper_>::cell_index_type&
+template<typename T_, typename Tkey_>
+static inline typename MatrixSpace<T_, Tkey_>::cell_index_type&
 operator+=(
        typename MatrixSpace<T_,
-                Tkey_, MFget_mapper_>::cell_index_type& lhs,
+                Tkey_>::cell_index_type& lhs,
        const typename MatrixSpace<T_,
-                Tkey_, MFget_mapper_>::cell_offset_type& rhs)
+                Tkey_>::cell_offset_type& rhs)
 {
     rhs[0] += lhs[0];
     rhs[1] += lhs[1];
@@ -615,22 +611,19 @@ operator+=(
     return rhs;
 }
 
-template<typename T_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-struct is_sized<MatrixSpace<T_, Tkey_, MFget_mapper_> >: boost::mpl::true_ {};
+template<typename T_, typename Tkey_>
+struct is_sized<MatrixSpace<T_, Tkey_> >: boost::mpl::true_ {};
 
-template<typename T_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-struct range_size<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+template<typename T_, typename Tkey_>
+struct range_size<MatrixSpace<T_, Tkey_> >
 {
-    typedef typename MatrixSpace<T_, Tkey_, MFget_mapper_>::size_type type;
+    typedef typename MatrixSpace<T_, Tkey_>::size_type type;
 };
 
-template<typename T_, typename Tkey_,
-        template<typename, typename> class MFget_mapper_>
-struct range_size_retriever<MatrixSpace<T_, Tkey_, MFget_mapper_> >
+template<typename T_, typename Tkey_>
+struct range_size_retriever<MatrixSpace<T_, Tkey_> >
 {
-    typedef MatrixSpace<T_, Tkey_, MFget_mapper_> argument_type;
+    typedef MatrixSpace<T_, Tkey_> argument_type;
     typedef typename range_size<argument_type>::type result_type;
 
     result_type operator()(argument_type const& range) const

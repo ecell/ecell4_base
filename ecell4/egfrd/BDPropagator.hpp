@@ -18,7 +18,6 @@
 #include "utils/get_default_impl.hpp"
 #include "Logger.hpp"
 
-#include <ecell4/core/get_mapper_mf.hpp>
 #include "PotentialField.hpp"
 #include <greens_functions/freeFunctions.hpp>
 // using namespace greens_functions;
@@ -51,10 +50,10 @@ public:
     typedef typename traits_type::reaction_recorder_type reaction_recorder_type;
     typedef typename traits_type::volume_clearer_type volume_clearer_type;
 
-    typedef typename ecell4::utils::get_mapper_mf<particle_id_type, position_type>::type particle_id_position_map_type;
+    typedef std::unordered_map<particle_id_type, position_type> particle_id_position_map_type;
 
     typedef ecell4::PotentialField<particle_container_type> potential_field_type;
-    typedef typename ecell4::utils::get_mapper_mf<species_id_type, boost::shared_ptr<potential_field_type> >::type potential_field_map_type;
+    typedef std::unordered_map<species_id_type, boost::shared_ptr<potential_field_type>> potential_field_map_type;
 
 public:
     template<typename Trange_>

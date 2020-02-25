@@ -126,7 +126,7 @@ public:
     // container
     typedef ParticleSpace base_type;
     typedef ParticleSpace::particle_container_type particle_container_type;
-    typedef utils::get_mapper_mf<ParticleID, particle_container_type::size_type>::type
+    typedef std::unordered_map<ParticleID, particle_container_type::size_type>
             key_to_value_map_type;
     typedef std::pair<ParticleID, Particle>         value_type;
     typedef particle_container_type::iterator       iterator;
@@ -134,7 +134,7 @@ public:
 
     // species support
     typedef std::set<ParticleID> particle_id_set;
-    typedef utils::get_mapper_mf<Species::serial_type, particle_id_set>::type
+    typedef std::unordered_map<Species::serial_type, particle_id_set>
             per_species_particle_id_set;
 
 protected:
