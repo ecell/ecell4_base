@@ -16,8 +16,6 @@
 #cmakedefine HAVE_VTK 1
 #endif
 
-#define HAVE_UNORDERED_MAP 1
-#define HAVE_STD_HASH 1
 #define HAVE_CHRONO 1
 
 #endif /* ECELL4_CONFIG_H */
