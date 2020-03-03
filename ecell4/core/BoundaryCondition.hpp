@@ -59,6 +59,9 @@ class PeriodicBoundary final : public Boundary
 {
 public:
 
+    PeriodicBoundary() noexcept
+        : edge_lengths_(0.0, 0.0, 0.0), half_widths_(0.0, 0.0, 0.0)
+    {}
     explicit PeriodicBoundary(const Real3& edges) noexcept
         : edge_lengths_(edges), half_widths_(edges * 0.5)
     {}
