@@ -102,6 +102,7 @@ Real closest_point_segment_segment(
     const Real3& p2, const Real3& q2,
     Real& s, Real& t, Real3& c1, Real3& c2)
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     const Real3 d1(q1 - p1);
     const Real3 d2(q2 - p2);
     const Real3 r(p1 - p2);
@@ -184,6 +185,7 @@ bool test_AABB_AABB(
 bool test_segment_AABB(
     const Real3& p0, const Real3& p1, const Real3& lower, const Real3& upper)
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     const Real3 c((upper + lower) * 0.5);
     const Real3 e(upper - c);
     Real3 m(multiply(p1 - p0, 0.5));
@@ -271,6 +273,7 @@ bool intersect_ray_AABB(
     const Real3& p, const Real3& d, const Real3& lower, const Real3& upper,
     Real& tmin, Real3& q)
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     tmin = 0.0;
     Real tmax(inf);
     const unsigned int ndim(3);

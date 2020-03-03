@@ -46,6 +46,7 @@ bool PlanarSurface::test_AABB(const Real3& lower, const Real3& upper) const
 void PlanarSurface::bounding_box(
     const Real3& edge_lengths, Real3& lower, Real3& upper) const
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     if (n_[0] > epsilon)
     {
         lower[0] = std::max(
