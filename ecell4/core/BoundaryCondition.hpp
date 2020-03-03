@@ -23,14 +23,14 @@ class UnlimitedBoundary final : public Boundary
 public:
 
     UnlimitedBoundary() noexcept :
-        Real3(std::numeric_limits<Real>::infinity(),
-              std::numeric_limits<Real>::infinity(),
-              std::numeric_limits<Real>::infinity())
+        edge_lengths_(std::numeric_limits<Real>::infinity(),
+                      std::numeric_limits<Real>::infinity(),
+                      std::numeric_limits<Real>::infinity())
     {}
     explicit UnlimitedBoundary(const Real3& /*ignored*/) noexcept :
-        Real3(std::numeric_limits<Real>::infinity(),
-              std::numeric_limits<Real>::infinity(),
-              std::numeric_limits<Real>::infinity())
+        edge_lengths_(std::numeric_limits<Real>::infinity(),
+                      std::numeric_limits<Real>::infinity(),
+                      std::numeric_limits<Real>::infinity())
     {}
     ~UnlimitedBoundary() override = default;
 
