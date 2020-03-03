@@ -46,7 +46,7 @@ public:
 
     static inline const Real default_dt()
     {
-        return inf;
+        return std::numeric_limits<Real>::infinity();
     }
 
     static inline const Real default_abs_tol()

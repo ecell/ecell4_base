@@ -54,6 +54,7 @@ public:
 
     Real determine_dt() const
     {
+        constexpr Real inf = std::numeric_limits<Real>::infinity();
         Real rmin(inf), Dmax(0.0);
 
         for (std::vector<Species>::const_iterator i(model_->species_attributes().begin());

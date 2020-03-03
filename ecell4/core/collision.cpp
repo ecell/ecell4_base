@@ -275,7 +275,7 @@ bool intersect_ray_AABB(
 {
     constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     tmin = 0.0;
-    Real tmax(inf);
+    Real tmax(std::numeric_limits<Real>::infinity());
     const unsigned int ndim(3);
     for (unsigned int i(0); i < ndim; ++i)
     {
@@ -351,7 +351,7 @@ bool intersect_moving_sphere_AABB(
 
     if (m == 7)
     {
-        Real tmin(inf);
+        Real tmin(std::numeric_limits<Real>::infinity());
         if (intersect_segment_capsule(
             p0, p1, b.corner(v), b.corner(v^1), radius, t))
         {
@@ -368,7 +368,7 @@ bool intersect_moving_sphere_AABB(
             tmin = std::min(t, tmin);
         }
 
-        if (tmin == inf)
+        if (tmin == std::numeric_limits<Real>::infinity())
         {
             return false;
         }

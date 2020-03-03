@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(MesoscopicSimulator_test_step)
     sim.step();
 
     BOOST_CHECK(0 < sim.t());
-    BOOST_CHECK(sim.t() < inf);
+    BOOST_CHECK(sim.t() < std::numeric_limits<Real>::infinity());
     BOOST_CHECK(world->num_molecules(sp1, 0) == 9);
     BOOST_CHECK(world->num_molecules(sp2, 0) == 1);
 }

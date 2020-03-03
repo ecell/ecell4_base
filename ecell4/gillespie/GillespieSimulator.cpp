@@ -52,7 +52,7 @@ bool GillespieSimulator::__draw_next_reaction(void)
     if (atot == 0.0)
     {
         // no reaction occurs
-        this->dt_ = inf;
+        this->dt_ = std::numeric_limits<Real>::infinity();
         return true;
     }
 
@@ -108,7 +108,7 @@ void GillespieSimulator::draw_next_reaction(void)
 {
     if (events_.size() == 0)
     {
-        this->dt_ = inf;
+        this->dt_ = std::numeric_limits<Real>::infinity();
         return;
     }
 
@@ -124,7 +124,7 @@ void GillespieSimulator::step(void)
 {
     last_reactions_.clear();
 
-    if (this->dt_ == inf)
+    if (this->dt_ == std::numeric_limits<Real>::infinity())
     {
         // No reaction occurs.
         return;

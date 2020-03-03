@@ -6,7 +6,7 @@ namespace ecell4
 
 const Real Observer::next_time() const
 {
-    return inf;
+    return std::numeric_limits<Real>::infinity();
 }
 
 void Observer::initialize(const boost::shared_ptr<WorldInterface>& world, const boost::shared_ptr<Model>& model)
@@ -253,7 +253,7 @@ const Real TimingObserver::next_time() const
 {
     if (count_ >= static_cast<Integer>(t_.size()))
     {
-        return inf;
+        return std::numeric_limits<Real>::infinity();
     }
     return t_[count_];
 }

@@ -68,7 +68,7 @@ struct StepEvent : SpatiocyteEvent
         const Real R(world_->voxel_radius());
 
         if (D <= 0)
-            dt_ = inf;
+            dt_ = std::numeric_limits<Real>::infinity();
         else
             dt_ = calc_dt<Dimension>(R, D) * alpha_;
 
