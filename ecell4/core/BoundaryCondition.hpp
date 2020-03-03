@@ -15,7 +15,7 @@ public:
     virtual Real3 periodic_transpose(const Real3&, const Real3&) const noexcept = 0;
     virtual Real3 apply_boundary    (const Real3&) const noexcept = 0;
     virtual Real3 const& edge_lengths() const noexcept = 0;
-    virtual void update(const Real3&) = 0;
+    virtual void update(const Real3&) noexcept = 0;
 };
 
 class UnlimitedBoundary final : public Boundary
@@ -23,6 +23,11 @@ class UnlimitedBoundary final : public Boundary
 public:
 
     UnlimitedBoundary() noexcept :
+        Real3(std::numeric_limits<Real>::infinity(),
+              std::numeric_limits<Real>::infinity(),
+              std::numeric_limits<Real>::infinity())
+    {}
+    explicit UnlimitedBoundary(const Real3& /*ignored*/) noexcept :
         Real3(std::numeric_limits<Real>::infinity(),
               std::numeric_limits<Real>::infinity(),
               std::numeric_limits<Real>::infinity())
@@ -41,9 +46,9 @@ public:
     {
         return this->edge_lengths_;
     }
-    void update(const Real3&) override
+    void update(const Real3&) noexcept override
     {
-        throw NotSupported("UnlimitedBoundary cannot be resized");
+        return ;
     }
 
 private:
@@ -86,7 +91,7 @@ public:
     {
         return edge_lengths_;
     }
-    void update(const Real3& edges) override
+    void update(const Real3& edges) noexcept override
     {
         this->edge_lengths_ = edges;
         this->half_widths_  = edges * 0.5;
