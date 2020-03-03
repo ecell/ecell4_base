@@ -548,30 +548,7 @@ private:
         return tree_.at(i);
     }
 
-    // Note: In the original R-Tree, i.e. without periodic boundary condition,
-    //       we don't need to adjust tree after we remove an object. It is
-    //       because node AABB always shrink after erasing its entry. But under
-    //       the periodic condition, AABB may slide to reduce its size.
-    //           Let's consider the following case. When we remove the 3rd
-    //       object, the node AABB slides to the left side. By removing the
-    //       object, the region that was not covered by the node AABB, between
-    //       object 1 and 2, will be covered.
-    //
-    //       .--------- boundary --------.      .--------- boundary --------.
-    //       :  _____       _   ___    _ :  =>  :  _____       _          _ :
-    //       : |  1  |     |2| | 3 |  |4|:  =>  : |  1  |     |2|        |4|:
-    //       : |_____|     |_| |___|  |_|:  =>  : |_____|     |_|        |_|:
-    //       --------]     [--node AABB---  =>  --node AABB-----]        [---
-    //
-    //           We need to choose a strategy to handle this problem. There can
-    //       be several possible ways. First, we can keep the original AABB
-    //       after removing an object. Apparently, since the older AABB covers
-    //       all the child objects, we can keep the AABB. But it enlarges AABB
-    //       and makes the whole R-Tree inefficient. Second, we can adjust all
-    //       the ancester nodes. It might also causes inefficiency because it
-    //       requires additional calculation when erasing an object. But it make
-    //       node AABB smaller and the total efficiency can increase compared to
-    //       the former solution.
+
     void erase_impl(const std::size_t node_idx,
         const typename node_type::leaf_entry_type::const_iterator value_iter)
     {
@@ -579,8 +556,7 @@ private:
         this->node_at(node_idx).leaf_entry().erase(value_iter);
         this->erase_value(rmap_.at(value_id));
 
-        this->condense_box(this->node_at(node_idx));
-        this->adjust_tree(node_idx);
+        this->condense_box(node_idx);
         this->condense_leaf(node_idx);
         return;
     }
@@ -634,8 +610,6 @@ private:
         return node_idx;
     }
 
-    // It expands AABBs of all the ancester nodes to make sure that
-    // all the ancester nodes of `node_idx` covers the node of `node_idx`.
     void adjust_tree(std::size_t node_idx)
     {
         while(this->node_at(node_idx).parent != nil)
@@ -1056,8 +1030,8 @@ private:
         this->node_at(parent_idx).inode_entry().erase(found);
 
         // condense node parent box without the leaf node N.
-        this->condense_box(this->node_at(parent_idx));
-        this->adjust_tree(parent_idx);
+        this->condense_box(parent_idx);
+
         this->condense_node(parent_idx);
 
         // re-insert entries that were in node N
@@ -1102,7 +1076,7 @@ private:
         // remove the node from its parent.entry
         this->erase_node(*found);
         this->node_at(parent_idx).inode_entry().erase(found);
-        this->condense_box(this->node_at(parent_idx));
+        this->condense_box(parent_idx);
 
         // re-insert nodes eliminated from node N
         for(const auto& idx : eliminated_nodes)
@@ -1115,8 +1089,34 @@ private:
 
     // re-calculate the AABB of a node to make sure that the node covers all the
     // child nodes.
-    void condense_box(node_type& node) const
+    //
+    // Note: In the original R-Tree, i.e. without periodic boundary condition,
+    //       we don't need to adjust tree after we remove an object. It is
+    //       because node AABB always shrink after erasing its entry. But under
+    //       the periodic condition, AABB may slide to reduce its size.
+    //           Let's consider the following case. When we remove the 3rd
+    //       object, the node AABB slides to the left side. By removing the
+    //       object, the region that was not covered by the node AABB, between
+    //       object 1 and 2, will be covered.
+    //
+    //       .--------- boundary --------.      .--------- boundary --------.
+    //       :  _____       _   ___    _ :  =>  :  _____       _          _ :
+    //       : |  1  |     |2| | 3 |  |4|:  =>  : |  1  |     |2|        |4|:
+    //       : |_____|     |_| |___|  |_|:  =>  : |_____|     |_|        |_|:
+    //       --------]     [--node AABB---  =>  --node AABB-----]        [---
+    //
+    //           We need to choose a strategy to handle this problem. There can
+    //       be several possible ways. First, we can keep the original AABB
+    //       after removing an object. Apparently, since the older AABB covers
+    //       all the child objects, we can keep the AABB. But it enlarges AABB
+    //       and makes the whole R-Tree inefficient. Second, we can adjust all
+    //       the ancester nodes. It might also causes inefficiency because it
+    //       requires additional calculation when erasing an object. But it make
+    //       node AABB smaller and the total efficiency can increase compared to
+    //       the former solution.
+    void condense_box(const std::size_t N)
     {
+        node_type& node = this->node_at(N);
         if(node.empty())
         {
             // If the entry is empty, the node will soon be eliminated from its
@@ -1147,6 +1147,9 @@ private:
                 node.box = this->expand(node.box, this->node_at(*i).box);
             }
         }
+
+        // XXX Note: read the comments on top of this function carefully.
+        this->adjust_tree(N);
         return;
     }
 
