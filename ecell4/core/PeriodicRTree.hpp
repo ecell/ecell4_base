@@ -1290,6 +1290,8 @@ private:
     }
 
     // merge two AABBs under the PBC.
+    //
+    // It is guaranteed that the resulting AABB contains both lhs and rhs.
     box_type expand(const box_type& lhs, const box_type& rhs) const noexcept
     {
         // assuming that upper/lower can stick out of the boundary
@@ -1311,7 +1313,12 @@ private:
         const auto c = (up + lw) * 0.5;
         const auto d = restrict_position(c) - c;
 
-        return box_type(lw + d, up + d);
+        box_type expanded(lw + d, up + d);
+
+        assert(is_inside(lhs, expanded, 1e-8));
+        assert(is_inside(rhs, expanded, 1e-8));
+
+        return expanded;
     }
 
     // check if two AABBs intersects each other, under the PBC.
