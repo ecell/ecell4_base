@@ -21,7 +21,7 @@ unsigned int concatenate_units(std::vector<UnitSpecies>& units1, const Species& 
     const std::vector<UnitSpecies> units2 = sp.units();
     units1.reserve(units1.size() + units2.size());
 
-    utils::get_mapper_mf<std::string, std::string>::type bond_cache;
+    std::unordered_map<std::string, std::string> bond_cache;
 
     for (Species::container_type::const_iterator j(units2.begin());
         j != units2.end(); ++j)
@@ -34,7 +34,7 @@ unsigned int concatenate_units(std::vector<UnitSpecies>& units1, const Species& 
             const std::string& bond((*k).second.second);
             if (bond != "" && !is_wildcard(bond))
             {
-                utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                std::unordered_map<std::string, std::string>::const_iterator
                     it = bond_cache.find(bond);
                 if (it == bond_cache.end())
                 {
@@ -114,7 +114,7 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 //         {}
 //     };
 // 
-//     typedef utils::get_mapper_mf<std::string, bond_type>::type bond_container_type;
+//     typedef std::unordered_map<std::string, bond_type> bond_container_type;
 // 
 //     species_formatter(const std::vector<UnitSpecies>& units)
 //         : units(units)
@@ -204,7 +204,7 @@ bool is_correspondent(const UnitSpecies& usp1, const UnitSpecies& usp2)
 // 
 //     Species collect(const std::vector<size_type>& permutation) const
 //     {
-//         typedef utils::get_mapper_mf<std::string, std::string>::type mapper_type;
+//         typedef std::unordered_map<std::string, std::string> mapper_type;
 //         mapper_type bond_names;
 // 
 //         std::vector<UnitSpecies> res;
@@ -270,7 +270,7 @@ public:
     // typedef Species::container_type::size_type index_type;
     typedef unsigned int index_type;
     typedef std::pair<index_type, std::string> site_type;
-    typedef utils::get_mapper_mf<std::string, std::vector<site_type> >::type
+    typedef std::unordered_map<std::string, std::vector<site_type>>
         connection_container_type;
 
 public:
@@ -557,7 +557,7 @@ Species format_species(const Species& sp)
     }
 
     Species newsp;
-    utils::get_mapper_mf<std::string, std::string>::type cache;
+    std::unordered_map<std::string, std::string> cache;
     stride = 1;
     std::stringstream ss;
     for (std::vector<species_structure::index_type>::const_iterator
@@ -573,7 +573,7 @@ Species format_species(const Species& sp)
                 continue;
             }
 
-            utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+            std::unordered_map<std::string, std::string>::const_iterator
                 it(cache.find(site.second.second));
             if (it == cache.end())
             {
@@ -869,7 +869,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
 
     // 4. Modify units
 
-    utils::get_mapper_mf<std::string, std::string>::type bond_cache;
+    std::unordered_map<std::string, std::string> bond_cache;
 
     {
         std::vector<std::pair<size_type, size_type> > priorities;
@@ -981,7 +981,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
                 else
                 {
                     // Make a new bond
-                    utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                    std::unordered_map<std::string, std::string>::const_iterator
                         itr(bond_cache.find((*i).second.second));
                     if (itr != bond_cache.end())
                     {
@@ -1013,7 +1013,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
 
     // 6. Check connections between bonds and units
 
-    utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type bondinfo;
+    std::unordered_map<std::string, std::pair<std::string, unsigned int>> bondinfo;
     const unsigned int done = units.size();
 
     std::vector<std::vector<std::vector<UnitSpecies>::size_type> > connections;
@@ -1040,7 +1040,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
                     throw IllegalState(ss.str());
                 }
 
-                utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::iterator
+                std::unordered_map<std::string, std::pair<std::string, unsigned int>>::iterator
                     itr(bondinfo.find(bond));
                 if (itr == bondinfo.end())
                 {
@@ -1070,7 +1070,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
     if ((policy & ReactionRule::POLICY_STRICT)
         && !(policy & (ReactionRule::POLICY_DESTROY | ReactionRule::POLICY_IMPLICIT)))
     {
-        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+        for (std::unordered_map<std::string, std::pair<std::string, unsigned int>>::const_iterator
             i(bondinfo.begin()); i != bondinfo.end(); ++i)
         {
             if ((*i).second.second != done)
@@ -1139,7 +1139,7 @@ _ReactionRuleExpressionMatcher::unit_group_type generate_units(
 
     if (policy & ReactionRule::POLICY_DESTROY)
     {
-        for (utils::get_mapper_mf<std::string, std::pair<std::string, unsigned int> >::type::const_iterator
+        for (std::unordered_map<std::string, std::pair<std::string, unsigned int>>::const_iterator
             i(bondinfo.begin()); i != bondinfo.end(); ++i)
         {
             if ((*i).second.second != done && units[(*i).second.second] != UnitSpecies())
@@ -1186,7 +1186,7 @@ std::vector<Species> group_units(
 
     for (unsigned int idx(0); idx != num_groups; ++idx)
     {
-        utils::get_mapper_mf<std::string, std::string>::type new_bonds;
+        std::unordered_map<std::string, std::string> new_bonds;
         unsigned int stride(1);
 
         for (std::vector<unsigned int>::const_iterator
@@ -1215,7 +1215,7 @@ std::vector<Species> group_units(
                     continue;
                 }
 
-                utils::get_mapper_mf<std::string, std::string>::type::const_iterator
+                std::unordered_map<std::string, std::string>::const_iterator
                     itr(new_bonds.find(bond));
                 if (itr == new_bonds.end())
                 {

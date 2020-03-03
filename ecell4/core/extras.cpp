@@ -181,7 +181,7 @@ bool check_version_information(const std::string& version, const std::string& re
 std::vector<std::vector<Real> > get_stoichiometry(
     const std::vector<Species>& species_list, const std::vector<ReactionRule>& reaction_rules)
 {
-    typedef utils::get_mapper_mf<Species, unsigned>::type species_map_type;
+    typedef std::unordered_map<Species, unsigned> species_map_type;
 
     species_map_type index_map;
     {

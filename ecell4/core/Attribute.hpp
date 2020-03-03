@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <sstream>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -13,8 +14,6 @@
 
 #include <ecell4/core/config.h>
 
-#include "hash.hpp"
-#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Quantity.hpp"

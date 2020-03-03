@@ -13,8 +13,6 @@
 #include "types.hpp"
 #include "functions.hpp"
 
-#include "hash.hpp"
-
 namespace ecell4
 {
 
@@ -235,8 +233,7 @@ inline Real3 unitz()
 
 } // ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
-
+namespace std {
 template<>
 struct hash<ecell4::Real3>
 {
@@ -249,7 +246,6 @@ struct hash<ecell4::Real3>
             hash<argument_type::value_type>()(val[2]);
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif /* ECELL4_REAL3_HPP */

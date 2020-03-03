@@ -3,8 +3,8 @@
 
 #include <ostream>
 #include <utility>
+#include <functional>
 #include <ecell4/core/config.h>
-#include "hash.hpp"
 
 namespace ecell4
 {
@@ -270,8 +270,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
 
 } // ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
-
+namespace std{
 template<>
 struct hash<ecell4::ParticleID>
 {
@@ -280,7 +279,6 @@ struct hash<ecell4::ParticleID>
         return static_cast<std::size_t>(val().first ^ val().second);
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif /* ECELL4_IDENTIFIER_HPP */

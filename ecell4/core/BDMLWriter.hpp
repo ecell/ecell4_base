@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "types.hpp"
-#include "get_mapper_mf.hpp"
 #include "Species.hpp"
 #include "Particle.hpp"
 #include "WorldInterface.hpp"

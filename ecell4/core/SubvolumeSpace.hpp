@@ -1,7 +1,6 @@
 #ifndef ECELL4_SUBVOLUME_SPACE_HPP
 #define ECELL4_SUBVOLUME_SPACE_HPP
 
-#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "Species.hpp"
@@ -327,12 +326,12 @@ public:
 public:
 
     // typedef std::vector<Integer> cell_type;
-    // typedef utils::get_mapper_mf<Species, cell_type>::type matrix_type;
-    typedef utils::get_mapper_mf<Species, boost::shared_ptr<PoolBase> >::type matrix_type;
+    // typedef std::unordered_map<Species, cell_type> matrix_type;
+    typedef std::unordered_map<Species, boost::shared_ptr<PoolBase>> matrix_type;
 
-    // typedef utils::get_mapper_mf<Species::serial_type, Shape::dimension_kind>::type structure_container_type;
+    // typedef std::unordered_map<Species::serial_type, Shape::dimension_kind> structure_container_type;
     typedef std::vector<Real> structure_cell_type;
-    typedef utils::get_mapper_mf<Species::serial_type, structure_cell_type>::type structure_matrix_type;
+    typedef std::unordered_map<Species::serial_type, structure_cell_type> structure_matrix_type;
 
 public:
 

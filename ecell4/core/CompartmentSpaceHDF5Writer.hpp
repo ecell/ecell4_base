@@ -2,12 +2,12 @@
 #define ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
+#include <unordered_map>
 #include <boost/scoped_array.hpp>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
 
-#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "Species.hpp"
 #include "Real3.hpp"
@@ -233,7 +233,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
             traits_type::get_species_num_struct_memtype());
         num_dset.close();
 
-        typename utils::get_mapper_mf<uint32_t, num_molecules_type>::type
+        typename std::unordered_map<uint32_t, num_molecules_type>
             num_molecules_cache;
         for (unsigned int i(0); i < num_species; ++i)
         {

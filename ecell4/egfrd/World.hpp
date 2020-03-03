@@ -15,7 +15,6 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -124,7 +123,6 @@ struct WorldTraitsBase
     typedef std::pair<particle_id_type, particle_type> particle_id_pair;
     // typedef std::pair<const particle_id_type, particle_type> particle_id_pair;
     typedef std::pair<particle_id_pair, length_type> particle_id_pair_and_distance;
-    // typedef unassignable_adapter<particle_id_pair_and_distance, get_default_impl::std::vector> particle_id_pair_and_distance_list;
     typedef std::vector<particle_id_pair_and_distance> particle_id_pair_and_distance_list;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
 
@@ -291,7 +289,7 @@ public:
     /**
      * ParticleContainerBase
      */
-    typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
+    typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
     typedef ecell4::ParticleSpaceCellListImpl particle_space_type;

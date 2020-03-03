@@ -3,8 +3,8 @@
 
 #include <boost/weak_ptr.hpp>
 #include <ecell4/core/VoxelSpaceBase.hpp>
-#include <ecell4/core/hash.hpp>
 #include <ecell4/core/types.hpp>
+#include <functional>
 
 namespace ecell4
 {
@@ -49,7 +49,7 @@ public:
 
 } // namespace ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
+namespace std {
 template <>
 struct hash<ecell4::spatiocyte::Voxel>
 {
@@ -60,6 +60,5 @@ struct hash<ecell4::spatiocyte::Voxel>
                static_cast<std::size_t>(val.coordinate);
     }
 };
-ECELL4_DEFINE_HASH_END()
-
+} // std
 #endif

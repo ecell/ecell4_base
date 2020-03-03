@@ -12,7 +12,6 @@
 
 #include "PotentialField.hpp"
 
-#include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/exceptions.hpp>
 
@@ -51,7 +50,7 @@ public:
 
     typedef typename world_type::particle_container_type particle_container_type;
     typedef ecell4::PotentialField<particle_container_type> potential_field_type;
-    typedef typename ecell4::utils::get_mapper_mf<species_id_type, boost::shared_ptr<potential_field_type> >::type potential_field_map_type;
+    typedef std::unordered_map<species_id_type, boost::shared_ptr<potential_field_type>> potential_field_map_type;
 
 public:
 

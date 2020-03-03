@@ -15,8 +15,8 @@ ODESimulator::reaction_container_type ODESimulator::convert_reactions() const
 {
     const std::vector<Species> species(world_->list_species());
     const Model::reaction_rule_container_type& reaction_rules = model_->reaction_rules();
-    typedef utils::get_mapper_mf<
-        Species, state_type::size_type>::type species_map_type;
+    typedef std::unordered_map<
+        Species, state_type::size_type> species_map_type;
 
     species_map_type index_map;
     state_type::size_type i(0);
