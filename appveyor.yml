@@ -1,0 +1,28 @@
+version: '{build}'
+image: Visual Studio 2017
+platform:
+- x64
+
+environment:
+  matrix:
+    - CONDA_INSTALL_LOCN: "C:\\Miniconda36-x64"
+    - CONDA_INSTALL_LOCN: "C:\\Miniconda37-x64"
+
+init:
+- call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
+- cmd: call %CONDA_INSTALL_LOCN%\Scripts\activate.bat
+
+install:
+- ps: |
+    git submodule update -q --init --recursive
+    conda config --set always_yes yes --set changeps1 no
+    conda update -q conda
+    conda install -q conda-build anaconda-client conda-verify
+build_script:
+- cmd: |
+    conda build conda.recipe
+    move %CONDA_INSTALL_LOCN%\conda-bld .
+    if %APPVEYOR_REPO_TAG%==true anaconda -t %CONDA_UPLOAD_TOKEN% upload conda-bld\win-*\*.tar.bz2
+artifacts:
+  - path: 'conda-bld\win-*\*.tar.bz2'
+  

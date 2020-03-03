@@ -57,7 +57,7 @@ void save_version_information(H5::H5Location* root, const std::string& version)
         throw IllegalArgument("Version info must be shorter than 32 characters.");
     }
     using namespace H5;
-    boost::scoped_ptr<DataSet> dataset(
+    std::unique_ptr<DataSet> dataset(
         new DataSet(root->createDataSet("version", H5::StrType(H5::PredType::C_S1, 32), H5::DataSpace(H5S_SCALAR))));
     dataset->write(version.c_str(), dataset->getDataType());
 }
@@ -76,7 +76,7 @@ std::string load_version_information(const std::string& filename)
 {
 #ifdef WITH_HDF5
     using namespace H5;
-    boost::scoped_ptr<H5::H5File>
+    std::unique_ptr<H5::H5File>
         fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
     return load_version_information(*fin);
 #else

@@ -1,7 +1,9 @@
 #include "python_api.hpp"
 
-#include <ecell4/spatiocyte/SpatiocyteReactions.hpp>
+#include <ecell4/core/OffLatticeSpace.hpp>
+#include <ecell4/spatiocyte/OffLattice.hpp>
 #include <ecell4/spatiocyte/SpatiocyteFactory.hpp>
+#include <ecell4/spatiocyte/SpatiocyteReactions.hpp>
 #include <ecell4/spatiocyte/SpatiocyteSimulator.hpp>
 #include <ecell4/spatiocyte/SpatiocyteWorld.hpp>
 #include <ecell4/spatiocyte/Voxel.hpp>
@@ -19,32 +21,28 @@ namespace ecell4
 namespace python_api
 {
 
-static inline
-void define_reaction_info(py::module& m)
+static inline void define_reaction_info(py::module &m)
 {
     using container_type = ReactionInfo::container_type;
     py::class_<ReactionInfo>(m, "ReactionInfo")
-        .def(py::init<const Real, const container_type&, const container_type&>(),
-                py::arg("t"), py::arg("reactants"), py::arg("products"))
+        .def(py::init<const Real, const container_type &,
+                      const container_type &>(),
+             py::arg("t"), py::arg("reactants"), py::arg("products"))
         .def("t", &ReactionInfo::t)
         .def("reactants", &ReactionInfo::reactants)
         .def("products", &ReactionInfo::products)
         .def(py::pickle(
-            [](const ReactionInfo& self)
-            {
-                return py::make_tuple(self.t(), self.reactants(), self.products());
+            [](const ReactionInfo &self) {
+                return py::make_tuple(self.t(), self.reactants(),
+                                      self.products());
             },
-            [](py::tuple t)
-            {
+            [](py::tuple t) {
                 if (t.size() != 3)
                     throw std::runtime_error("Invalid state");
-                return ReactionInfo(
-                    t[0].cast<Real>(),
-                    t[1].cast<container_type>(),
-                    t[2].cast<container_type>()
-                );
-            }
-        ));
+                return ReactionInfo(t[0].cast<Real>(),
+                                    t[1].cast<container_type>(),
+                                    t[2].cast<container_type>());
+            }));
 
     py::class_<ReactionInfo::Item>(m, "ReactionInfoItem")
         .def_readonly("pid", &ReactionInfo::Item::pid)
@@ -52,28 +50,28 @@ void define_reaction_info(py::module& m)
         .def_readonly("voxel", &ReactionInfo::Item::voxel);
 }
 
-static inline
-void define_spatiocyte_factory(py::module& m)
+static inline void define_spatiocyte_factory(py::module &m)
 {
     py::class_<SpatiocyteFactory> factory(m, "SpatiocyteFactory");
     factory
         .def(py::init<const Real>(),
-                py::arg("voxel_radius") = SpatiocyteFactory::default_voxel_radius())
+             py::arg("voxel_radius") =
+                 SpatiocyteFactory::default_voxel_radius())
         .def("rng", &SpatiocyteFactory::rng);
     define_factory_functions(factory);
 
     m.attr("Factory") = factory;
 }
 
-static inline
-void define_spatiocyte_simulator(py::module& m)
+static inline void define_spatiocyte_simulator(py::module &m)
 {
     py::class_<SpatiocyteSimulator, Simulator, PySimulator<SpatiocyteSimulator>,
-        boost::shared_ptr<SpatiocyteSimulator>> simulator(m, "SpatiocyteSimulator");
-    simulator
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>>(), py::arg("w"))
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>, boost::shared_ptr<Model>>(),
-                py::arg("w"), py::arg("m"))
+               boost::shared_ptr<SpatiocyteSimulator>>
+        simulator(m, "SpatiocyteSimulator");
+    simulator.def(py::init<boost::shared_ptr<SpatiocyteWorld>>(), py::arg("w"))
+        .def(py::init<boost::shared_ptr<SpatiocyteWorld>,
+                      boost::shared_ptr<Model>>(),
+             py::arg("w"), py::arg("m"))
         .def("last_reactions", &SpatiocyteSimulator::last_reactions)
         .def("set_t", &SpatiocyteSimulator::set_t);
     define_simulator_functions(simulator);
@@ -81,34 +79,40 @@ void define_spatiocyte_simulator(py::module& m)
     m.attr("Simulator") = simulator;
 }
 
-static inline
-void define_spatiocyte_world(py::module& m)
+static inline void define_spatiocyte_world(py::module &m)
 {
-    py::class_<SpatiocyteWorld, ecell4::WorldInterface, PyWorldImpl<SpatiocyteWorld>,
-        boost::shared_ptr<SpatiocyteWorld>> world(m, "SpatiocyteWorld");
+    py::class_<SpatiocyteWorld, ecell4::WorldInterface,
+               PyWorldImpl<SpatiocyteWorld>, boost::shared_ptr<SpatiocyteWorld>>
+        world(m, "SpatiocyteWorld");
     world
-        .def(py::init<const Real3&>(),
-                py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0))
-        .def(py::init<const Real3&, const Real&>(),
-                py::arg("edge_lengths"), py::arg("voxel_radius"))
-        .def(py::init<const Real3&, const Real&, const boost::shared_ptr<RandomNumberGenerator>&>(),
-                py::arg("edge_lengths"),
-                py::arg("voxel_radius"),
-                py::arg("rng"))
+        .def(py::init<const Real3 &>(),
+             py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0))
+        .def(py::init<const Real3 &, const Real &>(), py::arg("edge_lengths"),
+             py::arg("voxel_radius"))
+        .def(py::init<const Real3 &, const Real &,
+                      const boost::shared_ptr<RandomNumberGenerator> &>(),
+             py::arg("edge_lengths"), py::arg("voxel_radius"), py::arg("rng"))
         .def(py::init<const std::string>(), py::arg("filename"))
 
-        .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Particle&)) &SpatiocyteWorld::new_particle)
-        .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Real3&)) &SpatiocyteWorld::new_particle)
+        .def("new_particle", (boost::optional<ParticleID>(SpatiocyteWorld::*)(
+                                 const Particle &)) &
+                                 SpatiocyteWorld::new_particle)
+        .def("new_particle", (boost::optional<ParticleID>(SpatiocyteWorld::*)(
+                                 const Species &, const Real3 &)) &
+                                 SpatiocyteWorld::new_particle)
         .def("remove_particle", &SpatiocyteWorld::remove_particle)
-        .def("list_structure_particles", &SpatiocyteWorld::list_structure_particles)
-        .def("list_non_structure_particles", &SpatiocyteWorld::list_non_structure_particles)
+        .def("list_structure_particles",
+             &SpatiocyteWorld::list_structure_particles)
+        .def("list_non_structure_particles",
+             &SpatiocyteWorld::list_non_structure_particles)
         .def("update_particle", &SpatiocyteWorld::update_particle)
         .def("add_molecules",
-                (bool (SpatiocyteWorld::*)(const Species&, const Integer&))
-                &SpatiocyteWorld::add_molecules)
+             (bool (SpatiocyteWorld::*)(const Species &, const Integer &)) &
+                 SpatiocyteWorld::add_molecules)
         .def("add_molecules",
-                (bool (SpatiocyteWorld::*)(const Species&, const Integer&, const boost::shared_ptr<const Shape>))
-                &SpatiocyteWorld::add_molecules)
+             (bool (SpatiocyteWorld::*)(const Species &, const Integer &,
+                                        const boost::shared_ptr<const Shape>)) &
+                 SpatiocyteWorld::add_molecules)
         .def("remove_molecules", &SpatiocyteWorld::remove_molecules)
         .def("voxel_volume", &SpatiocyteWorld::voxel_volume)
         .def("get_volume", &SpatiocyteWorld::get_volume)
@@ -116,14 +120,17 @@ void define_spatiocyte_world(py::module& m)
         .def("get_species_at", &SpatiocyteWorld::get_species_at)
         .def("has_particle_at", &SpatiocyteWorld::has_particle_at)
         .def("set_value", &SpatiocyteWorld::set_value)
-        .def("new_particle", (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle)
+        .def("new_particle", (boost::optional<ParticleID>(SpatiocyteWorld::*)(
+                                 const Species &, const Voxel &)) &
+                                 SpatiocyteWorld::new_particle)
         .def("new_voxel",
-            (boost::optional<ParticleID> (SpatiocyteWorld::*)(const Species&, const Voxel&))&SpatiocyteWorld::new_particle,
-            R"pbdoc(
+             (boost::optional<ParticleID>(SpatiocyteWorld::*)(const Species &,
+                                                              const Voxel &)) &
+                 SpatiocyteWorld::new_particle,
+             R"pbdoc(
                 .. deprecated::3.0
                    Use :func:`new_particle` instead.
-            )pbdoc"
-        )
+            )pbdoc")
         .def("new_voxel_structure", &SpatiocyteWorld::new_voxel_structure)
         .def("voxel_radius", &SpatiocyteWorld::voxel_radius)
         .def("size", &SpatiocyteWorld::size)
@@ -145,48 +152,70 @@ void define_spatiocyte_world(py::module& m)
                Use :func:`has_particle` instead.
         )pbdoc")
         .def("rng", &SpatiocyteWorld::rng)
-        .def_static("calculate_voxel_volume", &SpatiocyteWorld::calculate_voxel_volume)
-        .def_static("calculate_hcp_lengths", &SpatiocyteWorld::calculate_hcp_lengths)
+        .def("add_offlattice",
+             [](SpatiocyteWorld &self, const Species &species,
+                const OffLattice &offlattice) {
+                 const auto info = self.get_molecule_info(species);
+                 const auto updated = Species(species.serial(), info.radius,
+                                              info.D, info.loc, info.dimension);
+                 self.add_space(offlattice.generate_space(updated));
+             })
+        .def_static("calculate_voxel_volume",
+                    &SpatiocyteWorld::calculate_voxel_volume)
+        .def_static("calculate_hcp_lengths",
+                    &SpatiocyteWorld::calculate_hcp_lengths)
         .def_static("calculate_shape", &SpatiocyteWorld::calculate_shape)
-        .def_static("calculate_volume", &SpatiocyteWorld::calculate_volume);
+        .def_static("calculate_volume", &SpatiocyteWorld::calculate_volume)
+        .def("list_neighbors",
+             [](const SpatiocyteWorld &self, const Voxel &voxel) {
+                 std::vector<Voxel> list;
+                 for (auto i = 0; i < self.num_neighbors(voxel); ++i)
+                 {
+                     list.push_back(self.get_neighbor(voxel, i));
+                 }
+                 return list;
+             });
 
-    m.def("create_spatiocyte_world_cell_list_impl", &create_spatiocyte_world_cell_list_impl_alias);
-    m.def("create_spatiocyte_world_vector_impl", &create_spatiocyte_world_vector_impl_alias);
-    m.def("create_spatiocyte_world_square_offlattice_impl", &allocate_spatiocyte_world_square_offlattice_impl);
+    m.def("create_spatiocyte_world_cell_list_impl",
+          &create_spatiocyte_world_cell_list_impl);
+    m.def("create_spatiocyte_world_vector_impl",
+          &create_spatiocyte_world_vector_impl);
+    m.def("create_spatiocyte_world_square_offlattice_impl",
+          &allocate_spatiocyte_world_square_offlattice_impl);
 
     m.attr("World") = world;
 }
 
-static inline
-void define_voxel(py::module& m)
+static inline void define_voxel(py::module &m)
 {
     py::class_<Voxel>(m, "Voxel")
-        .def("position", &Voxel::position)
 #ifndef NDEBUG
         .def_readonly("coordinate", &Voxel::coordinate)
 #endif
-        .def("list_neighbors",
-            [](const Voxel& self)
-            {
-                std::vector<Voxel> list;
-                for (auto i = 0; i < self.num_neighbors(); ++i)
-                {
-                    list.push_back(self.get_neighbor(i));
-                }
-                return list;
-            });
+        .def("position", &Voxel::position);
 }
 
-void setup_spatiocyte_module(py::module& m)
+static inline void define_offlattice(py::module &m)
+{
+    py::class_<OffLattice>(m, "OffLattice")
+        .def(py::init<const Real, const OffLattice::positions_type,
+                      const OffLattice::adjoining_pairs_type>())
+        .def(py::init<const Real, const OffLattice::positions_type>())
+        .def("voxel_radius", &OffLattice::voxel_radius)
+        .def("positions", &OffLattice::positions)
+        .def("adjoining_pairs", &OffLattice::adjoining_pairs);
+}
+
+void setup_spatiocyte_module(py::module &m)
 {
     define_reaction_info(m);
+    define_offlattice(m);
     define_spatiocyte_factory(m);
     define_spatiocyte_simulator(m);
     define_spatiocyte_world(m);
     define_voxel(m);
 }
 
-}
+} // namespace python_api
 
-}
-
+} // namespace ecell4

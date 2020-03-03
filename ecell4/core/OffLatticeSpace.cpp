@@ -1,33 +1,35 @@
-#include <algorithm>
 #include "Context.hpp"
-#include "VacantType.hpp"
 #include "MoleculePool.hpp"
 #include "OffLatticeSpace.hpp"
+#include "VacantType.hpp"
+#include <algorithm>
 
-namespace ecell4 {
-
-OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius)
-    : base_type(voxel_radius),
-      voxels_(),
-      positions_(),
-      adjoinings_()
-{}
-
-OffLatticeSpace::OffLatticeSpace(const Real& voxel_radius,
-                                 const position_container& positions,
-                                 const coordinate_pair_list_type& adjoining_pairs)
-    : base_type(voxel_radius),
-      voxels_(),
-      positions_(),
-      adjoinings_()
+namespace ecell4
 {
+
+OffLatticeSpace::OffLatticeSpace(const Real &voxel_radius,
+                                 const Species &species)
+    : base_type(voxel_radius), voxels_(), positions_(), adjoinings_()
+{
+    vacant_ = boost::shared_ptr<VoxelPool>(
+        new StructureType(species, boost::weak_ptr<VoxelPool>()));
+}
+
+OffLatticeSpace::OffLatticeSpace(
+    const Real &voxel_radius, const Species &species,
+    const position_container &positions,
+    const coordinate_pair_list_type &adjoining_pairs)
+    : base_type(voxel_radius), voxels_(), positions_(), adjoinings_()
+{
+    vacant_ = boost::shared_ptr<VoxelPool>(
+        new StructureType(species, boost::weak_ptr<VoxelPool>()));
     reset(positions, adjoining_pairs);
 }
 
 OffLatticeSpace::~OffLatticeSpace() {}
 
-void OffLatticeSpace::reset(const position_container& positions,
-                            const coordinate_pair_list_type& adjoining_pairs)
+void OffLatticeSpace::reset(const position_container &positions,
+                            const coordinate_pair_list_type &adjoining_pairs)
 {
     voxels_.clear();
     positions_.clear();
@@ -65,7 +67,7 @@ void OffLatticeSpace::reset(const position_container& positions,
 }
 
 boost::optional<OffLatticeSpace::coordinate_type>
-OffLatticeSpace::get_coord(const ParticleID& pid) const
+OffLatticeSpace::get_coord(const ParticleID &pid) const
 {
     if (pid == ParticleID())
         return boost::none;
@@ -73,9 +75,9 @@ OffLatticeSpace::get_coord(const ParticleID& pid) const
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<MoleculePool>& vp((*itr).second);
-        for (MoleculePool::const_iterator vitr(vp->begin());
-             vitr != vp->end(); ++vitr)
+        const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+        for (MoleculePool::const_iterator vitr(vp->begin()); vitr != vp->end();
+             ++vitr)
         {
             if ((*vitr).pid == pid)
             {
@@ -87,59 +89,34 @@ OffLatticeSpace::get_coord(const ParticleID& pid) const
     return boost::none;
 }
 
-
 /*
  * public functions
  */
 
 // Same as LatticeSpaceVectorImpl
-std::pair<ParticleID, ParticleVoxel>
-OffLatticeSpace::get_voxel_at(const coordinate_type& coord) const
+bool OffLatticeSpace::update_voxel(const ParticleID &pid,
+                                   const Species &species,
+                                   const coordinate_type to_coord)
 {
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-    return std::make_pair(vp->get_particle_id(coord),
-                          ParticleVoxel(vp->species(),
-                                coord,
-                                vp->radius(),
-                                vp->D(),
-                                get_location_serial(vp)));
-}
-
-// Same as LatticeSpaceVectorImpl
-const Particle OffLatticeSpace::particle_at(const coordinate_type& coord) const
-{
-    boost::shared_ptr<const VoxelPool> vp(voxels_.at(coord));
-    return Particle(
-        vp->species(),
-        coordinate2position(coord),
-        vp->radius(), vp->D());
-}
-
-// Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
-{
-    const coordinate_type& to_coord(v.coordinate);
     if (!is_in_range(to_coord))
         throw NotSupported("Out of bounds");
 
-    boost::shared_ptr<VoxelPool> new_vp(get_voxel_pool(v));
+    boost::shared_ptr<VoxelPool> new_vp(find_voxel_pool(species));
     boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
-        throw NotSupported(
-            "Mismatch in the location. Failed to place '"
-            + new_vp->species().serial() + "' to '"
-            + dest_vp->species().serial() + "'.");
+        throw NotSupported("Mismatch in the location. Failed to place '" +
+                           new_vp->species().serial() + "' to '" +
+                           dest_vp->species().serial() + "'.");
     }
 
     if (boost::optional<coordinate_type> from_coord = get_coord(pid))
     {
         // move
-        voxels_.at(*from_coord)
-               ->remove_voxel_if_exists(*from_coord);
+        voxels_.at(*from_coord)->remove_voxel_if_exists(*from_coord);
 
-        //XXX: use location?
+        // XXX: use location?
         dest_vp->replace_voxel(to_coord, *from_coord);
         voxels_.at(*from_coord) = dest_vp;
 
@@ -158,8 +135,8 @@ bool OffLatticeSpace::update_voxel(const ParticleID& pid, ParticleVoxel v)
     return true;
 }
 
-bool OffLatticeSpace::add_voxel(
-        const Species& species, const ParticleID& pid, const coordinate_type& coord)
+bool OffLatticeSpace::add_voxel(const Species &species, const ParticleID &pid,
+                                const coordinate_type &coord)
 {
     boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(species));
     boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coord));
@@ -175,12 +152,12 @@ bool OffLatticeSpace::add_voxel(
 }
 
 // Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
+bool OffLatticeSpace::remove_voxel(const ParticleID &pid)
 {
     for (molecule_pool_map_type::iterator i(molecule_pools_.begin());
          i != molecule_pools_.end(); ++i)
     {
-        const boost::shared_ptr<MoleculePool>& vp((*i).second);
+        const boost::shared_ptr<MoleculePool> &vp((*i).second);
         MoleculePool::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {
@@ -201,45 +178,51 @@ bool OffLatticeSpace::remove_voxel(const ParticleID& pid)
 }
 
 // Same as LatticeSpaceVectorImpl
-bool OffLatticeSpace::remove_voxel(const coordinate_type& coord)
+bool OffLatticeSpace::remove_voxel(const coordinate_type &coord)
 {
     boost::shared_ptr<VoxelPool> vp(voxels_.at(coord));
-    if (vp->is_vacant())
+    if (auto location_ptr = vp->location())
     {
-        return false;
-    }
-    if (vp->remove_voxel_if_exists(coord))
-    {
-        voxels_.at(coord) = vp->location();
-        vp->location()->add_voxel(
-            coordinate_id_pair_type(ParticleID(), coord));
-        return true;
+        if (vp->remove_voxel_if_exists(coord))
+        {
+            voxels_.at(coord) = location_ptr;
+            location_ptr->add_voxel(
+                coordinate_id_pair_type(ParticleID(), coord));
+            return true;
+        }
     }
     return false;
 }
 
-bool OffLatticeSpace::can_move(const coordinate_type& src, const coordinate_type& dest) const
+bool OffLatticeSpace::can_move(const coordinate_type &src,
+                               const coordinate_type &dest) const
 {
-    if (src == dest) return false;
+    if (src == dest)
+        return false;
 
     boost::shared_ptr<const VoxelPool> src_vp(voxels_.at(src));
-    if (src_vp->is_vacant()) return false;
+    if (src_vp->is_vacant())
+        return false;
 
     boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
 
     return (voxels_.at(dest) == src_vp->location());
 }
 
-bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& dest,
-        const std::size_t candidate)
+bool OffLatticeSpace::move(const coordinate_type &src,
+                           const coordinate_type &dest,
+                           const std::size_t candidate)
 {
-    if (src == dest) return false;
+    if (src == dest)
+        return false;
 
     boost::shared_ptr<VoxelPool> src_vp(voxels_.at(src));
-    if (src_vp->is_vacant()) return true;
+    if (src_vp->is_vacant())
+        return true;
 
     boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
-    if (dest_vp != src_vp->location()) return false;
+    if (dest_vp != src_vp->location())
+        return false;
 
     src_vp->replace_voxel(src, dest, candidate);
     voxels_.at(src) = dest_vp;
@@ -251,7 +234,7 @@ bool OffLatticeSpace::move(const coordinate_type& src, const coordinate_type& de
 }
 
 OffLatticeSpace::coordinate_type
-OffLatticeSpace::position2coordinate(const Real3& pos) const
+OffLatticeSpace::position2coordinate(const Real3 &pos) const
 {
     coordinate_type coordinate(0);
     Real shortest_length = length(positions_.at(0) - pos);
@@ -269,4 +252,4 @@ OffLatticeSpace::position2coordinate(const Real3& pos) const
     return coordinate;
 }
 
-} // ecell4
+} // namespace ecell4

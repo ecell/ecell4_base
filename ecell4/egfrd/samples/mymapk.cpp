@@ -6,7 +6,6 @@
 #include <string>
 #include <numeric>
 #include <boost/shared_ptr.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/foreach.hpp>
 #include <cstdlib>
 #include <gsl/gsl_roots.h>
@@ -230,7 +229,7 @@ int main(int argc, char **argv)
     // }}}
 
     // {
-    //     boost::scoped_ptr<world_type>
+    //     std::unique_ptr<world_type>
     //         world2(new world_type(ecell4::Real3(1, 2, 3), ecell4::Integer3(3, 6, 9)));
     //     std::cout << "edge_lengths:" << world2->edge_lengths()[0] << " " << world2->edge_lengths()[1] << " " << world2->edge_lengths()[2] << std::endl;
     //     std::cout << "matrix_sizes:" << world2->matrix_sizes()[0] << " " << world2->matrix_sizes()[1] << " " << world2->matrix_sizes()[2] << std::endl;

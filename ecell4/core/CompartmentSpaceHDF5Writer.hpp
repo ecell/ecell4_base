@@ -2,7 +2,6 @@
 #define ECELL4_COMPARTMENT_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
-#include <boost/scoped_ptr.hpp>
 #include <boost/scoped_array.hpp>
 
 #include <hdf5.h>
@@ -172,11 +171,11 @@ void save_compartment_space(const typename Ttraits_::space_type& space, H5::Grou
     dim[0] = num_species;
     H5::DataSpace dataspace(RANK, dim);
 
-    boost::scoped_ptr<H5::DataSet> dataset_id_table(new H5::DataSet(
+    std::unique_ptr<H5::DataSet> dataset_id_table(new H5::DataSet(
         root->createDataSet(
             "species", traits_type::get_species_id_table_struct_memtype(),
             dataspace)));
-    boost::scoped_ptr<H5::DataSet> dataset_num_table(new H5::DataSet(
+    std::unique_ptr<H5::DataSet> dataset_num_table(new H5::DataSet(
         root->createDataSet(
             "num_molecules", traits_type::get_species_num_struct_memtype(),
             dataspace)));

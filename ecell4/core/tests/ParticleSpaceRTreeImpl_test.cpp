@@ -32,7 +32,7 @@ BOOST_FIXTURE_TEST_SUITE(suite, Fixture) // submit parameters
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
 
     BOOST_CHECK_EQUAL((*space).list_species().size(), 0);
     BOOST_CHECK_EQUAL((*space).num_particles(), 0);
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_update_remove)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_update_remove)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_remove)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_remove)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_exception)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
     SerialIDGenerator<ParticleID> pidgen;
     const ParticleID pid1 = pidgen();
 
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_exception)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius_boundary_x)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius_boundary_x)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius_boundary_xyz)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius_boundary_xy
 
 BOOST_AUTO_TEST_CASE(ParticleSpaceRTreeImpl_test_constructor)
 {
-    boost::scoped_ptr<ParticleSpaceRTreeImpl> space(new ParticleSpaceRTreeImpl(edge_lengths));
+    std::unique_ptr<ParticleSpaceRTreeImpl> space(new ParticleSpaceRTreeImpl(edge_lengths));
 
     BOOST_CHECK_EQUAL(space->edge_lengths()[0], edge_lengths[0]);
     BOOST_CHECK_EQUAL(space->edge_lengths()[1], edge_lengths[1]);

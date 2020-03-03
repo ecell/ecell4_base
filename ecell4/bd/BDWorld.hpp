@@ -1,9 +1,9 @@
 #ifndef ECELL4_BD_BD_WORLD_HPP
 #define ECELL4_BD_BD_WORLD_HPP
 
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+#include <memory>
 #include <sstream>
 
 #include <ecell4/core/exceptions.hpp>
@@ -336,11 +336,11 @@ public:
     void save(const std::string& filename) const
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fout(new H5::H5File(filename.c_str(), H5F_ACC_TRUNC));
         rng_->save(fout.get());
         pidgen_.save(fout.get());
-        boost::scoped_ptr<H5::Group>
+        std::unique_ptr<H5::Group>
             group(new H5::Group(fout->createGroup("ParticleSpace")));
         ps_->save_hdf5(group.get());
         extras::save_version_information(fout.get(), std::string("ecell4-bd-") + std::string(VERSION_INFO));
@@ -353,7 +353,7 @@ public:
     void load(const std::string& filename)
     {
 #ifdef WITH_HDF5
-        boost::scoped_ptr<H5::H5File>
+        std::unique_ptr<H5::H5File>
             fin(new H5::H5File(filename.c_str(), H5F_ACC_RDONLY));
 
         const std::string required = "ecell4-bd-0.0";
@@ -404,7 +404,7 @@ public:
 
 protected:
 
-    boost::scoped_ptr<ParticleSpace> ps_;
+    std::unique_ptr<ParticleSpace> ps_;
     boost::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> pidgen_;
 

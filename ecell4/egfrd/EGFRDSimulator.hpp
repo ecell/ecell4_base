@@ -7,7 +7,6 @@
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/fusion/container/map.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
@@ -654,7 +653,7 @@ protected:
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv) const
         {
-            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
+            std::unique_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(draw_r(
                 rng_, *gf, dt, domain.a_r(), domain.sigma()));
@@ -719,7 +718,7 @@ protected:
     //     position_type draw_iv(spherical_pair_type const& domain,
     //                           time_type dt, position_type const& old_iv) const
     //     {
-    //         boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
+    //         std::unique_ptr<greens_functions::PairGreensFunction> const gf(
     //             choose_pair_greens_function(domain, dt));
     //         length_type const r(draw_r(
     //             rng_, *gf, dt, domain.a_r(), domain.sigma()));
@@ -789,7 +788,7 @@ protected:
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
+            std::unique_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(domain.a_r());
             length_type const theta(draw_theta(rng_, *gf, dt, r));
@@ -858,7 +857,7 @@ protected:
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
+            std::unique_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(domain.sigma());
             length_type const theta(draw_theta(rng_, *gf, dt, r));
@@ -926,7 +925,7 @@ protected:
         position_type draw_iv(spherical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            boost::scoped_ptr<greens_functions::PairGreensFunction> const gf(
+            std::unique_ptr<greens_functions::PairGreensFunction> const gf(
                 choose_pair_greens_function(domain, dt));
             length_type const r(draw_r(
                 rng_, *gf, dt, domain.a_r(), domain.sigma()));
@@ -1171,9 +1170,9 @@ public:
         if (edge_lengths != (*ssmat_).edge_lengths()
             || matrix_sizes != (*ssmat_).matrix_sizes())
         {
-            boost::scoped_ptr<spherical_shell_matrix_type>
+            std::unique_ptr<spherical_shell_matrix_type>
                 newssmat(new spherical_shell_matrix_type(edge_lengths, matrix_sizes));
-            boost::scoped_ptr<cylindrical_shell_matrix_type>
+            std::unique_ptr<cylindrical_shell_matrix_type>
                 newcsmat(new cylindrical_shell_matrix_type(edge_lengths, matrix_sizes));
             ssmat_.swap(newssmat);
             csmat_.swap(newcsmat);
@@ -1296,7 +1295,7 @@ public:
     // called by Multi
     void clear_volume(particle_shape_type const& p)
     {
-        boost::scoped_ptr<std::vector<domain_id_type> > domains(
+        std::unique_ptr<std::vector<domain_id_type> > domains(
             get_neighbor_domains(p));
         if (domains)
         {
@@ -1307,7 +1306,7 @@ public:
     void clear_volume(particle_shape_type const& p,
                       domain_id_type const& ignore)
     {
-        boost::scoped_ptr<std::vector<domain_id_type> > domains(
+        std::unique_ptr<std::vector<domain_id_type> > domains(
             get_neighbor_domains(p, ignore));
 
         if (domains)
@@ -3199,7 +3198,7 @@ protected:
                     return;
                 }
 
-                boost::scoped_ptr<std::vector<domain_id_type> > neighbors(
+                std::unique_ptr<std::vector<domain_id_type> > neighbors(
                     get_neighbor_domains(new_shell, single->id()));
 
                 std::vector<boost::shared_ptr<domain_type> > bursted;
@@ -3342,7 +3341,7 @@ protected:
                     closest = res.second;
                 }
 
-                boost::scoped_ptr<std::vector<domain_id_type> > _(intruders);
+                std::unique_ptr<std::vector<domain_id_type> > _(intruders);
 
                 LOG_DEBUG(("intruders: %s, closest: %s (dist=%.16g)",
                     intruders ?
@@ -4239,8 +4238,8 @@ protected:
     length_type const user_max_shell_size_;
 
     domain_map domains_;
-    boost::scoped_ptr<spherical_shell_matrix_type> ssmat_;
-    boost::scoped_ptr<cylindrical_shell_matrix_type> csmat_;
+    std::unique_ptr<spherical_shell_matrix_type> ssmat_;
+    std::unique_ptr<cylindrical_shell_matrix_type> csmat_;
     shell_matrix_map_type smatm_;
     shell_id_generator shidgen_;
     domain_id_generator didgen_;

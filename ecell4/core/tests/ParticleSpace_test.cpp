@@ -33,7 +33,7 @@ BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
 
     BOOST_CHECK_EQUAL((*space).list_species().size(), 0);
     BOOST_CHECK_EQUAL((*space).num_particles(), 0);
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_update_remove)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_update_remove)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_remove)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_remove)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_exception)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
     SerialIDGenerator<ParticleID> pidgen;
     const ParticleID pid1 = pidgen();
 
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_exception)
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius)
 {
-    boost::scoped_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
+    std::unique_ptr<ParticleSpace> space(new particle_space_type(edge_lengths, matrix_sizes));
     SerialIDGenerator<ParticleID> pidgen;
 
     const ParticleID pid1 = pidgen();
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_list_particles_within_radius)
 
 BOOST_AUTO_TEST_CASE(ParticleSpaceCellListImpl_test_constructor)
 {
-    boost::scoped_ptr<ParticleSpaceCellListImpl> space(new ParticleSpaceCellListImpl(edge_lengths, matrix_sizes));
+    std::unique_ptr<ParticleSpaceCellListImpl> space(new ParticleSpaceCellListImpl(edge_lengths, matrix_sizes));
 
     BOOST_CHECK_EQUAL((*space).matrix_sizes(), matrix_sizes);
 }

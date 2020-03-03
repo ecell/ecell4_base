@@ -155,6 +155,11 @@ public:
             std::make_pair(name, site_type()), site_comparerator()));
     }
 
+    const container_type& sites() const
+    {
+        return sites_;
+    }
+
 protected:
 
     std::string name_;
