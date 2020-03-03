@@ -385,6 +385,7 @@ public:
             {
                 std::cerr << "node " << i << " is not covered by its ancestors"
                           << std::endl;
+                this->dump_from_leaf_to_root(i, std::cerr);
                 this->dump(std::cerr);
                 return false;
             }
@@ -474,6 +475,25 @@ private:
                 dump_rec(entry, os, prefix + oss.str());
             }
         }
+        return;
+    }
+
+    void dump_from_leaf_to_root(std::size_t node_idx, std::ostream& os) const
+    {
+        std::ostringstream relation;
+        std::ostringstream boxes;
+        do
+        {
+            relation << node_idx;
+            const auto& node = this->node_at(node_idx);
+            if(node.parent != nil) {relation << " -> ";}
+
+            boxes << node.box.lower() << ":" << node.box.upper() << '\n';
+            node_idx   = node.parent;
+        }
+        while(this->node_at(node_idx).parent != nil);
+        os << relation.str() << std::endl;
+        os << boxes.str() << std::endl;
         return;
     }
 
