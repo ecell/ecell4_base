@@ -537,6 +537,7 @@ private:
     // ------------------------------------------------------------------------
     // get node. In the debug mode (w/o -DNDEBUG), it checks the requrested node
     // is available.
+
     node_type&       node_at(const std::size_t i)
     {
         assert(this->is_valid_node_index(i));
@@ -1053,14 +1054,22 @@ private:
         {
             return; // if the node has enough number of entries, then it's okay.
         }
-        if(node.parent == nil && node.size() == 1)
+        if(node.parent == nil)
         {
-            // if the root has only one entry, then the child node of the current
-            // root node should be the root node, no?
-            this->root_ = node.inode_entry().front();
-            this->erase_node(N);
-            assert(!this->is_valid_node_index(N));
-            return;
+            if(node.size() == 1)
+            {
+                // if the root has only one entry, then the child node of the
+                // current root node should be the root node.
+                this->root_ = node.inode_entry().front();
+                this->erase_node(N);
+                assert(!this->is_valid_node_index(N));
+                return;
+            }
+            // if we hit the root, then everything is done.
+            // Note that here we don't have enough number of entries in the
+            // root node. We can further optimize the tree structure but it
+            // is a hard and time-consuming task. Here we just keep the tree.
+            return ;
         }
 
         // collect index of nodes that are children of the node to be removed
