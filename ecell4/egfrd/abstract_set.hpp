@@ -1,91 +1,60 @@
 #ifndef ABSTRACT_SET_HPP
 #define ABSTRACT_SET_HPP
 
+#include <iterator>
+#include <algorithm>
+#include <vector>
 #include <set>
 #include <map>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
-#include <boost/range/const_iterator.hpp>
-#include <boost/range/value_type.hpp>
-#include <algorithm>
 
 namespace ecell4
 {
 namespace egfrd
 {
 
-template<typename T_>
-struct inserter: public std::unary_function<typename boost::range_value<T_>::type, bool>
+namespace detail
 {
-    typedef T_ set_type;
-    typedef typename boost::range_value<set_type>::type argument_type;
 
-    inserter(set_type& set): set_(set) {}
-
-    bool operator()(argument_type const& v)
-    {
-        set_.push_back(v);
-        return true;
-    }
-
-private:
-    set_type& set_;
-};
-
-template<typename Tval_, typename Tcompare_, typename Talloc_>
-struct inserter<std::set<Tval_, Tcompare_, Talloc_> >: public std::unary_function<typename boost::range_value<std::set<Tval_, Tcompare_, Talloc_> >::type, bool>
+template<typename T, typename Alloc>
+bool insert_impl(std::vector<T, Alloc>& set, const T& v)
 {
-    typedef std::set<Tval_, Tcompare_, Talloc_> set_type;
-    typedef typename boost::range_value<set_type>::type argument_type;
+    set.push_back(v);
+    return true;
+}
 
-    inserter(set_type& set): set_(set) {}
-
-    bool operator()(argument_type const& v)
-    {
-        return set_.insert(v).second;
-    }
-
-private:
-    set_type& set_;
-};
-
-template<typename Tkey_, typename Tval_, typename Tcompare_, typename Talloc_>
-struct inserter<std::map<Tkey_, Tval_, Tcompare_, Talloc_> >: public std::unary_function<typename boost::range_value<std::map<Tkey_, Tval_, Tcompare_, Talloc_> >::type, bool>
+template<typename Key, typename Compare, typename Alloc>
+bool insert_impl(std::set<Key, Compare, Alloc>& set, const Key& v)
 {
-    typedef std::map<Tkey_, Tval_, Tcompare_, Talloc_> set_type;
-    typedef typename boost::range_value<set_type>::type argument_type;
+    return set.insert(v).second;
+}
 
-    inserter(set_type& set): set_(set) {}
-
-    bool operator()(argument_type const& v)
-    {
-        return set_.insert(v).second;
-    }
-
-private:
-    set_type& set_;
-};
+template<typename Key, typename T, typename Compare, typename Alloc>
+bool insert_impl(std::map<Key, T, Compare, Alloc>& set,
+                 const typename std::map<Key, T, Compare, Alloc>::value_type& v)
+{
+    return set.insert(v).second;
+}
+} // detail
 
 template<typename T_>
-inline bool collection_contains(T_ const& s, typename boost::range_value<T_>::type const& v)
+inline bool collection_contains(T_ const& s, typename T_::value_type const& v)
 {
-    typename boost::range_const_iterator<T_>::type e(boost::end(s));
-    return e != std::find(boost::begin(s), e, v);
+    auto e(std::end(s));
+    return e != std::find(std::begin(s), e, v);
 }
 
 template<typename T_>
-inline bool insert(T_& s, typename boost::range_value<T_>::type const& v)
+inline bool insert(T_& s, typename T_::value_type const& v)
 {
-    return inserter<T_>(s)(v);
+    return detail::insert_impl(s, v);
 }
 
-template<typename T1, typename T2, typename Tr>
-inline void difference(T1 const& r1, T2 const& r2, Tr const& result)
+template<typename T1, typename T2, typename OutputIterator>
+inline void difference(T1 const& r1, T2 const& r2, OutputIterator result)
 {
-    std::set_difference(
-        boost::begin(r1), boost::end(r1),
-        boost::begin(r2), boost::end(r2),
-        result);
+    std::set_difference(std::begin(r1), std::end(r1),
+                        std::begin(r2), std::end(r2), result);
+    return;
 }
 
 } // egfrd
