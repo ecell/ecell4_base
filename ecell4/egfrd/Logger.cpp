@@ -1,6 +1,7 @@
 #include <string>
 #include <map>
 #include <utility>
+#include <memory>
 #include <cstdio>
 #include <functional>
 // #include <boost/regex.hpp> //XXX: disabled pattern matching once
@@ -14,35 +15,11 @@
 #include "utils/fun_composition.hpp"
 #include "utils/fun_wrappers.hpp"
 #include "utils/assoc_container_traits.hpp"
-#include "utils/map_adapter.hpp"
 
 namespace ecell4
 {
 namespace egfrd
 {
-struct map_adapter_handler
-{
-    template<typename Tadapter_>
-    void destroy(Tadapter_& cntnr) const
-    {
-        std::for_each(boost::begin(cntnr), boost::end(cntnr),
-                compose_unary(
-                    delete_ptr<
-                        typename boost::remove_pointer<
-                            typename Tadapter_::mapped_type>::type>(),
-                    select_second<typename Tadapter_::value_type>()));
-    }
-
-    template<typename Tadapter_, typename Titer_>
-    void insert(Titer_ const& b, Titer_ const& e) const
-    {
-    }
-
-    template<typename Tadapter_>
-    void insert(typename Tadapter_::value_type const& val) const
-    {
-    }
-};
 
 class LoggerManagerRegistry
 {
@@ -118,25 +95,16 @@ boost::shared_ptr<LoggerManager> Logger::manager() const
 
 Logger& Logger::get_logger(char const* name)
 {
-    typedef map_adapter<std::map<std::string, Logger*>, map_adapter_handler> loggers_type;
-    static map_adapter_handler hdlr;
-    static loggers_type loggers(hdlr);
-    std::string _name(name);
-    std::pair<loggers_type::iterator, bool> i(
-            #if (_MSC_VER >= 1600)
-            loggers.insert(loggers_type::value_type(_name, nullptr)));
-            #else
-            loggers.insert(loggers_type::value_type(_name, 0)));
-            #endif
-    if (i.second)
+    static std::map<std::string, std::unique_ptr<Logger>> loggers;
+
+    auto inserted(loggers.emplace(std::string(name), nullptr));
+    if (inserted.second)
     {
-        Logger* const log(new Logger(registry, name));
-        (*i.first).second = log;
+        std::unique_ptr<Logger> log(new Logger(registry, name));
+        inserted.first->second = std::move(log);
     }
-
-    return *(*i.first).second;
+    return *(inserted.first->second);
 }
-
 
 char const* Logger::stringize_error_level(enum level lv)
 {
