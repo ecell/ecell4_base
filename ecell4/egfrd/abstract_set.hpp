@@ -15,21 +15,16 @@ namespace egfrd
 {
 
 template<typename T_>
-struct collection_value: public boost::range_value<T_>
-{
-};
-
-template<typename T_>
-struct inserter: public std::unary_function<typename collection_value<T_>::type, bool>
+struct inserter: public std::unary_function<typename boost::range_value<T_>::type, bool>
 {
     typedef T_ set_type;
-    typedef typename collection_value<set_type>::type argument_type;
+    typedef typename boost::range_value<set_type>::type argument_type;
 
     inserter(set_type& set): set_(set) {}
 
     bool operator()(argument_type const& v)
     {
-        set_.push_back(v); 
+        set_.push_back(v);
         return true;
     }
 
@@ -38,16 +33,16 @@ private:
 };
 
 template<typename Tval_, typename Tcompare_, typename Talloc_>
-struct inserter<std::set<Tval_, Tcompare_, Talloc_> >: public std::unary_function<typename collection_value<std::set<Tval_, Tcompare_, Talloc_> >::type, bool>
+struct inserter<std::set<Tval_, Tcompare_, Talloc_> >: public std::unary_function<typename boost::range_value<std::set<Tval_, Tcompare_, Talloc_> >::type, bool>
 {
     typedef std::set<Tval_, Tcompare_, Talloc_> set_type;
-    typedef typename collection_value<set_type>::type argument_type;
+    typedef typename boost::range_value<set_type>::type argument_type;
 
     inserter(set_type& set): set_(set) {}
 
     bool operator()(argument_type const& v)
     {
-        return set_.insert(v).second; 
+        return set_.insert(v).second;
     }
 
 private:
@@ -55,16 +50,16 @@ private:
 };
 
 template<typename Tkey_, typename Tval_, typename Tcompare_, typename Talloc_>
-struct inserter<std::map<Tkey_, Tval_, Tcompare_, Talloc_> >: public std::unary_function<typename collection_value<std::map<Tkey_, Tval_, Tcompare_, Talloc_> >::type, bool>
+struct inserter<std::map<Tkey_, Tval_, Tcompare_, Talloc_> >: public std::unary_function<typename boost::range_value<std::map<Tkey_, Tval_, Tcompare_, Talloc_> >::type, bool>
 {
     typedef std::map<Tkey_, Tval_, Tcompare_, Talloc_> set_type;
-    typedef typename collection_value<set_type>::type argument_type;
+    typedef typename boost::range_value<set_type>::type argument_type;
 
     inserter(set_type& set): set_(set) {}
 
     bool operator()(argument_type const& v)
     {
-        return set_.insert(v).second; 
+        return set_.insert(v).second;
     }
 
 private:
@@ -72,14 +67,14 @@ private:
 };
 
 template<typename T_>
-inline bool collection_contains(T_ const& s, typename collection_value<T_>::type const& v)
+inline bool collection_contains(T_ const& s, typename boost::range_value<T_>::type const& v)
 {
     typename boost::range_const_iterator<T_>::type e(boost::end(s));
     return e != std::find(boost::begin(s), e, v);
 }
 
 template<typename T_>
-inline bool insert(T_& s, typename collection_value<T_>::type const& v)
+inline bool insert(T_& s, typename boost::range_value<T_>::type const& v)
 {
     return inserter<T_>(s)(v);
 }
