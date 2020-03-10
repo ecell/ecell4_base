@@ -1,13 +1,12 @@
 #ifndef ECELL4_CONTEXT_HPP
 #define ECELL4_CONTEXT_HPP
 
-#include "get_mapper_mf.hpp"
 #include "UnitSpecies.hpp"
 #include "Species.hpp"
 #include "ReactionRule.hpp"
 #include <boost/array.hpp>
 #include <boost/optional.hpp>
-
+#include <unordered_map>
 
 namespace ecell4
 {
@@ -61,7 +60,7 @@ public:
         {
             typedef std::vector<Species::container_type::difference_type>
                 iterator_container_type;
-            typedef utils::get_mapper_mf<std::string, std::string>::type
+            typedef std::unordered_map<std::string, std::string>
                 variable_container_type;
 
             iterator_container_type iterators;

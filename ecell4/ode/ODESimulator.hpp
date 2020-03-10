@@ -12,7 +12,6 @@
 
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/types.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/extras.hpp>
 
 #include <ecell4/core/SimulatorBase.hpp>

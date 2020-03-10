@@ -1,8 +1,7 @@
 #ifndef SHELL_HPP
 #define SHELL_HPP
 
-#include <ecell4/core/hash.hpp>
-
+#include <functional>
 #include <ostream>
 
 template<typename Tshape_, typename Tdid_>
@@ -91,8 +90,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
     return strm;
 }
 
-ECELL4_DEFINE_HASH_BEGIN()
-
+namespace std {
 template<typename Tshape_, typename Tdid_>
 struct hash<Shell<Tshape_, Tdid_> >
 {
@@ -104,7 +102,6 @@ struct hash<Shell<Tshape_, Tdid_> >
             hash<typename argument_type::domain_id_type>()(val.did());
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif /* SHELL_HPP */

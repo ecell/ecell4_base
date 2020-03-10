@@ -2,8 +2,8 @@
 #define ECELL4_PARTICLE_SPACE_HPP
 
 #include <cmath>
+#include <unordered_map>
 
-#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "functions.hpp"
 #include "exceptions.hpp"
@@ -355,8 +355,8 @@ public:
 
 protected:
 
-    typedef utils::get_mapper_mf<
-        ParticleID, particle_container_type::size_type>::type particle_map_type;
+    typedef std::unordered_map<
+        ParticleID, particle_container_type::size_type> particle_map_type;
 
 public:
 

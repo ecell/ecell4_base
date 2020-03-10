@@ -1,7 +1,7 @@
 #ifndef PARTICLE_CONTAINER_BASE_HPP
 #define PARTICLE_CONTAINER_BASE_HPP
 
-// #include <ecell4/core/get_mapper_mf.hpp>
+// #include <unordered_map>
 // #include <ecell4/core/ParticleSpaceCellListImpl.hpp>
 // 
 // #include "utils/range.hpp"
@@ -126,7 +126,7 @@
 //     typedef typename base_type::transaction_type transaction_type;
 //     typedef typename base_type::time_type time_type;
 // 
-//     typedef MatrixSpace<particle_type, particle_id_type, ecell4::utils::get_mapper_mf> particle_matrix_type;
+//     typedef MatrixSpace<particle_type, particle_id_type> particle_matrix_type;
 //     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
 //     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
 // 

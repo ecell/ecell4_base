@@ -840,8 +840,7 @@ roll(const Polygon& poly,
 } // ecell4
 #undef ECELL4_STRONG_TYPEDEF
 
-
-ECELL4_DEFINE_HASH_BEGIN()
+namespace std {
 
 template<>
 struct hash<ecell4::Polygon::FaceID>
@@ -873,6 +872,6 @@ struct hash<ecell4::Polygon::VertexID>
         return static_cast<std::size_t>(val);
     }
 };
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif// ECELL4_POLYGON

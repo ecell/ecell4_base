@@ -403,7 +403,7 @@ struct PositionLogger
 {
     typedef std::vector<std::pair<ParticleID, Particle> >
         particle_container_type;
-    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+    typedef std::unordered_map<Species::serial_type, unsigned int>
         serial_map_type;
 
     PositionLogger(const std::vector<std::string>& species)
@@ -504,7 +504,7 @@ public:
 
     typedef std::vector<std::pair<ParticleID, Particle> >
         particle_container_type;
-    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+    typedef std::unordered_map<Species::serial_type, unsigned int>
         serial_map_type;
 
 public:
@@ -560,7 +560,7 @@ public:
 
     typedef std::vector<std::pair<ParticleID, Particle> >
         particle_container_type;
-    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+    typedef std::unordered_map<Species::serial_type, unsigned int>
         serial_map_type;
 
 public:

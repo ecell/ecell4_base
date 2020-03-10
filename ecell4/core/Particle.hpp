@@ -2,6 +2,7 @@
 #define ECELL4_PARTICLE_HPP
 
 #include <map>
+#include <functional>
 
 #include <ecell4/core/config.h>
 
@@ -10,7 +11,6 @@
 #include "Species.hpp"
 #include "Identifier.hpp"
 
-#include "hash.hpp"
 
 namespace ecell4
 {
@@ -163,7 +163,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
 
 } // ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
+namespace std {
 
 template<>
 struct hash<ecell4::Particle>
@@ -179,7 +179,6 @@ struct hash<ecell4::Particle>
             hash<argument_type::species_serial_type>()(val.sid());
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif /* ECELL4_PARTICLE_HPP */

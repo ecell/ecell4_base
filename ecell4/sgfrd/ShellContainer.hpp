@@ -35,7 +35,7 @@ public:
     typedef storage_type shell_type;
     typedef std::pair<ShellID, storage_type> shell_id_pair_type;
     typedef std::vector<shell_id_pair_type> container_type;
-    typedef typename ecell4::utils::get_mapper_mf<ShellID, std::size_t>::type
+    typedef std::unordered_map<ShellID, std::size_t>
         shell_id_to_index_map_type;
 
     typedef StructureRegistrator<ShellID, FaceID>   face_registrator_type;

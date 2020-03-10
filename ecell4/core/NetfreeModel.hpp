@@ -1,8 +1,6 @@
 #ifndef ECELL4_NETFREE_MODEL_HPP
 #define ECELL4_NETFREE_MODEL_HPP
 
-// #include "get_mapper_mf.hpp"
-
 #include <map>
 #include <set>
 #include <algorithm>

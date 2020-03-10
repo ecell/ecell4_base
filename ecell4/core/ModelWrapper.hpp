@@ -13,7 +13,7 @@ public:
 
 protected:
 
-    typedef utils::get_mapper_mf<Species::serial_type, Species>::type
+    typedef std::unordered_map<Species::serial_type, Species>
         species_attribute_cache_type;
     typedef std::map<Species::serial_type, std::vector<ReactionRule> >
         first_order_reaction_rules_map_type;

@@ -11,7 +11,6 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/SimulatorBase.hpp>
 #include <ecell4/core/VoxelPool.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
 
 #include "SpatiocyteEvent.hpp"
 #include "SpatiocyteWorld.hpp"
@@ -27,7 +26,7 @@ public:
     typedef SimulatorBase<SpatiocyteWorld> base_type;
     typedef SpatiocyteEvent::reaction_type reaction_type;
     typedef EventSchedulerBase<SpatiocyteEvent> scheduler_type;
-    typedef utils::get_mapper_mf<Species, Real>::type alpha_map_type;
+    typedef std::unordered_map<Species, Real> alpha_map_type;
 
 public:
     SpatiocyteSimulator(boost::shared_ptr<SpatiocyteWorld> world,

@@ -8,7 +8,6 @@
 #include <H5Cpp.h>
 
 #include "types.hpp"
-#include "get_mapper_mf.hpp"
 #include "Species.hpp"
 #include "Particle.hpp"
 
@@ -110,7 +109,7 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
     const unsigned int num_particles(particles.size());
 
     std::vector<Species> species;
-    typedef utils::get_mapper_mf<Species::serial_type, unsigned int>::type
+    typedef std::unordered_map<Species::serial_type, unsigned int>
         species_id_map_type;
     species_id_map_type species_id_map;
 
@@ -221,7 +220,7 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
             h5_particle_table.get(), traits_type::get_particle_comp_type());
         particle_dset.close();
 
-        typedef utils::get_mapper_mf<unsigned int, Species::serial_type>::type
+        typedef std::unordered_map<unsigned int, Species::serial_type>
             species_id_map_type;
         species_id_map_type species_id_map;
         for (unsigned int i(0); i < num_species; ++i)

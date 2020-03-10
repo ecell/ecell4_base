@@ -17,24 +17,11 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
-//#define HAVE_TR1_UNORDERED_MAP
-
-#if HAVE_UNORDERED_MAP
 #include <unordered_map>
-#elif HAVE_TR1_UNORDERED_MAP
-#include <tr1/unordered_map>
-#elif HAVE_BOOST_UNORDERED_MAP_HPP
-#include <boost/unordered_map.hpp>
-#else
-#include <map>
-#endif /* HAVE_UNORDERED_MAP */
 
 #ifdef DEBUG
 #include <iostream>
 #endif
-
-#include "swap.hpp"
-
 
 namespace ecell4
 {
@@ -79,15 +66,7 @@ protected:
                     value >> (sizeof(identifier_type) * 8 / 2));
         }
     };
-#if HAVE_UNORDERED_MAP
     typedef std::unordered_map<identifier_type, index_type, hasher> index_map;
-#elif HAVE_TR1_UNORDERED_MAP
-    typedef std::tr1::unordered_map<identifier_type, index_type, hasher> index_map;
-#elif HAVE_BOOST_UNORDERED_MAP_HPP
-    typedef boost::unordered_map<identifier_type, index_type, hasher> index_map;
-#else
-    typedef std::map<identifier_type, index_type> index_map;
-#endif
 
 public:
     index_type index(identifier_type const& id) const
@@ -471,7 +450,8 @@ inline void DynamicPriorityQueue<Titem_, Tcomparator_, Tpolicy_>::pop_by_index(i
     policy_type::pop(index, item.first, items_.back().first);
 
     // 2. pop the item from the items_.
-    blit_swap(item, items_.back());
+    using std::swap; // ADL-based specialization
+    swap(item, items_.back());
     items_.pop_back();
 
     const index_type removed_pos(position_vector_[index]);

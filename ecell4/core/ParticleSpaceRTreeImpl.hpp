@@ -21,7 +21,6 @@ class ParticleSpaceRTreeImpl
     : public ParticleSpace
 {
 public:
-
     struct ParticleAABBGetter
     {
         AABB operator()(const Particle& p, const Real margin) const noexcept
@@ -50,7 +49,7 @@ public:
     // species support
     using particle_id_set             = std::set<ParticleID>;
     using per_species_particle_id_set =
-        utils::get_mapper_mf<Species::serial_type, particle_id_set>::type;
+        std::unordered_map<Species::serial_type, particle_id_set>;
 
 public:
 

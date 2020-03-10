@@ -1,7 +1,7 @@
 #ifndef ECELL4_SGFRD_STRUCTURE_REGISTRATOR
 #define ECELL4_SGFRD_STRUCTURE_REGISTRATOR
 #include <ecell4/core/Polygon.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
+#include <unordered_map>
 
 namespace ecell4
 {
@@ -22,8 +22,8 @@ public:
     typedef typename container_type::const_iterator const_iterator;
 
     typedef ecell4::Polygon polygon_type;
-    typedef typename utils::get_mapper_mf<
-        element_id_type, structure_id_type>::type elemid_to_strid_map_type;
+    typedef std::unordered_map<
+        element_id_type, structure_id_type> elemid_to_strid_map_type;
 
 public:
 

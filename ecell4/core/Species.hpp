@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <sstream>
 #include <algorithm>
+#include <functional>
 #include <boost/algorithm/string.hpp>
 #include <boost/variant.hpp>
 #include <boost/container/flat_map.hpp>
@@ -13,8 +15,6 @@
 
 #include <ecell4/core/config.h>
 
-#include "hash.hpp"
-#include "get_mapper_mf.hpp"
 #include "types.hpp"
 #include "exceptions.hpp"
 #include "UnitSpecies.hpp"
@@ -116,8 +116,7 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 
 } // ecell4
 
-ECELL4_DEFINE_HASH_BEGIN()
-
+namespace std {
 template<>
 struct hash<ecell4::Species>
 {
@@ -126,7 +125,6 @@ struct hash<ecell4::Species>
         return hash<ecell4::Species::serial_type>()(val.serial());
     }
 };
-
-ECELL4_DEFINE_HASH_END()
+} // std
 
 #endif /* ECELL4_SPECIES_HPP */

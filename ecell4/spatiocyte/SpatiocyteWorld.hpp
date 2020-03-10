@@ -907,7 +907,7 @@ private:
     }
 
 protected:
-    typedef utils::get_mapper_mf<Species, MoleculeInfo>::type
+    typedef std::unordered_map<Species, MoleculeInfo>
         molecule_info_cache_t;
 
     std::size_t size_;

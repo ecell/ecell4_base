@@ -2,8 +2,8 @@
 #define ECELL4_SPATIOCYTE_INTERFACE_CONTAINER
 
 #include <boost/optional.hpp>
-#include <ecell4/core/get_mapper_mf.hpp>
 #include <vector>
+#include <unordered_map>
 
 namespace ecell4
 {
@@ -14,8 +14,7 @@ namespace spatiocyte
 template <typename T> class OneToManyMap {
 
 protected:
-    typedef
-        typename utils::get_mapper_mf<T, std::vector<T>>::type container_type;
+    typedef std::unordered_map<T, std::vector<T>> container_type;
 
     typedef typename container_type::iterator iterator;
 

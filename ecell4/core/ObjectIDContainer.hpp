@@ -1,6 +1,5 @@
 #ifndef ECELL4_OBJECT_ID_CONTAINER
 #define ECELL4_OBJECT_ID_CONTAINER
-#include <ecell4/core/get_mapper_mf.hpp>
 #include <ecell4/core/type_name_of.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/Identifier.hpp>
@@ -21,7 +20,7 @@ public:
     typedef T_id    identifier_type;
     typedef T_obj   object_type;
     typedef ObjectIDContainer<T_id, T_obj> self_type;
-    typedef typename utils::get_mapper_mf<identifier_type, std::size_t>::type
+    typedef std::unordered_map<identifier_type, std::size_t>
             id_index_map_type;
 
     typedef std::pair<identifier_type, object_type>  value_type;
