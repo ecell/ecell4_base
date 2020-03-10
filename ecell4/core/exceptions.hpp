@@ -3,7 +3,7 @@
 
 #include <exception>
 #include <stdexcept>
-
+#include <sstream>
 #include <string>
 
 namespace ecell4
@@ -200,8 +200,8 @@ std::string concat_arguments_to_string_impl(
     oss << std::forward<T>(head);
     return concat_arguments_to_string_impl(oss, std::forward<Ts>(tail)...);
 }
-template<typename T, typename ... Ts>
-std::string concat_arguments_to_string(std::ostringstream& oss, Ts&& ... args)
+template<typename ... Ts>
+std::string concat_arguments_to_string(Ts&& ... args)
 {
     std::ostringstream oss;
     return concat_arguments_to_string_impl(oss, std::forward<Ts>(args)...);
