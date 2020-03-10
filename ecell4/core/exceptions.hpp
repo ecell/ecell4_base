@@ -187,6 +187,32 @@ private:
     std::string str_;
 };
 
+namespace detail
+{
+inline std::string concat_arguments_to_string_impl(std::ostringstream& oss)
+{
+    return oss.str();
+}
+template<typename T, typename ... Ts>
+std::string concat_arguments_to_string_impl(
+        std::ostringstream& oss, T&& head, Ts&& ... tail)
+{
+    oss << std::forward<T>(head);
+    return concat_arguments_to_string_impl(oss, std::forward<Ts>(tail)...);
+}
+template<typename T, typename ... Ts>
+std::string concat_arguments_to_string(std::ostringstream& oss, Ts&& ... args)
+{
+    std::ostringstream oss;
+    return concat_arguments_to_string_impl(oss, std::forward<Ts>(args)...);
+}
+} // detail
+
+template<class Exception, typename ... Ts>
+[[noreturn]] void throw_exception(Ts&& ... args)
+{
+    throw Exception(detail::concat_arguments_to_string(std::forward<Ts>(args)...));
 }
 
+} // ecell4
 #endif /* ECELL4_EXCEPTIONS_HPP */
