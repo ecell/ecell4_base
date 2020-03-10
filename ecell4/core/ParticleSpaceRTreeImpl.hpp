@@ -183,14 +183,12 @@ public:
 #ifdef WITH_HDF5
     void save_hdf5(H5::Group* root) const
     {
-        throw NotImplemented(
-            "save(const std::string) is not supported by this space class");
+        save_particle_space(*this, root);
     }
 
     void load_hdf5(const H5::Group& root)
     {
-        throw NotImplemented(
-            "save(const std::string) is not supported by this space class");
+        load_particle_space(root, this);
     }
 #endif
 

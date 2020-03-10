@@ -15,10 +15,6 @@
 #include <sstream>
 #include <algorithm>
 
-#ifdef WITH_HDF5
-#include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
-#endif
-
 namespace ecell4
 {
 
