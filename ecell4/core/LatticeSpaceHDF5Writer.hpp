@@ -234,11 +234,9 @@ void load_lattice_space(const H5::Group &root, Tspace_ *space,
 
     if (implementation != "" && implementation != impl)
     {
-        std::ostringstream oss;
-        oss << "Implementation mismatch between LatticeSpaces given and saved "
-               "in the HDF5 ['"
-            << implementation << "' != '" << impl << "']." << std::endl;
-        throw NotSupported(oss.str());
+        throw_exception<NotSupported>("Implementation mismatch between "
+            "LatticeSpaces given and saved in the HDF5 ['", implementation,
+            "' != '", impl, "'].");
     }
 
     space->set_t(t);

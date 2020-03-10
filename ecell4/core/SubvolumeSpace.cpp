@@ -73,10 +73,7 @@ SubvolumeSpaceVectorImpl::get_pool(const Species& sp) const
     matrix_type::const_iterator i(matrix_.find(sp));
     if (i == matrix_.end())
     {
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str());
-        // return boost::shared_ptr<PoolBase>();
+        throw_exception<NotFound>("Speices [", sp.serial(), "] not found");
     }
     return (*i).second;
 }
@@ -110,9 +107,7 @@ void SubvolumeSpaceVectorImpl::add_molecules(
 
         // reserve_species(sp, c);
         // i = matrix_.find(sp);
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str());
+        throw_exception<NotFound>("Speices [", sp.serial(), "] not found");
     }
     // (*i).second[c] += num;
     (*i).second->add_molecules(num, c);
@@ -128,18 +123,14 @@ void SubvolumeSpaceVectorImpl::remove_molecules(
         {
             return;
         }
-
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str());
+        throw_exception<NotFound>("Speices [", sp.serial(), "] not found");
     }
 
     // if ((*i).second[c] < num)
     if ((*i).second->num_molecules(c) < num)
     {
-        std::ostringstream message;
-        message << "The number of molecules cannot be negative. [" << sp.serial() << "]";
-        throw std::invalid_argument(message.str());
+        throw_exception<std::invalid_argument>(
+            "The number of molecules cannot be negative. [", sp.serial(), ']');
     }
 
     // (*i).second[c] -= num;
@@ -225,9 +216,8 @@ void SubvolumeSpaceVectorImpl::add_structure(
     structure_matrix_type::const_iterator it(structure_matrix_.find(sp.serial()));
     if (it != structure_matrix_.end())
     {
-        std::ostringstream message;
-        message << "The given structure [" << sp.serial() << "] is already defined.";
-        throw AlreadyExists(message.str());
+        throw_exception<AlreadyExists>("The given structure [", sp.serial(),
+                                       "] is already defined.");
     }
 
     switch (shape->dimension())
