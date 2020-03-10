@@ -6,7 +6,10 @@
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/multi_array.hpp>
-
+namespace ecell4
+{
+namespace egfrd
+{
 template< typename T_ >
 struct num_elements
 {
@@ -59,5 +62,6 @@ T_& array_cast( Tx_& elts )
         typename Tx_::value_type >::value ));
     return reinterpret_cast< T_& >( *elts.data() );
 }
-
+} // egfrd
+} // ecell4
 #endif /* ARRAY_CAST_HPP */

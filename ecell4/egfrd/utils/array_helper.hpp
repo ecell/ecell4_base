@@ -8,6 +8,11 @@
 #include <boost/preprocessor/cat.hpp>
 #include <boost/call_traits.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 #define ARRAY_HELPER_INNER_TPL(__z__, __n__, __d__) \
     __d__[__n__] = BOOST_PP_CAT(p, __n__);
 
@@ -46,4 +51,6 @@ array_slice(::boost::array<T_, Nfrom_> const& arr)
     return *reinterpret_cast< ::boost::array<T_, Nto_> const*>(&arr);
 }
 
+} // egfrd
+} // ecell4
 #endif /* ARRAY_HELPER_HPP */

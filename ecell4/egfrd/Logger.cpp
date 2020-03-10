@@ -16,6 +16,10 @@
 #include "utils/assoc_container_traits.hpp"
 #include "utils/map_adapter.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 struct map_adapter_handler
 {
     template<typename Tadapter_>
@@ -262,5 +266,6 @@ void LoggerManager::manage(Logger* logger)
     managed_loggers_.insert(logger);
     /* }} */
 }
-
 LogAppender::~LogAppender() {}
+} // egfrd
+} // ecell4

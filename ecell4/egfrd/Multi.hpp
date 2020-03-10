@@ -26,6 +26,11 @@ using ecell4::pow_2;
 #include <greens_functions/PairGreensFunction.hpp>
 // using namespace greens_functions;
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_>
 class MultiParticleContainer
     : public Ttraits_::world_type::particle_container_type
@@ -439,7 +444,7 @@ public:
         {
             spherical_shell_id_pair const& sp(*i);
             position_type ppos(main_.world()->periodic_transpose(sphere.position(), (sp).second.position()));
-            if (::distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())  //XXX: ecell4::egfrd::distance
+            if (ecell4::egfrd::distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
             {
                 return true;
             }
@@ -524,4 +529,6 @@ protected:
 template<typename Tsim_>
 Logger& Multi<Tsim_>::log_(Logger::get_logger("ecell.Multi"));
 
+} // egfrd
+} // ecell4
 #endif /* MULTI_HPP */

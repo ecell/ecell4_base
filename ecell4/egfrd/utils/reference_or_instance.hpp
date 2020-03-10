@@ -1,6 +1,11 @@
 #ifndef REFERENCE_OR_INSTANCE_HPP
 #define REFERENCE_OR_INSTANCE_HPP
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename T_>
 class reference_or_instance
 {
@@ -56,4 +61,6 @@ private:
     T_* ref_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* REFERENCE_OR_INSTANCE_HPP */

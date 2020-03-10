@@ -7,6 +7,10 @@
 #include "ReactionRecorder.hpp"
 #include "ReactionRecord.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename Trr_>
 class ReactionRecorderWrapper
@@ -131,4 +135,6 @@ protected:
 };
 
 
+} // egfrd
+} // ecell4
 #endif /* REACTION_RECORDER_WRAPPER_HPP */

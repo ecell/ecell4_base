@@ -5,6 +5,11 @@
 
 #include "Logger.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 class ConsoleAppender: public LogAppender
 {
 public:
@@ -18,4 +23,6 @@ public:
     virtual void operator()(enum Logger::level lv, char const* name, char const** chunks);
 };
 
+} // egfrd
+} // ecell4
 #endif /* CONSOLE_LOGGER_HPP */

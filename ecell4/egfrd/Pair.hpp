@@ -6,6 +6,11 @@
 #include <boost/array.hpp>
 #include "ShapedDomain.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_>
 class Pair: public ShapedDomain<Ttraits_>
 {
@@ -52,4 +57,6 @@ protected:
     particle_array_type particles_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* PAIR_HPP */

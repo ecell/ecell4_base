@@ -9,6 +9,10 @@
 #include <sstream>
 #include "Real3Type.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename coordT>
 struct StlTriangle
 {
@@ -273,5 +277,6 @@ StlFileReader<coordT>::read_binary_triangle(std::ifstream& ifs) const
 
     return StlTriangle<coordT>(normal, vertices);
 }
-
+} // egfrd
+} // ecell4
 #endif /* GFRD_POLYGON_STL_FILE_READER */

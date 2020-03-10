@@ -47,6 +47,10 @@
 #include <greens_functions/GreensFunction3D.hpp>
 // using namespace greens_functions;
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename Tworld_>
 struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
@@ -1357,14 +1361,14 @@ public:
             typename std::set<shell_id_type> const& shell_ids(
                 did_map[domain.id()]);
             CHECK(static_cast<typename domain_type::size_type>(
-                    ::size(shell_ids)) == num_shells);
+                    ecell4::egfrd::size(shell_ids)) == num_shells);
         }
 
         CHECK((*base_type::world_).num_particles() == static_cast<ecell4::Integer>(particles_correspond_to_domains));
 
         {
             std::vector<domain_id_type> diff;
-            ::difference(make_select_first_range(did_map), scheduled_domains,
+            ecell4::egfrd::difference(make_select_first_range(did_map), scheduled_domains,
                     std::back_inserter(diff));
 
             if (diff.size() != 0)
@@ -1385,9 +1389,9 @@ public:
         boost::fusion::for_each(smatm_,
                 shell_id_collector<std::set<shell_id_type> >(all_shell_ids));
 
-        if (shells_correspond_to_domains != static_cast<std::size_t>(::size(all_shell_ids)))
+        if (shells_correspond_to_domains != static_cast<std::size_t>(ecell4::egfrd::size(all_shell_ids)))
         {
-            LOG_WARNING(("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(::size(all_shell_ids))));
+            LOG_WARNING(("shells_correspond_to_domains=%zu, shell_population=%zu", shells_correspond_to_domains, static_cast<std::size_t>(ecell4::egfrd::size(all_shell_ids))));
             dump_events();
             retval = false;
         }
@@ -2282,7 +2286,7 @@ protected:
         const molecule_info_type reactant_species((*base_type::world_).get_molecule_info(reactant.second.species()));
         // const molecule_info_type reactant_species((*base_type::world_).find_molecule_info(reactant.second.species()));
         reaction_rules const& rules((*base_type::network_rules_).query_reaction_rule(reactant.second.species()));
-        if (::size(rules) == 0)
+        if (ecell4::egfrd::size(rules) == 0)
         {
             return false;
         }
@@ -2292,7 +2296,7 @@ protected:
                 boost::lexical_cast<std::string>(reactant.second.sid()).c_str(),
                 stringize_and_join(r.get_products(), ", ").c_str()));
 
-        switch (::size(r.get_products()))
+        switch (ecell4::egfrd::size(r.get_products()))
         {
         case 0:
             remove_domain(domain);
@@ -2312,10 +2316,10 @@ protected:
                     (*base_type::world_).get_molecule_info(product_id0));
 
                 if (reactant_species.radius < product_species.radius)
-                    clear_volume(::shape(reactant.second), domain.id());
+                    clear_volume(ecell4::egfrd::shape(reactant.second), domain.id());
 
                 if (!(*base_type::world_).no_overlap(
-                    ::shape(reactant.second), reactant.first))
+                    ecell4::egfrd::shape(reactant.second), reactant.first))
                 {
                     LOG_INFO(("no space for product particle."));
                     throw no_space();
@@ -3495,7 +3499,7 @@ protected:
                 }
 
                 boost::optional<reaction_rule_type const&> optr(boost::none);
-                if(::size(domain.reactions()) != 1)
+                if(ecell4::egfrd::size(domain.reactions()) != 1)
                 {
                     Real rndr = this->rng().uniform(0., k_tot);
                     BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
@@ -3516,7 +3520,7 @@ protected:
                 reaction_rule_type const& r =
                     (static_cast<bool>(optr)) ? *optr : domain.reactions().back();
 
-                switch (::size(r.get_products()))
+                switch (ecell4::egfrd::size(r.get_products()))
                 {
                 case 0:
                     {
@@ -4288,4 +4292,6 @@ inline char const* retrieve_domain_type_name(
 template<typename Ttraits_>
 Logger& EGFRDSimulator<Ttraits_>::log_(Logger::get_logger("ecell.EGFRDSimulator"));
 
+} // egfrd
+} // ecell4
 #endif /* EGFRDSIMULATOR_HPP */

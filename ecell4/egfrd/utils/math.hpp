@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <cmath>
 
+namespace ecell4
+{
+namespace egfrd
+{
 /**
  * Return True if a and b are equal, subject to given tolerances. Float 
  * comparison.
@@ -23,4 +27,6 @@ inline bool feq(T const& a, T const& b, T const& typical = 1., double tolerance 
     return std::abs(a - b) <= tolerance * (typical + std::min(std::abs(a), std::abs(b)));
 }
 
+} // egfrd
+} // ecell4
 #endif /* UTILS_MATH_HPP */

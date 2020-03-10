@@ -6,6 +6,11 @@
 #include <boost/mpl/and.hpp>
 #include "linear_algebra.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template< typename T1_, typename T2_ >
 inline typename element_type_of< T1_ >::type distance(
         T1_ const& p1, T2_ const p2,
@@ -218,4 +223,6 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
         return end - (normal * (norm_e * 2.0));
     }
 }
+} // egfrd
+} // ecell4
 #endif /* GEOMETRY_HPP */

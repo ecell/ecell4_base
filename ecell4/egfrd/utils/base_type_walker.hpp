@@ -3,6 +3,11 @@
 
 #include <boost/call_traits.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Twalker_, typename T_, typename TwalkerHolder_ = Twalker_ const&>
 class base_type_walker
 {
@@ -37,4 +42,6 @@ public:
     walker_holder_type walker;
 };
 
+} // egfrd
+} // ecell4
 #endif /* UTILS_BASE_TYPE_WALKER_HPP */

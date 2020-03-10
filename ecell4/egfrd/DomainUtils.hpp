@@ -6,6 +6,11 @@
 #include "Pair.hpp"
 #include "GreensFunction3DAbsSym.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_>
 struct DomainUtils
 {
@@ -113,4 +118,6 @@ struct DomainUtils
     }
 };
 
+} // egfrd
+} // ecell4
 #endif /* DOMAIN_UTILS_HPP */

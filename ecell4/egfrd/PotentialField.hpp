@@ -9,6 +9,8 @@
 
 namespace ecell4
 {
+namespace egfrd
+{
 
 template <typename Tcontainer>
 class PotentialField
@@ -136,8 +138,6 @@ protected:
     particle_id_position_map_type centers_;
 };
 
-
-
+} // egfrd
 } // ecell4
-
 #endif /* POTENTIAL_FIELD_HPP */

@@ -1,7 +1,10 @@
 #ifndef FACTORIAL_HPP
 #define FACTORIAL_HPP
 
-
+namespace ecell4
+{
+namespace egfrd
+{
 
 // Table adopted and modified from GNU Scientific Library Version 1.9 
 // (gamma.c).
@@ -440,4 +443,6 @@ inline const double factorial_r( const unsigned int n )
     return factorials_r[n];
 }
 
+} //egfrd
+} // ecell4
 #endif /* FACTORIAL_HPP */

@@ -5,6 +5,11 @@
 #include <boost/range/size_type.hpp>
 #include <algorithm>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Trng_, typename Tracntnr_>
 inline void shuffle(Trng_& rng, Tracntnr_& cntnr)
 {
@@ -17,4 +22,6 @@ inline void shuffle(Trng_& rng, Tracntnr_& cntnr)
     }
 }
 
+} // egfrd
+} // ecell4
 #endif /* UTILS_RANDOM_HPP */

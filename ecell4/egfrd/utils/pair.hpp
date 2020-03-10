@@ -13,6 +13,11 @@
 //#include "utils/range.hpp"
 #include "./range.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template < typename T_ >
 struct select_first
 {
@@ -131,4 +136,6 @@ struct remove_const_first
                       typename Tpair_::second_type> type;
 };
 
+} // egfrd
+} // ecell4
 #endif /* UTILS_PAIR_HPP */

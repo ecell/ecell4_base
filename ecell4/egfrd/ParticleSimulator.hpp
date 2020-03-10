@@ -17,6 +17,10 @@
 #include "ReactionRecorderWrapper.hpp"
 #include <ecell4/core/SimulatorBase.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename Tworld_>
 struct ParticleSimulatorTraitsBase
@@ -198,4 +202,6 @@ protected:
 
 };
 
+} // egfrd
+} // ecell4
 #endif /* PARTICLE_SIMULATOR_HPP */

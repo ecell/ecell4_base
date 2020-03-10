@@ -5,6 +5,10 @@
 #include "twofold_container.hpp"
 #include "utils/memberwise_compare.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Tpid_, typename Trid_>
 class ReactionRecord
 {
@@ -134,4 +138,6 @@ operator<<(std::basic_ostream<Tchar, Ttraits>& out,
     return out;
 }
 
+} // egfrd
+} // ecell4
 #endif /* REACTION_RECORD_HPP */

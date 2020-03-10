@@ -21,6 +21,11 @@
 #include <greens_functions/freeFunctions.hpp>
 // using namespace greens_functions;
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_>
 class BDPropagator
 {
@@ -51,7 +56,7 @@ public:
 
     typedef std::unordered_map<particle_id_type, position_type> particle_id_position_map_type;
 
-    typedef ecell4::PotentialField<particle_container_type> potential_field_type;
+    typedef ecell4::egfrd::PotentialField<particle_container_type> potential_field_type;
     typedef std::unordered_map<species_id_type, boost::shared_ptr<potential_field_type>> potential_field_map_type;
 
 public:
@@ -184,7 +189,7 @@ private:
     bool attempt_reaction(particle_id_pair const& pp)
     {
         reaction_rules const& rules(rules_.query_reaction_rule(pp.second.species()));
-        if (::size(rules) == 0)
+        if (ecell4::egfrd::size(rules) == 0)
         {
             return false;
         }
@@ -201,7 +206,7 @@ private:
             {
                 typename reaction_rule_type::species_id_range products(
                         r.get_products());
-                switch (::size(products))
+                switch (ecell4::egfrd::size(products))
                 {
                 case 0:
                     remove_particle(pp.first);
@@ -311,7 +316,7 @@ private:
     bool attempt_reaction(particle_id_pair const& pp0, particle_id_pair const& pp1)
     {
         reaction_rules const& rules(rules_.query_reaction_rule(pp0.second.species(), pp1.second.species()));
-        if (::size(rules) == 0)
+        if (ecell4::egfrd::size(rules) == 0)
         {
             return false;
         }
@@ -345,7 +350,7 @@ private:
                 const typename reaction_rule_type::species_id_range products(
                     r.get_products());
 
-                switch (::size(products))
+                switch (ecell4::egfrd::size(products))
                 {
                 case 1:
                     {
@@ -437,5 +442,6 @@ private:
 template<typename Ttraits_>
 Logger& BDPropagator<Ttraits_>::log_(Logger::get_logger("ecell.BDPropagator"));
 
+} // egfrd
+} // ecell4
 #endif /* BD_PROPAGATOR_HPP */
-

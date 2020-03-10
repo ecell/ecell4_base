@@ -1,6 +1,11 @@
 #ifndef FUN_COMPOSITION_HPP
 #define FUN_COMPOSITION_HPP
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 namespace detail
 {
     template < typename Tderived_, typename Tfun1_, typename Tfun2_,
@@ -186,4 +191,6 @@ compose_binary( Tfun1_ const& f1, Tfun2_ const& f2 )
     return binary_compose< Tfun1_, Tfun2_ >( f1, f2 );
 }
 
+} // egfrd
+} // ecell4
 #endif /* FUN_COMPOSITION_HPP */

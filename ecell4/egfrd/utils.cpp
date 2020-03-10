@@ -3,6 +3,10 @@
 #include <boost/lexical_cast.hpp>
 #include "utils.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 // GSL error handler.
 void gsl_error_handler( char const* reason, char const* file, int line, int gsl_errno )
 {
@@ -12,3 +16,5 @@ void gsl_error_handler( char const* reason, char const* file, int line, int gsl_
                               std::string( file ) + std::string( ":" ) +
                               boost::lexical_cast< std::string >( line ) );
 }
+} // egfrd
+} // ecell4

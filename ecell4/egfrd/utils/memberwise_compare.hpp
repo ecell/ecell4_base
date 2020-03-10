@@ -6,6 +6,11 @@
 #include <boost/range/size.hpp>
 #include <boost/range/const_iterator.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Tlhs_, typename Trhs_>
 inline int memberwise_compare(Tlhs_ const& lhs, Trhs_ const& rhs)
 {
@@ -33,4 +38,6 @@ inline int memberwise_compare(Tlhs_ const& lhs, Trhs_ const& rhs)
     return 0;
 }
 
+} // egfrd
+} // ecell4
 #endif /* MEMBERWISE_COMPARE_HPP */

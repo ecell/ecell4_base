@@ -4,6 +4,10 @@
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/AABB.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename Ttraits_>
 struct ImmutativeStructureVisitor;
@@ -11,8 +15,6 @@ struct ImmutativeStructureVisitor;
 template<typename Ttraits_>
 struct MutativeStructureVisitor;
 
-namespace ecell4
-{
 
 template<typename Ttraits_>
 class Structure
@@ -146,6 +148,7 @@ public:
     // }
 };
 
+} // egfrd
 } // ecell4
 
 #endif /* ECELL4_STRUCTURES_HPP */

@@ -4,6 +4,10 @@
 #include <utility>
 #include "ShapedDomain.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Ttraits_>
 class Single: public ShapedDomain<Ttraits_>
 {
@@ -42,4 +46,6 @@ protected:
     particle_id_pair particle_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* SINGLE_HPP */

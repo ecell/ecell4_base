@@ -8,6 +8,11 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 class LogAppender;
 class LoggerManager;
 class LoggerManagerRegistry;
@@ -162,4 +167,6 @@ public:
 
 #define LOG_ERROR(args) if (enum Logger::level const level = log_.level()) if (level <= Logger::L_ERROR) log_.error args
 
+} //egfrd
+} //ecell4
 #endif /* LOGGER_HPP */

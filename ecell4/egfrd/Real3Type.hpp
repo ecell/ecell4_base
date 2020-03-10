@@ -16,6 +16,10 @@
 #include "utils/array_traits.hpp"
 #include "linear_algebra.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename T_>
 struct shape_position_type
 {
@@ -55,4 +59,6 @@ inline ecell4::Real3 shape_position(ecell4::Real3 const &v)
     return v;
 }
 
+} // egfrd
+} // ecell4
 #endif /* POSITION3_TRAITS_HPP */

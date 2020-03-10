@@ -1,6 +1,11 @@
 #ifndef DOMAIN_FACTORY_HPP
 #define DOMAIN_FACTORY_HPP
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_>
 struct DomainFactory
 {
@@ -30,4 +35,6 @@ struct DomainFactory
                 typename network_rules_type::reaction_rule_vector const& reactions) const = 0;
 };
 
+} // egfrd
+} // ecell4
 #endif /* DOMAIN_FACTORY_HPP */
