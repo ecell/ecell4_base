@@ -1,12 +1,6 @@
-#ifndef ALGORITHM_HPP
-#define ALGORITHM_HPP
+#ifndef ECELL4_EGFRD_FILTERS_HPP
+#define ECELL4_EGFRD_FILTERS_HPP
 
-#include <functional>
-#include <cmath>
-#include <boost/range/iterator.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/is_const.hpp>
-// #include "Shape.hpp"
 #include "geometry.hpp"
 
 namespace ecell4
@@ -16,27 +10,18 @@ namespace egfrd
 
 template<typename Toc_, typename Tfun_, typename Tsphere_>
 class neighbor_filter
-        : public std::binary_function<
-            typename boost::range_iterator<Toc_>::type,
-            typename Toc_::position_type,
-            void>
 {
-    typedef typename boost::range_iterator<Toc_>::type first_argument_type;
-    typedef typename Toc_::position_type second_argument_type;
-    typedef void result_type;
-    typedef Tsphere_ sphere_type;
+    using Iterator = typename Toc_::iterator;
+    using Position = typename Toc_::position_type;
 
 public:
-    inline neighbor_filter(Tfun_& next,
-            const sphere_type& cmp)
-        : next_(next), cmp_(cmp) {}
+    neighbor_filter(Tfun_& next, const Tsphere_& cmp)
+        : next_(next), cmp_(cmp)
+    {}
 
-    inline result_type operator()(first_argument_type i,
-            second_argument_type const& off) const {
-        typename first_argument_type::reference item(*i);
-
-        const typename sphere_type::length_type dist(
-            distance(shape(offset(item.second, off)), cmp_.position()));
+    inline void operator()(Iterator i, const Position& off) const
+    {
+        const auto dist(distance(shape(offset(i->second, off)), cmp_.position()));
         if (dist < cmp_.radius())
         {
             next_(i, dist);
@@ -44,8 +29,8 @@ public:
     }
 
 private:
-    Tfun_& next_;
-    const sphere_type cmp_;
+    Tfun_&   next_;
+    Tsphere_ cmp_;
 };
 
 template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -78,4 +63,4 @@ inline void take_neighbor_cyclic(Toc_ const& oc, Tfun_& fun, const Tsphere_& cmp
 
 } // egfrd
 } // ecell4
-#endif /* ALGORITHM_HPP */
+#endif /* ECELL4_EGFRD_FILTERS_HPP */
