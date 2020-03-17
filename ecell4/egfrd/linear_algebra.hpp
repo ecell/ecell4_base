@@ -28,7 +28,6 @@ namespace egfrd
 using ::ecell4::pow_2;
 
 #define CREATE_VECTOR_LIMIT_REPEAT 16
-#define POPULATE_MATRIX_BY_VECTORS_LIMIT_REPEAT 16
 
 template<typename T_, std::size_t N_>
 struct is_vector: public boost::mpl::false_ {};
