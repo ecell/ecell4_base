@@ -14,7 +14,6 @@ using ecell4::pow_2;
 #include "exceptions.hpp"
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
-#include "ParticleContainerBase.hpp"
 // #include "Sphere.hpp"
 // #include "BDSimulator.hpp"
 #include "BDPropagator.hpp"
