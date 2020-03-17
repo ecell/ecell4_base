@@ -15,7 +15,7 @@ public:
     virtual Real3 periodic_transpose(const Real3&, const Real3&) const noexcept = 0;
     virtual Real3 apply_boundary    (const Real3&) const noexcept = 0;
     virtual Real3 const& edge_lengths() const noexcept = 0;
-    virtual void update(const Real3&) noexcept = 0;
+    virtual void reset(const Real3&) noexcept = 0;
 };
 
 class UnlimitedBoundary final : public Boundary
@@ -33,6 +33,10 @@ public:
                       std::numeric_limits<Real>::infinity())
     {}
     ~UnlimitedBoundary() override = default;
+    UnlimitedBoundary(const UnlimitedBoundary&) = default;
+    UnlimitedBoundary(UnlimitedBoundary&&)      = default;
+    UnlimitedBoundary& operator=(const UnlimitedBoundary&) = default;
+    UnlimitedBoundary& operator=(UnlimitedBoundary&&)      = default;
 
     Real3 periodic_transpose(const Real3& pos, const Real3&) const noexcept override
     {
@@ -46,7 +50,7 @@ public:
     {
         return this->edge_lengths_;
     }
-    void update(const Real3&) noexcept override
+    void reset(const Real3&) noexcept override
     {
         return ;
     }
@@ -66,7 +70,12 @@ public:
         : edge_lengths_(edges), half_widths_(edges * 0.5)
     {}
     ~PeriodicBoundary() override = default;
+    PeriodicBoundary(const PeriodicBoundary&) = default;
+    PeriodicBoundary(PeriodicBoundary&&)      = default;
+    PeriodicBoundary& operator=(const PeriodicBoundary&) = default;
+    PeriodicBoundary& operator=(PeriodicBoundary&&)      = default;
 
+    // transpose pos1 relative to pos2
     Real3 periodic_transpose(const Real3& pos1, const Real3& pos2) const noexcept override
     {
         Real3 retval(pos1);
@@ -94,7 +103,7 @@ public:
     {
         return edge_lengths_;
     }
-    void update(const Real3& edges) noexcept override
+    void reset(const Real3& edges) noexcept override
     {
         this->edge_lengths_ = edges;
         this->half_widths_  = edges * 0.5;
