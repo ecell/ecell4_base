@@ -31,7 +31,7 @@ public:
     typedef Tkey_ key_type;
     typedef Tobj_ mapped_type;
     // typedef Vector3<length_type> position_type;
-    typedef ecell4::Real3 position_type;
+    typedef Real3 position_type;
 
     // typedef std::pair<const key_type, mapped_type> value_type;
     typedef std::pair<key_type, mapped_type> value_type;
@@ -52,7 +52,7 @@ public:
     typedef typename all_values_type::reference reference;
     typedef typename all_values_type::const_reference const_reference;
 
-    typedef ecell4::Integer3 matrix_sizes_type;
+    typedef Integer3 matrix_sizes_type;
 
 private:
     typedef std::pair<key_type, mapped_type> nonconst_value_type;

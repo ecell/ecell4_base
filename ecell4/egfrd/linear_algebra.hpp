@@ -25,7 +25,8 @@ namespace ecell4
 namespace egfrd
 {
 
-using ecell4::pow_2;
+using ::ecell4::pow_2;
+
 #define CREATE_VECTOR_LIMIT_REPEAT 16
 #define POPULATE_MATRIX_BY_VECTORS_LIMIT_REPEAT 16
 

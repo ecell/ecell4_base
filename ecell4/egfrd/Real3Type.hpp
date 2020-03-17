@@ -20,6 +20,7 @@ namespace ecell4
 {
 namespace egfrd
 {
+
 template<typename T_>
 struct shape_position_type
 {
@@ -34,27 +35,27 @@ struct shape_length_type
 };
 
 template <std::size_t N_>
-struct is_vector<ecell4::Real3, N_>: public boost::mpl::true_ {};
+struct is_vector<Real3, N_>: public boost::mpl::true_ {};
 
 template <>
-struct element_type_of<ecell4::Real3>
+struct element_type_of<Real3>
 {
-    typedef ecell4::Real3::value_type type;
+    typedef Real3::value_type type;
 };
 
 template<>
-struct shape_position_type<ecell4::Real3>
+struct shape_position_type<Real3>
 {
-    typedef ecell4::Real3 type;
+    typedef Real3 type;
 };
 
 template<>
-struct shape_length_type<ecell4::Real3>
+struct shape_length_type<Real3>
 {
-    typedef ecell4::Real3::value_type type;
+    typedef Real3::value_type type;
 };
 
-inline ecell4::Real3 shape_position(ecell4::Real3 const &v)
+inline ::ecell4::Real3 shape_position(::ecell4::Real3 const &v)
 {
     return v;
 }
