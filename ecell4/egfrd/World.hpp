@@ -40,7 +40,6 @@
 //#include "ParticleID.hpp"
 //#include "SpeciesTypeID.hpp"
 //#include "SpeciesInfo.hpp"
-#include "Defs.hpp"
 //#include "SerialIDGenerator.hpp"
 #include "Transaction.hpp"
 // #include "Structure.hpp"

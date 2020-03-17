@@ -10,7 +10,7 @@
 #include <boost/range/end.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
-#include "Defs.hpp"
+#include <ecell4/core/types.hpp>
 #include "generator.hpp"
 #include "exceptions.hpp"
 #include "utils/random.hpp"
