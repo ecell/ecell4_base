@@ -6,6 +6,7 @@
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/multi_array.hpp>
+
 namespace ecell4
 {
 namespace egfrd
@@ -34,4 +35,6 @@ struct element_type_of< boost::multi_array< T_, 1, Talloc_ > >
     typedef T_ type;
 };
 
+} // ecell4
+} // egfrd
 #endif /* ARRAY_CAST_HPP */

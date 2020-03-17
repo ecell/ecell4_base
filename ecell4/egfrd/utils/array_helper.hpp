@@ -35,4 +35,7 @@ BOOST_PP_REPEAT_FROM_TO(0, 128, ARRAY_HELPER_TPL, )
 #undef ARRAY_HELPER_TPL
 #undef ARRAY_HELPER_INNER_TPL
 
+} // egfrd
+} // ecell4
+
 #endif /* ARRAY_HELPER_HPP */
