@@ -27,13 +27,17 @@ namespace egfrd
 
 using ::ecell4::pow_2;
 
-#define CREATE_VECTOR_LIMIT_REPEAT 16
+// ----------------------------------------------------------------------------
+// is_vector
 
 template<typename T_, std::size_t N_>
 struct is_vector: public boost::mpl::false_ {};
 
 template<typename T_, std::size_t N_>
 struct is_vector<boost::array<T_, N_>, N_>: public boost::mpl::true_ {};
+
+// ----------------------------------------------------------------------------
+// is_matrix
 
 template<typename T_, std::size_t N_>
 struct is_matrix: public boost::mpl::false_ {};
@@ -65,14 +69,23 @@ struct is_matrix<boost::array<boost::array<T_, N1_>, N2_>, 2>: public boost::mpl
 template<typename T_, std::size_t N1_, std::size_t N2_>
 struct is_matrix<T_[N1_][N2_], 2>: public boost::mpl::true_ {};
 
+// ----------------------------------------------------------------------------
+// is_scalar
+
 template<typename T_>
 struct is_scalar: public boost::is_arithmetic<T_> {};
+
+// ----------------------------------------------------------------------------
+// is_vectorN
 
 template<typename T_>
 struct is_vector2: public is_vector<T_, 2> {};
 
 template<typename T_>
 struct is_vector3: public is_vector<T_, 3> {};
+
+// ----------------------------------------------------------------------------
+// matrix_adapter
 
 template<typename T_>
 struct matrix_adapter
@@ -191,11 +204,15 @@ struct matrix_adapter<T_[N1_][N2_]>
     }
 };
 
+
 template<typename Tmat>
 inline std::size_t matrix_extent(Tmat const& mat, std::size_t dim)
 {
     return matrix_adapter<Tmat>::get_extent(mat, dim);
 }
+
+// ----------------------------------------------------------------------------
+// matrix_adapter
 
 template<typename T_>
 inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<is_scalar<T_> >::type* = 0)
@@ -412,24 +429,12 @@ inline typename element_type_of< T_ >::type length(T_ const& r)
     return std::sqrt(length_sq(r));
 }
 
-#define CREATE_VECTOR_INNER_TPL(__z__, __n__, __d__) \
-    __d__[__n__] = BOOST_PP_CAT(p, __n__);
-
-#define CREATE_VECTOR_TPL(__z__, __n__, __d__) \
-template<typename T_> \
-inline T_ create_vector(\
-        BOOST_PP_ENUM_PARAMS(__n__, typename element_type_of<T_>::type const& p), \
-        typename boost::enable_if<is_vector<T_, __n__> >::type* = 0) \
-{ \
-    T_ retval; \
-    BOOST_PP_REPEAT_ ## __z__(__n__, CREATE_VECTOR_INNER_TPL, retval) \
-    return retval; \
+template<typename T, typename ... Args>
+typename std::enable_if<is_vector<T, sizeof...(Args)>::value, T>::type
+create_vector(Args&& ... args)
+{
+    return T(std::forward<Args>(args)...);
 }
-
-BOOST_PP_REPEAT_FROM_TO(2, CREATE_VECTOR_LIMIT_REPEAT, CREATE_VECTOR_TPL, )
-
-#undef CREATE_VECTOR_TPL
-#undef CREATE_VECTOR_INNER_TPL
 
 template<typename T_>
 inline bool is_cartesian_versor(T_ const& vector, typename boost::enable_if<is_vector3<T_> >::type* = 0)
