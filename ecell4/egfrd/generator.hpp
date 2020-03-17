@@ -28,7 +28,6 @@
 #include <boost/type_traits/remove_const.hpp>
 #include "utils/range.hpp"
 #include "utils/reset.hpp"
-#include "utils/reference_or_instance.hpp"
 
 namespace ecell4
 {
