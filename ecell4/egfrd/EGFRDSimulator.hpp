@@ -24,7 +24,6 @@
 
 #include "utils/array_helper.hpp"
 #include "utils/fun_composition.hpp"
-#include "utils/fun_wrappers.hpp"
 #include "utils/pointer_as_ref.hpp"
 #include "utils/pair.hpp"
 #include "utils/math.hpp"
@@ -3068,11 +3067,20 @@ protected:
                std::vector<boost::shared_ptr<domain_type> > const& neighbors,
                std::pair<domain_type*, length_type> closest)
     {
+        // do not remove the return value specifier. Without this, you will
+        // encounter a problem like "cannot allocate an object of abstract type"
+        // because the default return type is `domain_type`.
+        const auto dereferencer =
+            [](const boost::shared_ptr<domain_type>& ptr) -> const domain_type& {
+                return *ptr;
+            };
+        // this lambda is defined out of the macro because passing lambda
+        // to macro causes a problem in some cases.
+
         LOG_DEBUG(("form multi: neighbors=[%s], closest=%s",
                 stringize_and_join(
-                    make_transform_iterator_range(neighbors,
-                        dereference<boost::shared_ptr<domain_type> >()),
-                    ", ").c_str(),
+                    make_transform_iterator_range(neighbors, dereferencer), ", "
+                    ).c_str(),
                 boost::lexical_cast<std::string>(*closest.first).c_str()));
         length_type const min_shell_size(
                 domain.particle().second.radius() *
@@ -3201,11 +3209,20 @@ protected:
                 std::vector<boost::shared_ptr<domain_type> > bursted;
                 burst_non_multis(*neighbors, bursted);
 
+                // do not remove the return value specifier. Without this, you
+                // will encounter a problem like "cannot allocate an object of
+                // abstract type" because the default return type is `domain_type`.
+                const auto dereferencer =
+                    [](const boost::shared_ptr<domain_type>& ptr)
+                        -> const domain_type& {
+                        return *ptr;
+                    };
+                // this lambda is defined out of the macro because passing lambda
+                // to macro causes a problem in some cases.
+
                 LOG_DEBUG(("add_to_multi_recursive: bursted=[%s]",
                         stringize_and_join(
-                            make_transform_iterator_range(
-                                bursted,
-                                dereference<boost::shared_ptr<domain_type> >()),
+                            make_transform_iterator_range(bursted, dereferencer),
                             ", ").c_str()));
 
                 BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, bursted)
