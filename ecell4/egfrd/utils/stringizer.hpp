@@ -11,20 +11,15 @@ namespace ecell4
 namespace egfrd
 {
 
-template<typename T_>
-struct stringizer
+template<typename Range>
+std::string stringize_and_join(const Range& range, const std::string& separator)
 {
-    std::string operator()(T_ const& value) const
-    {
-        return boost::lexical_cast<std::string>(value);
-    }
-};
+    using value_type = typename boost::range_value<Range>::type;
 
-template<typename T>
-inline std::string stringize_and_join(T const& range, std::string const& separator)
-{
-    return boost::algorithm::join(range | boost::adaptors::transformed(
-            stringizer<typename boost::range_value<T>::type>()), separator);
+    return boost::algorithm::join(boost::adaptors::transform(range,
+                [](const value_type& v) -> std::string {
+                    return boost::lexical_cast<std::string>(v);
+                }), separator);
 }
 
 } // egfrd
