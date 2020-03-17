@@ -13,7 +13,6 @@
 #include "ConsoleAppender.hpp"
 #include "utils/pair.hpp"
 #include "utils/fun_composition.hpp"
-#include "utils/assoc_container_traits.hpp"
 
 namespace ecell4
 {
