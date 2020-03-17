@@ -118,36 +118,6 @@ struct is_sized<sized_iterator_range<Titer_> >: boost::mpl::true_
 {
 };
 
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn& fn, Trange const &range,
-    typename boost::enable_if<is_sized<Trange> >::type* = 0)
-{
-    fn(ecell4::egfrd::size(range));
-}
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn& fn, Trange const &range,
-    typename boost::disable_if<is_sized<Trange> >::type* = 0)
-{
-}
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn const& fn, Trange const &range,
-    typename boost::enable_if<is_sized<Trange> >::type* = 0)
-{
-    fn(ecell4::egfrd::size(range));
-}
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn const& fn, Trange const &range,
-    typename boost::disable_if<is_sized<Trange> >::type* = 0)
-{
-}
-
 template<typename Titer_>
 struct range_size<sized_iterator_range<Titer_> >
 {
