@@ -14,7 +14,6 @@
 #include "sorted_list.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/range.hpp"
-#include "utils/unassignable_adapter.hpp"
 
 #include <ecell4/core/Integer3.hpp>
 

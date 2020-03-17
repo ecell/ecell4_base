@@ -9,7 +9,6 @@
 #include "ParticleContainer.hpp"
 #include "sorted_list.hpp"
 #include "generator.hpp"
-#include "utils/unassignable_adapter.hpp"
 #include "utils/stringizer.hpp"
 
 namespace ecell4

@@ -61,7 +61,6 @@
  * ParticleContainerBase
  */
 #include "utils/range.hpp"
-#include "utils/unassignable_adapter.hpp"
 #include "MatrixSpace.hpp"
 #include "abstract_set.hpp"
 #include "generator.hpp"

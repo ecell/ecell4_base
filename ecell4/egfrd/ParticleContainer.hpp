@@ -4,7 +4,6 @@
 #include <utility>
 #include <boost/shared_ptr.hpp>
 #include "generator.hpp"
-#include "utils/unassignable_adapter.hpp"
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/WorldInterface.hpp>
