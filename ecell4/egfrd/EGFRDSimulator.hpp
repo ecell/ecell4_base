@@ -987,12 +987,7 @@ public:
     typedef abstract_limited_generator<domain_id_pair> domain_id_pair_generator;
 
 public:
-    virtual ~EGFRDSimulator()
-    {
-        //std::for_each(domains_.begin(), domains_.end(),
-        //    compose_unary(delete_ptr<domain_type>(),
-        //                  select_second<typename domain_map::value_type>()));
-    }
+    virtual ~EGFRDSimulator() {}
 
     EGFRDSimulator(
         const boost::shared_ptr<world_type>& world,

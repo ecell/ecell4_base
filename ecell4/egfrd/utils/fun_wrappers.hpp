@@ -14,18 +14,6 @@ namespace ecell4
 namespace egfrd
 {
 
-template < typename T_ >
-struct delete_ptr: public std::unary_function<T_*, void>
-{
-    typedef void result_type;
-    typedef T_* argument_type;
-
-    void operator()( T_* ptr ) const
-    {
-        delete ptr;
-    }
-};
-
 template<typename T_, typename Targ_>
 struct reinterpret_caster: public std::unary_function<Targ_, T_>
 {
