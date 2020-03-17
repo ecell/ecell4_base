@@ -4,10 +4,9 @@
 #include <cstddef>
 #include <stdexcept>
 #include <functional>
+#include <type_traits>
 
-#include <boost/utility/enable_if.hpp>
 #include <boost/call_traits.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/begin.hpp>
@@ -17,15 +16,8 @@
 #include <boost/range/iterator.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/mpl/or.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/iterator_traits.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/iterator/is_readable_iterator.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-#include <boost/type_traits/remove_const.hpp>
 #include "utils/range.hpp"
 
 namespace ecell4
@@ -121,10 +113,10 @@ std::size_t count(abstract_limited_generator<Tretval_> const& gen)
 }
 
 template<typename Trange_,
-         typename Titer_ = typename boost::range_iterator<Trange_>::type,
+         typename Titer_   = typename boost::range_iterator<Trange_>::type,
          typename Tresult_ = typename boost::iterator_reference<Titer_>::type,
          bool Bra_ =
-            boost::is_convertible<
+            std::is_convertible<
                 typename boost::iterator_category_to_traversal<
                     typename boost::BOOST_ITERATOR_CATEGORY<Titer_>::type
                     >::type,
