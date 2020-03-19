@@ -8,7 +8,6 @@
 #endif
 
 #include <ecell4/core/Real3.hpp>
-#include <ecell4/core/linear_algebra.hpp>
 
 using namespace ecell4;
 
