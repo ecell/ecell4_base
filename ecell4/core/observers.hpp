@@ -637,7 +637,7 @@ struct TimingEvent
         {
             return times[count];
         }
-        return inf;
+        return std::numeric_limits<Real>::infinity();
     }
 
     void reset()
@@ -669,7 +669,7 @@ public:
 
 struct FixedIntervalEvent
 {
-    FixedIntervalEvent(const Real& dt = inf)
+    FixedIntervalEvent(const Real& dt = std::numeric_limits<Real>::infinity())
         : t0(0.0), dt(dt), num_steps(0), count(0)
     {
         ;
@@ -746,7 +746,7 @@ public:
         const std::vector<ParticleID>& pids,
         const bool resolve_boundary = default_resolve_boundary(),
         const Real subdt = default_subdt())
-        : base_type(false), event_(), subevent_(subdt > 0 ? subdt : inf),
+        : base_type(false), event_(), subevent_(subdt > 0 ? subdt : std::numeric_limits<Real>::infinity()),
         pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(pids.size()),
         trajectories_(pids.size()), strides_(pids.size()), t_()
     {
@@ -756,7 +756,7 @@ public:
     TrajectoryObserver(
         const bool resolve_boundary = default_resolve_boundary(),
         const Real subdt = default_subdt())
-        : base_type(false), event_(), subevent_(subdt > 0 ? subdt : inf),
+        : base_type(false), event_(), subevent_(subdt > 0 ? subdt : std::numeric_limits<Real>::infinity()),
         pids_(), resolve_boundary_(resolve_boundary), prev_positions_(),
         trajectories_(), strides_(), t_()
     {
@@ -1040,7 +1040,7 @@ public:
     }
 
     TimeoutObserver()
-        : base_type(true), interval_(inf), duration_(0.0), acc_(0.0)
+        : base_type(true), interval_(std::numeric_limits<Real>::infinity()), duration_(0.0), acc_(0.0)
     {
         ;
     }
@@ -1097,7 +1097,7 @@ public:
         const Real threshold = default_threshold())
         : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
         species_(species), resolve_boundary_(resolve_boundary),
-        threshold_(threshold > 0 ? threshold : inf),
+        threshold_(threshold > 0 ? threshold : std::numeric_limits<Real>::infinity()),
         prev_positions_(), strides_(), pids_(), trajectories_(), t_()
     {
         ;

@@ -72,6 +72,7 @@ void MesoscopicSimulator::decrement_molecules(const Species& sp, const coordinat
 std::pair<Real, MesoscopicSimulator::ReactionRuleProxyBase*>
 MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
 {
+    constexpr Real inf = std::numeric_limits<Real>::infinity();
     std::vector<double> a(proxies_.size());
     for (unsigned int idx(0); idx < proxies_.size(); ++idx)
     {
@@ -84,12 +85,12 @@ MesoscopicSimulator::draw_next_reaction(const coordinate_type& c)
         return std::make_pair(inf, (ReactionRuleProxyBase*)NULL);
     }
 
-    if (atot == std::numeric_limits<Real>::infinity())
+    if (atot == inf)
     {
         std::vector<unsigned int> selected;
         for (unsigned int i(0); i < a.size(); ++i)
         {
-            if (a[i] == std::numeric_limits<Real>::infinity())
+            if (a[i] == inf)
             {
                 selected.push_back(i);
             }
@@ -133,7 +134,7 @@ void MesoscopicSimulator::interrupt_all(const Real& t)
 
 void MesoscopicSimulator::step(void)
 {
-    if (this->dt() == inf)
+    if (this->dt() == std::numeric_limits<Real>::infinity())
     {
         // Any reactions cannot occur.
         return;

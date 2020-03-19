@@ -151,7 +151,7 @@ public:
         }
         else
         {
-            return inf;
+            return std::numeric_limits<Real>::infinity();
         }
     }
 

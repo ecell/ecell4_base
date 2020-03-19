@@ -74,7 +74,7 @@ Real MeshSurface::is_inside(const Real3& pos) const
     selectEnclosedPoints->SetInput(pointsPolydata);
     selectEnclosedPoints->SetSurface(reader_->GetOutput());
     selectEnclosedPoints->Update();
-    return (selectEnclosedPoints->IsInside(0) ? 0.0 : inf);
+    return (selectEnclosedPoints->IsInside(0) ? 0.0 : std::numeric_limits<Real>::infinity());
 
     // double lineP0[3];
     // lineP0[0] = pos[0] / ratio_ - shift_[0];
