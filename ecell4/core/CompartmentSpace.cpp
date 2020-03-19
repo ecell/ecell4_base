@@ -55,9 +55,7 @@ void CompartmentSpaceVectorImpl::release_species(const Species& sp)
     species_map_type::iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
+        throw_exception<NotFound>("Speices [", sp.serial(), "] not found");
     }
 
     species_map_type::mapped_type
@@ -112,9 +110,8 @@ void CompartmentSpaceVectorImpl::add_molecules(
 {
     if (num < 0)
     {
-        std::ostringstream message;
-        message << "The number of molecules must be positive. [" << sp.serial() << "]";
-        throw std::invalid_argument(message.str());
+        throw_exception<std::invalid_argument>(
+            "The number of molecules must be positive. [", sp.serial(), "]");
     }
 
     species_map_type::const_iterator i(index_map_.find(sp));
@@ -133,24 +130,20 @@ void CompartmentSpaceVectorImpl::remove_molecules(
 {
     if (num < 0)
     {
-        std::ostringstream message;
-        message << "The number of molecules must be positive. [" << sp.serial() << "]";
-        throw std::invalid_argument(message.str());
+        throw_exception<std::invalid_argument>(
+            "The number of molecules must be positive. [", sp.serial(), "]");
     }
 
     species_map_type::const_iterator i(index_map_.find(sp));
     if (i == index_map_.end())
     {
-        std::ostringstream message;
-        message << "Speices [" << sp.serial() << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
+        throw_exception<NotFound>("Speices [", sp.serial(), "] not found");
     }
 
     if (num_molecules_[(*i).second] < num)
     {
-        std::ostringstream message;
-        message << "The number of molecules cannot be negative. [" << sp.serial() << "]";
-        throw std::invalid_argument(message.str());
+        throw_exception<std::invalid_argument>(
+            "The number of molecules cannot be negative. [", sp.serial(), "]");
     }
 
     num_molecules_[(*i).second] -= num;
