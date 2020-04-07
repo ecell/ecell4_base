@@ -32,7 +32,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include "generator.hpp"
-#include "filters.hpp"
 //#include "ParticleID.hpp"
 //#include "SpeciesTypeID.hpp"
 //#include "SpeciesInfo.hpp"
@@ -186,18 +185,6 @@ public:
     {
         oc.each_neighbor(oc.index(pos), fun);
     }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor(oc, fun, cmp);
-    }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_ const& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor(oc, fun, cmp);
-    }
 };
 
 template<typename TD_>
@@ -240,18 +227,6 @@ public:
     static void each_neighbor(Toc_ const& oc, Tfun_& fun, Tsphere_ const& pos)
     {
         oc.each_neighbor_cyclic(oc.index(pos), fun);
-    }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor_cyclic(oc, fun, cmp);
-    }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_ const& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor_cyclic(oc, fun, cmp);
     }
 };
 
@@ -885,24 +860,6 @@ public:
     {
         return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore1, ignore2);
     }
-
-    // template<typename Tsph_, typename Tset_>
-    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
-    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
-    // {
-    //     typename utils::template overlap_checker<Tset_> oc(ignore);
-    //     traits_type::take_neighbor(*pmat_, oc, s);
-    //     return oc.result();
-    // }
-
-    // template<typename Tsph_>
-    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
-    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
-    // {
-    //     typename utils::template overlap_checker<std::array<particle_id_type, 0> > oc;
-    //     traits_type::take_neighbor(*pmat_, oc, s);
-    //     return oc.result();
-    // }
 
     particle_id_pair_range get_particles_range() const
     {
