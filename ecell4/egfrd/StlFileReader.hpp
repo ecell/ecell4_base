@@ -1,6 +1,6 @@
 #ifndef GFRD_POLYGON_STL_FILE_READER
 #define GFRD_POLYGON_STL_FILE_READER
-#include <boost/array.hpp>
+#include <array>
 #include <stdexcept>
 #include <string>
 #include <vector>

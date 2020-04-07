@@ -1,6 +1,6 @@
 #ifndef ECELL4_UTIL_ARRAY_HELPER_HPP
 #define ECELL4_UTIL_ARRAY_HELPER_HPP
-#include <boost/array.hpp>
+#include <array>
 
 namespace ecell4
 {

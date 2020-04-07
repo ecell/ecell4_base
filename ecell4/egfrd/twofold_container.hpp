@@ -2,7 +2,7 @@
 #define TWOFOLD_CONTAINER_HPP
 
 #include <algorithm>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include "utils/memberwise_compare.hpp"

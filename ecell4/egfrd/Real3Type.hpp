@@ -9,10 +9,10 @@
 #include <iomanip>
 #include <functional>
 #include <algorithm>
+#include <array>
 
 #include <ecell4/core/Real3.hpp>
 
-#include <boost/array.hpp>
 #include "utils/array_traits.hpp"
 #include "linear_algebra.hpp"
 

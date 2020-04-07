@@ -1,8 +1,8 @@
 #ifndef GFRD_POLYGON_TRIANGLE_OPERATION
 #define GFRD_POLYGON_TRIANGLE_OPERATION
 #include "Real3Type.hpp"
-#include <boost/array.hpp>
 #include <algorithm>
+#include <array>
 #include <cassert>
 
 namespace ecell4

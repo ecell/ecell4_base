@@ -8,7 +8,7 @@
 #include <boost/mpl/and.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/multi_array.hpp>
 
 #include "utils/array_traits.hpp"

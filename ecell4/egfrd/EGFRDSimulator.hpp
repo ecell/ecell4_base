@@ -2,7 +2,6 @@
 #define EGFRDSIMULATOR_HPP
 
 #include <boost/bind.hpp>
-#include <boost/array.hpp>
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #include <boost/optional.hpp>

@@ -2,7 +2,7 @@
 #define ANALYTICAL_PAIR_HPP
 
 #include <cmath>
-#include <boost/array.hpp>
+#include <array>
 #include "Pair.hpp"
 #include "AnalyticalSingle.hpp"
 

@@ -2,7 +2,7 @@
 #define GFRD_POLYGON_FACE_TRIANGLE
 #include "TriangleOperation.hpp"
 #include <ecell4/core/geometry.hpp>
-#include <boost/array.hpp>
+#include <array>
 
 namespace ecell4
 {

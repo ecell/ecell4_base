@@ -3,7 +3,7 @@
 
 #include <cmath>
 #include <utility>
-#include <boost/array.hpp>
+#include <array>
 #include "ShapedDomain.hpp"
 
 namespace ecell4

@@ -31,7 +31,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/foreach.hpp>
