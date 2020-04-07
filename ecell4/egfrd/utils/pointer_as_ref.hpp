@@ -9,11 +9,11 @@ namespace ecell4
 namespace egfrd
 {
 
-template<typename T_, typename Tholder_ = T_*>
+template<typename T_>
 struct pointer_as_ref
 {
     typedef T_ element_type;
-    typedef Tholder_ holder_type;
+    typedef T_* holder_type;
 
     operator T_&() const { return *ptr_; }
 
@@ -52,8 +52,8 @@ private:
 
 namespace boost {
 
-template<typename T, typename Tholder>
-inline T* get_pointer(ecell4::egfrd::pointer_as_ref<T, Tholder> const& p)
+template<typename T>
+inline T* get_pointer(ecell4::egfrd::pointer_as_ref<T> const& p)
 {
     return p.get();
 }
