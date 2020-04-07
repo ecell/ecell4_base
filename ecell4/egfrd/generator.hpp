@@ -6,7 +6,6 @@
 #include <functional>
 #include <type_traits>
 
-#include <boost/call_traits.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/begin.hpp>
@@ -61,8 +60,7 @@ bool drop_until(Tgen_& gen, Tpred_& pred)
 }
 
 template<typename Tgen_>
-bool cue(Tgen_& gen,
-    typename boost::call_traits<typename Tgen_::result_type>::param_type val)
+bool cue(Tgen_& gen, typename Tgen_::result_type const& val)
 {
     do
     {

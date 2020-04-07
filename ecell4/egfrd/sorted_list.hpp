@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <boost/call_traits.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -186,14 +185,13 @@ public:
 		return cntnr_;
 	}
 
-    sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord,
-			    typename boost::call_traits<holder_type>::param_type holder)
+    sorted_list(const TweakOrdering_& ord, const holder_type& holder)
 		: ord_(ord), cntnr_(holder) {}
 
-    explicit sorted_list(typename boost::call_traits<holder_type>::param_type holder)
+    explicit sorted_list(const holder_type& holder)
 		: ord_(), cntnr_(holder) {}
 
-    explicit sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord): ord_(ord) {}
+    explicit sorted_list(const TweakOrdering_& ord): ord_(ord) {}
 
     sorted_list(): ord_() {}
 

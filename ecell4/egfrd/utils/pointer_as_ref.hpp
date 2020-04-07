@@ -2,7 +2,6 @@
 #define UTILS_POINTER_AS_REF_HPP
 
 #include <boost/get_pointer.hpp>
-#include <boost/call_traits.hpp>
 
 namespace ecell4
 {
@@ -38,7 +37,7 @@ struct pointer_as_ref
         return !!ptr_;
     }
 
-    explicit pointer_as_ref(typename boost::call_traits<holder_type>::param_type ptr)
+    explicit pointer_as_ref(holder_type ptr)
         : ptr_(ptr) {}
 
     explicit pointer_as_ref(): ptr_(0) {}
