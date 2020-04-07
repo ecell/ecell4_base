@@ -6,7 +6,6 @@
 #include <gsl/gsl_pow_int.h>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
-#include <boost/utility/enable_if.hpp>
 #include <array>
 #include <boost/multi_array.hpp>
 
@@ -209,25 +208,25 @@ inline std::size_t matrix_extent(Tmat const& mat, std::size_t dim)
 // matrix_adapter
 
 template<typename T_>
-inline T_ add( T_ const& p1, T_ const& p2, typename boost::enable_if<is_scalar<T_> >::type* = 0)
+inline T_ add( T_ const& p1, T_ const& p2, typename std::enable_if<is_scalar<T_>::value>::type* = 0)
 {
     return p1 + p2;
 }
 
 template<typename T_>
-inline T_ subtract( T_ const& p1, T_ const& p2, typename boost::enable_if<is_scalar<T_> >::type* = 0)
+inline T_ subtract( T_ const& p1, T_ const& p2, typename std::enable_if<is_scalar<T_>::value>::type* = 0)
 {
     return p1 - p2;
 }
 
 template<typename T_>
-inline T_ multiply( T_ const& p1, T_ const& p2, typename boost::enable_if<is_scalar<T_> >::type* = 0)
+inline T_ multiply( T_ const& p1, T_ const& p2, typename std::enable_if<is_scalar<T_>::value>::type* = 0)
 {
     return p1 * p2;
 }
 
 template<typename T_>
-inline T_ divide( T_ const& p1, T_ const& p2, typename boost::enable_if<is_scalar<T_> >::type* = 0)
+inline T_ divide( T_ const& p1, T_ const& p2, typename std::enable_if<is_scalar<T_>::value>::type* = 0)
 {
     return p1 / p2;
 }
@@ -260,19 +259,19 @@ inline double modulo( double const& p1, double const& p2 )
 }
 
 template<typename T_>
-inline T_ negate(T_ const& v, typename boost::enable_if<is_scalar<T_> >::type* = 0)
+inline T_ negate(T_ const& v, typename std::enable_if<is_scalar<T_>::value>::type* = 0)
 {
     return -v;
 }
 
 template<typename T_>
-inline T_ abs(T_ const& v, typename boost::enable_if<is_scalar<T_> >::type* = 0)
+inline T_ abs(T_ const& v, typename std::enable_if<is_scalar<T_>::value>::type* = 0)
 {
     return std::fabs(v);
 }
 
 template<typename T1_, typename T2_>
-inline T1_ add(T1_ const& p1, T2_ const& p2, typename boost::enable_if<boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> > >::type* = 0)
+inline T1_ add(T1_ const& p1, T2_ const& p2, typename std::enable_if<boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> >::value>::type* = 0)
 {
     T1_ retval;
     retval[0] = add(p1[0], p2[0]);
@@ -282,7 +281,7 @@ inline T1_ add(T1_ const& p1, T2_ const& p2, typename boost::enable_if<boost::mp
 }
 
 template<typename T1_, typename T2_>
-inline T1_ subtract(T1_ const& p1, T2_ const& p2, typename boost::enable_if<boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> > >::type* = 0)
+inline T1_ subtract(T1_ const& p1, T2_ const& p2, typename std::enable_if<boost::mpl::and_<is_vector3<T1_>, is_vector3<T2_> >::value>::type* = 0)
 {
     T1_ retval;
     retval[0] = subtract(p1[0], p2[0]);
@@ -292,7 +291,7 @@ inline T1_ subtract(T1_ const& p1, T2_ const& p2, typename boost::enable_if<boos
 }
 
 template<typename T_>
-inline T_ divide(T_ const& p1, typename element_type_of<T_>::type const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ divide(T_ const& p1, typename element_type_of<T_>::type const& p2, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = divide(p1[0], p2);
@@ -302,7 +301,7 @@ inline T_ divide(T_ const& p1, typename element_type_of<T_>::type const& p2, typ
 }
 
 template<typename T_>
-inline T_ multiply(T_ const& p1, typename element_type_of<T_>::type const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ multiply(T_ const& p1, typename element_type_of<T_>::type const& p2, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = multiply(p1[0], p2);
@@ -312,8 +311,8 @@ inline T_ multiply(T_ const& p1, typename element_type_of<T_>::type const& p2, t
 }
 
 template<typename T_, typename M_>
-inline T_ multiply(T_ const& p1, M_ const& p2, typename boost::enable_if<
-    boost::mpl::and_<is_vector3<T_>, is_matrix<M_, 2> > >::type* = 0)
+inline T_ multiply(T_ const& p1, M_ const& p2, typename std::enable_if<
+    boost::mpl::and_<is_vector3<T_>, is_matrix<M_, 2> >::value>::type* = 0)
 {
     BOOST_ASSERT(matrix_extent(p2, 0) == 3 && matrix_extent(p2, 1) == 3);
     T_ retval;
@@ -330,8 +329,8 @@ inline T_ multiply(T_ const& p1, M_ const& p2, typename boost::enable_if<
 }
 
 template<typename M_, typename T_>
-inline T_ multiply(M_ const& p1, T_ const& p2, typename boost::enable_if<
-    boost::mpl::and_<is_matrix<M_, 2>, is_vector3<T_> > >::type* = 0)
+inline T_ multiply(M_ const& p1, T_ const& p2, typename std::enable_if<
+    boost::mpl::and_<is_matrix<M_, 2>, is_vector3<T_> >::value>::type* = 0)
 {
     BOOST_ASSERT(matrix_extent(p1, 0) == 3 && matrix_extent(p1, 1) == 3);
     T_ retval;
@@ -348,7 +347,7 @@ inline T_ multiply(M_ const& p1, T_ const& p2, typename boost::enable_if<
 }
 
 template<typename T_>
-inline T_ modulo(T_ const& p1, typename element_type_of<T_>::type const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ modulo(T_ const& p1, typename element_type_of<T_>::type const& p2, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = modulo(p1[0], p2);
@@ -358,7 +357,7 @@ inline T_ modulo(T_ const& p1, typename element_type_of<T_>::type const& p2, typ
 }
 
 template<typename T_>
-inline T_ modulo(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ modulo(T_ const& p1, T_ const& p2, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = modulo(p1[0], p2[0]);
@@ -368,7 +367,7 @@ inline T_ modulo(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector
 }
 
 template<typename T_>
-inline T_ negate(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ negate(T_ const& v, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = -v[0];
@@ -378,7 +377,7 @@ inline T_ negate(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* 
 }
 
 template<typename T_>
-inline T_ abs(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ abs(T_ const& v, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = abs(v[0]);
@@ -388,7 +387,7 @@ inline T_ abs(T_ const& v, typename boost::enable_if<is_vector3<T_> >::type* = 0
 }
 
 template<typename T_>
-inline typename element_type_of<T_>::type dot_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline typename element_type_of<T_>::type dot_product(T_ const& p1, T_ const& p2, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     return multiply(p1[0], p2[0])
            + multiply(p1[1], p2[1])
@@ -396,7 +395,7 @@ inline typename element_type_of<T_>::type dot_product(T_ const& p1, T_ const& p2
 }
 
 template<typename T_>
-inline T_ cross_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline T_ cross_product(T_ const& p1, T_ const& p2, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     T_ retval;
     retval[0] = subtract(multiply(p1[1], p2[2]), multiply(p1[2], p2[1]));
@@ -406,13 +405,13 @@ inline T_ cross_product(T_ const& p1, T_ const& p2, typename boost::enable_if<is
 }
 
 template<typename T_>
-inline typename element_type_of<T_>::type length_sq(T_ const& r, typename boost::enable_if<is_vector2<T_> >::type* = 0)
+inline typename element_type_of<T_>::type length_sq(T_ const& r, typename std::enable_if<is_vector2<T_>::value>::type* = 0)
 {
     return pow_2(r[0]) + pow_2(r[1]);
 }
 
 template< typename T_ >
-inline typename element_type_of< T_ >::type length_sq(T_ const& r, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline typename element_type_of< T_ >::type length_sq(T_ const& r, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     return pow_2(r[0]) + pow_2(r[1]) + pow_2(r[2]);
 }
@@ -431,7 +430,7 @@ create_vector(Args&& ... args)
 }
 
 template<typename T_>
-inline bool is_cartesian_versor(T_ const& vector, typename boost::enable_if<is_vector3<T_> >::type* = 0)
+inline bool is_cartesian_versor(T_ const& vector, typename std::enable_if<is_vector3<T_>::value>::type* = 0)
 {
     return (vector == create_vector<T_>(1, 0, 0) ||
             vector == create_vector<T_>(0, 1, 0) ||
