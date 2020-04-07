@@ -104,15 +104,6 @@ private:
     typename base_type::size_type size_;
 };
 
-template<typename Trange_>
-struct is_referencing_range: boost::mpl::false_ {};
-
-template<typename Titer_>
-struct is_referencing_range<std::pair<Titer_, Titer_> >: boost::mpl::true_ {};
-
-template<typename Titer_>
-struct is_referencing_range<boost::iterator_range<Titer_> >: boost::mpl::true_ {};
-
 template<typename Titer_>
 struct is_sized<sized_iterator_range<Titer_> >: boost::mpl::true_
 {
