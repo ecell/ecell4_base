@@ -303,9 +303,8 @@ public:
         Integer num_tot(std::accumulate(a.begin(), a.end(), 0));
         if (num_tot < num)
         {
-            std::ostringstream message;
-            message << "The number of molecules cannot be negative. [" << sp.serial() << "]";
-            throw std::invalid_argument(message.str());
+            throw_exception<std::invalid_argument>(
+                "The number of molecules cannot be negative. [", sp.serial(), "]");
         }
 
         for (Integer i(0); i < num; ++i)

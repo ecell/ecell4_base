@@ -25,7 +25,6 @@ struct element_type_of{};
 // {
 //     typedef T_ type;
 // };
-
 } // ecell4
 } // egfrd
 #endif// ECELL4_EGFRD_UTILS_ARRAY_TRAITS_HPP

@@ -102,6 +102,7 @@ Real closest_point_segment_segment(
     const Real3& p2, const Real3& q2,
     Real& s, Real& t, Real3& c1, Real3& c2)
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     const Real3 d1(q1 - p1);
     const Real3 d2(q2 - p2);
     const Real3 r(p1 - p2);
@@ -184,6 +185,7 @@ bool test_AABB_AABB(
 bool test_segment_AABB(
     const Real3& p0, const Real3& p1, const Real3& lower, const Real3& upper)
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     const Real3 c((upper + lower) * 0.5);
     const Real3 e(upper - c);
     Real3 m(multiply(p1 - p0, 0.5));
@@ -271,8 +273,9 @@ bool intersect_ray_AABB(
     const Real3& p, const Real3& d, const Real3& lower, const Real3& upper,
     Real& tmin, Real3& q)
 {
+    constexpr double epsilon = std::numeric_limits<Real>::epsilon();
     tmin = 0.0;
-    Real tmax(inf);
+    Real tmax(std::numeric_limits<Real>::infinity());
     const unsigned int ndim(3);
     for (unsigned int i(0); i < ndim; ++i)
     {
@@ -348,7 +351,7 @@ bool intersect_moving_sphere_AABB(
 
     if (m == 7)
     {
-        Real tmin(inf);
+        Real tmin(std::numeric_limits<Real>::infinity());
         if (intersect_segment_capsule(
             p0, p1, b.corner(v), b.corner(v^1), radius, t))
         {
@@ -365,7 +368,7 @@ bool intersect_moving_sphere_AABB(
             tmin = std::min(t, tmin);
         }
 
-        if (tmin == inf)
+        if (tmin == std::numeric_limits<Real>::infinity())
         {
             return false;
         }

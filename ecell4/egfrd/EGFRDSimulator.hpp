@@ -686,7 +686,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv) const
         {
-            BOOST_ASSERT(::size(domain.reactions()) == 1);
+            BOOST_ASSERT(ecell4::egfrd::size(domain.reactions()) == 1);
             throw not_implemented("unsupported pair type.");
             // length_type const r(
             //     draw_r(rng_, greens_functions::GreensFunction3DRadAbs(domain.D_tot(),
@@ -3401,7 +3401,7 @@ protected:
         typedef typename shell_type::shape_type shape_type;
         typedef typename detail::get_pair_greens_function<shape_type>::iv_type iv_greens_function;
         // Draw actual pair event for iv at very last minute.
-        BOOST_ASSERT(::size(domain.reactions()) == 1);
+        BOOST_ASSERT(ecell4::egfrd::size(domain.reactions()) == 1);
         reaction_rule_type const& r(domain.reactions()[0]);
         iv_greens_function const gf(domain.D_tot(), r.k(), domain.r0(), domain.sigma(), domain.a_r());
 
@@ -3501,7 +3501,7 @@ protected:
             {
                 LOG_DEBUG(("=> iv_reaction"));
 
-                BOOST_ASSERT(::size(domain.reactions()) >= 1);
+                BOOST_ASSERT(ecell4::egfrd::size(domain.reactions()) >= 1);
 //                 reaction_rule_type const& r(domain.reactions()[0]);
 
                 Real k_tot = 0;
@@ -3642,7 +3642,7 @@ protected:
     void fire_event(birth_event& event)
     {
         const reaction_rule_type& rr(event.reaction_rule());
-        BOOST_ASSERT(::size(rr.get_products()));
+        BOOST_ASSERT(ecell4::egfrd::size(rr.get_products()));
         species_id_type const& sp(rr.get_products()[0]);
         LOG_DEBUG(("fire_birth: product=%s", boost::lexical_cast<std::string>(sp).c_str()));
 
@@ -4186,7 +4186,7 @@ protected:
         length_type const threshold_distance(
             traits_type::CUTOFF_FACTOR * std::sqrt(6. * domain.D_tot() * t));
 
-        BOOST_ASSERT(::size(domain.reactions()) == 1);
+        BOOST_ASSERT(ecell4::egfrd::size(domain.reactions()) == 1);
         if (distance_from_sigma < threshold_distance)
         {
             if (distance_from_shell < threshold_distance)
