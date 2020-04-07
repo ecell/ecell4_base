@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <algorithm>
 #include <iterator>
+#include <type_traits>
 #include <boost/multi_array.hpp>
-#include <boost/mpl/if.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/difference_type.hpp>
 // #include "Vector3.hpp"
@@ -613,7 +613,7 @@ operator+=(
 }
 
 template<typename T_, typename Tkey_>
-struct is_sized<MatrixSpace<T_, Tkey_> >: boost::mpl::true_ {};
+struct is_sized<MatrixSpace<T_, Tkey_> >: std::true_type {};
 
 template<typename T_, typename Tkey_>
 struct range_size<MatrixSpace<T_, Tkey_> >

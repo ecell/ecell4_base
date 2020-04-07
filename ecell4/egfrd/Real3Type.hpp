@@ -35,7 +35,7 @@ struct shape_length_type
 };
 
 template <std::size_t N_>
-struct is_vector<Real3, N_>: public boost::mpl::true_ {};
+struct is_vector<Real3, N_>: public std::true_type {};
 
 template <>
 struct element_type_of<Real3>

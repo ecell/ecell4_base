@@ -2,9 +2,9 @@
 #define LINEAR_ALGEBRA_HPP
 
 #include <algorithm>
+#include <type_traits>
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
 #include <array>
 #include <boost/multi_array.hpp>
@@ -24,43 +24,43 @@ using ::ecell4::pow_2;
 // is_vector
 
 template<typename T_, std::size_t N_>
-struct is_vector: public boost::mpl::false_ {};
+struct is_vector: public std::false_type {};
 
 template<typename T_, std::size_t N_>
-struct is_vector<std::array<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_vector<std::array<T_, N_>, N_>: public std::true_type {};
 
 // ----------------------------------------------------------------------------
 // is_matrix
 
 template<typename T_, std::size_t N_>
-struct is_matrix: public boost::mpl::false_ {};
+struct is_matrix: public std::false_type {};
 
 template<typename T_, std::size_t N_, typename Talloc_>
-struct is_matrix<boost::multi_array<T_, N_, Talloc_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::multi_array<T_, N_, Talloc_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::sub_array<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::detail::multi_array::sub_array<T_, N_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::const_sub_array<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::detail::multi_array::const_sub_array<T_, N_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::multi_array_view<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::detail::multi_array::multi_array_view<T_, N_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::const_multi_array_view<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::detail::multi_array::const_multi_array_view<T_, N_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N_>
-struct is_matrix<boost::multi_array_ref<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::multi_array_ref<T_, N_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N_, typename Tptr_>
-struct is_matrix<boost::const_multi_array_ref<T_, N_, Tptr_>, N_>: public boost::mpl::true_ {};
+struct is_matrix<boost::const_multi_array_ref<T_, N_, Tptr_>, N_>: public std::true_type {};
 
 template<typename T_, std::size_t N1_, std::size_t N2_>
-struct is_matrix<std::array<std::array<T_, N1_>, N2_>, 2>: public boost::mpl::true_ {};
+struct is_matrix<std::array<std::array<T_, N1_>, N2_>, 2>: public std::true_type {};
 
 template<typename T_, std::size_t N1_, std::size_t N2_>
-struct is_matrix<T_[N1_][N2_], 2>: public boost::mpl::true_ {};
+struct is_matrix<T_[N1_][N2_], 2>: public std::true_type {};
 
 // ----------------------------------------------------------------------------
 // is_scalar

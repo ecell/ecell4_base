@@ -1,13 +1,13 @@
 #ifndef UTILS_RANGE_HPP
 #define UTILS_RANGE_HPP
 
+#include <type_traits>
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/iterator.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
 #include <boost/iterator/iterator_traits.hpp>
@@ -102,7 +102,7 @@ private:
 };
 
 template<typename Titer_>
-struct is_sized<sized_iterator_range<Titer_> >: boost::mpl::true_
+struct is_sized<sized_iterator_range<Titer_> >: std::true_type
 {
 };
 
