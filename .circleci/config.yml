@@ -5,9 +5,9 @@ executors:
     docker:
       - image: quay.io/ecell/manylinuxbase
     environment:
-      ECELLVER: "2.0.4"
-      BOOSTVER: "1.70.0"
-      BOOSTFILE: "boost_1_70_0"
+      ECELLVER: "2.0.5"
+      BOOSTVER: "1.72.0"
+      BOOSTFILE: "boost_1_72_0"
 jobs:
   build:
     executor: default

@@ -115,10 +115,10 @@ std::pair<bool, Real> AABBSurface::intersect_ray(const Real3& p, const Real3& d)
 {
     if(this->_is_inside(p))
     {
-        Real tmin = inf;
+        Real tmin = std::numeric_limits<Real>::infinity();
         for(std::size_t i=0; i<3; ++i)
         {
-            if(std::abs(d[i]) < epsilon) continue;
+            if(std::abs(d[i]) < std::numeric_limits<Real>::epsilon()) continue;
             const Real tmp = (d[i] > 0) ? (this->upper_[i] - p[i]) / d[i] :
                                           (this->lower_[i] - p[i]) / d[i] ;
             tmin = std::min(tmin, tmp);

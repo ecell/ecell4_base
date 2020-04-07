@@ -5,7 +5,6 @@
 #include <map>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
-#include "utils.hpp"
 #include "exceptions.hpp"
 #include "ParticleContainer.hpp"
 #include "sorted_list.hpp"

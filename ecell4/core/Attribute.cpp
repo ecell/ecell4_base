@@ -47,9 +47,7 @@ Attribute::mapped_type Attribute::get(const key_type& key) const
         i(data_.find(key));
     if (i == data_.end())
     {
-        std::ostringstream message;
-        message << "attribute [" << key << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
+        throw_exception<NotFound>("attribute [", key, "] not found");
     }
 
     return (*i).second;
@@ -76,9 +74,7 @@ void Attribute::remove(const key_type& key)
         i(data_.find(key));
     if (i == data_.end())
     {
-        std::ostringstream message;
-        message << "attribute [" << key << "] not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
+        throw_exception<NotFound>("attribute [", key, "] not found");
     }
 
     data_.erase(i);

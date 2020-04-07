@@ -30,9 +30,7 @@ void NetfreeModel::remove_species_attribute(const Species& sp)
     species_container_type::iterator i(std::find(species_attributes_.begin(), species_attributes_.end(), sp));
     if (i == species_attributes_.end())
     {
-        std::ostringstream message;
-        message << "The given Speices [" << sp.serial() << "] was not found";
-        throw NotFound(message.str()); // use boost::format if it's allowed
+        throw_exception<NotFound>("The given Speices [", sp.serial(), "] was not found");
     }
     species_attributes_proceed_.erase(
         species_attributes_proceed_.begin() + std::distance(species_attributes_.begin(), i));

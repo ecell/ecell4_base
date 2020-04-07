@@ -494,8 +494,8 @@ public:
         const boost::shared_ptr<ODEWorld>& world,
         const boost::shared_ptr<Model>& model,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(world, model), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0),
-          solver_type_(solver_type)
+        : base_type(world, model), dt_(std::numeric_limits<Real>::infinity()),
+          abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0), solver_type_(solver_type)
     {
         initialize();
     }
@@ -503,8 +503,8 @@ public:
     ODESimulator(
         const boost::shared_ptr<ODEWorld>& world,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
-        : base_type(world), dt_(inf), abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0),
-          solver_type_(solver_type)
+        : base_type(world), dt_(std::numeric_limits<Real>::infinity()),
+          abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0), solver_type_(solver_type)
     {
         initialize();
     }

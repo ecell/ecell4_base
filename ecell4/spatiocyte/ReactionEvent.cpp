@@ -63,7 +63,7 @@ Real ZerothOrderReactionEvent::draw_dt()
 {
     const Real k(rule_.k());
     const Real p = k * world_->volume();
-    Real dt(inf);
+    Real dt(std::numeric_limits<Real>::infinity());
     if (p != 0.)
     {
         const Real rnd(world_->rng()->uniform(0., 1.));
@@ -121,7 +121,7 @@ Real FirstOrderReactionEvent::draw_dt()
     if (num_r > 0)
     {
         const Real p = k * num_r;
-        Real dt(inf);
+        Real dt(std::numeric_limits<Real>::infinity());
         if (p != 0.)
         {
             const Real rnd(world_->rng()->uniform(0., 1.));
@@ -131,7 +131,7 @@ Real FirstOrderReactionEvent::draw_dt()
     }
     else
     {
-        return inf;
+        return std::numeric_limits<Real>::infinity();
     }
 }
 

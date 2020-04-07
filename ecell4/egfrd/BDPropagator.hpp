@@ -13,7 +13,6 @@
 #include "Defs.hpp"
 #include "generator.hpp"
 #include "exceptions.hpp"
-#include "utils.hpp"
 #include "utils/random.hpp"
 #include "Logger.hpp"
 

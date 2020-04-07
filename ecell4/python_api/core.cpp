@@ -1246,8 +1246,8 @@ void setup_module(py::module& m)
     m.def("get_dimension_from_model", &extras::get_dimension_from_model);
     m.def("get_stoichiometry", &extras::get_stoichiometry);
     m.def("cbrt", &ecell4::cbrt);
-    m.attr("N_A") = N_A;
-    m.attr("epsilon") = epsilon;
+    m.attr("N_A") = 6.022140857e+23;
+    m.attr("epsilon") = std::numeric_limits<Real>::epsilon();
     m.def("_save_bd5", &save_bd5);
 }
 
