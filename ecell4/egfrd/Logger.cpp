@@ -69,7 +69,7 @@ private:
 };
 
 static LoggerManagerRegistry registry;
-    
+
 void LoggerManager::register_logger_manager(
         char const* logger_name_pattern,
         boost::shared_ptr<LoggerManager> const& manager)

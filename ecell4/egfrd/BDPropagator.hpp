@@ -158,7 +158,7 @@ public:
         }
         if (vc_)
         {
-            if (!(*vc_)(shape(particle_to_update.second), 
+            if (!(*vc_)(shape(particle_to_update.second),
                         particle_to_update.first))
             {
                 log_.info("propagation move rejected.");
@@ -369,7 +369,7 @@ private:
                         if (vc_)
                         {
                             if (!(*vc_)(
-                                    particle_shape_type(new_pos, sp.radius), 
+                                    particle_shape_type(new_pos, sp.radius),
                                     pp0.first, pp1.first))
                             {
                                 throw PropagationError("no space");

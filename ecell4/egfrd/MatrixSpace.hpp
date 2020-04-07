@@ -118,8 +118,8 @@ public:
             typename matrix_type::size_type t(
                 (i[0] + matrix_.shape()[0] - (-o[0] % matrix_.shape()[0])) %
                 matrix_.shape()[0]);
-            retval[0] 
-                = (o[0] - 
+            retval[0]
+                = (o[0] -
                    static_cast<typename matrix_type::difference_type>
                    (t - i[0])) * cell_sizes_[0];
             i[0] = t;
@@ -128,8 +128,8 @@ public:
         {
             typename matrix_type::size_type t(
                     (i[0] + (o[0] % matrix_.shape()[0])) % matrix_.shape()[0]);
-            retval[0] 
-                = (o[0] - 
+            retval[0]
+                = (o[0] -
                    static_cast<typename matrix_type::difference_type>
                    (t - i[0])) * cell_sizes_[0];
             i[0] = t;
@@ -325,7 +325,7 @@ public:
             // BOOST_ASSERT(old_c.erase(last_index));
             old_c.push(old_index);
             rmap_[last.first] = old_index;
-            reinterpret_cast<nonconst_value_type&>(*i) = last; 
+            reinterpret_cast<nonconst_value_type&>(*i) = last;
         }
         values_.pop_back();
         return true;
@@ -507,7 +507,7 @@ private:
                         continue;
                     }
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, position_type());
                     }
@@ -533,7 +533,7 @@ private:
                         continue;
                     }
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, position_type());
                     }
@@ -557,7 +557,7 @@ private:
                     cell_index_type _idx(idx);
                     const position_type pos_off(offset_index_cyclic(_idx, off));
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, pos_off);
                     }
@@ -581,7 +581,7 @@ private:
                     cell_index_type _idx(idx);
                     const position_type pos_off(offset_index_cyclic(_idx, off));
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, pos_off);
                     }

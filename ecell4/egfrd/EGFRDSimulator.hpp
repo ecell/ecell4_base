@@ -119,7 +119,7 @@ struct get_greens_function<ecell4::Sphere>
 // {
 //     typedef greens_functions::GreensFunction3DAbsSym type;
 // };
-// 
+//
 // template<>
 // struct get_greens_function<Sphere>
 // {
@@ -155,7 +155,7 @@ struct get_pair_greens_function<ecell4::Cylinder>
 //     typedef greens_functions::GreensFunction3DRadAbs iv_type;
 //     typedef greens_functions::GreensFunction3DAbsSym com_type;
 // };
-// 
+//
 // template<>
 // struct get_pair_greens_function<Cylinder>
 // {
@@ -321,7 +321,7 @@ public:
 
 protected:
     typedef boost::fusion::map<
-        boost::fusion::pair<spherical_shell_type, 
+        boost::fusion::pair<spherical_shell_type,
                             MatrixSpace<spherical_shell_type,
                                         shell_id_type>*>,
         boost::fusion::pair<cylindrical_shell_type, MatrixSpace<cylindrical_shell_type,
@@ -476,7 +476,7 @@ protected:
     };
 
     template<typename TfilterFn_>
-    struct domain_collector 
+    struct domain_collector
     {
         typedef TfilterFn_ filter_function;
 
@@ -1069,7 +1069,7 @@ public:
                 shell_matrix_map_type, T>::type>::type shell_matrix_type;
 
         shell_matrix_type const& smat(*boost::fusion::at_key<T>(smatm_));
-        
+
         typename shell_matrix_type::const_iterator i(smat.find(id));
         if (i == smat.end())
         {
@@ -1755,7 +1755,7 @@ protected:
             //     kind = CYLINDRICAL_PAIR;
             // }
 
-        
+
             // virtual void operator()(planar_surface_type const& structure) const
             // {
             //     cylindrical_shell_id_pair const new_shell(
@@ -2024,13 +2024,13 @@ protected:
 
     // propagate {{{
     /**
-     * The difference between a burst and a propagate is that a burst 
-     * always takes place before the actual scheduled event for the single, 
+     * The difference between a burst and a propagate is that a burst
+     * always takes place before the actual scheduled event for the single,
      * while propagate_single can be called for an escape event.
      *
-     * Another subtle difference is that burst_single always reschedules 
-     * (update_event) the single, while just calling propagate does not. 
-     * So whoever calls propagate_single directly should reschedule the single 
+     * Another subtle difference is that burst_single always reschedules
+     * (update_event) the single, while just calling propagate does not.
+     * So whoever calls propagate_single directly should reschedule the single
      * afterwards.
      */
     //template<typename T>
@@ -2093,7 +2093,7 @@ protected:
 
         std::array<boost::shared_ptr<single_type>, 2> const singles = { {
             create_single(new_particles[0]),
-            create_single(new_particles[1]) 
+            create_single(new_particles[1])
         } };
 
         if (log_.level() == Logger::L_DEBUG)
@@ -2126,7 +2126,7 @@ protected:
     void burst(AnalyticalSingle<traits_type, T>& domain)
     {
         position_type const old_pos(domain.position());
-        //length_type const old_shell_size(domain.size()); 
+        //length_type const old_shell_size(domain.size());
         length_type const particle_radius(domain.particle().second.radius());
 
         // Override dt, burst happens before single's scheduled event.
@@ -2301,7 +2301,7 @@ protected:
                     r.id(), array_gen<particle_id_pair>(), reactant));
             }
             break;
-        case 1: 
+        case 1:
             {
                 species_id_type const& product_id0(r.get_products()[0]);
                 molecule_info_type const product_species(
@@ -2626,7 +2626,7 @@ protected:
     }
     // }}}
 
-    // get_intruders {{{ 
+    // get_intruders {{{
     std::pair<std::vector<domain_id_type>*,
               std::pair<domain_id_type, length_type> >
     get_intruders(particle_shape_type const& p,
@@ -2655,7 +2655,7 @@ protected:
     {
         std::pair<domain_id_type, length_type> const closest(
             get_closest_domain(
-                domain.position(), 
+                domain.position(),
                 array_gen(domain.id())));
         restore_domain(domain, closest);
     }
@@ -2686,7 +2686,7 @@ protected:
             } else {
                 new_shell_size = closest.second / traits_type::SAFETY;
             }
-            new_shell_size = std::min(max_shell_size(), 
+            new_shell_size = std::min(max_shell_size(),
                 std::max(domain.particle().second.radius(), new_shell_size));
         }
         else
@@ -2871,7 +2871,7 @@ protected:
         length_type const min_shell_size(shell_size[larger_shell_index]);
         length_type const min_shell_size_margin(shell_size_margin[larger_shell_index]);
 
-        // 2. Check if min shell size not larger than max shell size or 
+        // 2. Check if min shell size not larger than max shell size or
         // sim cell size.
         position_type com((*base_type::world_).apply_boundary(
             (*base_type::world_).calculate_pair_CoM(
@@ -2935,7 +2935,7 @@ protected:
             }
         }
 
-        // 4. Determine shell size and check if closest object not too 
+        // 4. Determine shell size and check if closest object not too
         // close (squeezing).
         {
             std::pair<domain_id_type, length_type> possible_closest(
@@ -2980,11 +2980,11 @@ protected:
                 // options for shell size:
                 // a. ideal shell size
                 // b. closest shell is from a bursted single
-                // c. closest shell is closer than ideal shell size 
+                // c. closest shell is closer than ideal shell size
                 new_shell_size = std::min(
                     std::min(
                         (D01 / D_tot) * (
-                            closest_particle_distance - min_shell_size 
+                            closest_particle_distance - min_shell_size
                             - closest_domain_particle.radius())
                         + min_shell_size,
                         closest_particle_distance - closest_min_shell),
@@ -3109,7 +3109,7 @@ protected:
         {
             length_type const dist(distance(*neighbor, single_pos));
             if (dist < min_shell_size)
-                add_to_multi_recursive(*retval, *neighbor); 
+                add_to_multi_recursive(*retval, *neighbor);
         }
 
         return *retval;
@@ -3226,7 +3226,7 @@ protected:
                 {
                     length_type const dist(distance(*neighbor, single->position()));
                     if (dist < new_shell.radius())
-                        add_to_multi_recursive(multi, *neighbor); 
+                        add_to_multi_recursive(multi, *neighbor);
                 }
                 return;
             }
@@ -3288,7 +3288,7 @@ protected:
         }
         return boost::optional<domain_type&>();
     }
-  
+
     void fire_event(single_event const& event)
     {
         single_type& domain(event.domain());
@@ -3342,11 +3342,11 @@ protected:
                 //     particle_shape_type(
                 //         domain.position(), min_shell_radius), domain.id());
                 {
-                    std::pair<std::vector<domain_id_type>*, 
-                        std::pair<domain_id_type, length_type> > 
+                    std::pair<std::vector<domain_id_type>*,
+                        std::pair<domain_id_type, length_type> >
                         res(get_intruders(particle_shape_type(
-                                              domain.position(), 
-                                              min_shell_radius), 
+                                              domain.position(),
+                                              min_shell_radius),
                                           domain.id()));
                     intruders = res.first;
                     closest = res.second;
@@ -3456,7 +3456,7 @@ protected:
         switch (kind)
         {
         default: /* never get here */ BOOST_ASSERT(0); break;
-        case PAIR_EVENT_SINGLE_REACTION_0: 
+        case PAIR_EVENT_SINGLE_REACTION_0:
         case PAIR_EVENT_SINGLE_REACTION_1:
             {
                 int const index(kind == PAIR_EVENT_SINGLE_REACTION_0 ? 0 : 1);
@@ -3493,7 +3493,7 @@ protected:
                 add_event(*new_single[1], SINGLE_EVENT_ESCAPE);
             }
             break;
-        
+
         case PAIR_EVENT_IV_REACTION:
             {
                 LOG_DEBUG(("=> iv_reaction"));
@@ -3558,7 +3558,7 @@ protected:
                                     this->rng(),
                                     *base_type::world_).draw_com(
                                         domain, domain.dt())));
-                   
+
                         BOOST_ASSERT(
                             (*base_type::world_).distance(
                                 domain.shell().second.position(),
@@ -3618,7 +3618,7 @@ protected:
         multi_type& domain(event.domain());
         domain.step();
         LOG_DEBUG(("fire_multi: last_event=%s", boost::lexical_cast<std::string>(domain.last_event()).c_str()));
-        multi_step_count_[domain.last_event()]++; 
+        multi_step_count_[domain.last_event()]++;
         switch (domain.last_event())
         {
         default: /* never get here */ BOOST_ASSERT(0); break;
@@ -4132,7 +4132,7 @@ protected:
         }
         else
         {
-            return position_type(new_iv[0], new_iv[1], -new_iv[1]); 
+            return position_type(new_iv[0], new_iv[1], -new_iv[1]);
         }
     }
 
@@ -4215,7 +4215,7 @@ protected:
             }
             else
             {
-                // distant from both a and sigma; 
+                // distant from both a and sigma;
                 LOG_DEBUG(("GF: free"));
                 return new greens_functions::GreensFunction3D(domain.D_tot(), r0);
             }

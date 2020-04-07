@@ -19,7 +19,7 @@ inline typename element_type_of< T1_ >::type distance(
 {
     return std::sqrt(
         pow_2( p1[0] - p2[0] )
-        + pow_2( p1[1] - p2[1] ) 
+        + pow_2( p1[1] - p2[1] )
         + pow_2( p1[2] - p2[2] ) );
 }
 
@@ -36,7 +36,7 @@ inline T_ normalize(T_ const& p)
 }
 
 template<typename T_>
-inline T_ normalize(T_ const& p, 
+inline T_ normalize(T_ const& p,
                      typename element_type_of< T_ >::type const& r)
 {
     return multiply(p, r / length(p));
@@ -44,7 +44,7 @@ inline T_ normalize(T_ const& p,
 
 
 /**
- * Transpose the position pos1 so that it can be used with another 
+ * Transpose the position pos1 so that it can be used with another
  * position pos2.
  *
  * pos1 is transposed into one of mirror images of the cyclic boundary
@@ -104,7 +104,7 @@ inline T_ apply_boundary(T_ const& p1, T_ const& world_size, typename std::enabl
 }
 
 template<typename T_>
-inline T_ apply_boundary(T_ const& p1, 
+inline T_ apply_boundary(T_ const& p1,
                          typename element_type_of<T_>::type const& world_size,
                          typename std::enable_if<is_vector3<T_>::value>::type*)
 {
@@ -191,7 +191,7 @@ inline T1 rotate_vector(T1 const& v, T2 const& axis, double angle)
     return multiply(mat, v);
 }
 
-// reflect 
+// reflect
 template<typename coordT>
 coordT reflect_plane(const coordT& begin, const coordT& end,
                      const coordT& normal, const coordT& plane)
