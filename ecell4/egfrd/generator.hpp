@@ -30,45 +30,10 @@ bool valid(Tgen_ const& t)
     return true;
 }
 
-
 template<typename Tgen_>
 std::size_t count(Tgen_ const& t)
 {
     throw std::runtime_error("generation is not limited");
-}
-
-template<typename Tgen_, typename Tpred_>
-bool drop_while(Tgen_& gen, Tpred_& pred)
-{
-    do
-    {
-        if (!valid(gen))
-            return false;
-    } while (pred(gen()));
-    return true;
-}
-
-template<typename Tgen_, typename Tpred_>
-bool drop_until(Tgen_& gen, Tpred_& pred)
-{
-    do
-    {
-        if (!valid(gen))
-            return false;
-    } while (!pred(gen()));
-    return true;
-}
-
-template<typename Tgen_>
-bool cue(Tgen_& gen, typename Tgen_::result_type const& val)
-{
-    do
-    {
-        if (!valid(gen))
-            return false;
-    } while (val != gen());
-
-    return true;
 }
 
 template<typename Tretval_>
