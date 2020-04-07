@@ -74,34 +74,34 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
         typedef Shell<Tshape_, domain_id_type> type;
     };
 
-    static const Real safety();
-    static const Real single_shell_factor();
-    static const Real default_dt_factor();
-    static const Real cutoff_factor();
+    static constexpr Real safety();
+    static constexpr Real single_shell_factor();
+    static constexpr Real default_dt_factor();
+    static constexpr Real cutoff_factor();
 
-    static const Real SAFETY;
-    static const Real SINGLE_SHELL_FACTOR;
-    static const Real DEFAULT_DT_FACTOR;
-    static const Real CUTOFF_FACTOR;
+    static constexpr Real SAFETY              = safety();
+    static constexpr Real SINGLE_SHELL_FACTOR = single_shell_factor();
+    static constexpr Real DEFAULT_DT_FACTOR   = default_dt_factor();
+    static constexpr Real CUTOFF_FACTOR       = cutoff_factor();
 };
 
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::safety() { return 1. + 1e-5; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::safety() { return 1. + 1e-5; }
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor() { return 0.1; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor() { return 0.1; }
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor() { return 1e-5; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor() { return 1e-5; }
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor() { return 5.6; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor() { return 5.6; }
 
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::SAFETY = EGFRDSimulatorTraitsBase<Tworld_>::safety();
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::SAFETY;
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::SINGLE_SHELL_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor();
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::SINGLE_SHELL_FACTOR;
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::DEFAULT_DT_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor();
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::DEFAULT_DT_FACTOR;
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::CUTOFF_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor();
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::CUTOFF_FACTOR;
 
 namespace detail {
 
