@@ -8,24 +8,24 @@ namespace egfrd
 {
 
 template<typename T>
-inline boost::array<T, 0> array_gen()
+inline std::array<T, 0> array_gen()
 {
-    return boost::array<T, 0>{};
+    return std::array<T, 0>{};
 }
 template<typename T>
-inline boost::array<T, 1> array_gen(const T& v0)
+inline std::array<T, 1> array_gen(const T& v0)
 {
-    return boost::array<T, 1>{{v0}};
+    return std::array<T, 1>{{v0}};
 }
 template<typename T>
-inline boost::array<T, 2> array_gen(const T& v0, const T& v1)
+inline std::array<T, 2> array_gen(const T& v0, const T& v1)
 {
-    return boost::array<T, 2>{{v0, v1}};
+    return std::array<T, 2>{{v0, v1}};
 }
 template<typename T>
-inline boost::array<T, 3> array_gen(const T& v0, const T& v1, const T& v2)
+inline std::array<T, 3> array_gen(const T& v0, const T& v1, const T& v2)
 {
-    return boost::array<T, 3>{{v0, v1, v2}};
+    return std::array<T, 3>{{v0, v1, v2}};
 }
 
 } // egfrd

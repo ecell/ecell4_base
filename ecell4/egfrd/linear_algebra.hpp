@@ -34,7 +34,7 @@ template<typename T_, std::size_t N_>
 struct is_vector: public boost::mpl::false_ {};
 
 template<typename T_, std::size_t N_>
-struct is_vector<boost::array<T_, N_>, N_>: public boost::mpl::true_ {};
+struct is_vector<std::array<T_, N_>, N_>: public boost::mpl::true_ {};
 
 // ----------------------------------------------------------------------------
 // is_matrix
@@ -64,7 +64,7 @@ template<typename T_, std::size_t N_, typename Tptr_>
 struct is_matrix<boost::const_multi_array_ref<T_, N_, Tptr_>, N_>: public boost::mpl::true_ {};
 
 template<typename T_, std::size_t N1_, std::size_t N2_>
-struct is_matrix<boost::array<boost::array<T_, N1_>, N2_>, 2>: public boost::mpl::true_ {};
+struct is_matrix<std::array<std::array<T_, N1_>, N2_>, 2>: public boost::mpl::true_ {};
 
 template<typename T_, std::size_t N1_, std::size_t N2_>
 struct is_matrix<T_[N1_][N2_], 2>: public boost::mpl::true_ {};

@@ -2010,7 +2010,7 @@ protected:
 
     // draw_new_positions {{{
     template<typename Tdraw, typename T>
-    boost::array<position_type, 2> draw_new_positions(
+    std::array<position_type, 2> draw_new_positions(
         AnalyticalPair<traits_type, T> const& domain, time_type dt)
     {
         Tdraw d(this->rng(), *base_type::world_);
@@ -2064,12 +2064,12 @@ protected:
     }
 
     template<typename T>
-    boost::array<boost::shared_ptr<single_type>, 2>
+    std::array<boost::shared_ptr<single_type>, 2>
     propagate(AnalyticalPair<traits_type, T>& domain,
-              boost::array<position_type, 2> const& new_pos)
+              std::array<position_type, 2> const& new_pos)
     {
-        boost::array<particle_id_pair, 2> const& particles(domain.particles());
-        boost::array<particle_id_pair, 2> new_particles(particles);
+        std::array<particle_id_pair, 2> const& particles(domain.particles());
+        std::array<particle_id_pair, 2> new_particles(particles);
         new_particles[0].second.position() = new_pos[0];
         new_particles[1].second.position() = new_pos[1];
 
@@ -2093,7 +2093,7 @@ protected:
 
         remove_domain(domain);
 
-        boost::array<boost::shared_ptr<single_type>, 2> const singles = { {
+        std::array<boost::shared_ptr<single_type>, 2> const singles = { {
             create_single(new_particles[0]),
             create_single(new_particles[1]) 
         } };
@@ -2161,11 +2161,11 @@ protected:
     }
 
     template<typename T>
-    boost::array<boost::shared_ptr<single_type>, 2> burst(AnalyticalPair<traits_type, T>& domain)
+    std::array<boost::shared_ptr<single_type>, 2> burst(AnalyticalPair<traits_type, T>& domain)
     {
         length_type const dt(this->t() - domain.last_time());
 
-        boost::array<boost::shared_ptr<single_type>, 2> const singles(
+        std::array<boost::shared_ptr<single_type>, 2> const singles(
             propagate(domain, draw_new_positions<draw_on_burst>(domain, dt)));
 
         add_event(*singles[0], SINGLE_EVENT_ESCAPE);
@@ -2239,7 +2239,7 @@ protected:
             spherical_pair_type* _domain(dynamic_cast<spherical_pair_type*>(domain.get()));
             if (_domain)
             {
-                boost::array<boost::shared_ptr<single_type>, 2> bursted(burst(*_domain));
+                std::array<boost::shared_ptr<single_type>, 2> bursted(burst(*_domain));
                 if (result)
                 {
                     result.get().push_back(boost::dynamic_pointer_cast<domain_type>(bursted[0]));
@@ -2252,7 +2252,7 @@ protected:
             cylindrical_pair_type* _domain(dynamic_cast<cylindrical_pair_type*>(domain.get()));
             if (_domain)
             {
-                boost::array<boost::shared_ptr<single_type>, 2> bursted(burst(*_domain));
+                std::array<boost::shared_ptr<single_type>, 2> bursted(burst(*_domain));
                 if (result)
                 {
                     result.get().push_back(boost::dynamic_pointer_cast<domain_type>(bursted[0]));
@@ -3468,7 +3468,7 @@ protected:
                 position_type const old_CoM(domain.position());
                 LOG_DEBUG(("pair: single reaction %s", boost::lexical_cast<std::string>(domain.particles()[index].first).c_str()));
 
-                boost::array<boost::shared_ptr<single_type>, 2> const new_single(burst(domain));
+                std::array<boost::shared_ptr<single_type>, 2> const new_single(burst(domain));
 
                 try
                 {
@@ -3486,10 +3486,10 @@ protected:
             {
                 LOG_DEBUG(("=> com_escape"));
                 time_type const dt(domain.dt());
-                boost::array<position_type, 2> const new_pos(
+                std::array<position_type, 2> const new_pos(
                     draw_new_positions<draw_on_com_escape>(
                         domain, dt));
-                boost::array<boost::shared_ptr<single_type>, 2> const new_single(
+                std::array<boost::shared_ptr<single_type>, 2> const new_single(
                     propagate(domain, new_pos));
 
                 add_event(*new_single[0], SINGLE_EVENT_ESCAPE);
@@ -3603,10 +3603,10 @@ protected:
             {
                 LOG_DEBUG(("=> iv_escape"));
                 time_type const dt(domain.dt());
-                boost::array<position_type, 2> const new_pos(
+                std::array<position_type, 2> const new_pos(
                     draw_new_positions<draw_on_iv_escape>(
                         domain, dt));
-                boost::array<boost::shared_ptr<single_type>, 2> const new_single(
+                std::array<boost::shared_ptr<single_type>, 2> const new_single(
                     propagate(domain, new_pos));
 
                 add_event(*new_single[0], SINGLE_EVENT_ESCAPE);
@@ -4141,7 +4141,7 @@ protected:
 
     template<typename T>
     bool check_pair_pos(AnalyticalPair<traits_type, T> const& domain,
-                        boost::array<particle_id_pair, 2> const& new_particles)
+                        std::array<particle_id_pair, 2> const& new_particles)
     {
         length_type const new_distance(
             (*base_type::world_).distance(new_particles[0].second.position(),
@@ -4258,10 +4258,10 @@ protected:
     shell_id_generator shidgen_;
     domain_id_generator didgen_;
     event_scheduler_type scheduler_;
-    boost::array<int, NUM_SINGLE_EVENT_KINDS> single_step_count_;
-    boost::array<int, NUM_PAIR_EVENT_KINDS> pair_step_count_;
-    boost::array<int, multi_type::NUM_MULTI_EVENT_KINDS> multi_step_count_;
-    boost::array<int, NUM_DOMAIN_KINDS> domain_count_per_type_;
+    std::array<int, NUM_SINGLE_EVENT_KINDS> single_step_count_;
+    std::array<int, NUM_PAIR_EVENT_KINDS> pair_step_count_;
+    std::array<int, multi_type::NUM_MULTI_EVENT_KINDS> multi_step_count_;
+    std::array<int, NUM_DOMAIN_KINDS> domain_count_per_type_;
     length_type single_shell_factor_;
     length_type multi_shell_factor_;
     unsigned int rejected_moves_;

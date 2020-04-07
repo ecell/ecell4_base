@@ -11,13 +11,13 @@ namespace egfrd
 {
 
 template<typename coordT>
-inline coordT centroid(const boost::array<coordT, 3>& vertices)
+inline coordT centroid(const std::array<coordT, 3>& vertices)
 {
     return (vertices[0] + vertices[1] + vertices[2]) * (1e0 / 3e0);
 }
 
 template<typename coordT>
-inline coordT incenter(const boost::array<coordT, 3>& vertices)
+inline coordT incenter(const std::array<coordT, 3>& vertices)
 {
     typedef typename element_type_of<coordT>::type valueT;
     const valueT a = length(vertices[2] - vertices[1]);
@@ -28,8 +28,8 @@ inline coordT incenter(const boost::array<coordT, 3>& vertices)
 }
 
 template<typename coordT>
-inline coordT incenter(const boost::array<coordT, 3>& vertices,
-                       const boost::array<coordT, 3>& edges)
+inline coordT incenter(const std::array<coordT, 3>& vertices,
+                       const std::array<coordT, 3>& edges)
 {
     typedef typename element_type_of<coordT>::type valueT;
     const valueT a = length(edges[1]);
@@ -40,8 +40,8 @@ inline coordT incenter(const boost::array<coordT, 3>& vertices,
 }
 
 template<typename coordT>
-inline coordT incenter(const boost::array<coordT, 3>& vertices,
-    const boost::array<typename element_type_of<coordT>::type, 3>& length_of_edge)
+inline coordT incenter(const std::array<coordT, 3>& vertices,
+    const std::array<typename element_type_of<coordT>::type, 3>& length_of_edge)
 {
     typedef typename element_type_of<coordT>::type valueT;
     const valueT a = length_of_edge[1];
@@ -53,7 +53,7 @@ inline coordT incenter(const boost::array<coordT, 3>& vertices,
 
 template<typename coordT>
 inline std::size_t
-match_edge(const coordT& vec, const boost::array<coordT, 3>& edges,
+match_edge(const coordT& vec, const std::array<coordT, 3>& edges,
            const typename element_type_of<coordT>::type tol = 1e-10)
 {
     for(std::size_t i=0; i<3; ++i)
@@ -67,7 +67,7 @@ match_edge(const coordT& vec, const boost::array<coordT, 3>& edges,
 
 template<typename coordT>
 coordT
-project_to_plane(const coordT& pos, const boost::array<coordT, 3>& vertices,
+project_to_plane(const coordT& pos, const std::array<coordT, 3>& vertices,
                  const coordT& normal)
 {
     typedef typename element_type_of<coordT>::type valueT;
@@ -78,7 +78,7 @@ project_to_plane(const coordT& pos, const boost::array<coordT, 3>& vertices,
 
 template<typename coordT>
 coordT
-closest_point(const coordT& pos, const boost::array<coordT, 3>& vertices)
+closest_point(const coordT& pos, const std::array<coordT, 3>& vertices)
 {
     typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
@@ -139,7 +139,7 @@ closest_point(const coordT& pos, const boost::array<coordT, 3>& vertices)
 template<typename coordT>
 std::pair<typename element_type_of<coordT>::type, // distance
           typename element_type_of<coordT>::type> // r of circle in triangle
-distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
+distance(const coordT& pos, const std::array<coordT, 3>& vertices)
 {
     return std::make_pair(length(closest_point(pos, vertices) - pos), 0.);
 }
@@ -147,7 +147,7 @@ distance(const coordT& pos, const boost::array<coordT, 3>& vertices)
 template<typename coordT>
 std::pair<bool, coordT>
 test_intersect_segment_triangle(const coordT& begin, const coordT& end,
-                                const boost::array<coordT, 3>& vertices)
+                                const std::array<coordT, 3>& vertices)
 {
     typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,

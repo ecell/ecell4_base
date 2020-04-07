@@ -906,7 +906,7 @@ public:
     // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
     //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
     // {
-    //     typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
+    //     typename utils::template overlap_checker<std::array<particle_id_type, 0> > oc;
     //     traits_type::take_neighbor(*pmat_, oc, s);
     //     return oc.result();
     // }
@@ -947,7 +947,7 @@ public:
     }
 
     // for polygon
-    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    virtual void add_surface(const std::array<position_type, 3>& vertices)
     {
         polygon_.emplace(vertices);
     }
