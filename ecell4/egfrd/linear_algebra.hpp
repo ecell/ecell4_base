@@ -7,7 +7,6 @@
 #include <gsl/gsl_pow_int.h>
 #include <boost/mpl/and.hpp>
 #include <array>
-#include <boost/multi_array.hpp>
 
 #include "utils/array_traits.hpp"
 
@@ -35,30 +34,6 @@ struct is_vector<std::array<T_, N_>, N_>: public std::true_type {};
 template<typename T_, std::size_t N_>
 struct is_matrix: public std::false_type {};
 
-template<typename T_, std::size_t N_, typename Talloc_>
-struct is_matrix<boost::multi_array<T_, N_, Talloc_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::sub_array<T_, N_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::const_sub_array<T_, N_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::multi_array_view<T_, N_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N_>
-struct is_matrix<boost::detail::multi_array::const_multi_array_view<T_, N_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N_>
-struct is_matrix<boost::multi_array_ref<T_, N_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N_, typename Tptr_>
-struct is_matrix<boost::const_multi_array_ref<T_, N_, Tptr_>, N_>: public std::true_type {};
-
-template<typename T_, std::size_t N1_, std::size_t N2_>
-struct is_matrix<std::array<std::array<T_, N1_>, N2_>, 2>: public std::true_type {};
-
 template<typename T_, std::size_t N1_, std::size_t N2_>
 struct is_matrix<T_[N1_][N2_], 2>: public std::true_type {};
 
@@ -81,100 +56,7 @@ struct is_vector3: public is_vector<T_, 3> {};
 // matrix_adapter
 
 template<typename T_>
-struct matrix_adapter
-{
-};
-
-template<typename T_, std::size_t N_, typename Talloc_>
-struct matrix_adapter<boost::multi_array<T_, N_, Talloc_> >
-{
-    typedef boost::multi_array<T_, N_, Talloc_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    static matrix_size_type get_extent(matrix_type const& first,
-                                       std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
-
-template<typename T_, std::size_t N_>
-struct matrix_adapter<boost::detail::multi_array::sub_array<T_, N_> >
-{
-    typedef boost::detail::multi_array::sub_array<T_, N_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    static matrix_size_type get_extent(matrix_type const& first,
-                                       std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
-
-template<typename T_, std::size_t N_>
-struct matrix_adapter<boost::detail::multi_array::const_sub_array<T_, N_> >
-{
-    typedef boost::detail::multi_array::const_sub_array<T_, N_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    static matrix_size_type get_extent(matrix_type const& first,
-                                       std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
-
-template<typename T_, std::size_t N_>
-struct matrix_adapter<boost::detail::multi_array::multi_array_view<T_, N_> >
-{
-    typedef boost::detail::multi_array::multi_array_view<T_, N_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    static matrix_size_type get_extent(matrix_type const& first,
-                                       std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
-
-template<typename T_, std::size_t N_>
-struct matrix_adapter<boost::detail::multi_array::const_multi_array_view<T_, N_> >
-{
-    typedef boost::detail::multi_array::const_multi_array_view<T_, N_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    matrix_size_type get_extent(matrix_type const& first,
-                                std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
-
-template<typename T_, std::size_t N_>
-struct matrix_adapter<boost::multi_array_ref<T_, N_> >
-{
-    typedef boost::multi_array_ref<T_, N_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    static matrix_size_type get_extent(matrix_type const& first,
-                                       std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
-
-template<typename T_, std::size_t N_, typename Tptr_>
-struct matrix_adapter<boost::const_multi_array_ref<T_, N_, Tptr_> >
-{
-    typedef boost::const_multi_array_ref<T_, N_, Tptr_> matrix_type;
-    typedef typename matrix_type::size_type matrix_size_type;
-
-    static matrix_size_type get_extent(matrix_type const& first,
-                                       std::size_t idx)
-    {
-        return first.shape()[idx];
-    }
-};
+struct matrix_adapter{};
 
 template<typename T_, std::size_t N1_, std::size_t N2_>
 struct matrix_adapter<T_[N1_][N2_]>
@@ -196,7 +78,6 @@ struct matrix_adapter<T_[N1_][N2_]>
         }
     }
 };
-
 
 template<typename Tmat>
 inline std::size_t matrix_extent(Tmat const& mat, std::size_t dim)
