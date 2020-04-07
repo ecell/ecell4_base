@@ -1,7 +1,6 @@
 #ifndef MULTI_HPP
 #define MULTI_HPP
 
-#include <boost/foreach.hpp>
 #include <boost/algorithm/string/join.hpp>
 
 #include <ecell4/core/functions.hpp>

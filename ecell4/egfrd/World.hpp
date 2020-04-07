@@ -31,7 +31,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <boost/foreach.hpp>
 #include "generator.hpp"
 #include "filters.hpp"
 //#include "ParticleID.hpp"
