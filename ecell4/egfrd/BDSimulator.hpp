@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <boost/foreach.hpp>
 
 #include "BDPropagator.hpp"
 #include "World.hpp"
@@ -162,7 +161,7 @@ public:
     Real determine_dt()
     {
         Real prob = 0.0;
-        BOOST_FOREACH(reaction_rule_type const& rr,
+        for(reaction_rule_type const& rr:
                       (*base_type::network_rules_).zeroth_order_reaction_rules())
         {
             prob += rr.k();
@@ -176,7 +175,7 @@ public:
 
         Real D_max(0.0), radius_min(std::numeric_limits<Real>::max());
 
-        BOOST_FOREACH(molecule_info_type info,
+        for(molecule_info_type info:
                       (*base_type::world_).get_molecule_info_range())
         {
             if (D_max < info.D)
@@ -248,7 +247,7 @@ protected:
             base_type::rng().random() / (dt * (*base_type::world_).volume()));
         Real prob = 0.0;
 
-        BOOST_FOREACH(reaction_rule_type const& rr, rules)
+        for(reaction_rule_type const& rr: rules)
         {
             prob += rr.k();
             if (prob > rnd)

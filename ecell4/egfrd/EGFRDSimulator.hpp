@@ -3,7 +3,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/shared_ptr.hpp>
@@ -580,7 +579,7 @@ protected:
         void operator()(T const& smat) const
         {
             BOOST_ASSERT(world_.edge_lengths() == (*smat.second).edge_lengths());
-            BOOST_FOREACH (typename boost::remove_pointer<typename T::second_type>::type::value_type pair, *smat.second)
+            for(typename boost::remove_pointer<typename T::second_type>::type::value_type pair : *smat.second)
             {
                 did_map_[pair.second.did()].insert(pair.first);
             }
@@ -1175,14 +1174,14 @@ public:
             boost::fusion::at_key<cylindrical_shell_type>(smatm_) = csmat_.get();
         }
 
-        BOOST_FOREACH (particle_id_pair const& pp,
+        for (particle_id_pair const& pp:
                        (*base_type::world_).get_particles_range())
         {
             boost::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
 
-        BOOST_FOREACH (reaction_rule_type const& rr,
+        for (reaction_rule_type const& rr:
                        (*base_type::network_rules_).zeroth_order_reaction_rules())
         {
             add_event(rr);
@@ -1225,7 +1224,7 @@ public:
         std::vector<domain_id_type> non_singles;
 
         // first burst all Singles.
-        BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
+        for (event_id_pair_type const& event: scheduler_.events())
         {
             {
                 single_event const* single_ev(
@@ -1333,7 +1332,7 @@ public:
         typename domain_type::size_type shells_correspond_to_domains(0);
         std::size_t particles_correspond_to_domains(0);
 
-        BOOST_FOREACH (typename event_scheduler_type::value_type const& value,
+        for (typename event_scheduler_type::value_type const& value:
                        scheduler_.events())
         {
             domain_type const& domain(dynamic_cast<domain_event_base&>(*value.second).domain());
@@ -1368,7 +1367,7 @@ public:
             {
                 LOG_WARNING(("domains not scheduled: %s",
                     stringize_and_join(diff, ", ").c_str()));
-                BOOST_FOREACH (domain_id_type const& domain_id, diff)
+                for (domain_id_type const& domain_id: diff)
                 {
                     LOG_WARNING(("  shells that belong to unscheduled domain %s: %s",
                         boost::lexical_cast<std::string>(domain_id).c_str(),
@@ -1526,7 +1525,7 @@ protected:
 
     void remove_domain(multi_type& domain)
     {
-        BOOST_FOREACH (spherical_shell_id_pair const& shell, domain.get_shells())
+        for (spherical_shell_id_pair const& shell: domain.get_shells())
         {
             boost::fusion::at_key<spherical_shell_type>(smatm_)->erase(shell.first);
         }
@@ -2115,7 +2114,7 @@ protected:
     template<typename Trange>
     void burst_domains(Trange const& domain_ids, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
     {
-        BOOST_FOREACH(domain_id_type id, domain_ids)
+        for(domain_id_type id: domain_ids)
         {
             boost::shared_ptr<domain_type> domain(get_domain(id));
             burst(domain, result);
@@ -2175,7 +2174,7 @@ protected:
 
     void burst(multi_type& domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
     {
-        BOOST_FOREACH(particle_id_pair p, domain.get_particles_range())
+        for(particle_id_pair p: domain.get_particles_range())
         {
             boost::shared_ptr<single_type> s(create_single(p));
             add_event(*s, SINGLE_EVENT_ESCAPE);
@@ -2503,7 +2502,7 @@ protected:
             com_greens_function(domain.D_R(), domain.a_R()).drawTime(this->rng().uniform(0., 1.)));
 
         Real k_tot = 0;
-        BOOST_FOREACH(reaction_rule_type const& rule, domain.reactions())
+        for(reaction_rule_type const& rule: domain.reactions())
         {
             k_tot += rule.k();
         }
@@ -2735,7 +2734,7 @@ protected:
     void burst_non_multis(Trange const& domain_ids,
                           std::vector<boost::shared_ptr<domain_type> >& bursted)
     {
-        BOOST_FOREACH (domain_id_type id, domain_ids)
+        for (domain_id_type id: domain_ids)
         {
             boost::shared_ptr<domain_type> domain(get_domain(id));
             if (dynamic_cast<multi_type*>(domain.get()))
@@ -2766,8 +2765,7 @@ protected:
     length_type distance(multi_type const& domain, position_type const& pos) const
     {
         length_type retval(std::numeric_limits<length_type>::infinity());
-        BOOST_FOREACH (spherical_shell_id_pair const& shell,
-                       domain.get_shells())
+        for (spherical_shell_id_pair const& shell: domain.get_shells())
         {
             length_type const dist((*base_type::world_).distance(
                     shape(shell.second), pos));
@@ -2905,7 +2903,7 @@ protected:
 
         domain_type* closest_domain (0);
         length_type closest_shell_distance(std::numeric_limits<length_type>::infinity());
-        BOOST_FOREACH (boost::shared_ptr<domain_type> _neighbor, neighbors)
+        for (boost::shared_ptr<domain_type> _neighbor: neighbors)
         {
             single_type* const neighbor(
                 dynamic_cast<single_type*>(_neighbor.get()));
@@ -3107,7 +3105,7 @@ protected:
         position_type const single_pos(domain.position());
         add_to_multi(*retval, domain);
 
-        BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
+        for (boost::shared_ptr<domain_type> neighbor: neighbors)
         {
             length_type const dist(distance(*neighbor, single_pos));
             if (dist < min_shell_size)
@@ -3163,7 +3161,7 @@ protected:
         // merge other_multi into multi. other_multi will be removed.
         spherical_shell_matrix_type& mat(
             *boost::fusion::at_key<spherical_shell_type>(smatm_));
-        BOOST_FOREACH (spherical_shell_id_pair const& _shell,
+        for (spherical_shell_id_pair const& _shell:
                        other_multi.get_shells())
         {
             typename spherical_shell_matrix_type::iterator const i(
@@ -3174,7 +3172,7 @@ protected:
             multi.add_shell(spherical_shell_id_pair(_shell.first, shell));
         }
 
-        BOOST_FOREACH (particle_id_pair const& particle,
+        for (particle_id_pair const& particle:
                        other_multi.get_particles_range())
         {
             multi.add_particle(particle);
@@ -3224,7 +3222,7 @@ protected:
                             make_transform_iterator_range(bursted, dereferencer),
                             ", ").c_str()));
 
-                BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, bursted)
+                for (boost::shared_ptr<domain_type> neighbor: bursted)
                 {
                     length_type const dist(distance(*neighbor, single->position()));
                     if (dist < new_shell.radius())
@@ -3251,7 +3249,7 @@ protected:
         domain_type* possible_partner(0);
         length_type length_to_possible_partner(
                 std::numeric_limits<length_type>::infinity());
-        BOOST_FOREACH (boost::shared_ptr<domain_type> neighbor, neighbors)
+        for (boost::shared_ptr<domain_type> neighbor: neighbors)
         {
             length_type const dist(distance(*neighbor, domain.position()));
             if (dist < length_to_possible_partner)
@@ -3370,7 +3368,7 @@ protected:
                         return;
                     // if nothing was formed, recheck closest and restore shells.
                     restore_domain(domain);
-                    BOOST_FOREACH (boost::shared_ptr<domain_type> _single, bursted)
+                    for (boost::shared_ptr<domain_type> _single: bursted)
                     {
                         boost::shared_ptr<single_type> single(
                             boost::dynamic_pointer_cast<single_type>(_single));
@@ -3504,7 +3502,7 @@ protected:
 //                 reaction_rule_type const& r(domain.reactions()[0]);
 
                 Real k_tot = 0;
-                BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
+                for(reaction_rule_type const& rl: domain.reactions())
                 {
                     k_tot += rl.k();
                 }
@@ -3513,7 +3511,7 @@ protected:
                 if(ecell4::egfrd::size(domain.reactions()) != 1)
                 {
                     Real rndr = this->rng().uniform(0., k_tot);
-                    BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
+                    for(reaction_rule_type const& rl: domain.reactions())
                     {
                         rndr -= rl.k();
                         if(rndr < 0.0)
@@ -3848,7 +3846,7 @@ protected:
     void dump_events() const
     {
         LOG_INFO(("QUEUED EVENTS:"));
-        BOOST_FOREACH (event_id_pair_type const& ev, scheduler_.events())
+        for (event_id_pair_type const& ev: scheduler_.events())
         {
             LOG_INFO(("  #%d: %s", ev.first, stringize_event(*ev.second).c_str()));
         }
@@ -3969,7 +3967,7 @@ protected:
     {
         LOG_DEBUG(("checking domain %s", boost::lexical_cast<std::string>(domain).c_str()));
         bool retval(true);
-        BOOST_FOREACH (typename multi_type::spherical_shell_id_pair const& shell,
+        for (typename multi_type::spherical_shell_id_pair const& shell:
                        domain.get_shells())
         {
             std::pair<domain_id_type, length_type> closest(
@@ -4074,7 +4072,7 @@ protected:
     {
         if (log_.level() == Logger::L_DEBUG)
         {
-            BOOST_FOREACH (particle_id_pair_and_distance const& i, list)
+            for (particle_id_pair_and_distance const& i: list)
             {
                 log_.debug("  (%s:%s) %.16g",
                     boost::lexical_cast<std::string>(i.first.first).c_str(),
@@ -4087,7 +4085,7 @@ protected:
     static rate_type calculate_k_tot(reaction_rules const& rules)
     {
         rate_type k_tot(0.);
-        BOOST_FOREACH (reaction_rule_type const& rule, rules)
+        for (reaction_rule_type const& rule: rules)
         {
             k_tot += rule.k();
         }
@@ -4105,7 +4103,7 @@ protected:
 
         const rate_type t(this->rng().uniform(0., 1.) * k_tot);
         rate_type a(0.);
-        BOOST_FOREACH(reaction_rule_type const& r, rules)
+        for(reaction_rule_type const& r: rules)
         {
             a += r.k();
             if (a > t)

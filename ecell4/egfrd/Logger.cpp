@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <functional>
 // #include <boost/regex.hpp> //XXX: disabled pattern matching once
-#include <boost/foreach.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/bind.hpp>
 #include "Logger.hpp"
@@ -44,13 +43,13 @@ public:
 
 
         // char const* const logger_name_end(logger_name + std::strlen(logger_name));
-        // BOOST_FOREACH (entry_type const& i, managers_)
+        // for (entry_type const& i: managers_)
         // {
         //     if (boost::regex_match(logger_name, logger_name_end, i.first))
         //         return i.second;
         // }
         const std::string _logger_name(logger_name);
-        BOOST_FOREACH (entry_type const& i, managers_)
+        for(entry_type const& i: managers_)
         {
             if (_logger_name == i.first)
                 return i.second;
