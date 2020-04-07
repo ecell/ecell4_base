@@ -223,7 +223,7 @@ protected:
         {
             attempt_zeroth_order_reaction(dt);
         }
-        catch (no_space const&)
+        catch (NoSpace const&)
         {
             LOG_DEBUG(("birth reaction rejected."));
             // ++rejected_moves_;
@@ -269,7 +269,7 @@ protected:
                 if (!(*base_type::world_).no_overlap(new_particle))
                 {
                     LOG_INFO(("no space for product particle."));
-                    throw no_space();
+                    throw NoSpace();
                 }
 
                 particle_id_pair pp(

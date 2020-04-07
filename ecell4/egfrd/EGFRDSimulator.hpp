@@ -666,7 +666,7 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt) const
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
@@ -685,7 +685,7 @@ protected:
                               time_type dt, position_type const& old_iv) const
         {
             BOOST_ASSERT(ecell4::egfrd::size(domain.reactions()) == 1);
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // length_type const r(
             //     draw_r(rng_, greens_functions::GreensFunction3DRadAbs(domain.D_tot(),
             //         domain.reactions()[0].k(), domain.r0(),
@@ -800,7 +800,7 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
@@ -824,7 +824,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // return multiply(normalize(old_iv), domain.a_r());
         }
 
@@ -869,7 +869,7 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
@@ -892,7 +892,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // return multiply(domain.sigma(), normalize(old_iv));
         }
 
@@ -938,7 +938,7 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
@@ -962,7 +962,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // BOOST_ASSERT(::size(domain.reactions()) == 1);
             // length_type const r(
             //     draw_r(rng_,
@@ -1073,7 +1073,7 @@ public:
         typename shell_matrix_type::const_iterator i(smat.find(id));
         if (i == smat.end())
         {
-            throw not_found(
+            throw ::ecell4::NotFound(
                 (boost::format("shell id #%s not found") % boost::lexical_cast<std::string>(id)).str());
         }
 
@@ -1093,7 +1093,7 @@ public:
 
         if (i == domains_.end())
         {
-            throw not_found(
+            throw ::ecell4::NotFound(
                 (boost::format("domain id #%s not found") % boost::lexical_cast<std::string>(id)).str());
         }
 
@@ -1451,7 +1451,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("unsupported domain type");
+        throw ::ecell4::NotImplemented("unsupported domain type");
     }
 
     // remove_domain_but_shell {{{
@@ -1574,7 +1574,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
     // }}}
 
@@ -1646,7 +1646,7 @@ protected:
 
             // virtual void operator()(spherical_surface_type const& structure) const
             // {
-            //     throw not_implemented(
+            //     throw ::ecell4::NotImplemented(
             //         (boost::format("unsupported structure type: %s") %
             //             boost::lexical_cast<std::string>(structure)).str());
             // }
@@ -1733,7 +1733,7 @@ protected:
         {
             // virtual void operator()(spherical_surface_type const& structure) const
             // {
-            //     throw not_implemented(
+            //     throw ::ecell4::NotImplemented(
             //         (boost::format("unsupported structure type: %s") %
             //             boost::lexical_cast<std::string>(structure)).str());
             // }
@@ -1850,7 +1850,7 @@ protected:
         }
         catch (std::exception const& e)
         {
-            throw propagation_error(
+            throw PropagationError(
                 (boost::format(
                     "gf.drawR() failed: %s, gf=%s, rnd=%.16g, dt=%.16g, a=%.16g, sigma=%.16g: %s") % e.what() % gf.getName() % rnd % dt % a % sigma % gf.dump()).str());
         }
@@ -1875,7 +1875,7 @@ protected:
         }
         catch (std::exception const& e)
         {
-            throw propagation_error(
+            throw PropagationError(
                 (boost::format(
                     "gf.drawTheta() failed: %s, gf=%s, rnd=%.16g, dt=%.16g, r=%.16g: %s") % e.what() % gf.getName() % rnd % dt % r % gf.dump()).str());
         }
@@ -1963,7 +1963,7 @@ protected:
                 return draw_new_position(*_domain, dt);
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
     // }}}
 
@@ -2003,7 +2003,7 @@ protected:
                 return draw_escape_position(*_domain);
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
 
     // draw_new_positions {{{
@@ -2207,7 +2207,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("?");
+        throw ::ecell4::NotImplemented("?");
     }
 
     void burst(boost::shared_ptr<domain_type> domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
@@ -2267,7 +2267,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("?");
+        throw ::ecell4::NotImplemented("?");
     }
     // }}}
 
@@ -2314,7 +2314,7 @@ protected:
                     ecell4::egfrd::shape(reactant.second), reactant.first))
                 {
                     LOG_INFO(("no space for product particle."));
-                    throw no_space();
+                    throw NoSpace();
                 }
 
                 remove_domain(domain);
@@ -2409,7 +2409,7 @@ protected:
                 if (i < 0)
                 {
                     LOG_INFO(("no space for product particles."));
-                    throw no_space();
+                    throw NoSpace();
                 }
 
                 remove_domain(domain);
@@ -2437,7 +2437,7 @@ protected:
             }
             break;
         default:
-            throw not_implemented("reactions that produces more than two products are not supported.");
+            throw ::ecell4::NotImplemented("reactions that produces more than two products are not supported.");
         }
         return true;
     }
@@ -2586,7 +2586,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("unsupported domain type");
+        throw ::ecell4::NotImplemented("unsupported domain type");
     }
 
     template<typename Tshell>
@@ -2622,7 +2622,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("unsupported domain type");
+        throw ::ecell4::NotImplemented("unsupported domain type");
     }
     // }}}
 
@@ -2727,7 +2727,7 @@ protected:
             if (_domain)
                 return restore_domain(*_domain, closest);
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
 
     template<typename Trange>
@@ -3308,7 +3308,7 @@ protected:
             {
                 attempt_single_reaction(domain);
             }
-            catch (no_space const&)
+            catch (NoSpace const&)
             {
                 LOG_DEBUG(("single reaction rejected"));
                 ++rejected_moves_;
@@ -3471,7 +3471,7 @@ protected:
                 {
                     attempt_single_reaction(*new_single[index]);
                 }
-                catch (no_space const&)
+                catch (NoSpace const&)
                 {
                     LOG_DEBUG(("pair event single reaction rejected"));
                     ++rejected_moves_;
@@ -3591,7 +3591,7 @@ protected:
                     }
                     break;
                 default:
-                    throw not_implemented("num products >= 2 not supported.");
+                    throw ::ecell4::NotImplemented("num products >= 2 not supported.");
                 }
                 remove_domain(domain);
             }
@@ -3668,7 +3668,7 @@ protected:
                         continue;
                     }
                     LOG_INFO(("no space for product particle."));
-                    throw no_space();
+                    throw NoSpace();
                 }
                 else
                 {
@@ -3688,7 +3688,7 @@ protected:
             boost::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
-        catch (no_space const&)
+        catch (NoSpace const&)
         {
             LOG_DEBUG(("birth reaction rejected."));
             ++rejected_moves_;
@@ -3731,7 +3731,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
 
     void _step()
@@ -3768,7 +3768,7 @@ protected:
             ++zero_step_count_;
             if (zero_step_count_ >= std::max(scheduler_.size() * 3, static_cast<std::size_t>(10u)))
             {
-                throw illegal_state("too many dt=zero steps. simulator halted?");
+                throw ::ecell4::IllegalState("too many dt=zero steps. simulator halted?");
             }
         }
         else
@@ -3914,7 +3914,7 @@ protected:
         case PAIR_EVENT_IV_REACTION:
             return "iv_reaction";
         }
-        throw illegal_state("EGFRDSimulator::stringize_event_kind: never get here");
+        throw ::ecell4::IllegalState("EGFRDSimulator::stringize_event_kind: never get here");
     }
 
     static std::string stringize_event(single_event const& ev)
@@ -4111,7 +4111,7 @@ protected:
         }
 
         BOOST_ASSERT(false); // should never happen
-        throw illegal_state("EGFRDSimulator::draw_reaction_rule: should never happen");
+        throw ::ecell4::IllegalState("EGFRDSimulator::draw_reaction_rule: should never happen");
     }
 
     //template<typename T1, typename T2>

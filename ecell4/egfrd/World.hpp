@@ -368,7 +368,7 @@ public:
         typename structure_map::const_iterator i(structure_map_.find(id));
         if (structure_map_.end() == i)
         {
-            throw not_found(std::string("Unknown surface (id=")
+            throw ::ecell4::NotFound(std::string("Unknown surface (id=")
                 + boost::lexical_cast<std::string>(id) + ")");
         }
         return (*i).second;
@@ -388,7 +388,7 @@ public:
     //         particle_pool_.find(sid));
     //     if (i == particle_pool_.end())
     //     {
-    //         throw not_found(std::string("Unknown species (id=")
+    //         throw ::ecell4::NotFound(std::string("Unknown species (id=")
     //             + boost::lexical_cast<std::string>(sid) + ")");
     //     }
     //     return (*i).second;

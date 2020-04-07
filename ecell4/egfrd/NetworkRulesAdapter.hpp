@@ -194,7 +194,7 @@ protected:
             }
             break;
         default:
-            throw illegal_state("the number of reactants must be 1 or 2.");
+            throw ::ecell4::IllegalState("the number of reactants must be 1 or 2.");
             break;
         }
         return reaction_rule_type(); // never get here

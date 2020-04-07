@@ -136,7 +136,7 @@ public:
         typename particle_map::const_iterator i(particles_.find(id));
         if (particles_.end() == i)
         {
-            throw not_found(std::string("No such particle: id=")
+            throw ::ecell4::NotFound(std::string("No such particle: id=")
                     + boost::lexical_cast<std::string>(id));
         }
         return *i;
