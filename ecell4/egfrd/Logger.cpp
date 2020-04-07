@@ -5,7 +5,6 @@
 #include <cstdio>
 #include <functional>
 // #include <boost/regex.hpp> //XXX: disabled pattern matching once
-#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/bind.hpp>
 #include "Logger.hpp"
 #include "ConsoleAppender.hpp"
