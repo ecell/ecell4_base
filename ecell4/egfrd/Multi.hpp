@@ -1,8 +1,6 @@
 #ifndef MULTI_HPP
 #define MULTI_HPP
 
-#include <boost/algorithm/string/join.hpp>
-
 #include <ecell4/core/functions.hpp>
 using ecell4::pow_2;
 #include <ecell4/core/comparators.hpp>
@@ -20,9 +18,9 @@ using ecell4::pow_2;
 #include "VolumeClearer.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/range.hpp"
+#include "utils/stringizer.hpp"
 
 #include <greens_functions/PairGreensFunction.hpp>
-// using namespace greens_functions;
 
 namespace ecell4
 {
