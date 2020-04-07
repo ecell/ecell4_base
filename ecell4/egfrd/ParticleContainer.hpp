@@ -12,8 +12,6 @@ namespace ecell4
 {
 namespace egfrd
 {
-template<typename Ttraits_>
-class Transaction;
 
 template<typename Ttraits_>
 class ParticleContainer
@@ -22,7 +20,6 @@ class ParticleContainer
 public:
 
     typedef Ttraits_ traits_type;
-    typedef Transaction<traits_type> transaction_type;
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
@@ -89,8 +86,6 @@ public:
             check_overlap(s, ignore1, ignore2));
         return (overlapped.size() == 0);
     }
-
-    virtual transaction_type* create_transaction() = 0;
 
     virtual bool update_particle(const particle_id_type& pid, const particle_type& p) = 0;
 

@@ -41,7 +41,6 @@
 //#include "SpeciesTypeID.hpp"
 //#include "SpeciesInfo.hpp"
 //#include "SerialIDGenerator.hpp"
-#include "Transaction.hpp"
 // #include "Structure.hpp"
 // #include "Surface.hpp"
 // #include "Region.hpp"
@@ -66,7 +65,6 @@
 #include "generator.hpp"
 #include "exceptions.hpp"
 #include "ParticleContainer.hpp"
-#include "Transaction.hpp"
 
 #include <ecell4/core/AABBSurface.hpp>
 #include "Polygon.hpp"
@@ -295,7 +293,6 @@ public:
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
     typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
-    typedef typename base_type::transaction_type transaction_type;
     typedef typename base_type::time_type time_type;
 
 protected:
@@ -921,8 +918,6 @@ public:
      *
      */
 
-    virtual transaction_type* create_transaction();
-
     template<typename T_>
     length_type distance(T_ const& lhs, position_type const& rhs) const
     {
@@ -1147,13 +1142,6 @@ private:
     boost::shared_ptr<rng_type> rng_;
     boost::weak_ptr<model_type> model_;
 };
-
-template<typename Ttraits_>
-inline typename World<Ttraits_>::transaction_type*
-World<Ttraits_>::create_transaction()
-{
-    return new TransactionImpl<World>(*this);
-}
 
 } // egfrd
 } // ecell4
