@@ -7,8 +7,6 @@
 #include <boost/range/iterator.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/type_traits/is_same.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
@@ -29,7 +27,7 @@ struct range_iterator_category
 
 template<typename Trange_, typename Ticat_>
 struct check_range_iterator_category
-    : boost::is_convertible<
+    : std::is_convertible<
         typename boost::iterator_category_to_traversal<
             typename range_iterator_category<Trange_>::type >::type,
         typename boost::iterator_category_to_traversal<Ticat_>::type > {};
@@ -130,7 +128,7 @@ struct range_size_retriever<sized_iterator_range<Titer_> >
 namespace detail {
 
 template<typename Trange_ = void, bool N_ = boost::mpl::and_<
-    boost::mpl::not_<boost::is_same<Trange_, void> >,
+    boost::mpl::not_<std::is_same<Trange_, void> >,
     is_sized<Trange_> >::value>
 struct get_default_range_holder
 {

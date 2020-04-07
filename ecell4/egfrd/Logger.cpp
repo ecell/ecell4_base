@@ -6,7 +6,6 @@
 #include <functional>
 // #include <boost/regex.hpp> //XXX: disabled pattern matching once
 #include <boost/foreach.hpp>
-#include <boost/type_traits/remove_pointer.hpp>
 #include <boost/ptr_container/ptr_map.hpp>
 #include <boost/bind.hpp>
 #include "Logger.hpp"

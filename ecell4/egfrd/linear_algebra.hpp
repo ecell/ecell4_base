@@ -6,7 +6,6 @@
 #include <gsl/gsl_pow_int.h>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
-#include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <array>
 #include <boost/multi_array.hpp>
