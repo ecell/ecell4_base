@@ -4,17 +4,12 @@
 #include <algorithm>
 #include <cmath>
 #include <gsl/gsl_pow_int.h>
-#include <boost/preprocessor/tuple/elem.hpp>
-#include <boost/preprocessor/repetition/repeat.hpp>
-#include <boost/preprocessor/repetition/enum_params.hpp>
-#include <boost/preprocessor/repetition/enum_trailing_params.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/type_traits/is_arithmetic.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/array.hpp>
 #include <boost/multi_array.hpp>
-#include <boost/preprocessor/repetition/repeat_from_to.hpp>
 
 #include "utils/array_traits.hpp"
 
