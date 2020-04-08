@@ -6,6 +6,11 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_>
 struct ImmutativeDomainVisitor;
 
@@ -109,4 +114,6 @@ inline char const* retrieve_domain_type_name(Domain<Ttraits> const&)
     return "Domain";
 }
 
+} // egfrd
+} // ecell4
 #endif /* DOMAIN_HPP */

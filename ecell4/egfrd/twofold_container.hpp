@@ -7,6 +7,10 @@
 #include <boost/iterator/iterator_categories.hpp>
 #include "utils/memberwise_compare.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template <typename T>
 bool is_initialized(T const &obj)
 {
@@ -275,4 +279,6 @@ inline twofold_container<T_>::iterator::iterator(
 {
 }
 
+} // egfrd
+} // ecell4
 #endif /* TWOFOLD_CONTAINER_HPP */

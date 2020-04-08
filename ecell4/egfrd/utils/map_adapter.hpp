@@ -16,6 +16,10 @@
 #include <boost/range/const_reverse_iterator.hpp>
 #include "assoc_container_traits.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Tcntnr_, typename Thdlr_>
 struct map_adapter
 {
@@ -188,4 +192,6 @@ private:
     Thdlr_ hdlr_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* MAP_ADAPTER_HPP */

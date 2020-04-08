@@ -18,6 +18,11 @@
 #include <boost/iterator/filter_iterator.hpp>
 #include <boost/utility/enable_if.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Trange_>
 struct range_iterator_category
     : boost::BOOST_ITERATOR_CATEGORY<typename boost::range_iterator<Trange_>::type> {};
@@ -71,11 +76,11 @@ public:
 
     template<typename Trange_>
     sized_iterator_range(Trange_ const& r)
-        : base_type(r), size_(::size(r)) {}
+        : base_type(r), size_(ecell4::egfrd::size(r)) {}
 
     template<typename Trange_>
     sized_iterator_range(Trange_& r)
-        : base_type(r), size_(::size(r)) {}
+        : base_type(r), size_(ecell4::egfrd::size(r)) {}
 
     template<typename Taiter_>
     sized_iterator_range(Taiter_ begin, Taiter_ end,
@@ -118,7 +123,7 @@ inline void call_with_size_if_randomly_accessible(
     Tfn& fn, Trange const &range,
     typename boost::enable_if<is_sized<Trange> >::type* = 0)
 {
-    fn(::size(range));
+    fn(ecell4::egfrd::size(range));
 }
 
 template<typename Tfn, typename Trange>
@@ -133,7 +138,7 @@ inline void call_with_size_if_randomly_accessible(
     Tfn const& fn, Trange const &range,
     typename boost::enable_if<is_sized<Trange> >::type* = 0)
 {
-    fn(::size(range));
+    fn(ecell4::egfrd::size(range));
 }
 
 template<typename Tfn, typename Trange>
@@ -228,7 +233,7 @@ public:
 
     size_type size() const
     {
-        return ::size(base_);
+        return ecell4::egfrd::size(base_);
     }
 
     reference operator[](size_type idx) const
@@ -330,4 +335,6 @@ make_filter_iterator_range(Trange_ const& range, Tpred_ pred)
                        iterator(pred, boost::end(range)));
 }
 
+} // egfrd
+} // ecell4
 #endif /* UTILS_RANGE_HPP */

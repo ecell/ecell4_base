@@ -9,6 +9,10 @@
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/WorldInterface.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Ttraits_>
 class Transaction;
 
@@ -121,4 +125,6 @@ public:
             position_type const& pos, position_type const& disp) const = 0;
 };
 
+} // egfrd
+} // ecell4
 #endif /* PARTICLE_CONTAINER_HPP */

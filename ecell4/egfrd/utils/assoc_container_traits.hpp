@@ -3,6 +3,10 @@
 
 #include <boost/range/value_type.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Tassoc_>
 struct assoc_key
 {
@@ -21,4 +25,6 @@ struct assoc_mapped
     typedef typename Tassoc_::mapped_type type;
 };
 
+} // egfrd
+} // ecell4
 #endif /* ASSOC_CONTAINER_TRAITS_HPP */

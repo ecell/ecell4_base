@@ -9,6 +9,10 @@
 #include <limits>
 #include <algorithm>
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename coordT>
 struct Polygon : public ecell4::Shape
 {
@@ -212,4 +216,6 @@ bool Polygon<coordT>::test_AABB(const coordinate_type& l, const coordinate_type&
     throw ecell4::NotImplemented("polygon::test_AABB");
 }
 
+} // egfrd
+} // ecell4
 #endif //EGFRD_POLYGON

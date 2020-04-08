@@ -10,6 +10,11 @@
 
 #include <unordered_map>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 #define COMMA ,
 #define SPECIALIZE_BOOST_SIZE(T) \
 inline typename boost::range_difference<T>::type size(T const& r) \
@@ -35,6 +40,9 @@ struct range_size_retriever<T> \
     } \
 };
 
+} // egfrd
+} // ecell4
+
 namespace boost {
 
 template<typename T1_, typename T2_, typename T3_, typename T4_>
@@ -47,6 +55,11 @@ template<typename T1_, typename T2_, typename T3_, typename T4_, typename T5_>
 SPECIALIZE_BOOST_SIZE(std::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_ COMMA  T5_>)
 
 } // namespace boost
+
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename T1_, typename T2_, typename T3_, typename T4_>
 SPECIALIZE_RANGE_SIZE(std::map<T1_ COMMA  T2_ COMMA  T3_ COMMA  T4_>)
@@ -70,4 +83,6 @@ SPECIALIZE_RANGE_SIZE_RETRIEVER(std::unordered_map<T1_ COMMA  T2_ COMMA  T3_ COM
 #undef SPECIALIZE_RANGE_SIZE
 #undef COMMA
 
+} // egfrd
+} // ecell4
 #endif /* RANGE_SUPPORT_HPP */

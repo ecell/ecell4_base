@@ -73,6 +73,10 @@
 #include <ecell4/core/AABBSurface.hpp>
 #include "Polygon.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 // For twofold_container
 inline
@@ -126,9 +130,9 @@ struct WorldTraitsBase
     typedef std::vector<particle_id_pair_and_distance> particle_id_pair_and_distance_list;
     typedef abstract_limited_generator<particle_id_pair> particle_id_pair_generator;
 
-    typedef ecell4::Structure<Tderived_> structure_type;
-    typedef ecell4::Structure<Tderived_> particle_simulation_structure_type;
-    typedef ecell4::AABBRegion<Tderived_> cuboidal_region_type;
+    typedef ecell4::egfrd::Structure<Tderived_> structure_type;
+    typedef ecell4::egfrd::Structure<Tderived_> particle_simulation_structure_type;
+    typedef ecell4::egfrd::AABBRegion<Tderived_> cuboidal_region_type;
 
     // typedef Structure<Tderived_> structure_type;
     // typedef ParticleSimulationStructure<Tderived_>
@@ -176,7 +180,7 @@ public:
     template<typename T1_, typename T2_>
     static length_type distance(T1_ const& p0, T2_ const& p1, position_type const& edge_lengths)
     {
-        return ::distance(p0, p1);
+        return ecell4::egfrd::distance(p0, p1);
     }
 
     template<typename Toc_, typename Tfun_, typename Tsphere_>
@@ -215,17 +219,17 @@ public:
     template<typename Tval_>
     static Tval_ apply_boundary(Tval_ const& v, position_type const& edge_lengths)
     {
-        return ::apply_boundary(v, edge_lengths);
+        return ecell4::egfrd::apply_boundary(v, edge_lengths);
     }
 
     static length_type periodic_transpose(length_type const& p0, length_type const& p1, length_type const& world_size)
     {
-        return ::periodic_transpose(p0, p1, world_size);
+        return ecell4::egfrd::periodic_transpose(p0, p1, world_size);
     }
 
     static position_type periodic_transpose(position_type const& p0, position_type const& p1, position_type const& edge_lengths)
     {
-        return ::periodic_transpose(p0, p1, edge_lengths);
+        return ecell4::egfrd::periodic_transpose(p0, p1, edge_lengths);
     }
 
     template<typename T1_, typename T2_, typename T3_>
@@ -1153,4 +1157,6 @@ World<Ttraits_>::create_transaction()
     return new TransactionImpl<World>(*this);
 }
 
+} // egfrd
+} // ecell4
 #endif /* WORLD_HPP */

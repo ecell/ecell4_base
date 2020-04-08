@@ -10,6 +10,11 @@
 //#include "utils/range.hpp"
 #include "./range.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename T_>
 struct stringizer: public std::unary_function<T_, std::string>
 {
@@ -28,4 +33,6 @@ inline std::string stringize_and_join(T const& range, std::string const& separat
         separator);
 }
 
+} // egfrd
+} // ecell4
 #endif /* UTILS_STRINGIZER_HPP */

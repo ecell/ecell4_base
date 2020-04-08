@@ -3,6 +3,11 @@
 
 #include "ConsoleAppender.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 ConsoleAppender::~ConsoleAppender() {}
 
 void ConsoleAppender::operator()(enum Logger::level lv, char const* name, char const** chunks)
@@ -18,3 +23,5 @@ void ConsoleAppender::flush()
 {
     std::fflush(stderr);
 }
+} // egfrd
+} // ecell4

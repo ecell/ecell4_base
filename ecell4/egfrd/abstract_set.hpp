@@ -9,6 +9,11 @@
 #include <boost/range/value_type.hpp>
 #include <algorithm>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename T_>
 struct collection_value: public boost::range_value<T_>
 {
@@ -88,4 +93,6 @@ inline void difference(T1 const& r1, T2 const& r2, Tr const& result)
         result);
 }
 
+} // egfrd
+} // ecell4
 #endif /* ABSTRACT_SET_HPP */

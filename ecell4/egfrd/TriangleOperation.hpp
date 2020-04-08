@@ -5,7 +5,10 @@
 #include <algorithm>
 #include <cassert>
 
-namespace ecell4{
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename coordT>
 inline coordT centroid(const boost::array<coordT, 3>& vertices)
@@ -183,5 +186,6 @@ test_intersect_segment_triangle(const coordT& begin, const coordT& end,
 }
 
 
-}
+} // egfrd
+} // ecell4
 #endif /* GFRD_POLYGON_TRIANGLE */

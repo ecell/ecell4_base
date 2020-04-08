@@ -12,6 +12,10 @@
 #include "geometry.hpp"
 //XXX
 
+namespace ecell4
+{
+namespace egfrd
+{
 inline ecell4::Particle offset(
     ecell4::Particle const& shape, ecell4::Particle::position_type off)
 {
@@ -43,7 +47,7 @@ ecell4::Sphere shape(const ecell4::Particle &p)
 inline ecell4::Sphere::length_type
 distance(const ecell4::Sphere& obj, const ecell4::Sphere::position_type& pos)
 {
-    return ::distance(pos, obj.position()) - obj.radius();  //XXX: ecell4::egfrd::distance
+    return ecell4::egfrd::distance(pos, obj.position()) - obj.radius();
 }
 
 template<typename T_>
@@ -91,7 +95,7 @@ struct shape_position_type<ecell4::Sphere> {
 inline ecell4::Cylinder::length_type
 distance(const ecell4::Cylinder& obj, const ecell4::Cylinder::position_type& pos)
 {
-    return ::distance(pos, obj.position()) - obj.radius();  //XXX: ecell4::egfrd::distance
+    return ecell4::egfrd::distance(pos, obj.position()) - obj.radius();
 }
 
 template<typename T_>
@@ -128,6 +132,9 @@ struct shape_position_type<ecell4::Cylinder> {
     typedef ecell4::Cylinder::position_type type;
 };
 
+} // egfrd
+} // ecell4
+
 namespace ecell4
 {
 
@@ -149,5 +156,4 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(
 }
 
 } // ecell4
-
 #endif

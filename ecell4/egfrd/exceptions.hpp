@@ -3,6 +3,11 @@
 
 #include <ecell4/core/exceptions.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 class PropagationError
     : public ecell4::Exception
 {
@@ -198,4 +203,6 @@ typedef NoSpace no_space;
 //     std::string str_;
 // };
 
+} // egfrd
+} // ecell4
 #endif /* EXCEPTIONS_HPP */

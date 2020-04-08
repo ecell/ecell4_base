@@ -3,6 +3,10 @@
 
 #include "Single.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Ttraits_, typename Tshell_>
 class AnalyticalSingle: public Single<Ttraits_>
 {
@@ -106,4 +110,6 @@ protected:
     shell_id_pair shell_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* ANALYTICAL_SINGLE_HPP */

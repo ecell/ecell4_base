@@ -4,6 +4,11 @@
 #include <cstddef>
 #include <ecell4/core/types.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 // typedef double Real;
 // typedef long int Integer;
 typedef ecell4::Real Real;
@@ -17,4 +22,6 @@ typedef size_t Index;
 
 #define IGNORE_RETURN (void)
 
+} // egfrd
+} // ecell4
 #endif // EGFRD_DEFS_HPP

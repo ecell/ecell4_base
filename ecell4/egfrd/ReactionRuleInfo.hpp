@@ -9,6 +9,11 @@
 
 #include <sstream>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Tid_, typename Tsid_, typename Trate_>
 class ReactionRuleInfo
 {
@@ -109,4 +114,6 @@ inline bool valid(ReactionRuleInfo<Tid, Tsid, Trate> const& r)
     return r.get_reactants().size() != 0;
 }
 
+} // egfrd
+} // ecell4
 #endif /* REACTION_RULE_INFO_HPP */

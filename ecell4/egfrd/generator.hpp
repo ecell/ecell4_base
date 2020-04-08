@@ -30,6 +30,11 @@
 #include "utils/reset.hpp"
 #include "utils/reference_or_instance.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Tgen_>
 bool valid(Tgen_ const& t)
 {
@@ -143,12 +148,12 @@ public:
 
     bool valid() const
     {
-        return ::valid(*impl_);
+        return ecell4::egfrd::valid(*impl_);
     }
 
     std::size_t count() const
     {
-        return ::count(*impl_);
+        return ecell4::egfrd::count(*impl_);
     }
 
     result_type operator()()
@@ -209,15 +214,15 @@ public:
     template<typename Tanother_range_>
     range_generator(Tanother_range_ const& range)
         : i_(boost::begin(range)), end_(boost::end(range)),
-          count_(::size(range)) {}
+          count_(ecell4::egfrd::size(range)) {}
 
     template<typename Tanother_range_>
     range_generator(Tanother_range_& range)
         : i_(boost::begin(range)), end_(boost::end(range)),
-          count_(::size(range)) {}
+          count_(ecell4::egfrd::size(range)) {}
 
     range_generator(range_iterator const& begin, range_iterator const& end)
-        : i_(begin), end_(end), count_(::size(std::make_pair(begin, end))) {}
+        : i_(begin), end_(end), count_(ecell4::egfrd::size(std::make_pair(begin, end))) {}
 
     virtual ~range_generator() {}
 
@@ -351,12 +356,12 @@ struct transform_generator: public abstract_limited_generator<typename Tfun_::re
 
     virtual std::size_t count() const
     {
-        return ::count(*gen_);
+        return ecell4::egfrd::count(*gen_);
     }
 
     virtual bool valid() const
     {
-        return ::valid(*gen_);
+        return ecell4::egfrd::valid(*gen_);
     }
 
     virtual result_type operator()()
@@ -415,17 +420,17 @@ struct chained_generator<Tgen1_, Tgen2_, true>
 
     virtual std::size_t count() const
     {
-        return ::count(gen1_) + ::count(gen2_);
+        return ecell4::egfrd::count(gen1_) + ecell4::egfrd::count(gen2_);
     }
 
     virtual bool valid() const
     {
-        return ::valid(gen1_) || ::valid(gen2_);
+        return ecell4::egfrd::valid(gen1_) || ecell4::egfrd::valid(gen2_);
     }
 
     virtual result_type operator()()
     {
-        if (::valid(gen1_))
+        if (ecell4::egfrd::valid(gen1_))
             return gen1_();
         return gen2_();
     }
@@ -477,7 +482,7 @@ public:
             }
             else
             {
-                ::reset(gen_);
+                ecell4::egfrd::reset(gen_);
                 last_.reset();
             }
             advanced_ = true;
@@ -505,7 +510,7 @@ public:
     typename base_type::difference_type distance_to(
             generator_iterator const& rhs) const
     {
-        return (gen_ ? ::count(*gen_): 0) - (rhs.gen_ ? ::count(*rhs.gen_): 0);
+        return (gen_ ? ecell4::egfrd::count(*gen_): 0) - (rhs.gen_ ? ecell4::egfrd::count(*rhs.gen_): 0);
     }
 
 protected:
@@ -551,5 +556,6 @@ make_generator_range(Tpointer const& gen)
 {
     return generator_range<Tgen, Tpointer>(gen);
 }
-
+} // egfrd
+} // ecell4
 #endif /* GENERATOR_HPP */

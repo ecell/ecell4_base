@@ -3,6 +3,10 @@
 
 #include "Domain.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Ttraits_>
 class ShapedDomain: public Domain<Ttraits_>
 {
@@ -28,4 +32,6 @@ public:
         : base_type(id) {}
 };
 
+} // egfrd
+} // ecell4
 #endif /* SHAPED_DOMAIN_HPP */

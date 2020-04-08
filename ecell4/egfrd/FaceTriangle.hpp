@@ -4,6 +4,10 @@
 #include <ecell4/core/geometry.hpp>
 #include <boost/array.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename coordT>
 struct FaceTriangle
 {
@@ -146,4 +150,6 @@ coordT reflect_plane(const coordT& begin, const coordT& end,
     return reflect_plane(begin, end, face.normal(), face.vertex_at(0));
 }
 
+} // egfrd
+} // ecell4
 #endif /* GFRD_POLYGON_FACE_TRIANGLE */

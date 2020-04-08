@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     // typedef EGFRDSimulator< ::EGFRDSimulatorTraitsBase<world_type> >
     //     simulator_type;
     typedef ecell4::egfrd::EGFRDWorld world_type;
-    typedef ecell4::egfrd::BDSimulator simulator_type;
+    typedef ecell4::egfrd::DefaultBDSimulator simulator_type;
 //     typedef simulator_type::multi_type multi_type;
     // }}}
 
@@ -128,10 +128,10 @@ int main(int argc, char **argv)
     std::cerr << "particle generate end" << std::endl;
 
     std::cerr << "polygon setup begin" << std::endl;
-    StlFileReader<ecell4::Real3> stlreader;
-    std::vector<StlTriangle<ecell4::Real3> > triangles =
-        stlreader.read("sphere_radius_24_center_50.stl", StlFileReader<ecell4::Real3>::Ascii);
-    for(std::vector<StlTriangle<ecell4::Real3> >::const_iterator
+    ecell4::egfrd::StlFileReader<ecell4::Real3> stlreader;
+    std::vector<ecell4::egfrd::StlTriangle<ecell4::Real3> > triangles =
+        stlreader.read("sphere_radius_24_center_50.stl", ecell4::egfrd::StlFileReader<ecell4::Real3>::Ascii);
+    for(std::vector<ecell4::egfrd::StlTriangle<ecell4::Real3> >::const_iterator
         iter = triangles.begin(); iter != triangles.end(); ++iter)
     {
         world->add_surface(iter->vertices);
@@ -141,9 +141,9 @@ int main(int argc, char **argv)
 
     // Logger Settings
     // {{{
-    boost::shared_ptr< ::LoggerManager> logger_mng(
-        new ::LoggerManager("dummy", ::Logger::L_WARNING));
-    ::LoggerManager::register_logger_manager(
+    boost::shared_ptr<ecell4::egfrd::LoggerManager> logger_mng(
+        new ecell4::egfrd::LoggerManager("dummy", ecell4::egfrd::Logger::L_WARNING));
+    ecell4::egfrd::LoggerManager::register_logger_manager(
         "ecell.EGFRDSimulator", logger_mng);
     // }}}
 

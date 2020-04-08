@@ -19,8 +19,13 @@
 #include "utils/array_traits.hpp"
 
 #include <ecell4/core/functions.hpp>
-using ecell4::pow_2;
 
+namespace ecell4
+{
+namespace egfrd
+{
+
+using ecell4::pow_2;
 #define CREATE_VECTOR_LIMIT_REPEAT 16
 #define POPULATE_MATRIX_BY_VECTORS_LIMIT_REPEAT 16
 
@@ -437,4 +442,6 @@ inline bool is_cartesian_versor(T_ const& vector, typename boost::enable_if<is_v
             vector == create_vector<T_>(0, 0, -1));
 }
 
+} // egfrd
+} // ecell4
 #endif /* LINEAR_ALGEBRA_HPP */

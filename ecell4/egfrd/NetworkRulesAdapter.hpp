@@ -11,6 +11,10 @@
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Model.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 // cf. epdp/NetworkRulesWrapper.hpp
 // NetworkRulesAdapter will substitute for NetworkRulesWrapper
@@ -203,4 +207,6 @@ private:
     boost::shared_ptr<ecell4::Model> model_;
 };
 
+} // egfrd
+} // ecell4
 #endif  // ECELL4_EGFRD_NETWORK_RULES_ADAPTER

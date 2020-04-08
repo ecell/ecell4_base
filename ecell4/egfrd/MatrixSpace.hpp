@@ -18,6 +18,10 @@
 
 #include <ecell4/core/Integer3.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
 
 template<typename Tobj_, typename Tkey_>
 class MatrixSpace
@@ -630,4 +634,6 @@ struct range_size_retriever<MatrixSpace<T_, Tkey_> >
     }
 };
 
+} // egfrd
+} // ecell4
 #endif /* MATRIX_SPACE_HPP */

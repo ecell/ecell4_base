@@ -6,6 +6,11 @@
 #include "Pair.hpp"
 #include "AnalyticalSingle.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Ttraits_, typename Tshell_>
 class AnalyticalPair: public Pair<Ttraits_>
 {
@@ -195,4 +200,6 @@ protected:
     mutable length_type a_r_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* ANALYTICAL_PAIR_HPP */

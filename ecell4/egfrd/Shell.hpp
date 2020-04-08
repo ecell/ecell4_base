@@ -4,6 +4,11 @@
 #include <functional>
 #include <ostream>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Tshape_, typename Tdid_>
 struct Shell
 {
@@ -89,12 +94,14 @@ inline std::basic_ostream<Tstrm_, Ttraits_>& operator<<(std::basic_ostream<Tstrm
     strm << "Shell(" << v.shape() << ", " << v.did() << ")";
     return strm;
 }
+} // egfrd
+} // ecell4
 
 namespace std {
 template<typename Tshape_, typename Tdid_>
-struct hash<Shell<Tshape_, Tdid_> >
+struct hash<ecell4::egfrd::Shell<Tshape_, Tdid_> >
 {
-    typedef Shell<Tshape_, Tdid_> argument_type;
+    typedef ecell4::egfrd::Shell<Tshape_, Tdid_> argument_type;
 
     std::size_t operator()(argument_type const& val)
     {
@@ -103,5 +110,4 @@ struct hash<Shell<Tshape_, Tdid_> >
     }
 };
 } // std
-
 #endif /* SHELL_HPP */

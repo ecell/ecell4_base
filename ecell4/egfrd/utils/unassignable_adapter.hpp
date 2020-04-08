@@ -21,6 +21,11 @@
 //#include "utils/fun_wrappers.hpp"
 #include "./fun_wrappers.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename T_, template<typename> class TT_, bool Bas_reference_ = false>
 struct unassignable_adapter
 {
@@ -341,4 +346,6 @@ private:
     container_holder_type cntnr_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* UNASSIGNABLE_ADAPTER_HPP */

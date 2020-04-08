@@ -9,6 +9,11 @@
 //#include "utils/fun_composition.hpp"
 #include "./fun_composition.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template < typename T_ >
 struct delete_ptr: public std::unary_function<T_*, void>
 {
@@ -132,4 +137,6 @@ struct dereference: std::unary_function<T_, typename boost::pointee<T_>::type&>
     }
 };
 
+} // egfrd
+} // ecell4
 #endif /* FUN_WRAPPERS_HPP */

@@ -15,6 +15,11 @@
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/exceptions.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Tworld_>
 struct BDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
 {
@@ -49,7 +54,7 @@ public:
     typedef typename ReactionRecorderWrapper<reaction_record_type>::reaction_info_type reaction_info_type;
 
     typedef typename world_type::particle_container_type particle_container_type;
-    typedef ecell4::PotentialField<particle_container_type> potential_field_type;
+    typedef ecell4::egfrd::PotentialField<particle_container_type> potential_field_type;
     typedef std::unordered_map<species_id_type, boost::shared_ptr<potential_field_type>> potential_field_map_type;
 
 public:
@@ -108,7 +113,7 @@ public:
     void add_potential(const ecell4::Species& sp, const Real& radius)
     {
         std::pair<typename potential_field_map_type::iterator, bool> retval
-            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::LeashPotentialField<typename potential_field_type::container_type>(radius))));
+            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::egfrd::LeashPotentialField<typename potential_field_type::container_type>(radius))));
         if (!retval.second)
         {
             throw ecell4::AlreadyExists("never reach here.");
@@ -118,7 +123,7 @@ public:
     void add_potential(const ecell4::Species& sp, const boost::shared_ptr<ecell4::Shape>& shape)
     {
         std::pair<typename potential_field_map_type::iterator, bool> retval
-            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::ShapedHardbodyPotentialField<typename potential_field_type::container_type>(shape))));
+            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::egfrd::ShapedHardbodyPotentialField<typename potential_field_type::container_type>(shape))));
         if (!retval.second)
         {
             throw ecell4::AlreadyExists("never reach here.");
@@ -128,7 +133,7 @@ public:
     void add_potential(const ecell4::Species& sp, const boost::shared_ptr<ecell4::Shape>& shape, const Real& threshold)
     {
         std::pair<typename potential_field_map_type::iterator, bool> retval
-            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::ShapedDiscretePotentialField<typename potential_field_type::container_type>(shape, threshold))));
+            = potentials_.insert(typename potential_field_map_type::value_type(sp, boost::shared_ptr<potential_field_type>(new ecell4::egfrd::ShapedDiscretePotentialField<typename potential_field_type::container_type>(shape, threshold))));
         if (!retval.second)
         {
             throw ecell4::AlreadyExists("never reach here.");
@@ -236,7 +241,7 @@ protected:
     {
         typename network_rules_type::reaction_rules const
             rules((*base_type::network_rules_).zeroth_order_reaction_rules());
-        if (::size(rules) == 0)
+        if (ecell4::egfrd::size(rules) == 0)
             return false;
 
         const Real rnd(
@@ -250,7 +255,7 @@ protected:
             {
                 typename reaction_rule_type::species_id_range products(
                         rr.get_products());
-                BOOST_ASSERT(::size(products) == 1);
+                BOOST_ASSERT(ecell4::egfrd::size(products) == 1);
                 const molecule_info_type minfo(
                     (*base_type::world_).get_molecule_info(products[0]));
 
@@ -295,4 +300,6 @@ private:
 template<typename Ttraits_>
 Logger& BDSimulator<Ttraits_>::log_(Logger::get_logger("BDSimulator"));
 
+} // egfrd;
+} // ecell4
 #endif /* BD_SIMULATOR_HPP */

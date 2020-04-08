@@ -4,6 +4,11 @@
 #include <boost/get_pointer.hpp>
 #include <boost/call_traits.hpp>
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename T_, typename Tholder_ = T_*>
 struct pointer_as_ref
 {
@@ -42,10 +47,13 @@ private:
     holder_type ptr_;
 };
 
+} // egfrd
+} // ecell4
+
 namespace boost {
 
 template<typename T, typename Tholder>
-inline T* get_pointer(::pointer_as_ref<T, Tholder> const& p)
+inline T* get_pointer(ecell4::egfrd::pointer_as_ref<T, Tholder> const& p)
 {
     return p.get();
 }

@@ -18,6 +18,10 @@
 #include <boost/range/const_reverse_iterator.hpp>
 #include "utils/fun_composition.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Tcntnr_, typename TweakOrdering_ = std::less<typename boost::range_value<Tcntnr_>::type>, typename Tholder_ = Tcntnr_>
 class sorted_list
 {
@@ -198,4 +202,6 @@ private:
     holder_type cntnr_;
 };
 
+} // egfrd
+} // ecell4
 #endif /* EGFRD_SORTED_LIST */

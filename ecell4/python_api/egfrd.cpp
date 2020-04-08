@@ -35,7 +35,7 @@ static inline
 void define_bd_simulator(py::module& m)
 {
     using namespace ::ecell4::egfrd;
-    using BDSimulator = egfrd::BDSimulator;
+    using BDSimulator = egfrd::DefaultBDSimulator;
     using world_type = BDSimulator::world_type;
     using model_type = BDSimulator::model_type;
 
@@ -84,13 +84,13 @@ void define_egfrd_factory(py::module& m)
 static inline
 void define_egfrd_simulator(py::module& m)
 {
-    using world_type = ::ecell4::egfrd::EGFRDSimulator::world_type;
-    using model_type = ::ecell4::egfrd::EGFRDSimulator::model_type;
-    using length_type = ::ecell4::egfrd::EGFRDSimulator::length_type;
+    using world_type = ::ecell4::egfrd::DefaultEGFRDSimulator::world_type;
+    using model_type = ::ecell4::egfrd::DefaultEGFRDSimulator::model_type;
+    using length_type = ::ecell4::egfrd::DefaultEGFRDSimulator::length_type;
 
-    py::class_<::ecell4::egfrd::EGFRDSimulator, Simulator,
-               PySimulator<::ecell4::egfrd::EGFRDSimulator>,
-               boost::shared_ptr<::ecell4::egfrd::EGFRDSimulator>
+    py::class_<::ecell4::egfrd::DefaultEGFRDSimulator, Simulator,
+               PySimulator<::ecell4::egfrd::DefaultEGFRDSimulator>,
+               boost::shared_ptr<::ecell4::egfrd::DefaultEGFRDSimulator>
                    > simulator(m, "EGFRDSimulator");
     simulator
         .def(py::init<boost::shared_ptr<world_type>, Real, int, length_type>(),
@@ -103,9 +103,9 @@ void define_egfrd_simulator(py::module& m)
                 py::arg("bd_dt_factor") = 1e-5,
                 py::arg("dissociation_retry_moves") = 1,
                 py::arg("user_max_shell_size") = std::numeric_limits<length_type>::infinity())
-        .def("last_reactions", &::ecell4::egfrd::EGFRDSimulator::last_reactions)
-        .def("set_t", &::ecell4::egfrd::EGFRDSimulator::set_t)
-        .def("set_paranoiac", &::ecell4::egfrd::EGFRDSimulator::set_paranoiac);
+        .def("last_reactions", &::ecell4::egfrd::DefaultEGFRDSimulator::last_reactions)
+        .def("set_t", &::ecell4::egfrd::DefaultEGFRDSimulator::set_t)
+        .def("set_paranoiac", &::ecell4::egfrd::DefaultEGFRDSimulator::set_paranoiac);
     define_simulator_functions(simulator);
 
     m.attr("Simulator") = simulator;

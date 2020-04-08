@@ -13,20 +13,20 @@ namespace ecell4
 namespace egfrd
 {
 
-typedef ::World< ::CyclicWorldTraits<Real> > EGFRDWorld;
+typedef World<CyclicWorldTraits<Real> > EGFRDWorld;
 typedef EGFRDWorld::molecule_info_type MoleculeInfo;
-typedef ::EGFRDSimulator< ::EGFRDSimulatorTraitsBase<EGFRDWorld> > EGFRDSimulator;
-typedef ::BDSimulator< ::BDSimulatorTraitsBase<EGFRDWorld> > BDSimulator;
+typedef EGFRDSimulator<EGFRDSimulatorTraitsBase<EGFRDWorld>> DefaultEGFRDSimulator;
+typedef BDSimulator<BDSimulatorTraitsBase<EGFRDWorld>>       DefaultBDSimulator;
 
-typedef EGFRDSimulator::reaction_info_type ReactionInfo;
+typedef DefaultEGFRDSimulator::reaction_info_type ReactionInfo;
 // typedef BDSimulator::reaction_info_type ReactionInfo;
 
 class EGFRDFactory
-    : public SimulatorFactory<EGFRDWorld, EGFRDSimulator>
+    : public SimulatorFactory<EGFRDWorld, DefaultEGFRDSimulator>
 {
 public:
 
-    typedef SimulatorFactory<EGFRDWorld, EGFRDSimulator> base_type;
+    typedef SimulatorFactory<EGFRDWorld, DefaultEGFRDSimulator> base_type;
     typedef base_type::world_type world_type;
     typedef base_type::simulator_type simulator_type;
     typedef EGFRDFactory this_type;
@@ -146,11 +146,11 @@ protected:
 };
 
 class BDFactory
-    : public SimulatorFactory<EGFRDWorld, BDSimulator>
+    : public SimulatorFactory<EGFRDWorld, DefaultBDSimulator>
 {
 public:
 
-    typedef SimulatorFactory<EGFRDWorld, BDSimulator> base_type;
+    typedef SimulatorFactory<EGFRDWorld, DefaultBDSimulator> base_type;
     typedef base_type::world_type world_type;
     typedef base_type::simulator_type simulator_type;
     typedef BDFactory this_type;
@@ -257,7 +257,6 @@ protected:
 };
 
 } // egfrd
-
 } // ecell4
 
 #endif /* ECELL4_EGFRD_EGFRD_HPP */

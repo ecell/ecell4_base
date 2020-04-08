@@ -12,6 +12,10 @@
 #include "utils/unassignable_adapter.hpp"
 #include "utils/stringizer.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
 template<typename Ttraits_>
 class Transaction: public ParticleContainer<Ttraits_>
 {
@@ -291,5 +295,8 @@ private:
     particle_id_pair_set_type orig_particles_;
     particle_id_list_type removed_particles_;
 };
+
+} // egfrd
+} // ecell4
 
 #endif /* TRANSACTION_HPP */

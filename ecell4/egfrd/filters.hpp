@@ -9,6 +9,11 @@
 // #include "Shape.hpp"
 #include "geometry.hpp"
 
+namespace ecell4
+{
+namespace egfrd
+{
+
 template<typename Toc_, typename Tfun_, typename Tsphere_>
 class neighbor_filter
         : public std::binary_function<
@@ -71,4 +76,6 @@ inline void take_neighbor_cyclic(Toc_ const& oc, Tfun_& fun, const Tsphere_& cmp
             neighbor_filter<Toc_ const, Tfun_, Tsphere_>(fun, cmp));
 }
 
+} // egfrd
+} // ecell4
 #endif /* ALGORITHM_HPP */
