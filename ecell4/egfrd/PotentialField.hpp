@@ -47,7 +47,7 @@ public:
 
 public:
 
-    ShapedHardbodyPotentialField(const boost::shared_ptr<Shape>& shape)
+    ShapedHardbodyPotentialField(const std::shared_ptr<Shape>& shape)
         : shape_(shape)
     {
         ;
@@ -60,7 +60,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<Shape> shape_;
+    std::shared_ptr<Shape> shape_;
 };
 
 template <typename Tcontainer>
@@ -76,7 +76,7 @@ public:
 
 public:
 
-    ShapedDiscretePotentialField(const boost::shared_ptr<Shape>& shape, const Real& threshold)
+    ShapedDiscretePotentialField(const std::shared_ptr<Shape>& shape, const Real& threshold)
         : shape_(shape), threshold_(threshold)
     {
         ;
@@ -96,7 +96,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<Shape> shape_;
+    std::shared_ptr<Shape> shape_;
     Real threshold_;
 };
 

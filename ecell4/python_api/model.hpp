@@ -85,22 +85,22 @@ namespace python_api
         }
 
 
-        boost::shared_ptr<Model> expand(
+        std::shared_ptr<Model> expand(
             const std::vector<Species>& sp, const Integer max_itr,
             const std::map<Species, Integer>& max_stoich) const override
         {
-            PYBIND11_OVERLOAD_PURE(boost::shared_ptr<Model>, Base, expand, sp, max_itr, max_stoich);
+            PYBIND11_OVERLOAD_PURE(std::shared_ptr<Model>, Base, expand, sp, max_itr, max_stoich);
         }
 
-        boost::shared_ptr<Model> expand(
+        std::shared_ptr<Model> expand(
             const std::vector<Species>& sp, const Integer max_itr) const override
         {
-            PYBIND11_OVERLOAD_PURE(boost::shared_ptr<Model>, Base, expand, sp, max_itr);
+            PYBIND11_OVERLOAD_PURE(std::shared_ptr<Model>, Base, expand, sp, max_itr);
         }
 
-        boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const override
+        std::shared_ptr<Model> expand(const std::vector<Species>& sp) const override
         {
-            PYBIND11_OVERLOAD_PURE(boost::shared_ptr<Model>, Base, expand, sp);
+            PYBIND11_OVERLOAD_PURE(std::shared_ptr<Model>, Base, expand, sp);
         }
     };
 
@@ -135,22 +135,22 @@ namespace python_api
             PYBIND11_OVERLOAD(const std::vector<bool>&, Base, species_attributes_proceed,);
         }
 
-        boost::shared_ptr<Model> expand(
+        std::shared_ptr<Model> expand(
             const std::vector<Species>& sp, const Integer max_itr,
             const std::map<Species, Integer>& max_stoich) const override
         {
-            PYBIND11_OVERLOAD(boost::shared_ptr<Model>, Base, expand, sp, max_itr, max_stoich);
+            PYBIND11_OVERLOAD(std::shared_ptr<Model>, Base, expand, sp, max_itr, max_stoich);
         }
 
-        boost::shared_ptr<Model> expand(
+        std::shared_ptr<Model> expand(
             const std::vector<Species>& sp, const Integer max_itr) const override
         {
-            PYBIND11_OVERLOAD(boost::shared_ptr<Model>, Base, expand, sp, max_itr);
+            PYBIND11_OVERLOAD(std::shared_ptr<Model>, Base, expand, sp, max_itr);
         }
 
-        boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const override
+        std::shared_ptr<Model> expand(const std::vector<Species>& sp) const override
         {
-            PYBIND11_OVERLOAD(boost::shared_ptr<Model>, Base, expand, sp);
+            PYBIND11_OVERLOAD(std::shared_ptr<Model>, Base, expand, sp);
         }
     };
 

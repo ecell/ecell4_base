@@ -37,12 +37,12 @@ static inline
 void define_ode_simulator(py::module& m)
 {
     py::class_<ODESimulator, Simulator, PySimulator<ODESimulator>,
-        boost::shared_ptr<ODESimulator>> simulator(m, "ODESimulator");
+        std::shared_ptr<ODESimulator>> simulator(m, "ODESimulator");
     simulator
-        .def(py::init<const boost::shared_ptr<ODEWorld>&, const ODESolverType>(),
+        .def(py::init<const std::shared_ptr<ODEWorld>&, const ODESolverType>(),
                 py::arg("w"),
                 py::arg("solver_type") = ODESolverType::ROSENBROCK4_CONTROLLER)
-        .def(py::init<const boost::shared_ptr<ODEWorld>&, const boost::shared_ptr<Model>&, const ODESolverType>(),
+        .def(py::init<const std::shared_ptr<ODEWorld>&, const std::shared_ptr<Model>&, const ODESolverType>(),
                 py::arg("w"), py::arg("m"),
                 py::arg("solver_type") = ODESolverType::ROSENBROCK4_CONTROLLER)
         .def("set_t", &ODESimulator::set_t)
@@ -67,7 +67,7 @@ static inline
 void define_ode_world(py::module& m)
 {
     py::class_<ODEWorld, WorldInterface, PyWorldImpl<ODEWorld>,
-        boost::shared_ptr<ODEWorld>> world(m, "ODEWorld");
+        std::shared_ptr<ODEWorld>> world(m, "ODEWorld");
     world
         .def(py::init<const Real3&>(), py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0))
         .def(py::init<const std::string&>(), py::arg("filename"))
@@ -81,7 +81,7 @@ void define_ode_world(py::module& m)
         .def("add_molecules",
             (void (ODEWorld::*)(const Species&, const Real&)) &ODEWorld::add_molecules)
         .def("add_molecules",
-            (void (ODEWorld::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>)) &ODEWorld::add_molecules)
+            (void (ODEWorld::*)(const Species&, const Integer&, const std::shared_ptr<Shape>)) &ODEWorld::add_molecules)
         .def("remove_molecules", &ODEWorld::remove_molecules)
         .def("set_value", &ODEWorld::set_value)
         .def("reserve_species", &ODEWorld::reserve_species)

@@ -68,18 +68,18 @@ int test(int type, int use_coefficients = 0)
         //ode_rr1.set_product_coefficient(0, 2.0);
         //ode_rr3.set_product_coefficient(0, 2.0);
 
-        boost::shared_ptr<ReactionRuleDescriptor> rrd1(new ReactionRuleDescriptorMassAction(rr1.k()));
+        std::shared_ptr<ReactionRuleDescriptor> rrd1(new ReactionRuleDescriptorMassAction(rr1.k()));
         rrd1->set_reactant_coefficient(0, 2.0);
         rrd1->set_product_coefficient(1, 1.0);
         rr1.set_descriptor(rrd1);
-        boost::shared_ptr<ReactionRuleDescriptor> rrd2(new ReactionRuleDescriptorMassAction(rr2.k()));
+        std::shared_ptr<ReactionRuleDescriptor> rrd2(new ReactionRuleDescriptorMassAction(rr2.k()));
         rrd2->set_reactant_coefficient(1, 1.0);
         rrd2->set_product_coefficient(0, 2.0);
         rr2.set_descriptor(rrd2);
     }
     std::cout << rr1.as_string() << std::endl;
     // Setup NetworkModel
-    boost::shared_ptr<NetworkModel> new_model(new NetworkModel());
+    std::shared_ptr<NetworkModel> new_model(new NetworkModel());
     // new_model->add_species_attribute(sp1);
     // new_model->add_species_attribute(sp2);
     // new_model->add_species_attribute(sp3);
@@ -88,7 +88,7 @@ int test(int type, int use_coefficients = 0)
     // new_model->add_reaction_rule(rr3);
 
     // Setup ODENetworkModel
-    boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel);
+    std::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel);
     // ode_model->add_species_attribute(sp1);
     // ode_model->add_species_attribute(sp2);
     // ode_model->add_species_attribute(sp3);
@@ -97,8 +97,8 @@ int test(int type, int use_coefficients = 0)
     // ode_model->add_reaction_rule(ode_rr3);
     ode_model->dump_reactions();
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
-    boost::shared_ptr<ODEWorld_New> new_world(new ODEWorld_New(edge_lengths));
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<ODEWorld_New> new_world(new ODEWorld_New(edge_lengths));
 
     world->add_molecules(sp1, N);
     new_world->add_molecules(sp1, N);

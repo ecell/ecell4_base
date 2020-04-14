@@ -31,18 +31,18 @@ void run()
     ReactionRule rr1(create_unbinding_reaction_rule(sp1, sp2, sp3, kd)),
       rr2(create_binding_reaction_rule(sp2, sp3, sp1, ka));
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
     model->add_species_attribute(sp2);
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
-    boost::shared_ptr<GSLRandomNumberGenerator>
+    std::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     rng->seed(time(NULL));
 
-    boost::shared_ptr<world_type> world(
+    std::shared_ptr<world_type> world(
         new world_type(edge_lengths, voxel_radius, rng));
 
     world->add_molecules(sp1, N);

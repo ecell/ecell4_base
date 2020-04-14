@@ -37,7 +37,7 @@ public:
     bool test_AABB(const Real3& l, const Real3& u) const;
     CylindricalSurface surface() const;
     Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const;
+        std::shared_ptr<RandomNumberGenerator>& rng) const;
 
     inline const Real3& position() const
     {
@@ -97,7 +97,7 @@ struct CylindricalSurface
     Real distance(const Real3& pos) const;
     Cylinder inside() const;
     Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const;
+        std::shared_ptr<RandomNumberGenerator>& rng) const;
     bool test_AABB(const Real3& l, const Real3& u) const;
 
     dimension_kind dimension() const

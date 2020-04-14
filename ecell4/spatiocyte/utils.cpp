@@ -7,9 +7,9 @@ namespace spatiocyte
 {
 
 const Real calculate_dimensional_factor(
-    boost::shared_ptr<const VoxelPool> mt0, const Real D_A,
-    boost::shared_ptr<const VoxelPool> mt1, const Real D_B,
-    boost::shared_ptr<SpatiocyteWorld> world)
+    std::shared_ptr<const VoxelPool> mt0, const Real D_A,
+    std::shared_ptr<const VoxelPool> mt1, const Real D_B,
+    std::shared_ptr<SpatiocyteWorld> world)
 {
     const Real voxel_radius(world->voxel_radius());
     const Real unit_area(world->unit_area());
@@ -61,7 +61,7 @@ const Real calculate_dimensional_factor(
 }
 
 const Real calculate_alpha(const ReactionRule &rr,
-                           const boost::shared_ptr<SpatiocyteWorld> &world)
+                           const std::shared_ptr<SpatiocyteWorld> &world)
 {
     const ReactionRule::reactant_container_type &reactants(rr.reactants());
     if (reactants.size() != 2)
@@ -72,7 +72,7 @@ const Real calculate_alpha(const ReactionRule &rr,
     const Species species[2] = {reactants.at(0), reactants.at(1)};
     const MoleculeInfo info[2] = {world->get_molecule_info(species[0]),
                                   world->get_molecule_info(species[1])};
-    boost::shared_ptr<VoxelPool> mt[2];
+    std::shared_ptr<VoxelPool> mt[2];
     for (int i(0); i < 2; ++i)
     {
         try
@@ -81,7 +81,7 @@ const Real calculate_alpha(const ReactionRule &rr,
         }
         catch (NotFound e)
         {
-            boost::weak_ptr<VoxelPool> location(world->vacant());
+            std::weak_ptr<VoxelPool> location(world->vacant());
             if (info[i].loc != "")
             {
                 try
@@ -93,7 +93,7 @@ const Real calculate_alpha(const ReactionRule &rr,
                     ;
                 }
             }
-            mt[i] = boost::shared_ptr<VoxelPool>(
+            mt[i] = std::shared_ptr<VoxelPool>(
                 new MoleculePool(species[i], location));
         }
     }

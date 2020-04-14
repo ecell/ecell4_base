@@ -32,7 +32,7 @@ class GillespieWorld
 public:
 
     GillespieWorld(const Real3& edge_lengths,
-                   boost::shared_ptr<RandomNumberGenerator> rng)
+                   std::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new CompartmentSpaceVectorImpl(edge_lengths)), rng_(rng)
     {
         ;
@@ -41,7 +41,7 @@ public:
     GillespieWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : cs_(new CompartmentSpaceVectorImpl(edge_lengths))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
@@ -49,7 +49,7 @@ public:
     GillespieWorld(const std::string filename)
         : cs_(new CompartmentSpaceVectorImpl(Real3(1, 1, 1)))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
     }
@@ -88,7 +88,7 @@ public:
     void add_molecules(const Species& sp, const Integer& num);
     void remove_molecules(const Species& sp, const Integer& num);
 
-    inline const boost::shared_ptr<RandomNumberGenerator>& rng()
+    inline const std::shared_ptr<RandomNumberGenerator>& rng()
     {
         return rng_;
     }
@@ -141,9 +141,9 @@ public:
 #endif
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(std::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (std::shared_ptr<Model> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -155,12 +155,12 @@ public:
         this->model_ = model;
     }
 
-    boost::shared_ptr<Model> lock_model() const
+    std::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
+    void add_molecules(const Species& sp, const Integer& num, const std::shared_ptr<Shape> shape)
     {
         add_molecules(sp, num);
     }
@@ -186,9 +186,9 @@ public:
 private:
 
     std::unique_ptr<CompartmentSpace> cs_;
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
 
-    boost::weak_ptr<Model> model_;
+    std::weak_ptr<Model> model_;
 };
 
 } // gillespie

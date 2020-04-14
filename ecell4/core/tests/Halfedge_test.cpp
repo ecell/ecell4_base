@@ -385,7 +385,7 @@ BOOST_AUTO_TEST_CASE(Polygon_tetrahedron_construction_from_triangles)
     }
 
     {
-        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        std::shared_ptr<RandomNumberGenerator> rng = std::make_shared<GSLRandomNumberGenerator>(12345);
         for(std::size_t i=0; i<1000; ++i)
         {
             FaceID f1, f2;
@@ -867,7 +867,7 @@ BOOST_AUTO_TEST_CASE(Polygon_octahedron_construction_from_triangles)
     }
 
     {
-        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        std::shared_ptr<RandomNumberGenerator> rng = std::make_shared<GSLRandomNumberGenerator>(12345);
         for(std::size_t i=0; i<1000; ++i)
         {
             FaceID f1, f2;
@@ -1346,7 +1346,7 @@ BOOST_AUTO_TEST_CASE(Polygon_plane_construction_from_triangles)
     // distance
 
     {
-        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        std::shared_ptr<RandomNumberGenerator> rng = std::make_shared<GSLRandomNumberGenerator>(12345);
         for(std::size_t i=0; i<1000; ++i)
         {
             FaceID f1, f2;
@@ -1629,7 +1629,7 @@ BOOST_AUTO_TEST_CASE(Polygon_hill_construction_from_triangles)
     // distance
 
     {
-        boost::shared_ptr<RandomNumberGenerator> rng = boost::make_shared<GSLRandomNumberGenerator>(12345);
+        std::shared_ptr<RandomNumberGenerator> rng = std::make_shared<GSLRandomNumberGenerator>(12345);
         for(std::size_t i=0; i<1000; ++i)
         {
             FaceID f1, f2;

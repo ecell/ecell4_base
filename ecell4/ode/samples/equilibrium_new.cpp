@@ -48,8 +48,8 @@ int main(int argc, char** argv)
 
     if (use_coeff)
     {
-        // boost::shared_ptr<ReactionRuleDescriptor> rr1_desc(new ReactionRuleDescriptorCPPfunc(mass_action));
-        boost::shared_ptr<ReactionRuleDescriptor> rr1_desc(new ReactionRuleDescriptorMassAction(rr1.k()));
+        // std::shared_ptr<ReactionRuleDescriptor> rr1_desc(new ReactionRuleDescriptorCPPfunc(mass_action));
+        std::shared_ptr<ReactionRuleDescriptor> rr1_desc(new ReactionRuleDescriptorMassAction(rr1.k()));
         std::vector<Real> rr1_left;
         std::vector<Real> rr1_right;
         rr1_left.push_back(2.0);
@@ -72,8 +72,8 @@ int main(int argc, char** argv)
 
     if (use_coeff)
     {
-        // boost::shared_ptr<ReactionRuleDescriptor> rr2_desc(new ReactionRuleDescriptorCPPfunc(mass_action));
-        boost::shared_ptr<ReactionRuleDescriptor> rr2_desc(new ReactionRuleDescriptorMassAction(rr2.k()));
+        // std::shared_ptr<ReactionRuleDescriptor> rr2_desc(new ReactionRuleDescriptorCPPfunc(mass_action));
+        std::shared_ptr<ReactionRuleDescriptor> rr2_desc(new ReactionRuleDescriptorMassAction(rr2.k()));
         std::vector<Real> rr2_left;
         std::vector<Real> rr2_right;
         rr2_left.push_back(1.0);
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
         rr2.set_descriptor(rr2_desc);
     }
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
     // rr3.add_product(sp3);
 
     //if (use_coeff) {
-    //    boost::shared_ptr<ReactionRuleDescriptorCPPfunc> rr3_desc(new ReactionRuleDescriptorCPPfunc(NULL) );
+    //    std::shared_ptr<ReactionRuleDescriptorCPPfunc> rr3_desc(new ReactionRuleDescriptorCPPfunc(NULL) );
     //    std::vector<Real> rr3_left;
     //    std::vector<Real> rr3_right;
     //    rr3_left.push_back(2.0);
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
 
     // model->dump_reactions();
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
     ODESimulator target(world, model, RUNGE_KUTTA_CASH_KARP54);

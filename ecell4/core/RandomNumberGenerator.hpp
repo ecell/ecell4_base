@@ -77,7 +77,7 @@ class GSLRandomNumberGenerator
 {
 public:
 
-    typedef boost::shared_ptr<gsl_rng> rng_handle;
+    typedef std::shared_ptr<gsl_rng> rng_handle;
 
 public:
 

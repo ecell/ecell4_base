@@ -57,7 +57,7 @@ ODESimulator::reaction_container_type ODESimulator::convert_reactions() const
 
         if (rr.has_descriptor() && rr.get_descriptor()->has_coefficients())
         {
-            const boost::shared_ptr<ReactionRuleDescriptor>& rrd(rr.get_descriptor());
+            const std::shared_ptr<ReactionRuleDescriptor>& rrd(rr.get_descriptor());
 
             r.ratelaw = rr.get_descriptor();
 

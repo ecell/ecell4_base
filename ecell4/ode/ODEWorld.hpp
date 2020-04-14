@@ -257,15 +257,15 @@ public:
         index_map_.erase(sp);
     }
 
-    void bind_to(boost::shared_ptr<Model> model);
+    void bind_to(std::shared_ptr<Model> model);
 
-    boost::shared_ptr<Model> lock_model() const
+    std::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
 
     void add_molecules(const Species& sp, const Integer& num,
-        const boost::shared_ptr<Shape> shape)
+        const std::shared_ptr<Shape> shape)
     {
         add_molecules(sp, num);
     }
@@ -293,12 +293,12 @@ public:
     {
         if (rr.has_descriptor())
         {
-            const boost::shared_ptr<ReactionRuleDescriptor> desc = rr.get_descriptor();
+            const std::shared_ptr<ReactionRuleDescriptor> desc = rr.get_descriptor();
             return __evaluate(rr, desc);
         }
         else
         {
-            const boost::shared_ptr<ReactionRuleDescriptorMassAction>
+            const std::shared_ptr<ReactionRuleDescriptorMassAction>
                 rrd(new ReactionRuleDescriptorMassAction(rr.k()));
             rrd->resize_reactants(rr.reactants().size());
             rrd->resize_products(rr.products().size());
@@ -320,7 +320,7 @@ public:
 
 protected:
 
-    Real __evaluate(const ReactionRule& rr, const boost::shared_ptr<ReactionRuleDescriptor>& desc) const
+    Real __evaluate(const ReactionRule& rr, const std::shared_ptr<ReactionRuleDescriptor>& desc) const
     {
         const ReactionRule::reactant_container_type reactants = rr.reactants();
         const ReactionRule::product_container_type products = rr.products();
@@ -356,7 +356,7 @@ protected:
     species_container_type species_;
     species_map_type index_map_;
 
-    boost::weak_ptr<Model> model_;
+    std::weak_ptr<Model> model_;
 };
 
 } // ode

@@ -22,8 +22,8 @@ struct Fixture
 {
     const Real3 edge_lengths;
     const Real voxel_radius;
-    const boost::shared_ptr<GSLRandomNumberGenerator> rng;
-    const boost::shared_ptr<NetworkModel> model;
+    const std::shared_ptr<GSLRandomNumberGenerator> rng;
+    const std::shared_ptr<NetworkModel> model;
     SpatiocyteWorld world;
 
     Fixture()
@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_molecule)
     BOOST_CHECK(world.new_particle(sp, voxel));
     BOOST_CHECK_EQUAL(world.num_particles(sp), 1);
 
-    boost::shared_ptr<const VoxelPool> mt(voxel.get_voxel_pool());
+    std::shared_ptr<const VoxelPool> mt(voxel.get_voxel_pool());
     BOOST_CHECK(!mt->is_vacant());
 }
 
@@ -172,7 +172,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_add_shape)
     const Species sp("TEST", 1e-8, 1e-12);
     model->add_species_attribute(sp);
 
-    boost::shared_ptr<const Sphere> sphere(
+    std::shared_ptr<const Sphere> sphere(
         new Sphere(Real3(5e-7, 5e-7, 5e-7), 5e-7 * 1.5));
 
     const Integer n(world.add_structure(sp, sphere));
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_move)
     BOOST_CHECK(world.new_particle(sp, from));
     BOOST_CHECK(world.move(from, to));
 
-    boost::shared_ptr<const VoxelPool> mt(to.get_voxel_pool());
+    std::shared_ptr<const VoxelPool> mt(to.get_voxel_pool());
     BOOST_CHECK(!mt->is_vacant());
 
     BOOST_CHECK(world.move(from, to));
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(SpatiocyteWorld_test_structure)
     model->add_species_attribute(membrane);
     model->add_species_attribute(sp);
 
-    boost::shared_ptr<const Sphere> sphere(
+    std::shared_ptr<const Sphere> sphere(
         new Sphere(Real3(2.5e-7, 2.5e-7, 2.5e-7), 2e-7));
 
     BOOST_CHECK(world.add_structure(membrane, sphere) == 5892);

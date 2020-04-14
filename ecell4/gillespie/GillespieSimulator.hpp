@@ -166,7 +166,7 @@ protected:
 
     protected:
 
-        inline const boost::shared_ptr<RandomNumberGenerator>& rng() const
+        inline const std::shared_ptr<RandomNumberGenerator>& rng() const
         {
             return sim_->world()->rng();
         }
@@ -539,7 +539,7 @@ protected:
         const Real propensity() const
         {
             assert(rr_.has_descriptor());
-            const boost::shared_ptr<ReactionRuleDescriptor>& ratelaw = rr_.get_descriptor();
+            const std::shared_ptr<ReactionRuleDescriptor>& ratelaw = rr_.get_descriptor();
             assert(ratelaw->is_available());
             const Real ret = ratelaw->propensity(num_reactants_, num_products_, world().volume(), world().t());
             return ret;
@@ -553,14 +553,14 @@ protected:
 public:
 
     GillespieSimulator(
-        boost::shared_ptr<GillespieWorld> world,
-        boost::shared_ptr<Model> model)
+        std::shared_ptr<GillespieWorld> world,
+        std::shared_ptr<Model> model)
         : base_type(world, model)
     {
         initialize();
     }
 
-    GillespieSimulator(boost::shared_ptr<GillespieWorld> world)
+    GillespieSimulator(std::shared_ptr<GillespieWorld> world)
         : base_type(world)
     {
         initialize();
@@ -589,7 +589,7 @@ public:
      */
     void initialize();
 
-    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    inline std::shared_ptr<RandomNumberGenerator> rng()
     {
         return (*world_).rng();
     }

@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(extras_test_)
 
 BOOST_AUTO_TEST_CASE(DimensionAttributeTest)
 {
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(Species("A"));
     model->add_species_attribute(Species("B", 1.0, 0.0, "A"));
     model->add_species_attribute(Species("C", 1.0, 0.0, "", 2));

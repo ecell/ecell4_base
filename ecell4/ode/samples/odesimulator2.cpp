@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     rr1.add_reactant(sp1);
     rr1.add_product(sp2);
     rr1.add_product(sp3);
-    boost::shared_ptr<ReactionRuleDescriptorMassAction> ratelaw1(new ReactionRuleDescriptorMassAction(ka));
+    std::shared_ptr<ReactionRuleDescriptorMassAction> ratelaw1(new ReactionRuleDescriptorMassAction(ka));
     ratelaw1->resize_reactants(1);
     ratelaw1->resize_products(2);
     rr1.set_descriptor(ratelaw1);
@@ -43,13 +43,13 @@ int main(int argc, char **argv)
     rr2.add_reactant(sp2);
     rr2.add_reactant(sp3);
     rr2.add_product(sp1);
-    boost::shared_ptr<ReactionRuleDescriptorMassAction> ratelaw2(new ReactionRuleDescriptorMassAction(kd));
+    std::shared_ptr<ReactionRuleDescriptorMassAction> ratelaw2(new ReactionRuleDescriptorMassAction(kd));
     ratelaw2->resize_reactants(2);
     ratelaw2->resize_products(1);
     rr2.set_descriptor(ratelaw2);
     // std::cout << ratelaw2->k() << std::endl;
 
-    boost::shared_ptr<Model> model(new NetworkModel());
+    std::shared_ptr<Model> model(new NetworkModel());
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
         std::cout << (*i).as_string() << std::endl;
     }
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
     ODESimulator sim(world, model, ROSENBROCK4_CONTROLLER);

@@ -39,8 +39,8 @@ class BDSimulator :
     typedef std::pair<reaction_rule_type, reaction_info_type> reaction_log_type;
     typedef std::vector<reaction_log_type> reaction_archive_type;
 
-    BDSimulator(const boost::shared_ptr<world_type>& world,
-                const boost::shared_ptr<model_type>& model,
+    BDSimulator(const std::shared_ptr<world_type>& world,
+                const std::shared_ptr<model_type>& model,
                 Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
                 const std::string& trace_fname = "bd_trace.log")
         : base_type(world, model), dt_(bd_dt_factor/*TODO*/),
@@ -48,7 +48,7 @@ class BDSimulator :
           rng_(*(world->rng())), tracer_(trace_fname)
     {}
 
-    BDSimulator(boost::shared_ptr<world_type> world,
+    BDSimulator(std::shared_ptr<world_type> world,
                 Real bd_dt_factor = 1e-5, Real reaction_length = 1e-3,
                 const std::string& trace_fname = "bd_trace.log")
         : base_type(world), dt_(bd_dt_factor/*TODO*/),
@@ -217,8 +217,8 @@ class BDSimulator :
 
   private:
     // from SimulatorBase
-    // boost::shared_ptr<model_type> model_;
-    // boost::shared_ptr<world_type> world_;
+    // std::shared_ptr<model_type> model_;
+    // std::shared_ptr<world_type> world_;
     // Integer num_steps_;
 
     Real dt_;

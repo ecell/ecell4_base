@@ -100,7 +100,7 @@ public:
         return world_.get_molecule_info(id);
     }
 
-    virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
+    virtual std::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
     {
         return world_.get_structure(id);
     }

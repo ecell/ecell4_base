@@ -76,7 +76,7 @@ Real Rod::distance(const Real3& pos) const
     return collision::distance_point_capsule(pos, *this);
 }
 
-Real3 Rod::draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+Real3 Rod::draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     // The Cylinder Part
     if (rng->uniform(-4*radius_, 3*length_) >= 0)
@@ -168,7 +168,7 @@ Real RodSurface::distance(const Real3& pos) const
     return collision::distance_point_capsule(pos, this->inside());
 }
 
-Real3 RodSurface::draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+Real3 RodSurface::draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     // The Cylinder Part
     if (rng->uniform(-2*radius_, length_) >= 0)

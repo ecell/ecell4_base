@@ -18,12 +18,12 @@ struct Voxel
 {
     typedef VoxelSpaceBase::coordinate_type coordinate_type;
 
-    Voxel(boost::weak_ptr<VoxelSpaceBase> space, coordinate_type coordinate)
+    Voxel(std::weak_ptr<VoxelSpaceBase> space, coordinate_type coordinate)
         : space(space), coordinate(coordinate)
     {
     }
 
-    boost::weak_ptr<VoxelSpaceBase> space;
+    std::weak_ptr<VoxelSpaceBase> space;
     coordinate_type coordinate;
 
 public:
@@ -34,7 +34,7 @@ public:
 
     bool clear() const { return space.lock()->remove_voxel(coordinate); }
 
-    boost::shared_ptr<VoxelPool> get_voxel_pool() const
+    std::shared_ptr<VoxelPool> get_voxel_pool() const
     {
         return space.lock()->get_voxel_pool_at(coordinate);
     }

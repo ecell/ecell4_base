@@ -16,7 +16,7 @@ Real AABB::distance(const Real3& pos) const
 }
 
 Real3 AABB::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     const Real3 pos(
         rng->uniform(lower_[0], upper_[0]),

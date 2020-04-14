@@ -74,7 +74,7 @@ public:
     } voxel_type_type;
 
 public:
-    VoxelPool(const Species &species, boost::weak_ptr<VoxelPool> location)
+    VoxelPool(const Species &species, std::weak_ptr<VoxelPool> location)
         : species_(species), location_(location)
     {
         ;
@@ -96,7 +96,7 @@ public:
 
     const Species &species() const { return species_; }
 
-    boost::shared_ptr<VoxelPool> location() const { return location_.lock(); }
+    std::shared_ptr<VoxelPool> location() const { return location_.lock(); }
 
 public:
     virtual const Integer size() const = 0;
@@ -121,7 +121,7 @@ public:
 
 protected:
     const Species species_;
-    boost::weak_ptr<VoxelPool> location_;
+    std::weak_ptr<VoxelPool> location_;
 };
 
 } // namespace ecell4

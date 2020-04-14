@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     // const ecell4::Real k2(ka), k1(kd);
     // }}}
 
-    boost::shared_ptr<ecell4::NetworkModel>
+    std::shared_ptr<ecell4::NetworkModel>
         model(new ecell4::NetworkModel());
 
     // add ::SpeciesType to ::ParticleModel
@@ -84,8 +84,8 @@ int main(int argc, char **argv)
 
     // Random Number Generator (Instanciate and Initialize)
     // {{{
-    // boost::shared_ptr<ecell4::GSLRandomNumberGenerator>
-    boost::shared_ptr<ecell4::RandomNumberGenerator>
+    // std::shared_ptr<ecell4::GSLRandomNumberGenerator>
+    std::shared_ptr<ecell4::RandomNumberGenerator>
         rng(new ecell4::GSLRandomNumberGenerator());
     rng->seed((unsigned long int)0);
     // rng->seed(time(NULL));
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 
     // World Definition
     // {{{
-    boost::shared_ptr<world_type>
+    std::shared_ptr<world_type>
         world(new world_type(edge_lengths, matrix_sizes, rng));
     world->bind_to(model);
     // }}}
@@ -141,7 +141,7 @@ int main(int argc, char **argv)
 
     // Logger Settings
     // {{{
-    boost::shared_ptr<ecell4::egfrd::LoggerManager> logger_mng(
+    std::shared_ptr<ecell4::egfrd::LoggerManager> logger_mng(
         new ecell4::egfrd::LoggerManager("dummy", ecell4::egfrd::Logger::L_WARNING));
     ecell4::egfrd::LoggerManager::register_logger_manager(
         "ecell.EGFRDSimulator", logger_mng);
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
 
     // EGFRDSimulator instance generated
     // {{{
-    boost::shared_ptr<simulator_type> sim(
+    std::shared_ptr<simulator_type> sim(
         new simulator_type(world, model, 1.0));
     // sim->paranoiac() = true;
     sim->initialize();

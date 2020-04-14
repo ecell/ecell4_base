@@ -23,21 +23,21 @@ void run()
     const Real3 edge_lengths(L, L, L);
     const Integer3 matrix_sizes(30, 30, 30);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(Species("A", 0.0025, 1, "C"));
 
-    boost::shared_ptr<RandomNumberGenerator>
+    std::shared_ptr<RandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     rng->seed(0);
     // rng->seed(time(NULL));
 
-    boost::shared_ptr<world_type> world(
+    std::shared_ptr<world_type> world(
         new world_type(edge_lengths, matrix_sizes, rng));
     world->bind_to(model);
 
     world->add_structure(
         Species("C"),
-        boost::shared_ptr<const Shape>(
+        std::shared_ptr<const Shape>(
             new Sphere(Real3(L_2, L_2, L_2), L_2 * 0.8)));
 
     world->add_molecules(Species("A"), 1800);

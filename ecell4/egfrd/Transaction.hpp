@@ -150,7 +150,7 @@ public:
         return new TransactionImpl<particle_container_type>(*this);
     }
 
-    virtual boost::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
+    virtual std::shared_ptr<structure_type> get_structure(structure_id_type const& id) const
     {
         return pc_.get_structure(id);
     }

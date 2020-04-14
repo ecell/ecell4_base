@@ -28,12 +28,12 @@ namespace extras
 template<typename Tworld_, typename Trng_>
 void throw_in_particles(
     Tworld_& world, const Species& sp, const Integer& N,
-    const boost::shared_ptr<Shape> shape,
-    boost::shared_ptr<Trng_>& rng)
+    const std::shared_ptr<Shape> shape,
+    std::shared_ptr<Trng_>& rng)
 {
     typedef typename Tworld_::molecule_info_type molecule_info_type;
-    boost::shared_ptr<RandomNumberGenerator>
-        myrng(static_cast<boost::shared_ptr<RandomNumberGenerator> >(rng));
+    std::shared_ptr<RandomNumberGenerator>
+        myrng(static_cast<std::shared_ptr<RandomNumberGenerator> >(rng));
 
     if (N < 0)
     {
@@ -68,15 +68,15 @@ void throw_in_particles(
 
 template<typename Tworld_, typename Trng_>
 void throw_in_particles(
-    Tworld_& world, const Species& sp, const Integer& N, boost::shared_ptr<Trng_>& rng)
+    Tworld_& world, const Species& sp, const Integer& N, std::shared_ptr<Trng_>& rng)
 {
-    boost::shared_ptr<Shape> shape(new AABB(Real3(0, 0, 0), world.edge_lengths()));
+    std::shared_ptr<Shape> shape(new AABB(Real3(0, 0, 0), world.edge_lengths()));
     throw_in_particles(world, sp, N, shape, rng);
 }
 
 template<typename Tfactory_>
 typename Tfactory_::world_type* generate_world_from_model(
-    const Tfactory_& f, const boost::shared_ptr<Model>& m)
+    const Tfactory_& f, const std::shared_ptr<Model>& m)
 {
     typename Tfactory_::world_type* w = f.world();
     w->bind_to(m);
@@ -84,7 +84,7 @@ typename Tfactory_::world_type* generate_world_from_model(
 }
 
 Shape::dimension_kind
-get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model);
+get_dimension_from_model(const Species& species, const std::shared_ptr<Model>& model);
 
 struct VersionInformation
 {

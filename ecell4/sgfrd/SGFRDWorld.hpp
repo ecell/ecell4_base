@@ -56,10 +56,10 @@ class SGFRDWorld
     SGFRDWorld(const Real3&    edge_lengths =    Real3(1, 1, 1),
                const Integer3& matrix_sizes = Integer3(3, 3, 3))
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(boost::make_shared<Polygon>(edge_lengths, matrix_sizes)),
+          polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes)),
           registrator_(*polygon_)
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         rng_->seed();
 
@@ -68,10 +68,10 @@ class SGFRDWorld
 
     // rng && !polygon_file
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               boost::shared_ptr<RandomNumberGenerator> rng)
+               std::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng),
-          polygon_(boost::make_shared<Polygon>(edge_lengths, matrix_sizes)),
+          polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes)),
           registrator_(*polygon_)
     {
         this->prepare_restrictions();
@@ -81,11 +81,11 @@ class SGFRDWorld
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(boost::make_shared<Polygon>(
+          polygon_(std::make_shared<Polygon>(
                       read_polygon(polygon_file, fmt, edge_lengths))),
           registrator_(*polygon_)
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         rng_->seed();
 
@@ -94,10 +94,10 @@ class SGFRDWorld
 
     // rng && polygon_file
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               boost::shared_ptr<RandomNumberGenerator> rng,
+               std::shared_ptr<RandomNumberGenerator> rng,
                const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          rng_(rng), polygon_(boost::make_shared<Polygon>(
+          rng_(rng), polygon_(std::make_shared<Polygon>(
                       read_polygon(polygon_file, fmt, edge_lengths))),
           registrator_(*polygon_)
     {
@@ -106,11 +106,11 @@ class SGFRDWorld
 
     // !rng && polygon
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               const boost::shared_ptr<Polygon>& poly)
+               const std::shared_ptr<Polygon>& poly)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           polygon_(poly), registrator_(*polygon_)
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         rng_->seed();
 
@@ -121,8 +121,8 @@ class SGFRDWorld
 
     // rng && polygon
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
-               boost::shared_ptr<RandomNumberGenerator> rng,
-               const boost::shared_ptr<Polygon>& poly)
+               std::shared_ptr<RandomNumberGenerator> rng,
+               const std::shared_ptr<Polygon>& poly)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(poly), registrator_(*polygon_)
     {
@@ -131,10 +131,10 @@ class SGFRDWorld
 
     SGFRDWorld(const std::string& filename) // from HDF5
         : ps_(new default_particle_space_type(Real3(1, 1, 1))),
-          polygon_(boost::make_shared<Polygon>(Real3(1, 1, 1))),
+          polygon_(std::make_shared<Polygon>(Real3(1, 1, 1))),
           registrator_(*polygon_)
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
     }
@@ -142,9 +142,9 @@ class SGFRDWorld
 
     ~SGFRDWorld() override = default;
 
-    boost::shared_ptr<RandomNumberGenerator> const& rng() const noexcept {return this->rng_;}
-    boost::shared_ptr<RandomNumberGenerator>&       rng()       noexcept {return this->rng_;}
-    boost::shared_ptr<polygon_type> const& polygon() const {return polygon_;}
+    std::shared_ptr<RandomNumberGenerator> const& rng() const noexcept {return this->rng_;}
+    std::shared_ptr<RandomNumberGenerator>&       rng()       noexcept {return this->rng_;}
+    std::shared_ptr<polygon_type> const& polygon() const {return polygon_;}
 
     // -----------------------------------------------------------------------
     // WorldInterface
@@ -249,7 +249,7 @@ class SGFRDWorld
     {
         Real radius(0.0), D(0.0);
 
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (std::shared_ptr<Model> bound_model = lock_model())
         {
             auto const sp_ = bound_model->apply_species_attributes(sp);
             if (sp_.has_attribute("radius"))
@@ -443,7 +443,7 @@ class SGFRDWorld
 
     void add_molecules(const Species& sp, const Integer& num);
     void add_molecules(const Species& sp, const Integer& num,
-                       const boost::shared_ptr<Shape> shape);
+                       const std::shared_ptr<Shape> shape);
 
     void remove_molecules(const Species& sp, const Integer& num)
     {
@@ -711,9 +711,9 @@ class SGFRDWorld
         return this->ps_->apply_boundary(pos);
     }
 
-    void bind_to(boost::shared_ptr<model_type> model)
+    void bind_to(std::shared_ptr<model_type> model)
     {
-        if (boost::shared_ptr<model_type> bound_model = lock_model())
+        if (std::shared_ptr<model_type> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -724,7 +724,7 @@ class SGFRDWorld
         model_ = model;
     }
 
-    boost::shared_ptr<model_type> lock_model() const
+    std::shared_ptr<model_type> lock_model() const
     {
         return model_.lock();
     }
@@ -837,9 +837,9 @@ class SGFRDWorld
   private:
 
     std::unique_ptr<particle_space_type>   ps_;
-    boost::shared_ptr<RandomNumberGenerator> rng_;
-    boost::weak_ptr<Model>                   model_;
-    boost::shared_ptr<polygon_type>          polygon_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
+    std::weak_ptr<Model>                   model_;
+    std::shared_ptr<polygon_type>          polygon_;
     structure_registrator_type               registrator_;
     particle_id_generator_type               pidgen_;
     Real estimated_possible_largest_particle_radius_;

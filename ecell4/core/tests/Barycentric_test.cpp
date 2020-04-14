@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(Barycentric_test_on_plane)
 
 BOOST_AUTO_TEST_CASE(Barycentric_test_transformation)
 {
-    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+    std::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     for(std::size_t i=0; i<N; ++i)
     {

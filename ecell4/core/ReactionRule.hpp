@@ -72,8 +72,8 @@ public:
     std::vector<ReactionRule> generate(const reactant_container_type& reactants) const;
 
     bool has_descriptor() const;
-    void set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor);
-    const boost::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const;
+    void set_descriptor(const std::shared_ptr<ReactionRuleDescriptor>& descriptor);
+    const std::shared_ptr<ReactionRuleDescriptor>& get_descriptor() const;
     void reset_descriptor();
 
     /**
@@ -109,8 +109,8 @@ protected:
     policy_type policy_;
     Attribute attributes_;
 
-    boost::shared_ptr<ReactionRuleDescriptor> rr_descriptor_;
-    // boost::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
+    std::shared_ptr<ReactionRuleDescriptor> rr_descriptor_;
+    // std::weak_ptr<ReactionRuleDescriptor> rr_descriptor_;
 };
 
 inline bool operator<(const ReactionRule& lhs, const ReactionRule& rhs)

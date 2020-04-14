@@ -43,7 +43,7 @@ public:
 
     typedef VoxelSpaceBase::coordinate_id_pair_type coordinate_id_pair_type;
 
-    typedef boost::shared_ptr<VoxelSpaceBase> space_type;
+    typedef std::shared_ptr<VoxelSpaceBase> space_type;
     typedef std::vector<space_type> space_container_type;
 
 public:
@@ -51,7 +51,7 @@ public:
      * Constructors
      */
     SpatiocyteWorld(const Real3 &edge_lengths, const Real &voxel_radius,
-                    const boost::shared_ptr<RandomNumberGenerator> &rng)
+                    const std::shared_ptr<RandomNumberGenerator> &rng)
         : rng_(rng)
     {
         spaces_.push_back(
@@ -63,7 +63,7 @@ public:
     {
         spaces_.push_back(
             space_type(new default_root_type(edge_lengths, voxel_radius)));
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
         size_ = get_root()->size();
@@ -75,7 +75,7 @@ public:
         spaces_.push_back(space_type(
             new default_root_type(edge_lengths, edge_lengths[0] / 100)));
         size_ = get_root()->size();
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
@@ -85,13 +85,13 @@ public:
         // XXX: sloppy default
         spaces_.push_back(
             space_type(new default_root_type(Real3(1, 1, 1), 1 / 100)));
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
     }
 
     SpatiocyteWorld(VoxelSpaceBase *space,
-                    const boost::shared_ptr<RandomNumberGenerator> &rng)
+                    const std::shared_ptr<RandomNumberGenerator> &rng)
         : rng_(rng)
     {
         spaces_.push_back(space_type(space));
@@ -306,7 +306,7 @@ public:
     Real unit_area() const { return get_root()->unit_area(); }
 
     // TODO
-    boost::shared_ptr<VoxelPool> vacant() const { return get_root()->vacant(); }
+    std::shared_ptr<VoxelPool> vacant() const { return get_root()->vacant(); }
 
     bool has_voxel(const ParticleID &pid) const
     {
@@ -383,7 +383,7 @@ public:
         return std::make_pair(view.pid, view.species);
     }
 
-    boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &species)
+    std::shared_ptr<VoxelPool> find_voxel_pool(const Species &species)
     {
         for (const auto &space : spaces_)
         {
@@ -395,7 +395,7 @@ public:
         // throw "No VoxelPool corresponding to a given Species is found";
     }
 
-    boost::shared_ptr<const VoxelPool>
+    std::shared_ptr<const VoxelPool>
     find_voxel_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -406,7 +406,7 @@ public:
         throw "No VoxelPool corresponding to a given Species is found";
     }
 
-    boost::optional<std::pair<space_type, boost::shared_ptr<VoxelPool>>>
+    boost::optional<std::pair<space_type, std::shared_ptr<VoxelPool>>>
     find_space_and_voxel_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -414,7 +414,7 @@ public:
             if (space->has_species(species))
             {
                 const auto voxel_pool = space->find_voxel_pool(species);
-                return std::pair<space_type, boost::shared_ptr<VoxelPool>>(
+                return std::pair<space_type, std::shared_ptr<VoxelPool>>(
                     space, voxel_pool);
             }
         }
@@ -431,7 +431,7 @@ public:
         return false;
     }
 
-    boost::shared_ptr<MoleculePool> find_molecule_pool(const Species &species)
+    std::shared_ptr<MoleculePool> find_molecule_pool(const Species &species)
     {
         for (const auto &space : spaces_)
         {
@@ -441,7 +441,7 @@ public:
         throw "No MoleculePool corresponding to a given Species is found";
     }
 
-    boost::shared_ptr<const MoleculePool>
+    std::shared_ptr<const MoleculePool>
     find_molecule_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -452,7 +452,7 @@ public:
         throw "No MoleculePool corresponding to a given Species is found";
     }
 
-    boost::optional<std::pair<space_type, boost::shared_ptr<MoleculePool>>>
+    boost::optional<std::pair<space_type, std::shared_ptr<MoleculePool>>>
     find_space_and_molecule_pool(const Species &species) const
     {
         for (const auto &space : spaces_)
@@ -460,7 +460,7 @@ public:
             if (space->has_molecule_pool(species))
             {
                 const auto molecule_pool(space->find_molecule_pool(species));
-                return std::pair<space_type, boost::shared_ptr<MoleculePool>>(
+                return std::pair<space_type, std::shared_ptr<MoleculePool>>(
                     space, molecule_pool);
             }
         }
@@ -711,7 +711,7 @@ public:
     boost::optional<ParticleID> new_particle(const Species &sp,
                                              const Voxel &voxel)
     {
-        boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
+        std::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
@@ -729,7 +729,7 @@ public:
     boost::optional<ParticleID> new_voxel_structure(const Species &sp,
                                                     const Voxel &voxel)
     {
-        boost::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
+        std::shared_ptr<VoxelSpaceBase> space(voxel.space.lock());
         if (!space->has_species(sp))
         {
             const MoleculeInfo minfo(get_molecule_info(sp));
@@ -746,9 +746,9 @@ public:
 
     bool add_molecules(const Species &sp, const Integer &num);
     bool add_molecules(const Species &sp, const Integer &num,
-                       const boost::shared_ptr<const Shape> shape);
+                       const std::shared_ptr<const Shape> shape);
     Integer add_structure(const Species &sp,
-                          const boost::shared_ptr<const Shape> shape);
+                          const std::shared_ptr<const Shape> shape);
 
     void remove_molecules(const Species &sp, const Integer &num);
     // void remove_molecules_exact(const Species& sp, const Integer& num);
@@ -772,11 +772,11 @@ public:
 
     const Species &draw_species(const Species &pttrn) const;
 
-    boost::shared_ptr<RandomNumberGenerator> rng() const { return rng_; }
+    std::shared_ptr<RandomNumberGenerator> rng() const { return rng_; }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(std::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = model_.lock())
+        if (std::shared_ptr<Model> bound_model = model_.lock())
         {
             if (bound_model.get() != model.get())
             {
@@ -788,7 +788,7 @@ public:
         model_ = model;
     }
 
-    boost::shared_ptr<Model> lock_model() const
+    std::shared_ptr<Model> lock_model() const
     {
         const auto bound = model_.lock();
         if (!bound)
@@ -844,11 +844,11 @@ protected:
     space_type get_root() const { return spaces_.at(0); }
 
     Integer add_structure2(const Species &sp, const std::string &location,
-                           const boost::shared_ptr<const Shape> shape);
+                           const std::shared_ptr<const Shape> shape);
     Integer add_structure3(const Species &sp, const std::string &location,
-                           const boost::shared_ptr<const Shape> shape);
+                           const std::shared_ptr<const Shape> shape);
     bool is_surface_voxel(const Voxel &voxel,
-                          const boost::shared_ptr<const Shape> shape) const;
+                          const std::shared_ptr<const Shape> shape) const;
 
     Particle gen_particle_from(const space_type &space,
                                const VoxelView &view) const
@@ -916,17 +916,17 @@ protected:
     OneToManyMap<Voxel> interfaces_;
     OneToManyMap<Voxel> neighbors_;
 
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> sidgen_;
 
-    boost::weak_ptr<Model> model_;
+    std::weak_ptr<Model> model_;
     molecule_info_cache_t molecule_info_cache_;
 }; // namespace spatiocyte
 
 inline SpatiocyteWorld *create_spatiocyte_world_cell_list_impl(
     const Real3 &edge_lengths, const Real &voxel_radius,
     const Integer3 &matrix_sizes,
-    const boost::shared_ptr<RandomNumberGenerator> &rng)
+    const std::shared_ptr<RandomNumberGenerator> &rng)
 {
     return new SpatiocyteWorld(
         new LatticeSpaceCellListImpl(edge_lengths, voxel_radius, matrix_sizes),
@@ -935,7 +935,7 @@ inline SpatiocyteWorld *create_spatiocyte_world_cell_list_impl(
 
 inline SpatiocyteWorld *create_spatiocyte_world_vector_impl(
     const Real3 &edge_lengths, const Real &voxel_radius,
-    const boost::shared_ptr<RandomNumberGenerator> &rng)
+    const std::shared_ptr<RandomNumberGenerator> &rng)
 {
     return new SpatiocyteWorld(
         new LatticeSpaceVectorImpl(edge_lengths, voxel_radius), rng);
@@ -943,7 +943,7 @@ inline SpatiocyteWorld *create_spatiocyte_world_vector_impl(
 
 inline SpatiocyteWorld *allocate_spatiocyte_world_square_offlattice_impl(
     const Real edge_length, const Species &species, const Real &voxel_radius,
-    const boost::shared_ptr<RandomNumberGenerator> &rng)
+    const std::shared_ptr<RandomNumberGenerator> &rng)
 {
     OffLatticeSpace::position_container positions;
     OffLatticeSpace::coordinate_pair_list_type adjoining_pairs;

@@ -69,31 +69,31 @@ protected:
 
 class SpatiocyteWorld;
 
-ReactionInfo apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_a2b(std::shared_ptr<SpatiocyteWorld> world,
                        const ReactionInfo::Item &reactant_item,
                        const Species &product_species);
 
-ReactionInfo apply_a2bc(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_a2bc(std::shared_ptr<SpatiocyteWorld> world,
                         const ReactionInfo::Item &reactant_item,
                         const Species &product_species0,
                         const Species &product_species1);
 
 ReactionInfo
-apply_second_order_reaction(boost::shared_ptr<SpatiocyteWorld> world,
+apply_second_order_reaction(std::shared_ptr<SpatiocyteWorld> world,
                             const ReactionRule &reaction_rule,
                             const ReactionInfo::Item &reactant_item0,
                             const ReactionInfo::Item &reactant_item1);
 
-ReactionInfo apply_vanishment(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_vanishment(std::shared_ptr<SpatiocyteWorld> world,
                               const ReactionInfo::Item &reactant_item0,
                               const ReactionInfo::Item &reactant_item1);
 
-ReactionInfo apply_ab2c(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_ab2c(std::shared_ptr<SpatiocyteWorld> world,
                         const ReactionInfo::Item &reactant_item0,
                         const ReactionInfo::Item &reactant_item1,
                         const Species &product_species);
 
-ReactionInfo apply_ab2cd(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_ab2cd(std::shared_ptr<SpatiocyteWorld> world,
                          const ReactionInfo::Item &reactant_item0,
                          const ReactionInfo::Item &reactant_item1,
                          const Species &product_species0,

@@ -50,9 +50,9 @@ public:
         index_container_type products;
         coefficient_container_type product_coefficients;
         Real k;
-        // boost::weak_ptr<ODERatelaw> ratelaw;
+        // std::weak_ptr<ODERatelaw> ratelaw;
         // const ODEReactionRule *raw;
-        boost::weak_ptr<ReactionRuleDescriptor> ratelaw;
+        std::weak_ptr<ReactionRuleDescriptor> ratelaw;
     };
     typedef std::vector<reaction_type> reaction_container_type;
 
@@ -95,7 +95,7 @@ public:
                 }
                 else
                 {
-                    boost::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
+                    std::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
                     assert(ratelaw->is_available());
                     flux = ratelaw->propensity(reactants_states, products_states, volume_, t);
                 }
@@ -256,7 +256,7 @@ public:
                 }
                 else
                 {
-                    boost::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
+                    std::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
                     assert(ratelaw->is_available());
                     Real flux_0 = ratelaw->propensity(reactants_states, products_states, volume_, t);
                     // Differentiate by time
@@ -428,7 +428,7 @@ public:
                 }
                 else
                 {
-                    boost::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
+                    std::shared_ptr<ReactionRuleDescriptor> ratelaw = i->ratelaw.lock();
                     assert(ratelaw->is_available());
                     Real flux_0 = ratelaw->propensity(reactants_states, products_states, volume_, t);
                     // Differentiate by each Reactants
@@ -491,8 +491,8 @@ public:
 public:
 
     ODESimulator(
-        const boost::shared_ptr<ODEWorld>& world,
-        const boost::shared_ptr<Model>& model,
+        const std::shared_ptr<ODEWorld>& world,
+        const std::shared_ptr<Model>& model,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
         : base_type(world, model), dt_(std::numeric_limits<Real>::infinity()),
           abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0), solver_type_(solver_type)
@@ -501,7 +501,7 @@ public:
     }
 
     ODESimulator(
-        const boost::shared_ptr<ODEWorld>& world,
+        const std::shared_ptr<ODEWorld>& world,
         const ODESolverType solver_type = ROSENBROCK4_CONTROLLER)
         : base_type(world), dt_(std::numeric_limits<Real>::infinity()),
           abs_tol_(1e-6), rel_tol_(1e-6), max_dt_(0.0), solver_type_(solver_type)
@@ -722,8 +722,8 @@ protected:
 
 protected:
 
-    // boost::shared_ptr<ODENetworkModel> model_;
-    // boost::shared_ptr<ODEWorld> world_;
+    // std::shared_ptr<ODENetworkModel> model_;
+    // std::shared_ptr<ODEWorld> world_;
     Real dt_;
     // Integer num_steps_;
     Real abs_tol_, rel_tol_, max_dt_;

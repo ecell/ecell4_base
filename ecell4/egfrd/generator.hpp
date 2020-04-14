@@ -389,10 +389,10 @@ public:
 };
 
 template<typename Tgen_, typename Tfun_>
-inline transform_generator<Tgen_, Tfun_, boost::shared_ptr<Tgen_> >
+inline transform_generator<Tgen_, Tfun_, std::shared_ptr<Tgen_> >
 make_transform_generator(Tgen_* gen, Tfun_ const& fun)
 {
-    return transform_generator<Tgen_, Tfun_, boost::shared_ptr<Tgen_> >(gen, fun);
+    return transform_generator<Tgen_, Tfun_, std::shared_ptr<Tgen_> >(gen, fun);
 }
 
 template<typename Tgen1_, typename Tgen2_,
