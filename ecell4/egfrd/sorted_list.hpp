@@ -147,16 +147,14 @@ public:
     reverse_iterator rfind(value_type const& v)
     {
         reverse_iterator i(std::upper_bound(rbegin(), rend(), v,
-                compose_binary(std::logical_not<bool>(),
-                    static_cast<TweakOrdering_ const&>(ord_))));
+                fun_composition(std::logical_not<bool>(), ord_)));
         return i != rend() && *i == v ? i: rend();
     }
 
     const_reverse_iterator rfind(value_type const& v) const
     {
         const_reverse_iterator i(std::upper_bound(rbegin(), rend(), v,
-                compose_binary(std::logical_not<bool>(),
-                    static_cast<TweakOrdering_ const&>(ord_))));
+                fun_composition(std::logical_not<bool>(), ord_)));
         return i != rend() && *i == v ? i: rend();
     }
 

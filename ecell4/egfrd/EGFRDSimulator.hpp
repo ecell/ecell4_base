@@ -21,7 +21,6 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 
 #include "utils/array_helper.hpp"
-#include "utils/fun_composition.hpp"
 #include "utils/collection_contains.hpp"
 #include "utils/pointer_as_ref.hpp"
 #include "utils/pair.hpp"

@@ -35,13 +35,7 @@ private:
 } // namespace detail
 
 template<typename F1, typename F2>
-inline detail::fun_compose_impl<F1, F2> compose_unary(const F1& f1, const F2& f2)
-{
-    return detail::fun_compose_impl<F1, F2>(f1, f2);
-}
-
-template<typename F1, typename F2>
-inline detail::fun_compose_impl<F1, F2> compose_binary(const F1& f1, const F2& f2)
+inline detail::fun_compose_impl<F1, F2> fun_composition(const F1& f1, const F2& f2)
 {
     return detail::fun_compose_impl<F1, F2>(f1, f2);
 }
