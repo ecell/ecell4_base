@@ -594,23 +594,21 @@ protected:
     struct shell_id_collector
     {
         shell_id_collector(Tset_& shell_ids)
-            : shell_ids_(shell_ids) {}
+            : shell_ids_(shell_ids)
+        {}
 
+        // type of smat is `MatrixSpace<xxx_shell_type, shell_id_type>*`.
         template<typename T>
         void operator()(T const& smat) const
         {
-            std::for_each(
-                boost::begin(*smat.second),
-                boost::end(*smat.second),
-                compose_unary(
-                    boost::bind(&insert<Tset_>,
-                                boost::reference_wrapper<Tset_>(shell_ids_),
-                                _1),
-                    select_first<typename boost::remove_pointer<
-                        typename T::second_type>::type::value_type>()));
+            for(const auto& sids : *smat.second)
+            {
+                this->shell_ids_.insert(sids.first);
+            }
         }
 
     private:
+        // Tset is normally a std::set<shell_id_type>.
         Tset_& shell_ids_;
     };
 
