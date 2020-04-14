@@ -2,11 +2,7 @@
 #define MULTI_HPP
 
 #include <ecell4/core/functions.hpp>
-using ecell4::pow_2;
 #include <ecell4/core/comparators.hpp>
-#ifdef WIN32_MSC
-#include <boost/container/map.hpp>
-#endif
 
 #include "exceptions.hpp"
 #include "Domain.hpp"
@@ -362,6 +358,7 @@ public:
 
     static Real determine_dt(world_type const& world)
     {
+        using ecell4::pow_2;
         Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
 
         for(const molecule_info_type& s : world.get_molecule_info_range())
