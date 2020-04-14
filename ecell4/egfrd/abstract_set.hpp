@@ -49,14 +49,6 @@ inline bool insert(T_& s, typename T_::value_type const& v)
     return detail::insert_impl(s, v);
 }
 
-template<typename T1, typename T2, typename OutputIterator>
-inline void difference(T1 const& r1, T2 const& r2, OutputIterator result)
-{
-    std::set_difference(std::begin(r1), std::end(r1),
-                        std::begin(r2), std::end(r2), result);
-    return;
-}
-
 } // egfrd
 } // ecell4
 #endif /* ABSTRACT_SET_HPP */

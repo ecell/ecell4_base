@@ -1360,7 +1360,10 @@ public:
 
         {
             std::vector<domain_id_type> diff;
-            ecell4::egfrd::difference(make_select_first_range(did_map), scheduled_domains,
+            const auto first_selected = make_select_first_range(did_map);
+            std::set_difference(
+                    std::begin(first_selected),    std::end(first_selected),
+                    std::begin(scheduled_domains), std::end(scheduled_domains),
                     std::back_inserter(diff));
 
             if (diff.size() != 0)
