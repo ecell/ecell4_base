@@ -1,11 +1,8 @@
-#ifndef ABSTRACT_SET_HPP
-#define ABSTRACT_SET_HPP
+#ifndef ECELL4_EGFRD_COLLECTION_CONTAINS_HPP
+#define ECELL4_EGFRD_COLLECTION_CONTAINS_HPP
 
 #include <iterator>
 #include <algorithm>
-#include <vector>
-#include <set>
-#include <map>
 
 namespace ecell4
 {
@@ -21,4 +18,4 @@ inline bool collection_contains(T_ const& s, typename T_::value_type const& v)
 
 } // egfrd
 } // ecell4
-#endif /* ABSTRACT_SET_HPP */
+#endif /* ECELL4_EGFRD_COLLECTION_CONTAINS_HPP */

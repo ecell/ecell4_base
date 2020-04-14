@@ -55,10 +55,10 @@
  * ParticleContainerBase
  */
 #include "utils/range.hpp"
-#include "MatrixSpace.hpp"
-#include "abstract_set.hpp"
+#include "utils/collection_contains.hpp"
 #include "generator.hpp"
 #include "exceptions.hpp"
+#include "MatrixSpace.hpp"
 #include "ParticleContainer.hpp"
 
 #include <ecell4/core/AABBSurface.hpp>

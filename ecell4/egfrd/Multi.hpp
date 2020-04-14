@@ -13,6 +13,7 @@
 #include "Logger.hpp"
 #include "VolumeClearer.hpp"
 #include "utils/array_helper.hpp"
+#include "utils/collection_contains.hpp"
 #include "utils/range.hpp"
 #include "utils/stringizer.hpp"
 
