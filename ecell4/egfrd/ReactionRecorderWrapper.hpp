@@ -1,7 +1,7 @@
 #ifndef REACTION_RECORDER_WRAPPER_HPP
 #define REACTION_RECORDER_WRAPPER_HPP
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include "ReactionRecorder.hpp"

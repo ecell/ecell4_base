@@ -5,8 +5,8 @@
 #include <set>
 #include <vector>
 #include <string>
+#include <memory>
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
 
 namespace ecell4
 {

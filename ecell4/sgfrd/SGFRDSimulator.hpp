@@ -20,7 +20,6 @@
 #include <ecell4/sgfrd/tracer.hpp>
 #include <ecell4/sgfrd/statistics.hpp>
 
-#include <boost/make_shared.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/container/small_vector.hpp>
 #include <tuple>

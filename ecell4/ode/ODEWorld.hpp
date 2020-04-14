@@ -1,6 +1,7 @@
 #ifndef ECELL4_ODE_ODE_WORLD_HPP
 #define ECELL4_ODE_ODE_WORLD_HPP
 
+#include <memory>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/Context.hpp>
 #include <ecell4/core/Real3.hpp>
@@ -14,9 +15,6 @@
 #include <ecell4/core/CompartmentSpaceHDF5Writer.hpp>
 #endif
 #include <ecell4/core/Shape.hpp>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 
 namespace ecell4
 {

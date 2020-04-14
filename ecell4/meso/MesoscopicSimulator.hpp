@@ -1,7 +1,7 @@
 #ifndef ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP
 #define ECELL4_MESO_MESOSCOPIC_SIMULATOR_HPP
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Model.hpp>

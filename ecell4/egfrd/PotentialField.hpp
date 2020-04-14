@@ -1,8 +1,7 @@
 #ifndef POTENTIAL_FIELD_HPP
 #define POTENTIAL_FIELD_HPP
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>

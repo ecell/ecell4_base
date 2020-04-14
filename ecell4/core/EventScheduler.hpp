@@ -2,8 +2,8 @@
 #define ECELL4_EVENTSCHEDULER_HPP
 
 #include <boost/range/iterator_range.hpp>
-#include <boost/shared_ptr.hpp>
 #include <stdexcept>
+#include <memory>
 
 #include "types.hpp"
 #include "DynamicPriorityQueue.hpp"

@@ -2,7 +2,7 @@
 #define ECELL4_LATTICE_LATTICE_SIMULATOR_HPP
 
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <numeric>
 
 #include <ecell4/core/EventScheduler.hpp>

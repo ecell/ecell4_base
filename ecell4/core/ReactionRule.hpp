@@ -8,9 +8,7 @@
 #include "Species.hpp"
 #include "Attribute.hpp"
 #include <stdexcept>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <memory>
 
 namespace ecell4
 {

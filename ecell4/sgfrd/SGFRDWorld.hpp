@@ -13,10 +13,8 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/collision.hpp>
 #include <boost/container/flat_map.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/smart_ptr/make_shared.hpp>
-#include <boost/weak_ptr.hpp>
 #include <array>
+#include <memory>
 
 namespace ecell4
 {

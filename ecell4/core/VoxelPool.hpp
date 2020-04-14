@@ -5,8 +5,7 @@
 #include "RandomNumberGenerator.hpp"
 #include "Shape.hpp"
 #include "Species.hpp"
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <memory>
 #include <vector>
 
 namespace ecell4

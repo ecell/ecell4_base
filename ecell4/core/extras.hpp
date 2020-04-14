@@ -1,8 +1,7 @@
 #ifndef ECELL4_EXTRAS_HPP
 #define ECELL4_EXTRAS_HPP
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <ecell4/core/config.h>
 
 #ifdef WITH_HDF5

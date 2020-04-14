@@ -3,7 +3,7 @@
 
 #include <ctime>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 

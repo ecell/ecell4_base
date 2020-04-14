@@ -1,7 +1,7 @@
 #ifndef ECELL4_VACANT_TYPE_HPP
 #define ECELL4_VACANT_TYPE_HPP
 #include "StructureType.hpp"
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace ecell4
 {

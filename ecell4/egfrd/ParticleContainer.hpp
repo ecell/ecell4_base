@@ -2,7 +2,7 @@
 #define PARTICLE_CONTAINER_HPP
 
 #include <utility>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include "generator.hpp"
 #include "utils/unassignable_adapter.hpp"
 

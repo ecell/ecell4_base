@@ -1,9 +1,9 @@
 #ifndef ECELL4_SPATIOCYTE_VOXEL_HPP
 #define ECELL4_SPATIOCYTE_VOXEL_HPP
 
-#include <boost/weak_ptr.hpp>
 #include <ecell4/core/VoxelSpaceBase.hpp>
 #include <ecell4/core/types.hpp>
+#include <memory>
 #include <functional>
 
 namespace ecell4

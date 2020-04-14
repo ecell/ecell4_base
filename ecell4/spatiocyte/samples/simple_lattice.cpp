@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Real3.hpp>

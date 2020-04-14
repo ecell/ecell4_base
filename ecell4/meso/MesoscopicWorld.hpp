@@ -3,8 +3,7 @@
 
 #include <numeric>
 #include <sstream>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <memory>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SubvolumeSpace.hpp>

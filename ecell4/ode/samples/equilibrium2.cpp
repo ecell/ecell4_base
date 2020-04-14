@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>

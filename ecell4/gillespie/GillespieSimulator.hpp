@@ -3,7 +3,7 @@
 
 #include <limits>
 #include <stdexcept>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/optional.hpp>
 

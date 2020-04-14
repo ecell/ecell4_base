@@ -4,9 +4,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <map>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include <string>
+#include <memory>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Species.hpp>

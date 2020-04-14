@@ -1,8 +1,6 @@
 #ifndef ECELL4_BD_BD_WORLD_HPP
 #define ECELL4_BD_BD_WORLD_HPP
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include <memory>
 #include <sstream>
 

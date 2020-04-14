@@ -2,7 +2,6 @@
 #define ECELL4_BD_BD_SIMULATOR_HPP
 
 #include <stdexcept>
-#include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/SimulatorBase.hpp>

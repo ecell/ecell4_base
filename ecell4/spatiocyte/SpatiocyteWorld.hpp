@@ -1,8 +1,7 @@
 #ifndef ECELL4_LATTICE_LATTICE_WORLD_HPP
 #define ECELL4_LATTICE_LATTICE_WORLD_HPP
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <memory>
 #include <numeric>
 #include <sstream>
 #include <stdexcept>

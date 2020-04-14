@@ -1,8 +1,8 @@
 #ifndef ECELL4_SPATIOCYTE_REACTIONS_HPP
 #define ECELL4_SPATIOCYTE_REACTIONS_HPP
 
+#include <memory>
 #include "Voxel.hpp"
-#include <boost/shared_ptr.hpp>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/VoxelPool.hpp>
 

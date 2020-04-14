@@ -2,7 +2,6 @@
 #define PARTICLE_SIMULATOR_HPP
 
 #include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 // #include "Sphere.hpp"
 // #include "Cylinder.hpp"
 // #include "Box.hpp"
@@ -16,6 +15,7 @@
 #include "NetworkRulesAdapter.hpp"
 #include "ReactionRecorderWrapper.hpp"
 #include <ecell4/core/SimulatorBase.hpp>
+#include <memory>
 
 namespace ecell4
 {
