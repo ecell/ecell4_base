@@ -517,9 +517,13 @@ public:
     // Deprecated
     bool can_move(const Voxel &src, const Voxel &dst) const
     {
-        if (!(src.space < dst.space) && !(dst.space < src.space))
+        // if they share the ownership (or both are empty), then we can move it.
+        // owner_before compares not only the number of owners, but also the
+        // address itself.
+        if (!src.space.owner_before(dst.space) && !dst.space.owner_before(src.space))
+        {
             return src.space.lock()->can_move(src.coordinate, dst.coordinate);
-
+        }
         return false;
     }
 
@@ -527,10 +531,14 @@ public:
     bool move(const Voxel &src, const Voxel &dst,
               const std::size_t candidate = 0)
     {
-        if (!(src.space < dst.space) && !(dst.space < src.space))
+        // if they share the ownership (or both are empty), then we can move it.
+        // owner_before compares not only the number of owners, but also the
+        // address itself.
+        if (!src.space.owner_before(dst.space) && !dst.space.owner_before(src.space))
+        {
             return src.space.lock()->move(src.coordinate, dst.coordinate,
                                           candidate);
-
+        }
         return false;
     }
 
