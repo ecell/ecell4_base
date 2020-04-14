@@ -5,11 +5,8 @@
 #include <cstdio>
 #include <functional>
 // #include <boost/regex.hpp> //XXX: disabled pattern matching once
-#include <boost/bind.hpp>
 #include "Logger.hpp"
 #include "ConsoleAppender.hpp"
-#include "utils/pair.hpp"
-#include "utils/fun_composition.hpp"
 
 namespace ecell4
 {
@@ -38,8 +35,9 @@ public:
     operator()(char const* logger_name) const
     {
         if (!logger_name)
+        {
             return default_manager_;
-
+        }
 
         // char const* const logger_name_end(logger_name + std::strlen(logger_name));
         // for (entry_type const& i: managers_)
@@ -51,7 +49,9 @@ public:
         for(entry_type const& i: managers_)
         {
             if (_logger_name == i.first)
+            {
                 return i.second;
+            }
         }
 
         BOOST_ASSERT(default_manager_.get());
@@ -153,22 +153,26 @@ void Logger::logv(enum level lv, char const* format, va_list ap)
     ensure_initialized();
 
     if (lv < level_)
+    {
         return;
+    }
 
     char buf[1024];
     vsnprintf(buf, sizeof(buf), format, ap);
 
     std::for_each(appenders_.begin(), appenders_.end(),
-            invoke_appender(lv, name_.c_str(),
-                            buf));
+                  invoke_appender(lv, name_.c_str(), buf));
 }
 
 void Logger::flush()
 {
     ensure_initialized();
 
-    std::for_each(appenders_.begin(), appenders_.end(),
-            boost::bind(&LogAppender::flush, _1));
+    for(const auto& appender : appenders_)
+    {
+        appender->flush();
+    }
+    return;
 }
 
 inline void Logger::ensure_initialized()
@@ -191,8 +195,10 @@ void LoggerManager::level(enum Logger::level level)
 {
     /* synchronized { */
     level_ = level;
-    std::for_each(managed_loggers_.begin(), managed_loggers_.end(),
-                  boost::bind(&Logger::level, _1, level));
+    for(const auto& managed_logger : managed_loggers_)
+    {
+        managed_logger->level(level);
+    }
     /* } */
 }
 
