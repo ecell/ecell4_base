@@ -10,6 +10,10 @@
 
 #include <boost/test/floating_point_comparison.hpp>
 
+// Some of the CI environments uses relatively old version of Boost.
+// std::tuple can be used with Boost 1.68.0+.
+#include <boost/mpl/list.hpp>
+
 #include <ecell4/core/Particle.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/PeriodicRTree.hpp>
@@ -50,7 +54,9 @@ struct ScaledMarginAABBGetter
     }
 };
 
-using aabb_getters = std::tuple<
+// Some of the CI environments uses relatively old version of Boost.
+// std::tuple can be used with Boost 1.68.0+.
+using aabb_getters = boost::mpl::list<
     AlwaysTightAABBGetter, FixedMarginAABBGetter, ScaledMarginAABBGetter>;
 
 struct Query
