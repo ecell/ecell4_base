@@ -5,13 +5,13 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include "range.hpp"
 
+// ---------------------------------------------------------------------------
+// functors to extract first/second element of std::pair
+
 namespace ecell4
 {
 namespace egfrd
 {
-
-// ---------------------------------------------------------------------------
-// functors to extract first/second element of std::pair
 
 template < typename T_ >
 struct select_first

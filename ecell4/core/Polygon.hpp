@@ -33,33 +33,6 @@
 #include <vector>
 #include <limits>
 
-#ifndef ECELL4_STRONG_TYPEDEF // {{{
-#  if __cplusplus < 201103L
-#    define ECELL4_STRONG_TYPEDEF(UNDERLYING, NAME)                     \
-      struct NAME {                                                     \
-        UNDERLYING v_;                                                  \
-        NAME(){}                                                        \
-        ~NAME(){}                                                       \
-        NAME(const NAME& rhs): v_(rhs.v_) {}                            \
-        explicit NAME(UNDERLYING const& v): v_(v){}                     \
-        NAME& operator=(const NAME& rhs){v_ = rhs.v_; return *this;}    \
-        NAME& operator=(const UNDERLYING& rhs){v_ = rhs; return *this;} \
-        operator UNDERLYING  () const {return v_;}                      \
-        operator UNDERLYING& ()       {return v_;}                      \
-        bool operator==(const NAME& rhs) const {return v_ == rhs.v_;}   \
-        bool operator!=(const NAME& rhs) const {return v_ != rhs.v_;}   \
-        bool operator< (const NAME& rhs) const {return v_ <  rhs.v_;}   \
-        bool operator> (const NAME& rhs) const {return v_ >  rhs.v_;}   \
-        bool operator<=(const NAME& rhs) const {return v_ <= rhs.v_;}   \
-        bool operator>=(const NAME& rhs) const {return v_ >= rhs.v_;}   \
-      };                                                                \
-      /**/
-#  else // c++11 enabled
-#    define ECELL4_STRONG_TYPEDEF(UNDERLYING, NAME)\
-       enum class NAME : UNDERLYING {};
-#  endif
-#endif// }}} ECELL4_STRONG_TYPEDEF
-
 namespace ecell4
 {
 
@@ -74,9 +47,9 @@ class Polygon : public Shape
     static const Real relative_tolerance;
 
     // (strong|opaque) typedef
-    ECELL4_STRONG_TYPEDEF(std::size_t,   FaceID)
-    ECELL4_STRONG_TYPEDEF(std::size_t,   EdgeID)
-    ECELL4_STRONG_TYPEDEF(std::size_t, VertexID)
+    enum class FaceID   : std::size_t {};
+    enum class EdgeID   : std::size_t {};
+    enum class VertexID : std::size_t {};
 
     struct vertex_data
     {

@@ -14,6 +14,7 @@
 
 using namespace ecell4;
 
+// a set of parameters used in the test cases below
 struct Fixture
 {
     typedef ParticleSpaceRTreeImpl particle_space_type;
@@ -27,7 +28,7 @@ struct Fixture
     {}
 };
 
-BOOST_FIXTURE_TEST_SUITE(suite, Fixture)
+BOOST_FIXTURE_TEST_SUITE(suite, Fixture) // submit parameters
 
 BOOST_AUTO_TEST_CASE(ParticleSpace_test_constructor)
 {
@@ -54,12 +55,12 @@ BOOST_AUTO_TEST_CASE(ParticleSpace_test_update_remove)
     BOOST_CHECK_EQUAL((*space).num_particles(sp1), 1);
     BOOST_CHECK_EQUAL((*space).num_particles(sp2), 0);
 
-    BOOST_CHECK(not (*space).update_particle(pid1, Particle(sp1, edge_lengths * 0.25, radius, 0)));
+    BOOST_CHECK(! (*space).update_particle(pid1, Particle(sp1, edge_lengths * 0.25, radius, 0)));
     BOOST_CHECK_EQUAL((*space).num_particles(), 1);
     BOOST_CHECK_EQUAL((*space).num_particles(sp1), 1);
     BOOST_CHECK_EQUAL((*space).num_particles(sp2), 0);
 
-    BOOST_CHECK(not (*space).update_particle(pid1, Particle(sp2, edge_lengths * 0.1, radius, 0)));
+    BOOST_CHECK(! (*space).update_particle(pid1, Particle(sp2, edge_lengths * 0.1, radius, 0)));
     BOOST_CHECK_EQUAL((*space).num_particles(), 1);
     BOOST_CHECK_EQUAL((*space).num_particles(sp1), 0);
     BOOST_CHECK_EQUAL((*space).num_particles(sp2), 1);

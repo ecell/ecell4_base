@@ -4,6 +4,7 @@ set(TEST_NAMES
     EventScheduler_test Shape_test SubvolumeSpace_test extras_test
     LatticeSpace_test OffLatticeSpace_test ParticleSpace_test ParticleSpaceRTreeImpl_test
     Barycentric_test Halfedge_test STLIO_test
+    PeriodicRTree_test
     )
 
 set(test_library_dependencies)

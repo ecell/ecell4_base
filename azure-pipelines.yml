@@ -22,21 +22,21 @@ jobs:
       sudo python3 setup.py test
       cd && pwd
       python3 -c "from ecell4_base import core"
-- job: macOS1014
+- job: macOS1015
   pool:
-    vmImage: 'macOS-10.14'
+    vmImage: 'macOS-10.15'
   steps:
-  - script: echo hello from macOS 10.14
+  - script: echo hello from macOS 10.15
   - bash: |
       git submodule init && git submodule update
       brew update && brew install boost gsl hdf5 cmake python
       /usr/local/bin/python3 setup.py install
       /usr/local/bin/python3 setup.py test
-- job: macOS1013
+- job: macOS1014
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-10.14'
   steps:
-  - script: echo hello from macOS 10.13
+  - script: echo hello from macOS 10.14
   - bash: |
       git submodule init && git submodule update
       brew update && brew install boost gsl hdf5 cmake python

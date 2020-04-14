@@ -20,7 +20,6 @@ namespace ecell4
 {
 namespace egfrd
 {
-
 template<typename T_>
 struct shape_position_type
 {
