@@ -5,8 +5,6 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/sgfrd/tracer.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/iterator/iterator_traits.hpp>
 #include <ecell4/sgfrd/ReactionInfo.hpp>
 #include <ecell4/sgfrd/SGFRDWorld.hpp>
 #include <array>
@@ -220,8 +218,8 @@ public:
         const Iterator first, const Iterator last)
     {
         // Iterator::value_type == pair<pair<ParticleID, Particle>, Real>;
-        static_assert(boost::is_same<
-            typename boost::iterator_value<Iterator>::type,
+        static_assert(std::is_same<
+            typename std::iterator_traits<Iterator>::value_type,
             std::pair<std::pair<ParticleID, Particle>, Real> >::value, "");
 
         SGFRD_SCOPE(ns, BD_attempt_pair_reaction, this->vc_.access_tracer())
@@ -499,7 +497,7 @@ public:
         return true;
     }
 
-    bool attempt_reaction_2_to_1(// XXX consider using boost::tuple
+    bool attempt_reaction_2_to_1(// XXX consider using std::tuple
             const ParticleID& pid1, const Particle& p1, const FaceID& fid1,
             const ParticleID& pid2, const Particle& p2, const FaceID& fid2,
             reaction_log_type rlog)
