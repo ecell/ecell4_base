@@ -114,7 +114,9 @@ inline T_ modulo( T_ const& p1, T_ const& p2 )
 {
     T_ r = p1 % p2;
     if (r != 0 && (r > 0) == (p2 < 0))
+    {
         r += p2;
+    }
     return r;
 }
 
@@ -123,7 +125,9 @@ inline float modulo( float const& p1, float const& p2 )
 {
     float r = std::fmod(p1, p2);
     if (r != 0 && (r > 0) == (p2 < 0))
+    {
         r += p2;
+    }
     return r;
 }
 
@@ -132,7 +136,9 @@ inline double modulo( double const& p1, double const& p2 )
 {
     double r = std::fmod(p1, p2);
     if (r != 0 && (r > 0) == (p2 < 0))
+    {
         r += p2;
+    }
     return r;
 }
 
@@ -143,14 +149,14 @@ inline T_ multiply(T_ const& p1, M_ const& p2, typename std::enable_if<
     BOOST_ASSERT(matrix_extent(p2, 0) == 3 && matrix_extent(p2, 1) == 3);
     T_ retval;
     retval[0] = multiply(p1[0], p2[0][0])
-                + multiply(p1[1], p2[1][0])
-                + multiply(p1[2], p2[2][0]);
+              + multiply(p1[1], p2[1][0])
+              + multiply(p1[2], p2[2][0]);
     retval[1] = multiply(p1[0], p2[0][1])
-                + multiply(p1[1], p2[1][1])
-                + multiply(p1[2], p2[2][1]);
+              + multiply(p1[1], p2[1][1])
+              + multiply(p1[2], p2[2][1]);
     retval[2] = multiply(p1[0], p2[0][2])
-                + multiply(p1[1], p2[1][2])
-                + multiply(p1[2], p2[2][2]);
+              + multiply(p1[1], p2[1][2])
+              + multiply(p1[2], p2[2][2]);
     return retval;
 }
 
@@ -161,14 +167,14 @@ inline T_ multiply(M_ const& p1, T_ const& p2, typename std::enable_if<
     BOOST_ASSERT(matrix_extent(p1, 0) == 3 && matrix_extent(p1, 1) == 3);
     T_ retval;
     retval[0] = multiply(p1[0][0], p2[0])
-                + multiply(p1[0][1], p2[1])
-                + multiply(p1[0][2], p2[2]);
+              + multiply(p1[0][1], p2[1])
+              + multiply(p1[0][2], p2[2]);
     retval[1] = multiply(p1[1][0], p2[0])
-                + multiply(p1[1][1], p2[1])
-                + multiply(p1[1][2], p2[2]);
+              + multiply(p1[1][1], p2[1])
+              + multiply(p1[1][2], p2[2]);
     retval[2] = multiply(p1[2][0], p2[0])
-                + multiply(p1[2][1], p2[1])
-                + multiply(p1[2][2], p2[2]);
+              + multiply(p1[2][1], p2[1])
+              + multiply(p1[2][2], p2[2]);
     return retval;
 }
 
