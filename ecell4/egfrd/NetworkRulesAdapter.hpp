@@ -4,7 +4,6 @@
 #include <map>
 #include <numeric>
 #include <vector>
-#include "twofold_container.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "exceptions.hpp"
 
@@ -137,7 +136,6 @@ protected:
 
     inline reaction_rule_type convert_reaction_rule_type(const ecell4::ReactionRule& rr) const
     {
-        // typedef twofold_container<species_id_type> reactants_container_type;
         typedef typename reaction_rule_type::rate_type rate_type;
 
         reaction_rule_type retval;

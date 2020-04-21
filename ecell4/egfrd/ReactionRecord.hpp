@@ -2,7 +2,6 @@
 #define REACTION_RECORD_HPP
 
 #include <vector>
-#include "twofold_container.hpp"
 #include "utils/memberwise_compare.hpp"
 
 namespace ecell4
