@@ -3,11 +3,7 @@
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
-// #include "Sphere.hpp"
-// #include "Cylinder.hpp"
-// #include "Box.hpp"
 #include "utils/range.hpp"
-//#include "NetworkRulesWrapper.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "ReactionRecorder.hpp"
 #include "ReactionRecord.hpp"
@@ -28,38 +24,22 @@ struct ParticleSimulatorTraitsBase
     typedef Tworld_ world_type;
     typedef Real rate_type;
     typedef Real time_type;
-    // typedef int reaction_rule_id_type;
     typedef ecell4::ReactionRule reaction_rule_id_type;
     typedef ReactionRuleInfo<
             reaction_rule_id_type,
             typename world_type::traits_type::species_id_type,
             rate_type> reaction_rule_type;
-    //typedef NetworkRulesWrapper<NetworkRules,
-    //                           reaction_rule_type> network_rules_type;
     typedef NetworkRulesAdapter<reaction_rule_type> network_rules_type;
-    // typedef ReactionRecord<typename world_type::particle_id_type,
-    //                        reaction_rule_id_type> reaction_record_type;
     typedef ReactionRecord<typename world_type::particle_id_pair,
                            reaction_rule_id_type> reaction_record_type;
     typedef ReactionRecorder<reaction_record_type> reaction_recorder_type;
     typedef VolumeClearer<typename world_type::particle_shape_type, typename world_type::particle_id_type> volume_clearer_type;
 
-    static const Real minimal_separation_factor();
-    static const Real MINIMAL_SEPARATION_FACTOR;
+    static constexpr Real MINIMAL_SEPARATION_FACTOR = 1.0 + 1e-7;
 };
 
 template<typename Tworld_>
-const Real ParticleSimulatorTraitsBase<Tworld_>::minimal_separation_factor()
-{
-    return 1 + 1e-7;
-}
-
-template<typename Tworld_>
-const Real ParticleSimulatorTraitsBase<Tworld_>::MINIMAL_SEPARATION_FACTOR = ParticleSimulatorTraitsBase<Tworld_>::minimal_separation_factor();
-
-template<typename Ttraits_>
-class ParticleSimulator;
-
+constexpr Real ParticleSimulatorTraitsBase<Tworld_>::MINIMAL_SEPARATION_FACTOR;
 
 template<typename Ttraits_>
 class ParticleSimulator
@@ -71,10 +51,6 @@ public:
 
     typedef Ttraits_ traits_type;
     typedef typename traits_type::world_type world_type;
-    // typedef Sphere sphere_type;
-    // typedef Cylinder cylinder_type;
-    // typedef Box box_type;
-    // typedef Plane plane_type;
 
     typedef typename traits_type::network_rules_type network_rules_type;
     typedef typename traits_type::time_type time_type;
