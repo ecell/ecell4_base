@@ -11,6 +11,17 @@ namespace ecell4
 {
 namespace egfrd
 {
+
+inline bool is_initialized(std::string const &obj)
+{
+    return (0 < obj.size());
+}
+
+inline bool is_initialized(ecell4::Species const &obj)
+{
+    return (0 < obj.serial().size());
+}
+
 template <typename T>
 bool is_initialized(T const &obj)
 {
