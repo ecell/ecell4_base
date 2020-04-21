@@ -63,7 +63,10 @@ public:
         iterator(twofold_container& cntnr, size_type idx)
             : cntnr_(cntnr), idx_(idx) {}
 
-        iterator(const_iterator const&);
+        iterator(const_iterator const& that)
+            : cntnr_(const_cast<twofold_container&>(that.cntnr_)),
+              idx_(that.idx_)
+        {}
 
     private:
         twofold_container& cntnr_;
@@ -271,13 +274,6 @@ public:
 protected:
     containing_type items_;
 };
-
-template<typename T_>
-inline twofold_container<T_>::iterator::iterator(
-        typename twofold_container<T_>::const_iterator const& that)
-    : cntnr_(const_cast<twofold_container&>(that.cntnr_)), idx_(that.idx_)
-{
-}
 
 } // egfrd
 } // ecell4
