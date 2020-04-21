@@ -3,9 +3,9 @@
 
 #include <vector>
 #include <algorithm>
-#include <boost/container/static_vector.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
+#include "twofold_container.hpp"
 
 #include <sstream>
 
@@ -22,7 +22,6 @@ public:
 
 private:
     typedef std::vector<species_id_type> species_id_vector;
-    typedef boost::container::static_vector<species_id_type, 2> reactants_type;
 
 public:
     typedef species_id_vector species_id_range;
@@ -39,7 +38,7 @@ public:
         return products_;
     }
 
-    reactants_type const& get_reactants() const
+    twofold_container<species_id_type> const& get_reactants() const
     {
         return reactants_;
     }
@@ -94,7 +93,7 @@ public:
 private:
     identifier_type id_;
     rate_type k_;
-    reactants_type reactants_;
+    twofold_container<species_id_type> reactants_;
     species_id_vector products_;
 };
 
