@@ -98,8 +98,8 @@ private:
 };
 
 template<typename Tid, typename Tsid, typename Trate>
-inline bool print_reaction_rule_vector(std::vector<ReactionRuleInfo<Tid, Tsid, Trate> > const &rrv) 
-{   
+inline bool print_reaction_rule_vector(std::vector<ReactionRuleInfo<Tid, Tsid, Trate> > const &rrv)
+{
     typename std::vector<ReactionRuleInfo<Tid, Tsid, Trate> >::const_iterator it( rrv.begin() );
     for( ; it != rrv.end(); it++) {
         std::cout << it->c_str() << std::endl;
