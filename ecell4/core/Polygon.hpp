@@ -16,16 +16,8 @@
 #include "PolygonHDF5Writer.hpp"
 #endif
 
-#include <boost/utility.hpp>
-#include <boost/type_traits.hpp>
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
-#include <boost/lambda/lambda.hpp>
 #include <boost/array.hpp>
-#include <boost/math/constants/constants.hpp>
-#include <boost/math/special_functions/sign.hpp>
-#include <boost/iterator/counting_iterator.hpp>
-#include <boost/cstdint.hpp>
 
 #include <algorithm>
 #include <stdexcept>
