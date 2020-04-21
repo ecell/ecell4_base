@@ -22,7 +22,7 @@ public:
         std::fflush(stderr);
     }
 
-    void operator()(enum Logger::level lv, char const* name, char const** chunks)
+    void operator()(enum Logger::level lv, char const* name, char const** chunks) override
     {
         std::fprintf(stderr, "%s: %-8s ", name, Logger::stringize_error_level(lv));
         for (char const** p = chunks; *p; ++p)
