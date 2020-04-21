@@ -10,11 +10,38 @@ namespace egfrd
 {
 
 template<typename Ttraits_>
-struct ImmutativeStructureVisitor;
+struct ImmutativeStructureVisitor
+{
+    typedef Ttraits_ traits_type;
+    // typedef typename traits_type::spherical_surface_type spherical_surface_type;
+    // typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
+    // typedef typename traits_type::planar_surface_type planar_surface_type;
+    typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
+
+    virtual ~ImmutativeStructureVisitor() {}
+
+    // virtual void operator()(spherical_surface_type const&) const = 0;
+    // virtual void operator()(cylindrical_surface_type const&) const = 0;
+    // virtual void operator()(planar_surface_type const&) const = 0;
+    virtual void operator()(cuboidal_region_type const&) const = 0;
+};
 
 template<typename Ttraits_>
-struct MutativeStructureVisitor;
+struct MutativeStructureVisitor
+{
+    typedef Ttraits_ traits_type;
+    // typedef typename traits_type::spherical_surface_type spherical_surface_type;
+    // typedef typename traits_type::cylindrical_surface_type cylindrical_surface_type;
+    // typedef typename traits_type::planar_surface_type planar_surface_type;
+    typedef typename traits_type::cuboidal_region_type cuboidal_region_type;
 
+    virtual ~MutativeStructureVisitor() {}
+
+    // virtual void operator()(spherical_surface_type&) const = 0;
+    // virtual void operator()(cylindrical_surface_type&) const = 0;
+    // virtual void operator()(planar_surface_type&) const = 0;
+    virtual void operator()(cuboidal_region_type&) const = 0;
+};
 
 template<typename Ttraits_>
 class Structure
