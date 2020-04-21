@@ -2,8 +2,8 @@
 #define ECELL4_LATTICE_SPACE_HDF5_WRITER_HPP
 
 #include <boost/lexical_cast.hpp>
-#include <boost/scoped_array.hpp>
 #include <cstring>
+#include <memory>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -88,7 +88,7 @@ struct LatticeSpaceHDF5Traits
         // Save voxels
         const Integer num_voxels(voxels.size());
         std::size_t vidx(0);
-        boost::scoped_array<h5_voxel_struct> h5_voxel_array(
+        std::unique_ptr<h5_voxel_struct[]> h5_voxel_array(
             new h5_voxel_struct[num_voxels]);
         for (const auto &view : voxels)
         {
@@ -296,7 +296,7 @@ void load_lattice_space(const H5::Group &root, Tspace_ *space,
         H5::DataSet voxel_dset(group.openDataSet("voxels"));
         const unsigned int num_voxels(
             voxel_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<traits_type::h5_voxel_struct> h5_voxel_array(
+        std::unique_ptr<traits_type::h5_voxel_struct[]> h5_voxel_array(
             new traits_type::h5_voxel_struct[num_voxels]);
         voxel_dset.read(h5_voxel_array.get(), traits_type::get_voxel_comp());
         voxel_dset.close();
