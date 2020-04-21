@@ -74,25 +74,11 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
         typedef Shell<Tshape_, domain_id_type> type;
     };
 
-    static constexpr Real safety();
-    static constexpr Real single_shell_factor();
-    static constexpr Real default_dt_factor();
-    static constexpr Real cutoff_factor();
-
-    static constexpr Real SAFETY              = safety();
-    static constexpr Real SINGLE_SHELL_FACTOR = single_shell_factor();
-    static constexpr Real DEFAULT_DT_FACTOR   = default_dt_factor();
-    static constexpr Real CUTOFF_FACTOR       = cutoff_factor();
+    static constexpr Real SAFETY              = 1.0 + 1e-5;
+    static constexpr Real SINGLE_SHELL_FACTOR = 0.1;
+    static constexpr Real DEFAULT_DT_FACTOR   = 1e-5;
+    static constexpr Real CUTOFF_FACTOR       = 5.6;
 };
-
-template<typename Tworld_>
-constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::safety() { return 1. + 1e-5; }
-template<typename Tworld_>
-constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor() { return 0.1; }
-template<typename Tworld_>
-constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor() { return 1e-5; }
-template<typename Tworld_>
-constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor() { return 5.6; }
 
 template<typename Tworld_>
 constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::SAFETY;
@@ -113,18 +99,6 @@ struct get_greens_function<ecell4::Sphere>
 {
     typedef greens_functions::GreensFunction3DAbsSym type;
 };
-
-// template<>
-// struct get_greens_function<Cylinder>
-// {
-//     typedef greens_functions::GreensFunction3DAbsSym type;
-// };
-//
-// template<>
-// struct get_greens_function<Sphere>
-// {
-//     typedef greens_functions::GreensFunction3DAbsSym type;
-// };
 
 template<>
 struct get_greens_function<ecell4::Cylinder>
@@ -148,20 +122,6 @@ struct get_pair_greens_function<ecell4::Cylinder>
     typedef greens_functions::GreensFunction3DRadAbs iv_type;
     typedef greens_functions::GreensFunction3DAbsSym com_type;
 };
-
-// template<>
-// struct get_pair_greens_function<Sphere>
-// {
-//     typedef greens_functions::GreensFunction3DRadAbs iv_type;
-//     typedef greens_functions::GreensFunction3DAbsSym com_type;
-// };
-//
-// template<>
-// struct get_pair_greens_function<Cylinder>
-// {
-//     typedef greens_functions::GreensFunction3DRadAbs iv_type;
-//     typedef greens_functions::GreensFunction3DAbsSym com_type;
-// };
 
 } // namespace detail
 
@@ -226,8 +186,6 @@ public:
     typedef Ttraits_ traits_type;
     typedef ParticleSimulator<Ttraits_> base_type;
 
-    // typedef typename base_type::sphere_type sphere_type;
-    // typedef typename base_type::cylinder_type cylinder_type;
     typedef typename base_type::model_type model_type;
 
     typedef typename traits_type::world_type world_type;
@@ -235,8 +193,6 @@ public:
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::template shell_generator<ecell4::Sphere>::type spherical_shell_type;
     typedef typename traits_type::template shell_generator<ecell4::Cylinder>::type cylindrical_shell_type;
-    // typedef typename traits_type::template shell_generator<sphere_type>::type spherical_shell_type;
-    // typedef typename traits_type::template shell_generator<cylinder_type>::type cylindrical_shell_type;
     typedef typename traits_type::domain_type domain_type;
     typedef typename traits_type::domain_id_pair domain_id_pair;
     typedef typename traits_type::time_type time_type;
