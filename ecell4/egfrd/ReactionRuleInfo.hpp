@@ -101,7 +101,7 @@ template<typename Tid, typename Tsid, typename Trate>
 bool print_reaction_rule_vector(
         std::vector<ReactionRuleInfo<Tid, Tsid, Trate>> const &rrv)
 {
-    for(ReactionRuleInfo<Tid, Tsid, Trate> const& x : rrv)
+    for(ReactionRuleInfo<Tid, Tsid, Trate> const& rr : rrv)
     {
         std::cout << rr.c_str() << std::endl;
     }
