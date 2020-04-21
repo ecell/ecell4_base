@@ -68,7 +68,7 @@ public:
         return id_ == rhs.id();
     }
 
-    std::string c_str(void) const
+    std::string c_str() const
     {
         std::ostringstream os;
         if (this->reactants_.size() == 2) {
@@ -98,11 +98,12 @@ private:
 };
 
 template<typename Tid, typename Tsid, typename Trate>
-inline bool print_reaction_rule_vector(std::vector<ReactionRuleInfo<Tid, Tsid, Trate> > const &rrv)
+bool print_reaction_rule_vector(
+        std::vector<ReactionRuleInfo<Tid, Tsid, Trate>> const &rrv)
 {
-    typename std::vector<ReactionRuleInfo<Tid, Tsid, Trate> >::const_iterator it( rrv.begin() );
-    for( ; it != rrv.end(); it++) {
-        std::cout << it->c_str() << std::endl;
+    for(ReactionRuleInfo<Tid, Tsid, Trate> const& x : rrv)
+    {
+        std::cout << rr.c_str() << std::endl;
     }
     std::cout << "=============================================================" << std::endl;
     return true;
