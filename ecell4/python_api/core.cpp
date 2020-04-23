@@ -827,9 +827,15 @@ void define_observers(py::module& m)
 static inline
 void define_shape(py::module& m)
 {
-    py::class_<Shape, PyShape<>, boost::shared_ptr<Shape>>(m, "Shape")
-        .def("dimension", [](const Shape& self) { return static_cast<Integer>(self.dimension()); })
+    py::class_<Shape, PyShape<>, boost::shared_ptr<Shape>> shape(m, "Shape");
+    shape.def("dimension", [](const Shape& self) { return static_cast<Integer>(self.dimension()); })
         .def("is_inside", &Shape::is_inside);
+    py::enum_<Shape::dimension_kind>(shape, "dimension_kind")
+        .value("ONE", Shape::dimension_kind::ONE)
+        .value("TWO", Shape::dimension_kind::TWO)
+        .value("THREE", Shape::dimension_kind::THREE)
+        .value("UNDEF", Shape::dimension_kind::UNDEF)
+        .export_values();
 
     py::class_<Surface, Shape, PyShapeImpl<Surface>, boost::shared_ptr<Surface>>(m, "Surface")
         .def("root", &Surface::root)
