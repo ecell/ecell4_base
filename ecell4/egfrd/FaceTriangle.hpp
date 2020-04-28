@@ -1,5 +1,5 @@
-#ifndef GFRD_POLYGON_FACE_TRIANGLE
-#define GFRD_POLYGON_FACE_TRIANGLE
+#ifndef ECELL4_EGFRD_FACE_TRIANGLE_HPP
+#define ECELL4_EGFRD_FACE_TRIANGLE_HPP
 #include "TriangleOperation.hpp"
 #include <ecell4/core/geometry.hpp>
 #include <array>
@@ -23,10 +23,11 @@ struct FaceTriangle
   public:
     FaceTriangle(){}
     explicit FaceTriangle(const position_container_type& vertices)
-        : normal_(cross_product(vertices[1] - vertices[0], 
+        : normal_(cross_product(vertices[1] - vertices[0],
                                 vertices[2] - vertices[0]) /
-                length(cross_product(vertices[1] - vertices[0], vertices[2] - vertices[0]))),
-          para_b_(vertices[2] - vertices[0]), vertices_(vertices)
+                  length(cross_product(vertices[1] - vertices[0],
+                                       vertices[2] - vertices[0]))),
+          vertices_(vertices)
     {
         edges_[0] = vertices[1] - vertices[0];
         edges_[1] = vertices[2] - vertices[1];
@@ -41,8 +42,7 @@ struct FaceTriangle
 
     FaceTriangle(const position_type& a, const position_type& b,
                           const position_type& c)
-        : normal_(cross_product(b - a, c - a) / length(cross_product(b - a, c - a))),
-          para_b_(c - a)
+        : normal_(cross_product(b - a, c - a) / length(cross_product(b - a, c - a)))
     {
         vertices_[0] = a;
         vertices_[1] = b;
@@ -65,10 +65,6 @@ struct FaceTriangle
     length_type   const& length_of_edge_at(const index_type i) const {return lengths_.at(i);}
     length_type   const& angle_at         (const index_type i) const {return angles_.at(i);}
 
-    vector_type   const& para_a() const {return edges_[0];}
-    vector_type   const& para_b() const {return para_b_;}
-    position_type const& origin() const {return vertices_[0];}
-
     position_container_type const& vertices()         const {return vertices_;}
     position_container_type const& edges()            const {return edges_;}
     length_container_type   const& lengths_of_edges() const {return lengths_;}
@@ -76,7 +72,6 @@ struct FaceTriangle
   private:
 
     vector_type             normal_;
-    vector_type             para_b_;
     length_container_type   lengths_;
     length_container_type   angles_;
     position_container_type vertices_;
