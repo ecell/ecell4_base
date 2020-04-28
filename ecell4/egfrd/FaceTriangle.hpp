@@ -1,6 +1,5 @@
 #ifndef ECELL4_EGFRD_FACE_TRIANGLE_HPP
 #define ECELL4_EGFRD_FACE_TRIANGLE_HPP
-#include "TriangleOperation.hpp"
 #include <ecell4/core/geometry.hpp>
 #include <array>
 
@@ -83,50 +82,172 @@ struct FaceTriangle
 template<typename coordT>
 inline coordT centroid(const FaceTriangle<coordT>& face)
 {
-    return centroid(face.vertices());
+    const auto& vertices = face.vertices();
+    return (vertices[0] + vertices[1] + vertices[2]) * (1.0 / 3.0);
 }
 
 template<typename coordT>
 inline coordT incenter(const FaceTriangle<coordT>& face)
 {
-    return incenter(face.vertices(), face.lengths_of_edges());
+    const auto& length_of_edges = face.lengths_of_edges();
+    const auto& vertices        = face.vertices();
+    const auto a = length_of_edges[1];
+    const auto b = length_of_edges[2];
+    const auto c = length_of_edges[0];
+    const auto abc = a + b + c;
+    return (vertices[0] * a + vertices[1] * b + vertices[2] * c) * (1e0 / abc);
 }
 
 template<typename coordT>
-inline std::size_t match_edge(const coordT& vec, const FaceTriangle<coordT>& face)
+std::size_t match_edge(const coordT& vec, const FaceTriangle<coordT>& face,
+                       const Real tol = 1e-10)
 {
-    return match_edge(vec, face.edges());
+    const auto& edges = face.edges();
+    for(std::size_t i=0; i<3; ++i)
+    {
+        if((std::abs(vec[0] - edges[i][0]) < tol) &&
+           (std::abs(vec[1] - edges[i][1]) < tol) &&
+           (std::abs(vec[2] - edges[i][2]) < tol))
+        {
+            return i;
+        }
+    }
+    throw std::invalid_argument("not match any edge");
 }
+
+namespace detail
+{
+template<typename coordT>
+coordT closest_point(const coordT& pos, const std::array<coordT, 3>& vertices)
+{
+    typedef typename element_type_of<coordT>::type valueT;
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
+    // pp.141-142
+
+    const coordT a = vertices[0];
+    const coordT b = vertices[1];
+    const coordT c = vertices[2];
+
+    const coordT ab = b - a;
+    const coordT ac = c - a;
+    const coordT ap = pos - a;
+    const valueT d1 = dot_product(ab, ap);
+    const valueT d2 = dot_product(ac, ap);
+    if (d1 <= 0.0 && d2 <= 0.0)
+    {
+        return a;
+    }
+
+    const coordT bp = pos - b;
+    const valueT d3 = dot_product(ab, bp);
+    const valueT d4 = dot_product(ac, bp);
+    if (d3 >= 0.0 && d4 <= d3)
+    {
+        return b;
+    }
+
+    const valueT vc = d1*d4 - d3*d2;
+    if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0)
+    {
+        valueT v = d1 / (d1 - d3);
+        return a + ab * v;
+    }
+
+    const coordT cp = pos - c;
+    const valueT d5 = dot_product(ab, cp);
+    const valueT d6 = dot_product(ac, cp);
+    if (d6 >= 0.0 && d5 <= d6)
+    {
+        return c;
+    }
+
+    const valueT vb = d5*d2 - d1*d6;
+    if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0)
+    {
+        const valueT w = d2 / (d2 - d6);
+        return a + ac * w;
+    }
+
+    const valueT va = d3*d6 - d5*d4;
+    if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0)
+    {
+        const valueT w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+        return b + (c - b) * w;
+    }
+
+    const valueT denom = 1.0 / (va + vb + vc);
+    const valueT v = vb * denom;
+    const valueT w = vc * denom;
+    return a + ab * v + ac * w;
+}
+
+template<typename coordT>
+std::pair<bool, coordT>
+test_intersect_segment_triangle(const coordT& begin, const coordT& end,
+                                const std::array<coordT, 3>& vertices)
+{
+    typedef typename element_type_of<coordT>::type valueT;
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
+    // pp.190-194
+
+    const coordT line = begin - end;
+    const coordT ab = vertices[1] - vertices[0];
+    const coordT ac = vertices[2] - vertices[0];
+    const coordT normal = cross_product(ab, ac);
+
+    const valueT d = dot_product(line, normal);
+    if(d < 0.0)
+        return std::make_pair(false, coordT(0.,0.,0.));
+
+    const coordT ap = begin - vertices[0];
+    const valueT t = dot_product(ap, normal);
+    if(t < 0.0 || d < t)
+        return std::make_pair(false, coordT(0.,0.,0.));
+
+    const coordT e = cross_product(line, ap);
+    valueT v = dot_product(ac, e);
+    if(v < 0. || d < v)
+        return std::make_pair(false, coordT(0.,0.,0.));
+    valueT w = -1.0 * dot_product(ab, e);
+    if(w < 0. || d < v + w)
+        return std::make_pair(false, coordT(0.,0.,0.));
+
+    const valueT ood = 1. / d;
+    v *= ood;
+    w *= ood;
+    const valueT u = 1. - v - w;
+    const coordT intersect = vertices[0] * u + vertices[1] * v + vertices[2] * w;
+
+    return std::make_pair(true, intersect);
+}
+} // detail
 
 template<typename coordT>
 std::pair<typename element_type_of<coordT>::type, // distance
           typename element_type_of<coordT>::type> // r of circle in triangle
 distance(const coordT& pos, const FaceTriangle<coordT>& face)
 {
-    const coordT line = pos - face.vertex_at(0);
-    if(dot_product(line, face.normal()) > 0)
+    std::array<coordT, 3> triangle = face.vertices();
+    if(dot_product(pos - face.vertex_at(0), face.normal()) < 0)
     {
-        return distance(pos, face.vertices());
+        triangle[0] = face.vertex_at(2);
+        triangle[1] = face.vertex_at(1);
+        triangle[2] = face.vertex_at(0);
     }
-    else
-    {
-        std::array<coordT, 3> rev;
-        rev[0] = face.vertex_at(2);
-        rev[1] = face.vertex_at(1);
-        rev[2] = face.vertex_at(0);
-        return distance(pos, rev);
-    }
+    return std::make_pair(length(detail::closest_point(pos, triangle) - pos), 0.0);
 }
 
 template<typename coordT>
 std::pair<bool, coordT>
 test_intersect_segment_triangle(const coordT& begin, const coordT& end,
-          const FaceTriangle<coordT>& face)
+                                const FaceTriangle<coordT>& face)
 {
     const coordT line = end - begin;
     if(dot_product(line, face.normal()) < 0.0)
     {
-        return test_intersect_segment_triangle(begin, end, face.vertices());
+        return detail::test_intersect_segment_triangle(begin, end, face.vertices());
     }
     else
     {
@@ -134,7 +255,7 @@ test_intersect_segment_triangle(const coordT& begin, const coordT& end,
         rev[0] = face.vertex_at(2);
         rev[1] = face.vertex_at(1);
         rev[2] = face.vertex_at(0);
-        return test_intersect_segment_triangle(begin, end, rev);
+        return detail::test_intersect_segment_triangle(begin, end, rev);
     }
 }
 
