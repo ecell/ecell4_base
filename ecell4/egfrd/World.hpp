@@ -928,8 +928,8 @@ protected:
         const length_type dist_to_unit_cell =
                 length(disp) * test_unitcell.second;
 
-        const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon = 
-                this->polygon_.intersect_ray(pos, disp, ignore);
+        const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon =
+                intersect_ray(this->polygon_, pos, disp, ignore);
 
         if(!test_unitcell.first && !test_polygon.first)
         {
@@ -939,8 +939,8 @@ protected:
         if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
         {
             const std::pair<std::pair<position_type, position_type>, face_id_t>
-                    reflected = this->polygon_.apply_reflection(
-                            pos, disp, test_polygon.second.second);
+                    reflected = apply_reflection(this->polygon_, pos, disp,
+                                                 test_polygon.second.second);
             return this->apply_structure_rec(reflected.first.first,
                     reflected.first.second - reflected.first.first, reflected.second);
         }
