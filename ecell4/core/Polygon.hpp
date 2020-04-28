@@ -811,7 +811,6 @@ roll(const Polygon& poly,
 
 } // polygon
 } // ecell4
-#undef ECELL4_STRONG_TYPEDEF
 
 namespace std {
 
