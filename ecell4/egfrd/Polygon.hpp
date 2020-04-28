@@ -1,5 +1,5 @@
-#ifndef EGFRD_POLYGON
-#define EGFRD_POLYGON
+#ifndef ECELL4_EGFRD_POLYGON_HPP
+#define ECELL4_EGFRD_POLYGON_HPP
 
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/AABB.hpp>
@@ -55,9 +55,18 @@ struct Polygon : public ecell4::Shape
 
 // for shapes (not implemented yet)
     dimension_kind dimension() const {return THREE;}
-    Real  is_inside(const coordinate_type& coord) const;
-    coordinate_type draw_position(boost::shared_ptr<ecell4::RandomNumberGenerator>& rng) const;
-    bool  test_AABB(const coordinate_type& l, const coordinate_type& u) const;
+    Real  is_inside(const coordinate_type& coord) const
+    {
+        throw ecell4::NotImplemented("polygon::is_inside");
+    }
+    coordinate_type draw_position(boost::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
+    {
+        throw ecell4::NotImplemented("polygon::draw_position");
+    }
+    bool  test_AABB(const coordinate_type& l, const coordinate_type& u) const
+    {
+        throw ecell4::NotImplemented("polygon::test_AABB");
+    }
 };
 
 template<typename coordT>
@@ -162,7 +171,7 @@ Polygon<coordT>::apply_reflection(
 template<typename coordT>
 std::pair<bool, std::pair<Real, typename Polygon<coordT>::face_id_type> >
 Polygon<coordT>::intersect_ray(
-        const coordinate_type& pos, const coordinate_type& disp, 
+        const coordinate_type& pos, const coordinate_type& disp,
         const face_id_type ignore_face) const
 {
     const std::pair<std::vector<face_id_type>,
@@ -192,30 +201,10 @@ Polygon<coordT>::intersect_ray(
             }
         }
     }
-
     return std::make_pair(collide_face,
                 std::make_pair(first_collide_distance, first_collide_face_idx));
 }
 
-template<typename coordT>
-Real Polygon<coordT>::is_inside(const coordinate_type& coord) const
-{
-    throw ecell4::NotImplemented("polygon::is_inside");
-}
-
-template<typename coordT>
-typename Polygon<coordT>::coordinate_type
-Polygon<coordT>::draw_position(boost::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
-{
-    throw ecell4::NotImplemented("polygon::draw_position");
-}
-
-template<typename coordT>
-bool Polygon<coordT>::test_AABB(const coordinate_type& l, const coordinate_type& u) const
-{
-    throw ecell4::NotImplemented("polygon::test_AABB");
-}
-
 } // egfrd
 } // ecell4
-#endif //EGFRD_POLYGON
+#endif // ECELL4_EGFRD_POLYGON_HPP
