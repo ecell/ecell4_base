@@ -63,14 +63,16 @@ Polygon<coordT>::get_faces_within_radius(const coordinate_type& pos, const Real 
 {
     std::vector<std::size_t> intruders;
     std::size_t nearest_idx = std::numeric_limits<std::size_t>::max();
-    std::pair<Real, Real> min_dist(std::numeric_limits<Real>::max(), 0.);
+    std::pair<Real, Real> min_dist(std::numeric_limits<Real>::max(), 0.0);
+
     std::size_t idx = 0;
-    for(typename std::vector<FaceTriangle<coordinate_type> >::const_iterator
-            iter = faces.begin(); iter != faces.end(); ++iter)
+    for(const auto& face : this->faces)
     {
-        std::pair<Real, Real> dist = distance(pos, *iter);
+        std::pair<Real, Real> dist = distance(pos, face);
         if(dist.first <= range) // is intruder face
+        {
             intruders.push_back(idx);
+        }
 
         if(dist.first < min_dist.first) // is nearest one
         {
