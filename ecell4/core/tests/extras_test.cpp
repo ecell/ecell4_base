@@ -35,7 +35,8 @@ BOOST_AUTO_TEST_CASE(DimensionAttributeTest)
     BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("B"), model), Shape::THREE);
     BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("C"), model), Shape::TWO);
     BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("D"), model), Shape::TWO);
-    BOOST_CHECK_THROW(extras::get_dimension_from_model(Species("E"), model), NotFound);
+    BOOST_CHECK_EQUAL(extras::get_dimension_from_model(Species("E"), model), Shape::THREE);
+    // BOOST_CHECK_THROW(extras::get_dimension_from_model(Species("E"), model), NotFound);
 }
 
 BOOST_AUTO_TEST_CASE(VersionInformationTest)
