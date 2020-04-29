@@ -2,9 +2,6 @@
 #define ECELL4_SGFRD_DISTANCE
 #include <ecell4/core/Segment.hpp>
 #include <ecell4/core/collision.hpp>
-#include <boost/type_traits.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/or.hpp>
 #include <boost/format.hpp>
 
 namespace ecell4
@@ -184,23 +181,22 @@ struct distance_impl<Real3, ecell4::Segment>
 // ----------------------------------------------------------------------------
 
 template<typename T1, typename T2>
-inline typename boost::enable_if<boost::mpl::and_<
-    boost::is_base_of<ecell4::Shape, T1>, boost::is_base_of<ecell4::Shape, T2>
-    >, Real>::type
+typename std::enable_if<std::is_base_of<ecell4::Shape, T1>::value &&
+                        std::is_base_of<ecell4::Shape, T2>::value, Real>::type
 distance(const T1& shape1, const T2& shape2)
 {
     return distance_impl<T1, T2>()(shape1, shape2);
 }
 
 template<typename T>
-inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+typename std::enable_if<std::is_base_of<ecell4::Shape, T>::value, Real>::type
 distance(const T& shape, const Real3& pos)
 {
     return distance_impl<Real3, T>()(pos, shape);
 }
 
 template<typename T>
-inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+typename std::enable_if<std::is_base_of<ecell4::Shape, T>::value, Real>::type
 distance(const Real3& pos, const T& shape)
 {
     return distance_impl<Real3, T>()(pos, shape);
@@ -212,23 +208,22 @@ inline Real distance(const Real3& lhs, const Real3& rhs)
 }
 
 template<typename T1, typename T2>
-inline typename boost::enable_if<boost::mpl::and_<
-    boost::is_base_of<ecell4::Shape, T1>, boost::is_base_of<ecell4::Shape, T2>
-    >, Real>::type
+typename std::enable_if<std::is_base_of<ecell4::Shape, T1>::value &&
+                        std::is_base_of<ecell4::Shape, T2>::value, Real>::type
 distance_sq(const T1& shape1, const T2& shape2)
 {
     return distance_sq_impl<T1, T2>()(shape1, shape2);
 }
 
 template<typename T>
-inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+typename std::enable_if<std::is_base_of<ecell4::Shape, T>::value, Real>::type
 distance_sq(const T& shape, const Real3& pos)
 {
     return distance_sq_impl<Real3, T>()(pos, shape);
 }
 
 template<typename T>
-inline typename boost::enable_if<boost::is_base_of<ecell4::Shape, T>, Real>::type
+typename std::enable_if<std::is_base_of<ecell4::Shape, T>::value, Real>::type
 distance_sq(const Real3& pos, const T& shape)
 {
     return distance_sq_impl<Real3, T>()(pos, shape);

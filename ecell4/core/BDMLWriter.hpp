@@ -2,7 +2,6 @@
 #define ECELL4_BDML_WRITER_HPP
 
 #include <cstring>
-#include <boost/scoped_array.hpp>
 #include <sstream>
 #include <memory>
 
@@ -183,7 +182,7 @@ void save_bd5(
         data.swap(tmp);
 
         {
-            boost::scoped_array<traits_type::bdml_objectDef_struct>
+            std::unique_ptr<traits_type::bdml_objectDef_struct[]>
                 objectDef_table(new traits_type::bdml_objectDef_struct[1]);
             objectDef_table[0].oID = 0;
             std::strcpy(objectDef_table[0].name, object_name.c_str());
@@ -197,7 +196,7 @@ void save_bd5(
         }
 
         {
-            boost::scoped_array<traits_type::bdml_scaleUnit_struct>
+            std::unique_ptr<traits_type::bdml_scaleUnit_struct[]>
                 scaleUnit_table(new traits_type::bdml_scaleUnit_struct[1]);
             std::strcpy(scaleUnit_table[0].dimension, "3D+T");
             scaleUnit_table[0].xScale = 1.0;
@@ -248,7 +247,7 @@ void save_bd5(
 
         if (with_radius)
         {
-            boost::scoped_array<traits_type::bdml_sphere_struct>
+            std::unique_ptr<traits_type::bdml_sphere_struct[]>
                 data_table(new traits_type::bdml_sphere_struct[NUM_MOL]);
             for (unsigned int i(0); i < NUM_MOL; ++i)
             {
@@ -279,7 +278,7 @@ void save_bd5(
         }
         else
         {
-            boost::scoped_array<traits_type::bdml_point_struct>
+            std::unique_ptr<traits_type::bdml_point_struct[]>
                 data_table(new traits_type::bdml_point_struct[NUM_MOL]);
             for (unsigned int i(0); i < NUM_MOL; ++i)
             {

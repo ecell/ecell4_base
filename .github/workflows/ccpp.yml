@@ -15,7 +15,7 @@ jobs:
     - name: deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev cmake
+        sudo apt-get install -y wget bzip2 python3-pip libgsl-dev libboost-dev
         sudo python3 -m pip install -U pip setuptools
 
     - name: Download hdf5
