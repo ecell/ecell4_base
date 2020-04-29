@@ -727,8 +727,8 @@ struct FixedIntervalEvent
 public:
 
     Real t0, dt;
-    Integer num_steps;
-    Integer count;
+    size_t num_steps;
+    size_t count;
 };
 
 template <typename Tevent_>
@@ -761,6 +761,24 @@ public:
         trajectories_(), strides_(), t_()
     {
         ;
+    }
+
+    TrajectoryObserver(
+        const std::vector<ParticleID>& pids,
+        const bool resolve_boundary,
+        const Real subdt,
+        const std::vector<Real3>& prev_positions,
+        const std::vector<std::vector<Real3> >& trajectories,
+        const std::vector<Real3>& strides,
+        const std::vector<Real>& t
+        )
+        : base_type(false), event_(), subevent_(subdt > 0 ? subdt : std::numeric_limits<Real>::infinity()),
+        pids_(pids), resolve_boundary_(resolve_boundary), prev_positions_(prev_positions),
+        trajectories_(trajectories), strides_(strides), t_(t)
+    {
+        assert(pids_.size() == prev_positions_.size());
+        assert(pids_.size() == trajectories_.size());
+        assert(pids_.size() == strides_.size());
     }
 
     virtual ~TrajectoryObserver()
@@ -842,19 +860,59 @@ public:
         t_.clear();
     }
 
+    const event_type& event() const
+    {
+        return event_;
+    }
+
+    void set_event(const event_type& event)
+    {
+        event_ = event;
+    }
+
+    const FixedIntervalEvent& subevent() const
+    {
+        return subevent_;
+    }
+
+    void set_subevent(const FixedIntervalEvent& subevent)
+    {
+        subevent_ = subevent;
+    }
+
+    const std::vector<ParticleID>& pids() const
+    {
+        return pids_;
+    }
+
+    const bool resolve_boundary() const
+    {
+        return resolve_boundary_;
+    }
+
+    const std::vector<Real3>& prev_positions() const
+    {
+        return prev_positions_;
+    }
+
     const std::vector<std::vector<Real3> >& data() const
     {
         return trajectories_;
     }
 
-    const Integer num_tracers() const
+    const std::vector<Real3>& strides() const
     {
-        return pids_.size();
+        return strides_;
     }
 
     const std::vector<Real>& t() const
     {
         return t_;
+    }
+
+    const Integer num_tracers() const
+    {
+        return pids_.size();
     }
 
 protected:
@@ -963,7 +1021,8 @@ class FixedIntervalTrajectoryObserver
 {
 public:
 
-    typedef TrajectoryObserver<FixedIntervalEvent> base_type;
+    typedef FixedIntervalEvent event_type;
+    typedef TrajectoryObserver<event_type> base_type;
 
 public:
 
@@ -985,6 +1044,21 @@ public:
         event_.set_dt(dt);
     }
 
+    FixedIntervalTrajectoryObserver(
+        const Real& dt,
+        const std::vector<ParticleID>& pids,
+        const bool resolve_boundary,
+        const Real subdt,
+        const std::vector<Real3>& prev_positions,
+        const std::vector<std::vector<Real3> >& trajectories,
+        const std::vector<Real3>& strides,
+        const std::vector<Real>& times
+        )
+        : base_type(pids, resolve_boundary, subdt, prev_positions, trajectories, strides, times)
+    {
+        event_.set_dt(dt);
+    }
+
     virtual ~FixedIntervalTrajectoryObserver()
     {
         ;
@@ -996,24 +1070,37 @@ class TimingTrajectoryObserver
 {
 public:
 
-    typedef TrajectoryObserver<TimingEvent> base_type;
+    typedef TimingEvent event_type;
+    typedef TrajectoryObserver<event_type> base_type;
 
 public:
 
     TimingTrajectoryObserver(
         const std::vector<Real>& t, const std::vector<ParticleID>& pids,
-        const bool resolve_boundary = default_resolve_boundary(),
         const Real subdt = default_subdt())
-        : base_type(pids, resolve_boundary, subdt)
+        : base_type(pids, (subdt > 0), subdt)
     {
         event_.set_times(t);
     }
 
     TimingTrajectoryObserver(
         const std::vector<Real>& t,
-        const bool resolve_boundary = default_resolve_boundary(),
         const Real subdt = default_subdt())
-        : base_type(resolve_boundary, subdt)
+        : base_type((subdt > 0), subdt)
+    {
+        event_.set_times(t);
+    }
+
+    TimingTrajectoryObserver(
+        const std::vector<Real>& t,
+        const std::vector<ParticleID>& pids,
+        const Real subdt,
+        const std::vector<Real3>& prev_positions,
+        const std::vector<std::vector<Real3> >& trajectories,
+        const std::vector<Real3>& strides,
+        const std::vector<Real>& times
+        )
+        : base_type(pids, (subdt > 0), subdt, prev_positions, trajectories, strides, times)
     {
         event_.set_times(t);
     }
