@@ -21,9 +21,10 @@ get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>&
 
     if (!model->has_species_attribute(species))
     {
-        std::stringstream ss;
-        ss << "The model has no attribute for Specis(\"" << species.serial() << "\")";
-        throw NotFound(ss.str());
+        // std::stringstream ss;
+        // ss << "The model has no attribute for Specis(\"" << species.serial() << "\")";
+        // throw NotFound(ss.str());
+        return DEFAULT_DIMENSION;
     }
 
     const Species& attribute(model->apply_species_attributes(species));
