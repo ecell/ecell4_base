@@ -2,19 +2,19 @@
 #define ECELL4_SGFRD_SHELL_VISITORS
 #include "Shell.hpp"
 #include "SGFRDEvent.hpp"
-#include <boost/type_traits.hpp>
+#include <type_traits>
 
 namespace ecell4
 {
 namespace sgfrd
 {
 
-struct minimal_eval_or : boost::true_type
+struct minimal_eval_or : std::true_type
 {
     static bool is_resolved(const bool v) {return v;}
 };
 
-struct minimal_eval_and : boost::false_type
+struct minimal_eval_and : std::false_type
 {
     static bool is_resolved(const bool v) {return !v;}
 };

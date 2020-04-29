@@ -2,7 +2,6 @@
 #define ECELL4_PARTICLE_SPACE_HDF5_WRITER_HPP
 
 #include <cstring>
-#include <boost/scoped_array.hpp>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -113,7 +112,7 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
         species_id_map_type;
     species_id_map_type species_id_map;
 
-    boost::scoped_array<h5_particle_struct>
+    std::unique_ptr<h5_particle_struct[]>
         h5_particle_table(new h5_particle_struct[num_particles]);
     for (unsigned int i(0); i < num_particles; ++i)
     {
@@ -137,7 +136,7 @@ void save_particle_space(const Tspace_& space, H5::Group* root)
         h5_particle_table[i].D = particles[i].second.D();
     }
 
-    boost::scoped_array<h5_species_struct>
+    std::unique_ptr<h5_species_struct[]>
         h5_species_table(new h5_species_struct[species.size()]);
     for (unsigned int i(0); i < species.size(); ++i)
     {
@@ -205,7 +204,7 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
         H5::DataSet species_dset(root.openDataSet("species"));
         const unsigned int num_species(
             species_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<h5_species_struct> h5_species_table(
+        std::unique_ptr<h5_species_struct[]> h5_species_table(
             new h5_species_struct[num_species]);
         species_dset.read(
             h5_species_table.get(), traits_type::get_species_comp_type());
@@ -214,7 +213,7 @@ void load_particle_space(const H5::Group& root, Tspace_* space)
         H5::DataSet particle_dset(root.openDataSet("particles"));
         const unsigned int num_particles(
             particle_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<h5_particle_struct> h5_particle_table(
+        std::unique_ptr<h5_particle_struct[]> h5_particle_table(
             new h5_particle_struct[num_particles]);
         particle_dset.read(
             h5_particle_table.get(), traits_type::get_particle_comp_type());

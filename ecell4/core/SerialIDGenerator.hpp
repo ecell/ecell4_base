@@ -3,7 +3,7 @@
 
 #include <functional>
 #include <memory>
-#include <boost/type_traits/is_integral.hpp>
+#include <type_traits>
 
 #include <ecell4/core/config.h>
 
@@ -197,63 +197,63 @@ struct identifier_serial_retriever_helper<true, Tid_>
 
 template<typename Tid_>
 struct identifier_lot
-    : public detail::identifier_lot_helper<boost::is_integral<Tid_>::value, Tid_>
+    : public detail::identifier_lot_helper<std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_lot_adder
     : public detail::identifier_lot_adder_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_lot_advancer
     : public detail::identifier_lot_advancer_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_lot_retracer
     : public detail::identifier_lot_retracer_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_lot_retriever
     : public detail::identifier_lot_retriever_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_serial
     : public detail::identifier_serial_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_serial_advancer
     : public detail::identifier_serial_advancer_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_serial_retracer
     : public detail::identifier_serial_retracer_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 
 template<typename Tid_>
 struct identifier_serial_retriever
     : public detail::identifier_serial_retriever_helper<
-    boost::is_integral<Tid_>::value, Tid_>
+    std::is_integral<Tid_>::value, Tid_>
 {
 };
 

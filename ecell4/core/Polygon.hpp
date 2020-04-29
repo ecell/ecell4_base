@@ -16,16 +16,7 @@
 #include "PolygonHDF5Writer.hpp"
 #endif
 
-#include <boost/utility.hpp>
-#include <boost/type_traits.hpp>
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/array.hpp>
-#include <boost/math/constants/constants.hpp>
-#include <boost/math/special_functions/sign.hpp>
-#include <boost/iterator/counting_iterator.hpp>
-#include <boost/cstdint.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -72,8 +63,8 @@ class Polygon : public Shape
     struct face_data
     {
         Triangle triangle; // not considering Boundary, contains just the shape
-        boost::array<  EdgeID, 3> edges;    // idx consistent with triangle
-        boost::array<VertexID, 3> vertices; // idx consistent with triangle
+        std::array<  EdgeID, 3> edges;    // idx consistent with triangle
+        std::array<VertexID, 3> vertices; // idx consistent with triangle
 
         std::size_t index_of(const VertexID& vid) const
         {
@@ -93,8 +84,8 @@ class Polygon : public Shape
         std::vector<FaceID> neighbors; // for searching objects on it
         // neighbor list; that has pairs of {Fid, unfolded Triangle}.
         // each index corresponds to that of vertices.
-        boost::array<std::vector<std::pair<FaceID, Triangle> >, 3> neighbor_ccw;
-        boost::array<std::vector<std::pair<FaceID, Triangle> >, 3> neighbor_cw;
+        std::array<std::vector<std::pair<FaceID, Triangle> >, 3> neighbor_ccw;
+        std::array<std::vector<std::pair<FaceID, Triangle> >, 3> neighbor_cw;
         // XXX: distance calculation between points on a polygon is complicated.
         // 1. there are several `local-minima` between any combination of points.
         //    so all the minima should be calculated and the shortest path
@@ -248,11 +239,11 @@ class Polygon : public Shape
     {return this->edge_at(eid).face;}
 
     // edge ids that are corresponds to the face
-    boost::array<EdgeID, 3> const& edges_of(const FaceID fid) const
+    std::array<EdgeID, 3> const& edges_of(const FaceID fid) const
     {return this->face_at(fid).edges;}
 
     // vertex ids that are corresponds to the face
-    boost::array<VertexID, 3> const& vertices_of(const FaceID fid) const
+    std::array<VertexID, 3> const& vertices_of(const FaceID fid) const
     {return this->face_at(fid).vertices;}
 
     // edge ids that starts from the vertex
@@ -302,7 +293,7 @@ class Polygon : public Shape
         std::vector<VertexID> vids;
         vids.reserve(6);
 
-        boost::array<EdgeID, 3> const& eids = this->edges_of(fid);
+        std::array<EdgeID, 3> const& eids = this->edges_of(fid);
         for(std::size_t i=0; i<3; ++i)
         {
             vids.push_back(this->target_of(eids[i]));

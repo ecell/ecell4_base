@@ -3,8 +3,8 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/multi_array.hpp>
-#include <boost/scoped_array.hpp>
 #include <cstring>
+#include <memory>
 #include <iostream>
 #include <sstream>
 
@@ -98,7 +98,7 @@ void save_subvolume_space(const Tspace_ &space, H5::Group *root)
     const std::vector<Species> species(space.list_species());
     boost::multi_array<int64_t, 2> h5_num_table(
         boost::extents[species.size()][num_subvolumes]);
-    boost::scoped_array<h5_species_struct> h5_species_table(
+    std::unique_ptr<h5_species_struct[]> h5_species_table(
         new h5_species_struct[species.size()]);
 
     for (unsigned int i(0); i < species.size(); ++i)
@@ -120,7 +120,7 @@ void save_subvolume_space(const Tspace_ &space, H5::Group *root)
     const std::vector<Species::serial_type> structures(space.list_structures());
     boost::multi_array<double, 2> h5_stcoordinate_table(
         boost::extents[structures.size()][num_subvolumes]);
-    boost::scoped_array<h5_structures_struct> h5_structures_table(
+    std::unique_ptr<h5_structures_struct[]> h5_structures_table(
         new h5_structures_struct[structures.size()]);
     for (unsigned int i(0); i < structures.size(); ++i)
     {
@@ -219,7 +219,7 @@ void load_subvolume_space(const H5::Group &root, Tspace_ *space)
         H5::DataSet species_dset(root.openDataSet("species"));
         const unsigned int num_species(
             species_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<h5_species_struct> h5_species_table(
+        std::unique_ptr<h5_species_struct[]> h5_species_table(
             new h5_species_struct[num_species]);
         species_dset.read(h5_species_table.get(),
                           traits_type::get_species_comp_type());
@@ -266,7 +266,7 @@ void load_subvolume_space(const H5::Group &root, Tspace_ *space)
         H5::DataSet structures_dset(root.openDataSet("structures"));
         const unsigned int num_structures(
             structures_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<h5_structures_struct> h5_structures_table(
+        std::unique_ptr<h5_structures_struct[]> h5_structures_table(
             new h5_structures_struct[num_structures]);
         structures_dset.read(h5_structures_table.get(),
                              traits_type::get_structures_comp_type());
