@@ -4,10 +4,10 @@
 #include <cstddef>
 #include <stdexcept>
 #include <functional>
+#include <memory>
 
 #include <boost/utility/enable_if.hpp>
 #include <boost/call_traits.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/range/begin.hpp>
@@ -389,10 +389,10 @@ public:
 };
 
 template<typename Tgen_, typename Tfun_>
-inline transform_generator<Tgen_, Tfun_, boost::shared_ptr<Tgen_> >
+inline transform_generator<Tgen_, Tfun_, std::shared_ptr<Tgen_> >
 make_transform_generator(Tgen_* gen, Tfun_ const& fun)
 {
-    return transform_generator<Tgen_, Tfun_, boost::shared_ptr<Tgen_> >(gen, fun);
+    return transform_generator<Tgen_, Tfun_, std::shared_ptr<Tgen_> >(gen, fun);
 }
 
 template<typename Tgen1_, typename Tgen2_,

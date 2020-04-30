@@ -16,7 +16,7 @@ public:
     typedef container_type::iterator iterator;
 
 public:
-    MoleculePool(const Species &species, boost::weak_ptr<VoxelPool> location)
+    MoleculePool(const Species &species, std::weak_ptr<VoxelPool> location)
         : base_type(species, location)
     {
         ;

@@ -1,7 +1,7 @@
 #ifndef REACTION_RECORDER_WRAPPER_HPP
 #define REACTION_RECORDER_WRAPPER_HPP
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <ecell4/core/ReactionRule.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include "ReactionRecorder.hpp"
@@ -118,12 +118,12 @@ public:
         last_reactions_.clear();
     }
 
-    boost::shared_ptr<base_type> const& backend() const
+    std::shared_ptr<base_type> const& backend() const
     {
         return backend_;
     }
 
-    boost::shared_ptr<base_type>& backend()
+    std::shared_ptr<base_type>& backend()
     {
         return backend_;
     }
@@ -131,7 +131,7 @@ public:
 protected:
 
     std::vector<std::pair<ecell4::ReactionRule, reaction_info_type> > last_reactions_;
-    boost::shared_ptr<base_type> backend_;
+    std::shared_ptr<base_type> backend_;
 };
 
 

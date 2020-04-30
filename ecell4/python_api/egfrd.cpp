@@ -40,13 +40,13 @@ void define_bd_simulator(py::module& m)
     using model_type = BDSimulator::model_type;
 
     py::class_<BDSimulator, Simulator, PySimulator<BDSimulator>,
-        boost::shared_ptr<BDSimulator>> simulator(m, "BDSimulator");
+        std::shared_ptr<BDSimulator>> simulator(m, "BDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<world_type>, Real, int>(),
+        .def(py::init<std::shared_ptr<world_type>, Real, int>(),
                 py::arg("w"),
                 py::arg("bd_dt_factor") = 1.0,
                 py::arg("dissociation_retry_moves") = 1)
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int>(),
+        .def(py::init<std::shared_ptr<world_type>, std::shared_ptr<model_type>, Real, int>(),
                 py::arg("w"), py::arg("m"),
                 py::arg("bd_dt_factor") = 1.0,
                 py::arg("dissociation_retry_moves") = 1)
@@ -56,9 +56,9 @@ void define_bd_simulator(py::module& m)
         .def("add_potential",
             (void (BDSimulator::*)(const Species&, const Real&)) &BDSimulator::add_potential)
         .def("add_potential",
-            (void (BDSimulator::*)(const Species&, const boost::shared_ptr<Shape>&)) &BDSimulator::add_potential)
+            (void (BDSimulator::*)(const Species&, const std::shared_ptr<Shape>&)) &BDSimulator::add_potential)
         .def("add_potential",
-            (void (BDSimulator::*)(const Species&, const boost::shared_ptr<Shape>&, const Real&)) &BDSimulator::add_potential);
+            (void (BDSimulator::*)(const Species&, const std::shared_ptr<Shape>&, const Real&)) &BDSimulator::add_potential);
     define_simulator_functions(simulator);
 }
 
@@ -90,15 +90,15 @@ void define_egfrd_simulator(py::module& m)
 
     py::class_<::ecell4::egfrd::DefaultEGFRDSimulator, Simulator,
                PySimulator<::ecell4::egfrd::DefaultEGFRDSimulator>,
-               boost::shared_ptr<::ecell4::egfrd::DefaultEGFRDSimulator>
+               std::shared_ptr<::ecell4::egfrd::DefaultEGFRDSimulator>
                    > simulator(m, "EGFRDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<world_type>, Real, int, length_type>(),
+        .def(py::init<std::shared_ptr<world_type>, Real, int, length_type>(),
                 py::arg("w"),
                 py::arg("bd_dt_factor") = 1e-5,
                 py::arg("dissociation_retry_moves") = 1,
                 py::arg("user_max_shell_size") = std::numeric_limits<length_type>::infinity())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<model_type>, Real, int, length_type>(),
+        .def(py::init<std::shared_ptr<world_type>, std::shared_ptr<model_type>, Real, int, length_type>(),
                 py::arg("w"), py::arg("m"),
                 py::arg("bd_dt_factor") = 1e-5,
                 py::arg("dissociation_retry_moves") = 1,
@@ -123,12 +123,12 @@ void define_egfrd_world(py::module& m)
     using rng_type = EGFRDWorld::rng_type;
 
     py::class_<EGFRDWorld, WorldInterface, PyWorldImpl<EGFRDWorld>,
-        boost::shared_ptr<EGFRDWorld>> world(m, "EGFRDWorld");
+        std::shared_ptr<EGFRDWorld>> world(m, "EGFRDWorld");
     world
         .def(py::init<const position_type&, const matrix_sizes_type&>(),
                 py::arg("edge_lengths") = position_type(1.0, 1.0, 1.0),
                 py::arg("matrix_sizes") = matrix_sizes_type(3, 3, 3))
-        .def(py::init<const position_type&, const matrix_sizes_type&, const boost::shared_ptr<rng_type>&>(),
+        .def(py::init<const position_type&, const matrix_sizes_type&, const std::shared_ptr<rng_type>&>(),
                 py::arg("edge_lengths"),
                 py::arg("matrix_sizes"),
                 py::arg("rng"))
@@ -161,7 +161,7 @@ void define_egfrd_world(py::module& m)
         .def("add_molecules",
             (void (EGFRDWorld::*)(const Species&, const Integer&)) &EGFRDWorld::add_molecules)
         .def("add_molecules",
-            (void (EGFRDWorld::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>)) &EGFRDWorld::add_molecules)
+            (void (EGFRDWorld::*)(const Species&, const Integer&, const std::shared_ptr<Shape>)) &EGFRDWorld::add_molecules)
         .def("remove_molecules", &EGFRDWorld::remove_molecules)
         .def("bind_to", &EGFRDWorld::bind_to)
         .def("rng", &EGFRDWorld::rng);

@@ -106,7 +106,7 @@ void save_subvolume_space(const Tspace_ &space, H5::Group *root)
         const unsigned int sid(i + 1);
         h5_species_table[i].id = sid;
         std::strcpy(h5_species_table[i].serial, species[i].serial().c_str());
-        const boost::shared_ptr<typename Tspace_::PoolBase> &pool =
+        const std::shared_ptr<typename Tspace_::PoolBase> &pool =
             space.get_pool(species[i]);
         h5_species_table[i].D = pool->D();
         std::strcpy(h5_species_table[i].loc, pool->loc().c_str());

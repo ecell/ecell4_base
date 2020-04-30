@@ -77,7 +77,7 @@ void SGFRDWorld::add_molecules(const Species& sp, const Integer& num)
 }
 
 void SGFRDWorld::add_molecules(const Species& sp, const Integer& num,
-                               const boost::shared_ptr<Shape> shape)
+                               const std::shared_ptr<Shape> shape)
 {
     if (num < 0)
     {

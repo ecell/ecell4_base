@@ -23,7 +23,7 @@ public:
     Segment(const Real3& start, const Real3& stop): start_(start), stop_(stop){}
     Segment(const Segment& rhs) : start_(rhs.start_), stop_(rhs.stop_){}
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         const Real r = rng->random();
         return start_ * r + stop_ * (1. - r);

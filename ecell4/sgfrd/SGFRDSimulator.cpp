@@ -551,7 +551,7 @@ bool SGFRDSimulator::burst_and_shrink_overlaps(
             throw std::runtime_error("domain does not exist");
         }
 
-        boost::shared_ptr<event_type> ev_(get_event(did_));
+        std::shared_ptr<event_type> ev_(get_event(did_));
 
         if(ev_->which_domain() == SGFRDEvent::multi_domain)
         {
@@ -585,7 +585,7 @@ SGFRDSimulator::form_pair(
     SGFRD_SCOPE(us, form_pair, tracer_);
 
     // the first (nearest) domain in the intruders is the partner to form pair.
-    const boost::shared_ptr<event_type> nearest =
+    const std::shared_ptr<event_type> nearest =
         this->get_event(intruders.front().first);
     if(nearest->which_domain() != event_type::single_domain)
     {
@@ -650,7 +650,7 @@ SGFRDSimulator::form_pair(
     Real max_dist = get_max_circle_size(pos_com);
     for(auto iter(intruders.begin()+1), iend(intruders.end()); iter != iend; ++iter)
     {
-        const boost::shared_ptr<event_type> intruder_ev(this->get_event(iter->first));
+        const std::shared_ptr<event_type> intruder_ev(this->get_event(iter->first));
         if(intruder_ev->which_domain() != event_type::single_domain)
         {
             continue;
@@ -838,7 +838,7 @@ DomainID SGFRDSimulator::form_multi(
     // when the multi domain is assigned, it had a negative delta t.
     // we need to update the data after determining delta_t and reaction_length.
     this->scheduler_.update(std::make_pair(formed_multi_id,
-        boost::make_shared<event_type>(this->time() + formed_multi.dt(), formed_multi)));
+        std::make_shared<event_type>(this->time() + formed_multi.dt(), formed_multi)));
 
     return formed_multi_id;
 }
@@ -1130,7 +1130,7 @@ SGFRDSimulator::form_single_circular_event(
                 "%1% does not intersect with minimum circle", did_dist.first));
 
             // calculate modest distance if this one is a single domain.
-            boost::shared_ptr<event_type> ev(this->get_event(did_dist.first));
+            std::shared_ptr<event_type> ev(this->get_event(did_dist.first));
             if(ev->which_domain() == event_type::single_domain)
             {
                 SGFRD_TRACE(tracer_.write("calculating modest r."))
@@ -1436,7 +1436,7 @@ bool SGFRDSimulator::diagnosis() const
     // 3.
     std::map<ParticleID, EventID> pid2evid;
     std::map<ShellID,    EventID> sid2evid;
-    EventID evid; boost::shared_ptr<event_type> ev_ptr;
+    EventID evid; std::shared_ptr<event_type> ev_ptr;
     for(const auto& evidptr : this->scheduler_.events())
     {
         std::tie(evid, ev_ptr) = evidptr;

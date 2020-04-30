@@ -127,7 +127,7 @@ public:
         return retval;
     }
 
-    NetworkRulesAdapter(boost::shared_ptr<ecell4::Model> model)
+    NetworkRulesAdapter(std::shared_ptr<ecell4::Model> model)
         : model_(model)
     {
         ;
@@ -204,7 +204,7 @@ private:
 
     mutable first_order_reaction_rule_vector_map first_order_cache_;
     mutable second_order_reaction_rule_vector_map second_order_cache_;
-    boost::shared_ptr<ecell4::Model> model_;
+    std::shared_ptr<ecell4::Model> model_;
 };
 
 } // egfrd

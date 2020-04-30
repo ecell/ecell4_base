@@ -218,7 +218,7 @@ bool NetfreeModel::has_reaction_rule(const ReactionRule& rr) const
     return (i != reaction_rules_.end());
 }
 
-boost::shared_ptr<Model> NetfreeModel::expand(
+std::shared_ptr<Model> NetfreeModel::expand(
     const std::vector<Species>& sp, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich) const
 {
@@ -227,18 +227,18 @@ boost::shared_ptr<Model> NetfreeModel::expand(
 }
 
 
-boost::shared_ptr<Model> NetfreeModel::expand(
+std::shared_ptr<Model> NetfreeModel::expand(
     const std::vector<Species>& sp, const Integer max_itr) const
 {
     return extras::generate_network_from_netfree_model(
         *this, sp, max_itr).first;
 }
 
-boost::shared_ptr<Model> NetfreeModel::expand(
+std::shared_ptr<Model> NetfreeModel::expand(
     const std::vector<Species>& sp) const
 {
     const Integer max_itr(30);
-    std::pair<boost::shared_ptr<NetworkModel>, bool>
+    std::pair<std::shared_ptr<NetworkModel>, bool>
         retval(extras::generate_network_from_netfree_model(*this, sp, max_itr));
     if (retval.second)
     {
@@ -246,7 +246,7 @@ boost::shared_ptr<Model> NetfreeModel::expand(
     }
     else
     {
-        return boost::shared_ptr<NetworkModel>(); // return null
+        return std::shared_ptr<NetworkModel>(); // return null
     }
 }
 
@@ -366,7 +366,7 @@ void __generate_recurse(
     seeds1.swap(newseeds);
 }
 
-std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
+std::pair<std::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich)
 {
@@ -423,7 +423,7 @@ std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_m
         is_completed = true;
     }
 
-    boost::shared_ptr<NetworkModel> nwm(new NetworkModel());
+    std::shared_ptr<NetworkModel> nwm(new NetworkModel());
     for (std::vector<Species>::const_iterator i(seeds2.begin());
         i != seeds2.end(); ++i)
     {

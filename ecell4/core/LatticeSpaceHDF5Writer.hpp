@@ -61,7 +61,7 @@ struct LatticeSpaceHDF5Traits
             new H5::Group(group->createGroup(species.serial().c_str())));
 
         h5_species_struct property;
-        boost::shared_ptr<const VoxelPool> loc(mtb->location());
+        std::shared_ptr<const VoxelPool> loc(mtb->location());
         // if (loc->is_vacant())
         //     property.location = H5std_string("");
         // else
@@ -152,7 +152,7 @@ void save_lattice_space(const Tspace_ &space, H5::Group *root,
     std::multimap<Species, const VoxelPool *> location_map;
     for (const auto &sp : species)
     {
-        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(sp));
+        std::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(sp));
         Species location(mtb->location()->species());
         location_map.insert(
             std::make_pair(location, mtb.get())); // XXX: remove .get()

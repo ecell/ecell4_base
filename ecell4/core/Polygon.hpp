@@ -397,7 +397,7 @@ class Polygon : public Shape
         return;
     }
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         FaceID fid; // will be discarded
         const Real3 retval = this->draw_position(rng, fid);
@@ -407,7 +407,7 @@ class Polygon : public Shape
     //XXX This function randomly choose a face and does not consider the
     //    initial value of `fid`. An ID of randomly-chosen face will be
     //    written in `fid` when it returns.
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng,
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng,
                         FaceID& fid) const
     {
         Real draw_triangle = rng->uniform(0.0, total_area_);
@@ -430,7 +430,7 @@ class Polygon : public Shape
     }
 
     // XXX This function considers `fid`.
-    Real3 draw_position_on_face(boost::shared_ptr<RandomNumberGenerator>& rng,
+    Real3 draw_position_on_face(std::shared_ptr<RandomNumberGenerator>& rng,
                                 const FaceID& fid) const
     {
         return this->triangle_at(fid).draw_position(rng);

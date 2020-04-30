@@ -31,7 +31,7 @@ Real PlanarSurface::is_inside(const Real3& coord) const
 }
 
 Real3 PlanarSurface::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     const Real a(rng->uniform(0, 1)),
                b(rng->uniform(0, 1));

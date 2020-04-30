@@ -157,12 +157,12 @@ public:
         return this->reaction_rules().size();
     }
 
-    virtual boost::shared_ptr<Model> expand(
+    virtual std::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr,
         const std::map<Species, Integer>& max_stoich) const = 0;
-    virtual boost::shared_ptr<Model> expand(
+    virtual std::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr) const = 0;
-    virtual boost::shared_ptr<Model> expand(
+    virtual std::shared_ptr<Model> expand(
         const std::vector<Species>& sp) const = 0;
 
     const std::vector<Species> list_species() const

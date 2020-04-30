@@ -16,7 +16,7 @@ namespace ecell4
 namespace meso
 {
 
-void MesoscopicSimulator::increment(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
+void MesoscopicSimulator::increment(const std::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
 {
     pool->add_molecules(1, c);
 
@@ -27,7 +27,7 @@ void MesoscopicSimulator::increment(const boost::shared_ptr<MesoscopicWorld::Poo
     }
 }
 
-void MesoscopicSimulator::decrement(const boost::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
+void MesoscopicSimulator::decrement(const std::shared_ptr<MesoscopicWorld::PoolBase>& pool, const coordinate_type& c)
 {
     pool->remove_molecules(1, c);
 
@@ -47,7 +47,7 @@ void MesoscopicSimulator::increment_molecules(const Species& sp, const coordinat
             return; // do nothing
         }
 
-        const boost::shared_ptr<MesoscopicWorld::PoolBase> pool = world_->reserve_pool(sp);
+        const std::shared_ptr<MesoscopicWorld::PoolBase> pool = world_->reserve_pool(sp);
         proxies_.push_back(create_diffusion_proxy(sp));
         increment(pool, c);
     }
@@ -150,7 +150,7 @@ void MesoscopicSimulator::step(void)
     if (interrupted_ < static_cast<coordinate_type>(event_ids_.size()))
     {
         EventScheduler::identifier_type evid(event_ids_[interrupted_]);
-        boost::shared_ptr<Event> ev(scheduler_.get(evid));
+        std::shared_ptr<Event> ev(scheduler_.get(evid));
         ev->interrupt(t());
         scheduler_.update(std::make_pair(evid, ev));
     }
@@ -220,7 +220,7 @@ void MesoscopicSimulator::check_model(void)
 
         if (rr.has_descriptor())
         {
-            const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
+            const std::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
 
             if (!desc->is_available())
             {
@@ -324,7 +324,7 @@ void MesoscopicSimulator::initialize(void)
     for (Integer i(0); i < world_->num_subvolumes(); ++i)
     {
         event_ids_[i] =
-            scheduler_.add(boost::shared_ptr<Event>(
+            scheduler_.add(std::shared_ptr<Event>(
                 new SubvolumeEvent(this, i, t())));
     }
 }

@@ -5,7 +5,7 @@
 #include <set>
 #include <algorithm>
 #include <iterator>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include "types.hpp"
 #include "Species.hpp"
@@ -92,12 +92,12 @@ public:
 
     // Optional functions
 
-    boost::shared_ptr<Model> expand(
+    std::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr,
         const std::map<Species, Integer>& max_stoich) const;
-    boost::shared_ptr<Model> expand(
+    std::shared_ptr<Model> expand(
         const std::vector<Species>& sp, const Integer max_itr) const;
-    boost::shared_ptr<Model> expand(const std::vector<Species>& sp) const;
+    std::shared_ptr<Model> expand(const std::vector<Species>& sp) const;
 
     void set_effective(const bool effective)
     {
@@ -121,11 +121,11 @@ protected:
 namespace extras
 {
 
-std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
+std::pair<std::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr,
     const std::map<Species, Integer>& max_stoich);
 
-inline std::pair<boost::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
+inline std::pair<std::shared_ptr<NetworkModel>, bool> generate_network_from_netfree_model(
     const NetfreeModel& nfm, const std::vector<Species>& seeds, const Integer max_itr)
 {
     const std::map<Species, Integer> max_stoich;

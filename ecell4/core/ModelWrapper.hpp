@@ -23,7 +23,7 @@ protected:
 
 public:
 
-    ModelWrapper(const boost::shared_ptr<Model>& m)
+    ModelWrapper(const std::shared_ptr<Model>& m)
         : model_(m), species_attribute_cache_(), // species_cache_(),
         first_order_reaction_rules_map_(), second_order_reaction_rules_map_()
     {
@@ -35,7 +35,7 @@ public:
         ;
     }
 
-    const boost::shared_ptr<Model>& backend() const
+    const std::shared_ptr<Model>& backend() const
     {
         return model_;
     }
@@ -118,7 +118,7 @@ public:
 
 protected:
 
-    boost::shared_ptr<Model> model_;
+    std::shared_ptr<Model> model_;
 
     // species_container_type species_cache_;
     species_attribute_cache_type species_attribute_cache_;

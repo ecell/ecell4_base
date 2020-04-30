@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_ClasicRR)
     // Without ReactionDescriptor.
     const Real L(1e-6);
     const Real3 edge_lengths(L, L, L);
-    boost::shared_ptr<ODEWorld_New> world(new ODEWorld_New(edge_lengths));
+    std::shared_ptr<ODEWorld_New> world(new ODEWorld_New(edge_lengths));
     
     ReactionRule rr1;
     Species sp1("A"), sp2("B");
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_ClasicRR)
     Real sp1_initial_value = 100.;
     world->add_molecules(sp1, sp1_initial_value);
 
-    boost::shared_ptr<NetworkModel> new_model(new NetworkModel());
+    std::shared_ptr<NetworkModel> new_model(new NetworkModel());
     {
         new_model->add_species_attribute(sp1);
         new_model->add_species_attribute(sp2);

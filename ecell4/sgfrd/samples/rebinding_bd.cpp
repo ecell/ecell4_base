@@ -37,7 +37,7 @@
 #include <iomanip>
 
 void snapshot_output(std::ofstream& outstr,
-        const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
+        const std::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
 {
     typedef ecell4::sgfrd::SGFRDWorld::particle_container_type container;
     container const ps = world->list_particles();
@@ -54,7 +54,7 @@ void snapshot_output(std::ofstream& outstr,
 }
 
 void species_output(std::ofstream& outstr,
-        const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world,
+        const std::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world,
         const ecell4::Species& sp1, const ecell4::Species& sp2)
 {
     outstr << world->t() << ' '
@@ -163,14 +163,14 @@ int main(int argc, char **argv)
     const ecell4::Real     volume(L * L * L);
 
     if(key_missing(input, "polygon")){return 1;}
-    boost::shared_ptr<polygon_type> polygon = boost::make_shared<polygon_type>(
+    std::shared_ptr<polygon_type> polygon = std::make_shared<polygon_type>(
             polygon_type(edge_lengths, ecell4::read_stl_format(
                     input["polygon"], ecell4::STLFormat::Ascii))
         );
 
     const std::vector<polygon_type::FaceID> fids = polygon->list_face_ids();
 
-    boost::shared_ptr<ecell4::NetworkModel> model(new ecell4::NetworkModel());
+    std::shared_ptr<ecell4::NetworkModel> model(new ecell4::NetworkModel());
 
     // A + B -> B, irreversible
 
@@ -192,13 +192,13 @@ int main(int argc, char **argv)
     const ecell4::Real k_bind = boost::lexical_cast<ecell4::Real>(input["k_bind"]);
     model->add_reaction_rule(ecell4::create_binding_reaction_rule(sp1, sp2, sp2, k_bind));
 
-    boost::shared_ptr<ecell4::RandomNumberGenerator> rng =
-        boost::make_shared<ecell4::GSLRandomNumberGenerator>();
+    std::shared_ptr<ecell4::RandomNumberGenerator> rng =
+        std::make_shared<ecell4::GSLRandomNumberGenerator>();
     if(key_missing(input, "seed")){return 1;}
     rng->seed(boost::lexical_cast<unsigned int>(input["seed"]));
 
-    boost::shared_ptr<world_type> world =
-        boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
+    std::shared_ptr<world_type> world =
+        std::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
 
     // -----------------------------------------------------------------
     // put particle that are in contact with each other.
