@@ -12,7 +12,7 @@ private:
     typedef VoxelPool base_type;
 
 public:
-    StructureType(const Species &species, boost::weak_ptr<VoxelPool> location)
+    StructureType(const Species &species, std::weak_ptr<VoxelPool> location)
         : base_type(species, location), size_(0)
     {
         ;

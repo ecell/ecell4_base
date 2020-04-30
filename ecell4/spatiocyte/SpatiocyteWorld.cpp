@@ -11,7 +11,7 @@ namespace spatiocyte
 
 void SpatiocyteWorld::add_space(std::unique_ptr<VoxelSpaceBase> uniq_space)
 {
-    boost::shared_ptr<VoxelSpaceBase> space(uniq_space.release());
+    std::shared_ptr<VoxelSpaceBase> space(uniq_space.release());
 
     for (auto i(0); i < space->size(); ++i)
     {
@@ -182,7 +182,7 @@ bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num)
 }
 
 bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num,
-                                    const boost::shared_ptr<const Shape> shape)
+                                    const std::shared_ptr<const Shape> shape)
 {
     if (num < 0)
     {
@@ -212,7 +212,7 @@ bool SpatiocyteWorld::add_molecules(const Species &sp, const Integer &num,
 
 Integer
 SpatiocyteWorld::add_structure(const Species &sp,
-                               const boost::shared_ptr<const Shape> shape)
+                               const std::shared_ptr<const Shape> shape)
 {
     const MoleculeInfo info(get_molecule_info(sp));
     get_root()->make_structure_type(sp, info.loc);
@@ -239,7 +239,7 @@ SpatiocyteWorld::add_structure(const Species &sp,
 
 Integer
 SpatiocyteWorld::add_structure3(const Species &sp, const std::string &location,
-                                const boost::shared_ptr<const Shape> shape)
+                                const std::shared_ptr<const Shape> shape)
 {
     Integer count(0);
     for (const auto &space : spaces_)
@@ -271,7 +271,7 @@ SpatiocyteWorld::add_structure3(const Species &sp, const std::string &location,
 
 Integer
 SpatiocyteWorld::add_structure2(const Species &sp, const std::string &location,
-                                const boost::shared_ptr<const Shape> shape)
+                                const std::shared_ptr<const Shape> shape)
 {
     Integer count(0);
     for (const auto &space : spaces_)
@@ -300,7 +300,7 @@ SpatiocyteWorld::add_structure2(const Species &sp, const std::string &location,
 }
 
 bool SpatiocyteWorld::is_surface_voxel(
-    const Voxel &voxel, const boost::shared_ptr<const Shape> shape) const
+    const Voxel &voxel, const std::shared_ptr<const Shape> shape) const
 {
     const Real L(shape->is_inside(voxel.position()));
     if (L > 0 || L < -2 * voxel_radius())
@@ -354,7 +354,7 @@ boost::optional<Voxel> SpatiocyteWorld::check_neighbor(const Voxel &voxel,
     for (unsigned int rnd(0); rnd < num; ++rnd)
     {
         const Voxel neighbor(get_neighbor(voxel, rnd));
-        boost::shared_ptr<const VoxelPool> mt(neighbor.get_voxel_pool());
+        std::shared_ptr<const VoxelPool> mt(neighbor.get_voxel_pool());
         if (mt->species().serial() == loc)
         {
             tmp.push_back(neighbor);

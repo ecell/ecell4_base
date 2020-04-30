@@ -4,7 +4,6 @@
 #include "UnitSpecies.hpp"
 #include "Species.hpp"
 #include "ReactionRule.hpp"
-#include <boost/array.hpp>
 #include <boost/optional.hpp>
 #include <unordered_map>
 

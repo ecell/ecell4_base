@@ -75,13 +75,13 @@ public:
         return 0.0;
     }
 
-    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
@@ -114,7 +114,7 @@ protected:
     }
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const override
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const override
     {
         if (user_max_shell_size_ != default_user_max_shell_size())
         {
@@ -138,7 +138,7 @@ protected:
 
 protected:
 
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
     matrix_sizes_type matrix_sizes_;
     Real bd_dt_factor_;
     Integer dissociation_retry_moves_;
@@ -192,13 +192,13 @@ public:
         return -1;
     }
 
-    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
@@ -231,7 +231,7 @@ protected:
     }
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
     {
         if (dissociation_retry_moves_ != default_dissociation_retry_moves())
         {
@@ -250,7 +250,7 @@ protected:
 
 protected:
 
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
     matrix_sizes_type matrix_sizes_;
     Real bd_dt_factor_;
     Integer dissociation_retry_moves_;

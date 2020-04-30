@@ -3,8 +3,7 @@
 
 #include <numeric>
 #include <sstream>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <memory>
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SubvolumeSpace.hpp>
@@ -40,7 +39,7 @@ public:
     MesoscopicWorld(const std::string& filename)
         : cs_(new SubvolumeSpaceVectorImpl(Real3(1, 1, 1), Integer3(1, 1, 1)))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
     }
@@ -48,7 +47,7 @@ public:
     MesoscopicWorld(const Real3& edge_lengths = Real3(1, 1, 1))
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(1, 1, 1)))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
@@ -56,13 +55,13 @@ public:
     MesoscopicWorld(const Real3& edge_lengths, const Integer3& matrix_sizes)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
 
     MesoscopicWorld(const Real3& edge_lengths,
-        const Integer3& matrix_sizes, boost::shared_ptr<RandomNumberGenerator> rng)
+        const Integer3& matrix_sizes, std::shared_ptr<RandomNumberGenerator> rng)
         : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, matrix_sizes)), rng_(rng)
     {
         ;
@@ -71,16 +70,16 @@ public:
     MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length);
     MesoscopicWorld(
         const Real3& edge_lengths, const Real subvolume_length,
-        boost::shared_ptr<RandomNumberGenerator> rng);
+        std::shared_ptr<RandomNumberGenerator> rng);
 
     virtual ~MesoscopicWorld()
     {
         ;
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(std::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (std::shared_ptr<Model> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -140,12 +139,12 @@ public:
 #endif
     }
 
-    boost::shared_ptr<Model> lock_model() const
+    std::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
 
-    inline const boost::shared_ptr<RandomNumberGenerator>& rng()
+    inline const std::shared_ptr<RandomNumberGenerator>& rng()
     {
         return rng_;
     }
@@ -220,7 +219,7 @@ public:
             reserve_pool(sp);
         }
 
-        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        const std::shared_ptr<PoolBase>& pool = get_pool(sp);
         if (pool->loc() == "")
         {
             for (Integer i(0); i < num; ++i)
@@ -250,14 +249,14 @@ public:
     }
 
     void add_molecules(const Species& sp, const Integer& num,
-        const boost::shared_ptr<Shape> shape)
+        const std::shared_ptr<Shape> shape)
     {
         if (!cs_->has_species(sp))
         {
             reserve_pool(sp);
         }
 
-        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        const std::shared_ptr<PoolBase>& pool = get_pool(sp);
 
         if (pool->loc() == "")
         {
@@ -335,12 +334,12 @@ public:
         const Species& sp, const Real3& pos)
     {
         add_molecules(sp, 1, position2coordinate(pos));
-        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        const std::shared_ptr<PoolBase>& pool = get_pool(sp);
         return std::make_pair(
             std::make_pair(ParticleID(), Particle(sp, pos, 0.0, pool->D())), true);
     }
 
-    void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    void add_structure(const Species& sp, const std::shared_ptr<const Shape>& shape);
     bool on_structure(const Species& sp, const coordinate_type& coord) const;
 
     bool has_structure(const Species& sp) const
@@ -392,12 +391,12 @@ public:
     std::vector<std::pair<ParticleID, Particle> > list_particles_exact(const Species& sp) const;
     std::vector<std::pair<ParticleID, Particle> > list_particles(const Species& sp) const;
 
-    const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const
+    const std::shared_ptr<PoolBase>& get_pool(const Species& sp) const
     {
         return cs_->get_pool(sp);
     }
 
-    const boost::shared_ptr<PoolBase> reserve_pool(const Species& sp)
+    const std::shared_ptr<PoolBase> reserve_pool(const Species& sp)
     {
         const molecule_info_type minfo(get_molecule_info(sp));
         return cs_->reserve_pool(sp, minfo.D, minfo.loc);
@@ -411,9 +410,9 @@ public:
 private:
 
     std::unique_ptr<SubvolumeSpace> cs_;
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
 
-    boost::weak_ptr<Model> model_;
+    std::weak_ptr<Model> model_;
 };
 
 } // meso

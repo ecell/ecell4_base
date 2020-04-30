@@ -2,7 +2,7 @@
 #define ECELL4_SGFRD_SHELL
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/sgfrd/SGFRDEvent.hpp>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace ecell4
 {

@@ -86,7 +86,7 @@ struct TriangleView : public Shape
     {
         throw NotImplemented("TriangleView::is_inside(coord)");
     }
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         Real a1 = rng->uniform(0.0, 1.0);
         Real a2 = rng->uniform(0.0, 1.0);
@@ -204,7 +204,7 @@ struct TriangleConstView : public Shape
     {
         throw NotImplemented("TriangleView::is_inside(coord)");
     }
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         Real a1 = rng->uniform(0.0, 1.0);
         Real a2 = rng->uniform(0.0, 1.0);

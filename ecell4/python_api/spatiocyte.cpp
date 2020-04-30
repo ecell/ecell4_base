@@ -66,11 +66,11 @@ static inline void define_spatiocyte_factory(py::module &m)
 static inline void define_spatiocyte_simulator(py::module &m)
 {
     py::class_<SpatiocyteSimulator, Simulator, PySimulator<SpatiocyteSimulator>,
-               boost::shared_ptr<SpatiocyteSimulator>>
+               std::shared_ptr<SpatiocyteSimulator>>
         simulator(m, "SpatiocyteSimulator");
-    simulator.def(py::init<boost::shared_ptr<SpatiocyteWorld>>(), py::arg("w"))
-        .def(py::init<boost::shared_ptr<SpatiocyteWorld>,
-                      boost::shared_ptr<Model>>(),
+    simulator.def(py::init<std::shared_ptr<SpatiocyteWorld>>(), py::arg("w"))
+        .def(py::init<std::shared_ptr<SpatiocyteWorld>,
+                      std::shared_ptr<Model>>(),
              py::arg("w"), py::arg("m"))
         .def("last_reactions", &SpatiocyteSimulator::last_reactions)
         .def("set_t", &SpatiocyteSimulator::set_t);
@@ -82,7 +82,7 @@ static inline void define_spatiocyte_simulator(py::module &m)
 static inline void define_spatiocyte_world(py::module &m)
 {
     py::class_<SpatiocyteWorld, ecell4::WorldInterface,
-               PyWorldImpl<SpatiocyteWorld>, boost::shared_ptr<SpatiocyteWorld>>
+               PyWorldImpl<SpatiocyteWorld>, std::shared_ptr<SpatiocyteWorld>>
         world(m, "SpatiocyteWorld");
     world
         .def(py::init<const Real3 &>(),
@@ -90,7 +90,7 @@ static inline void define_spatiocyte_world(py::module &m)
         .def(py::init<const Real3 &, const Real &>(), py::arg("edge_lengths"),
              py::arg("voxel_radius"))
         .def(py::init<const Real3 &, const Real &,
-                      const boost::shared_ptr<RandomNumberGenerator> &>(),
+                      const std::shared_ptr<RandomNumberGenerator> &>(),
              py::arg("edge_lengths"), py::arg("voxel_radius"), py::arg("rng"))
         .def(py::init<const std::string>(), py::arg("filename"))
 
@@ -111,7 +111,7 @@ static inline void define_spatiocyte_world(py::module &m)
                  SpatiocyteWorld::add_molecules)
         .def("add_molecules",
              (bool (SpatiocyteWorld::*)(const Species &, const Integer &,
-                                        const boost::shared_ptr<const Shape>)) &
+                                        const std::shared_ptr<const Shape>)) &
                  SpatiocyteWorld::add_molecules)
         .def("remove_molecules", &SpatiocyteWorld::remove_molecules)
         .def("voxel_volume", &SpatiocyteWorld::voxel_volume)

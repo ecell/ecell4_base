@@ -1,8 +1,6 @@
 #ifndef ECELL4_BD_BD_WORLD_HPP
 #define ECELL4_BD_BD_WORLD_HPP
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include <memory>
 #include <sstream>
 
@@ -44,14 +42,14 @@ public:
         const Integer3& matrix_sizes = Integer3(3, 3, 3))
         : ps_(new particle_space_type(edge_lengths, matrix_sizes))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         (*rng_).seed();
     }
 
     BDWorld(
         const Real3& edge_lengths, const Integer3& matrix_sizes,
-        boost::shared_ptr<RandomNumberGenerator> rng)
+        std::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
     {
         ;
@@ -60,7 +58,7 @@ public:
     BDWorld(const std::string& filename)
         : ps_(new particle_space_type(Real3(1, 1, 1)))
     {
-        rng_ = boost::shared_ptr<RandomNumberGenerator>(
+        rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
         this->load(filename);
     }
@@ -111,7 +109,7 @@ public:
             radius = sp.get_attribute_as<Real>("radius");
             D = sp.get_attribute_as<Real>("D");
         }
-        else if (boost::shared_ptr<Model> bound_model = lock_model())
+        else if (std::shared_ptr<Model> bound_model = lock_model())
         {
             Species newsp(bound_model->apply_species_attributes(sp));
             if (newsp.has_attribute("radius")
@@ -287,7 +285,7 @@ public:
         extras::throw_in_particles(*this, sp, num, rng());
     }
 
-    void add_molecules(const Species& sp, const Integer& num, const boost::shared_ptr<Shape> shape)
+    void add_molecules(const Species& sp, const Integer& num, const std::shared_ptr<Shape> shape)
     {
         extras::throw_in_particles(*this, sp, num, shape, rng());
     }
@@ -323,7 +321,7 @@ public:
         return lengths[0] * lengths[1] * lengths[2];
     }
 
-    inline boost::shared_ptr<RandomNumberGenerator>& rng()
+    inline std::shared_ptr<RandomNumberGenerator>& rng()
     {
         return rng_;
     }
@@ -383,9 +381,9 @@ public:
 #endif
     }
 
-    void bind_to(boost::shared_ptr<Model> model)
+    void bind_to(std::shared_ptr<Model> model)
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (std::shared_ptr<Model> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -397,7 +395,7 @@ public:
         model_ = model;
     }
 
-    boost::shared_ptr<Model> lock_model() const
+    std::shared_ptr<Model> lock_model() const
     {
         return model_.lock();
     }
@@ -405,10 +403,10 @@ public:
 protected:
 
     std::unique_ptr<ParticleSpace> ps_;
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
     SerialIDGenerator<ParticleID> pidgen_;
 
-    boost::weak_ptr<Model> model_;
+    std::weak_ptr<Model> model_;
 };
 
 } // bd

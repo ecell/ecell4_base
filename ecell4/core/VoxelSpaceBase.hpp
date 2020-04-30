@@ -47,10 +47,10 @@ public:
     typedef VoxelPool::coordinate_id_pair_type coordinate_id_pair_type;
 
 protected:
-    typedef std::unordered_map<Species, boost::shared_ptr<VoxelPool>>
+    typedef std::unordered_map<Species, std::shared_ptr<VoxelPool>>
         voxel_pool_map_type;
 
-    typedef std::unordered_map<Species, boost::shared_ptr<MoleculePool>>
+    typedef std::unordered_map<Species, std::shared_ptr<MoleculePool>>
         molecule_pool_map_type;
 
 public:
@@ -201,9 +201,9 @@ public:
         return 2.0 * sqrt(3.0) * r * r;
     }
 
-    boost::shared_ptr<VoxelPool> vacant() { return vacant_; }
+    std::shared_ptr<VoxelPool> vacant() { return vacant_; }
 
-    boost::shared_ptr<const VoxelPool> vacant() const { return vacant_; }
+    std::shared_ptr<const VoxelPool> vacant() const { return vacant_; }
 
     boost::optional<VoxelView> find_voxel(const ParticleID &pid) const
     {
@@ -243,20 +243,20 @@ public:
 
     VoxelView get_voxel_at(const coordinate_type &coord) const
     {
-        boost::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
+        std::shared_ptr<const VoxelPool> vp(get_voxel_pool_at(coord));
         return VoxelView(vp->get_particle_id(coord), vp->species(), coord);
     }
 
-    boost::shared_ptr<VoxelPool> find_voxel_pool(const Species &sp);
-    boost::shared_ptr<const VoxelPool> find_voxel_pool(const Species &sp) const;
+    std::shared_ptr<VoxelPool> find_voxel_pool(const Species &sp);
+    std::shared_ptr<const VoxelPool> find_voxel_pool(const Species &sp) const;
 
     bool has_molecule_pool(const Species &sp) const;
 
-    boost::shared_ptr<MoleculePool> find_molecule_pool(const Species &sp);
-    boost::shared_ptr<const MoleculePool>
+    std::shared_ptr<MoleculePool> find_molecule_pool(const Species &sp);
+    std::shared_ptr<const MoleculePool>
     find_molecule_pool(const Species &sp) const;
 
-    virtual boost::shared_ptr<VoxelPool>
+    virtual std::shared_ptr<VoxelPool>
     get_voxel_pool_at(const coordinate_type &coord) const = 0;
 
     /*
@@ -302,7 +302,7 @@ protected:
     Real t_;
     Real voxel_radius_;
 
-    boost::shared_ptr<VoxelPool> vacant_;
+    std::shared_ptr<VoxelPool> vacant_;
 
     voxel_pool_map_type voxel_pools_;
     molecule_pool_map_type molecule_pools_;

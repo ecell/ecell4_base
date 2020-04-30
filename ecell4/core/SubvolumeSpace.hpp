@@ -182,7 +182,7 @@ public:
     virtual std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const = 0;
 
     virtual void add_structure(
-        const Species& sp, const boost::shared_ptr<const Shape>& shape) = 0;
+        const Species& sp, const std::shared_ptr<const Shape>& shape) = 0;
     virtual bool check_structure(
         const Species::serial_type& serial, const coordinate_type& coord) const = 0;
     virtual Real get_volume(const Species& sp) const = 0;
@@ -236,8 +236,8 @@ public:
     virtual void load_hdf5(const H5::Group& root) = 0;
 #endif
 
-    virtual const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const = 0;
-    virtual const boost::shared_ptr<PoolBase> reserve_pool(const Species& sp, const Real D, const Species::serial_type& loc) = 0;
+    virtual const std::shared_ptr<PoolBase>& get_pool(const Species& sp) const = 0;
+    virtual const std::shared_ptr<PoolBase> reserve_pool(const Species& sp, const Real D, const Species::serial_type& loc) = 0;
 
     virtual std::vector<Integer> get_data(const Species& sp) const = 0;
 
@@ -327,7 +327,7 @@ public:
 
     // typedef std::vector<Integer> cell_type;
     // typedef std::unordered_map<Species, cell_type> matrix_type;
-    typedef std::unordered_map<Species, boost::shared_ptr<PoolBase>> matrix_type;
+    typedef std::unordered_map<Species, std::shared_ptr<PoolBase>> matrix_type;
 
     // typedef std::unordered_map<Species::serial_type, Shape::dimension_kind> structure_container_type;
     typedef std::vector<Real> structure_cell_type;
@@ -434,7 +434,7 @@ public:
     std::vector<coordinate_type> list_coordinates(const Species& sp) const;
     std::vector<coordinate_type> list_coordinates_exact(const Species& sp) const;
 
-    void add_structure(const Species& sp, const boost::shared_ptr<const Shape>& shape);
+    void add_structure(const Species& sp, const std::shared_ptr<const Shape>& shape);
     bool check_structure(const Species::serial_type& serial, const coordinate_type& coord) const;
     Real get_volume(const Species& sp) const;
     std::vector<Species::serial_type> list_structures() const;
@@ -562,8 +562,8 @@ public:
         matrix_sizes_[2] = matrix_sizes.layer;
     }
 
-    const boost::shared_ptr<PoolBase>& get_pool(const Species& sp) const;
-    const boost::shared_ptr<PoolBase> reserve_pool(
+    const std::shared_ptr<PoolBase>& get_pool(const Species& sp) const;
+    const std::shared_ptr<PoolBase> reserve_pool(
         const Species& sp, const Real D, const Species::serial_type& loc);
 
     virtual std::vector<Integer> get_data(const Species& sp) const
@@ -573,9 +573,9 @@ public:
 
 protected:
 
-    void add_structure3(const Species& sp, const boost::shared_ptr<const Shape>& shape);
-    void add_structure2(const Species& sp, const boost::shared_ptr<const Shape>& shape);
-    bool is_surface_subvolume(const coordinate_type& c, const boost::shared_ptr<const Shape>& shape);
+    void add_structure3(const Species& sp, const std::shared_ptr<const Shape>& shape);
+    void add_structure2(const Species& sp, const std::shared_ptr<const Shape>& shape);
+    bool is_surface_subvolume(const coordinate_type& c, const std::shared_ptr<const Shape>& shape);
 
 protected:
 

@@ -15,7 +15,7 @@
 #include <fstream>
 
 void snapshot_output(std::ofstream& outstr,
-        const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
+        const std::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
 {
     typedef ecell4::sgfrd::SGFRDWorld::particle_container_type container;
     container const ps = world->list_particles();
@@ -32,7 +32,7 @@ void snapshot_output(std::ofstream& outstr,
 }
 
 void species_output(std::ofstream& outstr,
-        const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world,
+        const std::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world,
         const ecell4::Species& sp1, const ecell4::Species& sp2,
         const ecell4::Species& sp3)
 {
@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     ecell4::STLPolygonAdapter<polygon_traits> adapter;
 
     if(key_missing(input, "polygon")){return 1;}
-    boost::shared_ptr<polygon_type> polygon =
+    std::shared_ptr<polygon_type> polygon =
         adapter.make_polygon(reader.read(input["polygon"], ecell4::STLFileReader::Ascii));
 
     if(key_missing(input, "system_size")) return 1;
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real     volume(L * L * L);
 
-    boost::shared_ptr<ecell4::NetworkModel>
+    std::shared_ptr<ecell4::NetworkModel>
         model(new ecell4::NetworkModel());
 
     if(key_missing(input, "DA")){return 1;}
@@ -168,13 +168,13 @@ int main(int argc, char **argv)
     model->add_reaction_rule(ecell4::create_binding_reaction_rule(sp2, sp3, sp1, k_bind));
     model->add_reaction_rule(ecell4::create_unbinding_reaction_rule(sp1, sp2, sp3, k_unbind));
 
-    boost::shared_ptr<ecell4::RandomNumberGenerator> rng =
-        boost::make_shared<ecell4::GSLRandomNumberGenerator>();
+    std::shared_ptr<ecell4::RandomNumberGenerator> rng =
+        std::make_shared<ecell4::GSLRandomNumberGenerator>();
     if(key_missing(input, "seed")){return 1;}
     rng->seed(boost::lexical_cast<unsigned int>(input["seed"]));
 
-    boost::shared_ptr<world_type> world =
-        boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
+    std::shared_ptr<world_type> world =
+        std::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
 
     if(key_missing(input, "num_A")){return 1;}
     if(key_missing(input, "num_B")){return 1;}

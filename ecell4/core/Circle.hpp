@@ -56,7 +56,7 @@ public:
 
     Circumference surface() const;
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotImplemented("Circle::draw_position");
     }
@@ -124,7 +124,7 @@ struct Circumference : public Shape
 
     Circle inside() const {return Circle(radius_, center_, normal_);}
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotImplemented("Circumference::draw_position");
     }

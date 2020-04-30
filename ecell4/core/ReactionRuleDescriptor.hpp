@@ -2,9 +2,8 @@
 #define ECELL4_REACTION_RULE_DESCRIPTOR_HPP
 
 #include <stdexcept>
+#include <memory>
 #include <cmath>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 
 #include "types.hpp"
 #include "Species.hpp"

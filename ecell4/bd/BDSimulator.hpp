@@ -2,7 +2,6 @@
 #define ECELL4_BD_BD_SIMULATOR_HPP
 
 #include <stdexcept>
-#include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/SimulatorBase.hpp>
@@ -28,14 +27,14 @@ public:
 public:
 
     BDSimulator(
-        boost::shared_ptr<BDWorld> world, boost::shared_ptr<Model> model,
+        std::shared_ptr<BDWorld> world, std::shared_ptr<Model> model,
         Real bd_dt_factor = 1e-5)
         : base_type(world, model), dt_(0), bd_dt_factor_(bd_dt_factor), dt_set_by_user_(false)
     {
         initialize();
     }
 
-    BDSimulator(boost::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
+    BDSimulator(std::shared_ptr<BDWorld> world, Real bd_dt_factor = 1e-5)
         : base_type(world), dt_(0), bd_dt_factor_(bd_dt_factor), dt_set_by_user_(false)
     {
         initialize();
@@ -128,7 +127,7 @@ public:
         dt_set_by_user_ = true;
     }
 
-    inline boost::shared_ptr<RandomNumberGenerator> rng()
+    inline std::shared_ptr<RandomNumberGenerator> rng()
     {
         return (*world_).rng();
     }

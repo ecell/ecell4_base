@@ -20,14 +20,14 @@ using namespace ecell4::gillespie;
 
 BOOST_AUTO_TEST_CASE(GillespieWorld_test)
 {
-    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+    std::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
     rng->seed(time(NULL));
     Species sp1("A");
     Species sp2("B");
 
     const Real L(1.0);
     const Real3 edge_lengths(L, L, L);
-    boost::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
+    std::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
 
     world->add_molecules(sp1, 10);
     world->add_molecules(sp2, 20);

@@ -11,7 +11,7 @@ class OffLatticeSpace : public VoxelSpaceBase
 {
 protected:
     typedef VoxelSpaceBase base_type;
-    typedef std::vector<boost::shared_ptr<VoxelPool>> voxel_container;
+    typedef std::vector<std::shared_ptr<VoxelPool>> voxel_container;
     typedef std::vector<std::vector<coordinate_type>> adjoining_container;
 
 public:
@@ -57,7 +57,7 @@ public:
     /*
      * VoxelSpace Traits
      */
-    boost::shared_ptr<VoxelPool>
+    std::shared_ptr<VoxelPool>
     get_voxel_pool_at(const coordinate_type &coord) const
     {
         return voxels_.at(coord);

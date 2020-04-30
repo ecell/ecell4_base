@@ -56,7 +56,7 @@ struct Polygon : public ecell4::Shape
 // for shapes (not implemented yet)
     dimension_kind dimension() const {return THREE;}
     Real  is_inside(const coordinate_type& coord) const;
-    coordinate_type draw_position(boost::shared_ptr<ecell4::RandomNumberGenerator>& rng) const;
+    coordinate_type draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const;
     bool  test_AABB(const coordinate_type& l, const coordinate_type& u) const;
 };
 
@@ -205,7 +205,7 @@ Real Polygon<coordT>::is_inside(const coordinate_type& coord) const
 
 template<typename coordT>
 typename Polygon<coordT>::coordinate_type
-Polygon<coordT>::draw_position(boost::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
+Polygon<coordT>::draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
 {
     throw ecell4::NotImplemented("polygon::draw_position");
 }

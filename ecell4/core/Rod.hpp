@@ -25,7 +25,7 @@ public:
     void shift(const Real3& vec);
     Real is_inside(const Real3& pos) const;
     Real distance(const Real3& pos) const;
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const;
     RodSurface surface() const;
     bool test_AABB(const Real3& l, const Real3& u) const;
 
@@ -66,7 +66,7 @@ public:
     void shift(const Real3& vec);
     Real is_inside(const Real3& pos) const;
     Real distance(const Real3& pos) const;
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const;
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const;
     Rod inside() const;
     bool test_AABB(const Real3& l, const Real3& u) const;
 

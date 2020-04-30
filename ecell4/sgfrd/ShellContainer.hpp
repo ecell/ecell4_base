@@ -47,7 +47,7 @@ public:
 
 public:
 
-    ShellContainer(const boost::shared_ptr<polygon_type>& poly)
+    ShellContainer(const std::shared_ptr<polygon_type>& poly)
         : polygon_(poly), face_registrator_(*poly), vertex_registrator_(*poly)
     {}
     ~ShellContainer(){}
@@ -171,7 +171,7 @@ private:
 
 private:
 
-    boost::shared_ptr<const polygon_type> polygon_;
+    std::shared_ptr<const polygon_type> polygon_;
     container_type             container_;
     shell_id_to_index_map_type shell_id_to_index_map_;
     face_registrator_type      face_registrator_;

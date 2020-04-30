@@ -17,7 +17,7 @@ public:
         ;
     }
 
-    Surface(const boost::shared_ptr<Shape>& root)
+    Surface(const std::shared_ptr<Shape>& root)
         : root_(root)
     {
         ;
@@ -45,7 +45,7 @@ public:
     }
 
     virtual Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const
+        std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotSupported("draw_position is not supported.");
     }
@@ -61,14 +61,14 @@ public:
         root_->bounding_box(edge_lengths, lower, upper);
     }
 
-    const boost::shared_ptr<Shape>& root() const
+    const std::shared_ptr<Shape>& root() const
     {
         return root_;
     }
 
 protected:
 
-    boost::shared_ptr<Shape> root_;
+    std::shared_ptr<Shape> root_;
 };
 
 struct Union
@@ -76,8 +76,8 @@ struct Union
 {
 public:
 
-    Union(const boost::shared_ptr<Shape>& a,
-          const boost::shared_ptr<Shape>& b)
+    Union(const std::shared_ptr<Shape>& a,
+          const std::shared_ptr<Shape>& b)
         : a_(a), b_(b)
     {
         ;
@@ -107,7 +107,7 @@ public:
     }
 
     virtual Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const
+        std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotImplemented("not implemented yet");
     }
@@ -137,23 +137,23 @@ public:
         {
             throw NotSupported("This union object is two-dimensional");
         }
-        return Surface(boost::shared_ptr<Shape>(new Union(*this)));
+        return Surface(std::shared_ptr<Shape>(new Union(*this)));
     }
 
-    const boost::shared_ptr<Shape>& one() const
+    const std::shared_ptr<Shape>& one() const
     {
         return a_;
     }
 
-    const boost::shared_ptr<Shape>& another() const
+    const std::shared_ptr<Shape>& another() const
     {
         return b_;
     }
 
 protected:
 
-    boost::shared_ptr<Shape> a_;
-    boost::shared_ptr<Shape> b_;
+    std::shared_ptr<Shape> a_;
+    std::shared_ptr<Shape> b_;
 };
 
 struct Complement
@@ -161,8 +161,8 @@ struct Complement
 {
 public:
 
-    Complement(const boost::shared_ptr<Shape>& a,
-               const boost::shared_ptr<Shape>& b)
+    Complement(const std::shared_ptr<Shape>& a,
+               const std::shared_ptr<Shape>& b)
         : a_(a), b_(b)
     {
         ;
@@ -197,7 +197,7 @@ public:
     }
 
     virtual Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const
+        std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotImplemented("not implemented yet");
     }
@@ -219,23 +219,23 @@ public:
         {
             throw NotSupported("This complement object is two-dimensional");
         }
-        return Surface(boost::shared_ptr<Shape>(new Complement(*this)));
+        return Surface(std::shared_ptr<Shape>(new Complement(*this)));
     }
 
-    const boost::shared_ptr<Shape>& one() const
+    const std::shared_ptr<Shape>& one() const
     {
         return a_;
     }
 
-    const boost::shared_ptr<Shape>& another() const
+    const std::shared_ptr<Shape>& another() const
     {
         return b_;
     }
 
 protected:
 
-    boost::shared_ptr<Shape> a_;
-    boost::shared_ptr<Shape> b_;
+    std::shared_ptr<Shape> a_;
+    std::shared_ptr<Shape> b_;
 };
 
 struct AffineTransformation
@@ -249,13 +249,13 @@ public:
         ;
     }
 
-    AffineTransformation(const boost::shared_ptr<Shape>& root)
+    AffineTransformation(const std::shared_ptr<Shape>& root)
         : root_(root), a0_(1, 0, 0), a1_(0, 1, 0), a2_(0, 0, 1), b_()
     {
         ;
     }
 
-    AffineTransformation(const boost::shared_ptr<Shape>& root, const Real3& first, const Real3& second, const Real3& third, const Real3& shift)
+    AffineTransformation(const std::shared_ptr<Shape>& root, const Real3& first, const Real3& second, const Real3& third, const Real3& shift)
         : root_(root), a0_(first), a1_(second), a2_(third), b_(shift)
     {
         ;
@@ -286,7 +286,7 @@ public:
     }
 
     virtual Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const
+        std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         Real3 pos = root_->draw_position(rng);
         map(pos);
@@ -415,7 +415,7 @@ public:
             throw NotSupported("This affine object is two-dimensional");
         }
         return Surface(
-            boost::shared_ptr<Shape>(new AffineTransformation(*this)));
+            std::shared_ptr<Shape>(new AffineTransformation(*this)));
     }
 
     const Real3 first() const
@@ -438,7 +438,7 @@ public:
         return b_;
     }
 
-    const boost::shared_ptr<Shape>& root() const
+    const std::shared_ptr<Shape>& root() const
     {
         return root_;
     }
@@ -486,7 +486,7 @@ protected:
 
 protected:
 
-    boost::shared_ptr<Shape> root_;
+    std::shared_ptr<Shape> root_;
 
     Real3 a0_, a1_, a2_;
     Real3 b_;

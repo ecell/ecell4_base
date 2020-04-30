@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     const Integer3 matrix_sizes(3, 3, 3);
 
     /// instantiate NetworkModel
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
 
     /// create a Species, and set its attributes
     Species sp1("A");
@@ -39,10 +39,10 @@ int main(int argc, char** argv)
     sp1.set_attribute("radius", radius);
     (*model).add_species_attribute(sp1);
 
-    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+    std::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
 
     /// instantiate BDWorld
-    boost::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, matrix_sizes, rng));
+    std::shared_ptr<BDWorld> world(new BDWorld(edge_lengths, matrix_sizes, rng));
     world->bind_to(model);
 
     /// create a Particle, and inject it into BDWorld
