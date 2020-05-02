@@ -171,13 +171,7 @@ public:
         for (species_map_type::const_iterator i(index_map_.begin());
             i != index_map_.end(); ++i)
         {
-            if (sexp.match((*i).first))
-            {
-                do
-                {
-                    retval += num_molecules_[(*i).second];
-                } while (sexp.next());
-            }
+            retval += num_molecules_[(*i).second] * sexp.count((*i).first);
         }
         return retval;
     }

@@ -652,6 +652,37 @@ void define_reaction_rule_descriptor(py::module& m)
 static inline
 void define_observers(py::module& m)
 {
+    py::class_<TimingEvent>(m, "TimingEvent")
+        .def(py::pickle(
+            [](const TimingEvent& obj) {
+                return py::make_tuple(obj.times, obj.num_steps, obj.count);
+                },
+            [](py::tuple state) {
+                if (state.size() != 3)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = TimingEvent(state[0].cast<std::vector<Real> >());
+                obj.num_steps = state[1].cast<size_t>();
+                obj.count = state[2].cast<size_t>();
+                return obj;
+                }
+            ));
+
+    py::class_<FixedIntervalEvent>(m, "FixedIntervalEvent")
+        .def(py::pickle(
+            [](const FixedIntervalEvent& obj) {
+                return py::make_tuple(obj.t0, obj.dt, obj.num_steps, obj.count);
+                },
+            [](py::tuple state) {
+                if (state.size() != 4)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalEvent(state[1].cast<Real>());
+                obj.t0 = state[0].cast<Real>();
+                obj.num_steps = state[2].cast<size_t>();
+                obj.count = state[3].cast<size_t>();
+                return obj;
+                }
+            ));
+
     py::class_<NumberLogger>(m, "NumberLogger")
         .def(py::pickle(
             [](const NumberLogger& obj) {
@@ -789,21 +820,81 @@ void define_observers(py::module& m)
                 py::arg("subdt") = FixedIntervalTrajectoryObserver::default_subdt())
         .def("data", &FixedIntervalTrajectoryObserver::data)
         .def("num_tracers", &FixedIntervalTrajectoryObserver::num_tracers)
-        .def("t", &FixedIntervalTrajectoryObserver::t);
+        .def("t", &FixedIntervalTrajectoryObserver::t)
+        .def(py::pickle(
+            [](const FixedIntervalTrajectoryObserver& obj) {
+                return py::make_tuple(
+                        obj.pids(),
+                        obj.resolve_boundary(),
+                        obj.prev_positions(),
+                        obj.data(),
+                        obj.strides(),
+                        obj.t(),
+                        obj.event(),
+                        obj.subevent());
+                },
+            [](py::tuple state) {
+                if (state.size() != 8)
+                    throw std::runtime_error("Invalid state!");
+                const auto event = state[6].cast<FixedIntervalTrajectoryObserver::event_type>();
+                const auto subevent = state[7].cast<FixedIntervalEvent>();
+                auto obj = FixedIntervalTrajectoryObserver(
+                        event.dt,
+                        state[0].cast<std::vector<ParticleID> >(),
+                        state[1].cast<bool>(),
+                        subevent.dt,
+                        state[2].cast<std::vector<Real3> >(),
+                        state[3].cast<std::vector<std::vector<Real3> > >(),
+                        state[4].cast<std::vector<Real3> >(),
+                        state[5].cast<std::vector<Real> >());
+                obj.set_event(event);
+                obj.set_subevent(subevent);
+                return obj;
+                }
+            ));
 
     py::class_<TimingTrajectoryObserver, Observer, PyObserver<TimingTrajectoryObserver>,
         std::shared_ptr<TimingTrajectoryObserver>>(m, "TimingTrajectoryObserver")
-        .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&, const bool, const Real>(),
+        .def(py::init<const std::vector<Real>&, const std::vector<ParticleID>&, const Real>(),
                 py::arg("t"), py::arg("pids"),
-                py::arg("resolve_boundary") = TimingTrajectoryObserver::default_resolve_boundary(),
                 py::arg("subdt") = TimingTrajectoryObserver::default_subdt())
-        .def(py::init<const std::vector<Real>&, const bool, const Real>(),
+        .def(py::init<const std::vector<Real>&, const Real>(),
                 py::arg("t"),
-                py::arg("resolve_boundary") = TimingTrajectoryObserver::default_resolve_boundary(),
                 py::arg("subdt") = TimingTrajectoryObserver::default_subdt())
         .def("data", &TimingTrajectoryObserver::data)
         .def("num_tracers", &TimingTrajectoryObserver::num_tracers)
-        .def("t", &TimingTrajectoryObserver::t);
+        .def("t", &TimingTrajectoryObserver::t)
+        .def(py::pickle(
+            [](const TimingTrajectoryObserver& obj) {
+                return py::make_tuple(
+                        obj.pids(),
+                        obj.prev_positions(),
+                        obj.data(),
+                        obj.strides(),
+                        obj.t(),
+                        obj.event(),
+                        obj.subevent(),
+                        obj.resolve_boundary());
+                },
+            [](py::tuple state) {
+                if (state.size() != 8)
+                    throw std::runtime_error("Invalid state!");
+                const auto event = state[5].cast<TimingTrajectoryObserver::event_type>();
+                const auto subevent = state[6].cast<FixedIntervalEvent>();
+                const bool resolve_boundary = state[7].cast<bool>();
+                auto obj = TimingTrajectoryObserver(
+                        event.times,
+                        state[0].cast<std::vector<ParticleID> >(),
+                        (resolve_boundary ? subevent.dt : 0.0),
+                        state[1].cast<std::vector<Real3> >(),
+                        state[2].cast<std::vector<std::vector<Real3> > >(),
+                        state[3].cast<std::vector<Real3> >(),
+                        state[4].cast<std::vector<Real> >());
+                obj.set_event(event);
+                obj.set_subevent(subevent);
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalTrackingObserver, Observer, PyObserver<FixedIntervalTrackingObserver>,
         std::shared_ptr<FixedIntervalTrackingObserver>>(m, "FixedIntervalTrackingObserver")
@@ -827,9 +918,15 @@ void define_observers(py::module& m)
 static inline
 void define_shape(py::module& m)
 {
-    py::class_<Shape, PyShape<>, std::shared_ptr<Shape>>(m, "Shape")
-        .def("dimension", [](const Shape& self) { return static_cast<Integer>(self.dimension()); })
+    py::class_<Shape, PyShape<>, std::shared_ptr<Shape>> shape(m, "Shape");
+    shape.def("dimension", [](const Shape& self) { return static_cast<Integer>(self.dimension()); })
         .def("is_inside", &Shape::is_inside);
+    py::enum_<Shape::dimension_kind>(shape, "dimension_kind")
+        .value("ONE", Shape::dimension_kind::ONE)
+        .value("TWO", Shape::dimension_kind::TWO)
+        .value("THREE", Shape::dimension_kind::THREE)
+        .value("UNDEF", Shape::dimension_kind::UNDEF)
+        .export_values();
 
     py::class_<Surface, Shape, PyShapeImpl<Surface>, std::shared_ptr<Surface>>(m, "Surface")
         .def("root", &Surface::root)

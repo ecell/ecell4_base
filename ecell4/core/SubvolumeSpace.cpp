@@ -12,14 +12,7 @@ Integer SubvolumeSpaceVectorImpl::num_molecules(const Species& sp) const
     for (matrix_type::const_iterator i(matrix_.begin());
         i != matrix_.end(); ++i)
     {
-        if (sexp.match((*i).first))
-        {
-            do
-            {
-                // retval += std::accumulate((*i).second.begin(), (*i).second.end(), 0);
-                retval += (*i).second->num_molecules();
-            } while (sexp.next());
-        }
+        retval += (*i).second->num_molecules() * sexp.count((*i).first);
     }
     return retval;
 }
@@ -43,14 +36,7 @@ Integer SubvolumeSpaceVectorImpl::num_molecules(
     for (matrix_type::const_iterator i(matrix_.begin());
         i != matrix_.end(); ++i)
     {
-        if (sexp.match((*i).first))
-        {
-            do
-            {
-                // retval += (*i).second[c];
-                retval += (*i).second->num_molecules(c);
-            } while (sexp.next());
-        }
+        retval += (*i).second->num_molecules(c) * sexp.count((*i).first);
     }
     return retval;
 }
