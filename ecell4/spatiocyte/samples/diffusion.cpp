@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Real3.hpp>
@@ -25,17 +24,17 @@ void run()
 
     Species sp("A", radius, D);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    boost::shared_ptr<RandomNumberGenerator>
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<RandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     rng->seed(0);
     // rng->seed(time(NULL));
 
-    // boost::shared_ptr<world_type> world(
+    // std::shared_ptr<world_type> world(
     //     new world_type(edge_lengths, voxel_radius, rng));
-    // boost::shared_ptr<world_type> world(
+    // std::shared_ptr<world_type> world(
     //     create_spatiocyte_world_vector_impl(edge_lengths, voxel_radius, rng));
-    boost::shared_ptr<world_type> world(
+    std::shared_ptr<world_type> world(
         ecell4::spatiocyte::create_spatiocyte_world_cell_list_impl(
             edge_lengths, voxel_radius, Integer3(5, 5, 5), rng));
 

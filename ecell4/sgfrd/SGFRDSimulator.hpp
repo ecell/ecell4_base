@@ -20,7 +20,6 @@
 #include <ecell4/sgfrd/tracer.hpp>
 #include <ecell4/sgfrd/statistics.hpp>
 
-#include <boost/make_shared.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/container/small_vector.hpp>
 #include <tuple>
@@ -88,8 +87,8 @@ class SGFRDSimulator :
 
   public:
 
-    SGFRDSimulator(const boost::shared_ptr<world_type>& world,
-                   const boost::shared_ptr<model_type>& model,
+    SGFRDSimulator(const std::shared_ptr<world_type>& world,
+                   const std::shared_ptr<model_type>& model,
                    Real bd_dt_factor = 0.01, Real reaction_length = 0.1,
                    const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world, model), is_dirty_(true), dt_(0),
@@ -110,7 +109,7 @@ class SGFRDSimulator :
 #endif
     }
 
-    SGFRDSimulator(boost::shared_ptr<world_type> world,
+    SGFRDSimulator(std::shared_ptr<world_type> world,
                    Real bd_dt_factor = 0.01, Real reaction_length = 0.1,
                    const std::string& trace_fname = "sgfrd_trace.log")
         : base_type(world), is_dirty_(true), dt_(0),
@@ -366,7 +365,7 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("  checking event %1% exists or not", id));
         try
         {
-            boost::shared_ptr<event_type> ev = scheduler_.get(id);
+            std::shared_ptr<event_type> ev = scheduler_.get(id);
             return static_cast<bool>(ev);
         }
         catch(std::out_of_range const& oor)
@@ -375,7 +374,7 @@ class SGFRDSimulator :
         }
     }
 
-    boost::shared_ptr<event_type> get_event(const event_id_type& id)
+    std::shared_ptr<event_type> get_event(const event_id_type& id)
     {
         SGFRD_TRACE(tracer_.write("  getting event %1%", id));
         return scheduler_.get(id);
@@ -1864,7 +1863,7 @@ class SGFRDSimulator :
         SGFRD_TRACE(tracer_.write("the domain has dt = %1%, begin_time = %2%",
                     dom.dt(), dom.begin_time()))
 
-        auto ev = boost::make_shared<event_type>(dom.begin_time() + dom.dt(), dom);
+        auto ev = std::make_shared<event_type>(dom.begin_time() + dom.dt(), dom);
         const DomainID did = scheduler_.add(ev);
 
         SGFRD_TRACE(tracer_.write("event_time = %1%, domain ID = %2%", ev->time(), did))
@@ -2270,8 +2269,8 @@ class SGFRDSimulator :
   private:
 
     // from SimulatorBase
-    // boost::shared_ptr<model_type> model_;
-    // boost::shared_ptr<world_type> world_;
+    // std::shared_ptr<model_type> model_;
+    // std::shared_ptr<world_type> world_;
     // Integer num_steps_;
     bool is_dirty_;
     Real dt_;

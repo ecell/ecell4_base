@@ -92,7 +92,7 @@ Real MeshSurface::is_inside(const Real3& pos) const
 #endif
 }
 
-Real3 MeshSurface::draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+Real3 MeshSurface::draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
 {
 #ifdef HAVE_VTK
     vtkPolyData* polydata = reader_->GetOutput();

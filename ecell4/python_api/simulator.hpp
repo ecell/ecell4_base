@@ -113,10 +113,10 @@ void define_simulator_functions(py::class_<S, Others...>& simulator)
             (void (S::*)(const Real&, const bool)) &S::run,
             py::arg("duration"), py::arg("is_dirty") = true)
         .def("run",
-            (void (S::*)(const Real&, const boost::shared_ptr<Observer>&, const bool)) &S::run,
+            (void (S::*)(const Real&, const std::shared_ptr<Observer>&, const bool)) &S::run,
             py::arg("duration"), py::arg("observer"), py::arg("is_dirty") = true)
         .def("run",
-            (void (S::*)(const Real&, std::vector<boost::shared_ptr<Observer>>, const bool)) &S::run,
+            (void (S::*)(const Real&, std::vector<std::shared_ptr<Observer>>, const bool)) &S::run,
             py::arg("duration"), py::arg("observers"), py::arg("is_dirty") = true)
         ;
 }

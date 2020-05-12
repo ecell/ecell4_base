@@ -4,6 +4,7 @@
 #include <memory>
 #include <cstdio>
 #include <functional>
+#include <boost/assert.hpp>
 // #include <boost/regex.hpp> //XXX: disabled pattern matching once
 #include "Logger.hpp"
 #include "ConsoleAppender.hpp"
@@ -16,22 +17,22 @@ namespace egfrd
 class LoggerManagerRegistry
 {
 private:
-    typedef std::pair<std::string, boost::shared_ptr<LoggerManager> > entry_type;
-    // typedef std::pair<boost::regex, boost::shared_ptr<LoggerManager> > entry_type;
+    typedef std::pair<std::string, std::shared_ptr<LoggerManager> > entry_type;
+    // typedef std::pair<boost::regex, std::shared_ptr<LoggerManager> > entry_type;
 public:
     void register_logger_manager(char const* logger_name_pattern,
-                                 boost::shared_ptr<LoggerManager> const& manager)
+                                 std::shared_ptr<LoggerManager> const& manager)
     {
         managers_.push_back(entry_type(entry_type::first_type(logger_name_pattern), manager));
     }
 
-    boost::shared_ptr<LoggerManager>
+    std::shared_ptr<LoggerManager>
     get_default_logger_manager() const
     {
         return default_manager_;
     }
 
-    boost::shared_ptr<LoggerManager>
+    std::shared_ptr<LoggerManager>
     operator()(char const* logger_name) const
     {
         if (!logger_name)
@@ -60,29 +61,29 @@ public:
 
     LoggerManagerRegistry(): default_manager_(new LoggerManager("default"))
     {
-        default_manager_->add_appender(boost::shared_ptr<LogAppender>(new ConsoleAppender()));
+        default_manager_->add_appender(std::shared_ptr<LogAppender>(new ConsoleAppender()));
     }
 
 private:
     std::vector<entry_type> managers_;
-    boost::shared_ptr<LoggerManager> default_manager_;
+    std::shared_ptr<LoggerManager> default_manager_;
 };
 
 static LoggerManagerRegistry registry;
 
 void LoggerManager::register_logger_manager(
         char const* logger_name_pattern,
-        boost::shared_ptr<LoggerManager> const& manager)
+        std::shared_ptr<LoggerManager> const& manager)
 {
     registry.register_logger_manager(logger_name_pattern, manager);
 }
 
-boost::shared_ptr<LoggerManager> LoggerManager::get_logger_manager(char const* logger_name_pattern)
+std::shared_ptr<LoggerManager> LoggerManager::get_logger_manager(char const* logger_name_pattern)
 {
     return registry(logger_name_pattern);
 }
 
-boost::shared_ptr<LoggerManager> Logger::manager() const
+std::shared_ptr<LoggerManager> Logger::manager() const
 {
     const_cast<Logger*>(this)->ensure_initialized();
     return manager_;
@@ -120,7 +121,7 @@ Logger::~Logger()
 
 struct invoke_appender
 {
-    void operator()(boost::shared_ptr<LogAppender> const& appender) const
+    void operator()(std::shared_ptr<LogAppender> const& appender) const
     {
         const char* chunks[] = { formatted_msg, NULL };
         (*appender)(level, name, chunks);
@@ -179,8 +180,8 @@ inline void Logger::ensure_initialized()
 {
     if (!manager_)
     {
-        boost::shared_ptr<LoggerManager> manager(registry_(name_.c_str()));
-        std::vector<boost::shared_ptr<LogAppender> > appenders(manager->appenders());
+        std::shared_ptr<LoggerManager> manager(registry_(name_.c_str()));
+        std::vector<std::shared_ptr<LogAppender> > appenders(manager->appenders());
         level_ = manager->level();
         appenders_.swap(appenders);
         manager->manage(this);
@@ -212,14 +213,14 @@ char const* LoggerManager::name() const
     return name_.c_str();
 }
 
-std::vector<boost::shared_ptr<LogAppender> > const& LoggerManager::appenders() const
+std::vector<std::shared_ptr<LogAppender> > const& LoggerManager::appenders() const
 {
     /* synchronized() { */
     return appenders_;
     /* } */
 }
 
-void LoggerManager::add_appender(boost::shared_ptr<LogAppender> const& appender)
+void LoggerManager::add_appender(std::shared_ptr<LogAppender> const& appender)
 {
     /* synchronized() { */
     appenders_.push_back(appender);

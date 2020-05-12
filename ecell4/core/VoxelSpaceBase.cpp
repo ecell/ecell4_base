@@ -51,7 +51,7 @@ Integer VoxelSpaceBase::num_molecules(const Species &sp) const
         const Integer cnt(sexp.count((*itr).first));
         if (cnt > 0)
         {
-            const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+            const std::shared_ptr<MoleculePool> &vp((*itr).second);
             count += vp->size() * cnt;
         }
     }
@@ -67,7 +67,7 @@ bool VoxelSpaceBase::has_voxel(const ParticleID &pid) const
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+        const std::shared_ptr<MoleculePool> &vp((*itr).second);
         if (vp->find(pid) != vp->end())
             return true;
     }
@@ -93,7 +93,7 @@ Integer VoxelSpaceBase::num_voxels_exact(const Species &sp) const
         molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
         if (itr != molecule_pools_.end())
         {
-            const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+            const std::shared_ptr<MoleculePool> &vp((*itr).second);
             return vp->size();
         }
     }
@@ -125,7 +125,7 @@ Integer VoxelSpaceBase::num_voxels(const Species &sp) const
     {
         if (sexp.match((*itr).first))
         {
-            const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+            const std::shared_ptr<MoleculePool> &vp((*itr).second);
             count += vp->size();
         }
     }
@@ -150,7 +150,7 @@ Integer VoxelSpaceBase::num_voxels() const
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+        const std::shared_ptr<MoleculePool> &vp((*itr).second);
         count += vp->size();
     }
 
@@ -159,7 +159,7 @@ Integer VoxelSpaceBase::num_voxels() const
 
 static inline void
 push_voxels(std::vector<VoxelView> &voxels,
-            const boost::shared_ptr<const MoleculePool> &voxel_pool)
+            const std::shared_ptr<const MoleculePool> &voxel_pool)
 {
     for (const auto &voxel : *voxel_pool)
     {
@@ -175,7 +175,7 @@ std::vector<VoxelView> VoxelSpaceBase::list_voxels() const
     for (molecule_pool_map_type::const_iterator itr(molecule_pools_.begin());
          itr != molecule_pools_.end(); ++itr)
     {
-        const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+        const std::shared_ptr<MoleculePool> &vp((*itr).second);
         push_voxels(retval, vp);
     }
 
@@ -206,7 +206,7 @@ VoxelSpaceBase::list_voxels_exact(const Species &sp) const
     return retval;
 }
 
-boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
+std::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
 {
     if (sp == vacant_->species())
         return vacant_;
@@ -219,7 +219,7 @@ boost::shared_ptr<VoxelPool> VoxelSpaceBase::find_voxel_pool(const Species &sp)
     return find_molecule_pool(sp); // upcast
 }
 
-boost::shared_ptr<const VoxelPool>
+std::shared_ptr<const VoxelPool>
 VoxelSpaceBase::find_voxel_pool(const Species &sp) const
 {
     if (sp == vacant_->species())
@@ -238,7 +238,7 @@ bool VoxelSpaceBase::has_molecule_pool(const Species &sp) const
     return (molecule_pools_.find(sp) != molecule_pools_.end());
 }
 
-boost::shared_ptr<MoleculePool>
+std::shared_ptr<MoleculePool>
 VoxelSpaceBase::find_molecule_pool(const Species &sp)
 {
     molecule_pool_map_type::iterator itr(molecule_pools_.find(sp));
@@ -249,7 +249,7 @@ VoxelSpaceBase::find_molecule_pool(const Species &sp)
     throw NotFound("MoleculePool not found.");
 }
 
-boost::shared_ptr<const MoleculePool>
+std::shared_ptr<const MoleculePool>
 VoxelSpaceBase::find_molecule_pool(const Species &sp) const
 {
     molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
@@ -274,7 +274,7 @@ bool VoxelSpaceBase::make_molecular_type(const Species &sp,
                            "VoxelPool with no voxels.");
     }
 
-    boost::shared_ptr<MoleculePool> vp(
+    std::shared_ptr<MoleculePool> vp(
         new MoleculePool(sp, find_voxel_pool(Species(loc))));
 
     std::pair<molecule_pool_map_type::iterator, bool> retval(
@@ -301,7 +301,7 @@ bool VoxelSpaceBase::make_structure_type(const Species &sp,
             "The given species is already assigned to the MoleculePool.");
     }
 
-    boost::shared_ptr<VoxelPool> vp(
+    std::shared_ptr<VoxelPool> vp(
         new StructureType(sp, find_voxel_pool(Species(loc))));
     std::pair<voxel_pool_map_type::iterator, bool> retval(
         voxel_pools_.insert(voxel_pool_map_type::value_type(sp, vp)));

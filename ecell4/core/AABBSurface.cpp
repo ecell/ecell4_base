@@ -40,7 +40,7 @@ Real AABBSurface::distance(const Real3& pos) const
 }
 
 Real3 AABBSurface::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     const Real Sxy = (upper_[0] - lower_[0]) * (upper_[1] - lower_[1]);
     const Real Syz = (upper_[1] - lower_[1]) * (upper_[2] - lower_[2]);

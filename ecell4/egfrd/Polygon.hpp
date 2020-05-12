@@ -47,7 +47,7 @@ struct Polygon : public ecell4::Shape
     {
         throw ecell4::NotImplemented("polygon::is_inside");
     }
-    coordinate_type draw_position(boost::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
+    coordinate_type draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
     {
         throw ecell4::NotImplemented("polygon::draw_position");
     }

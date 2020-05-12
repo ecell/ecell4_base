@@ -28,9 +28,8 @@
 #include "ParticleContainer.hpp"
 
 #include <map>
+#include <memory>
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
 #include "generator.hpp"
 //#include "ParticleID.hpp"
 //#include "SpeciesTypeID.hpp"
@@ -256,7 +255,7 @@ public:
 protected:
 
     typedef std::map<species_id_type, molecule_info_type> molecule_info_map;
-    typedef std::map<structure_id_type, boost::shared_ptr<structure_type> > structure_map;
+    typedef std::map<structure_id_type, std::shared_ptr<structure_type> > structure_map;
     typedef std::set<particle_id_type> particle_id_set;
     typedef std::map<species_id_type, particle_id_set> per_species_particle_id_set;
     typedef select_second<typename molecule_info_map::value_type> species_second_selector_type;
@@ -278,8 +277,8 @@ public:
         const matrix_sizes_type& matrix_sizes = matrix_sizes_type(3, 3, 3))
         : ps_(new particle_space_type(edge_lengths, matrix_sizes))
     {
-        // rng_ = boost::shared_ptr<rng_type>(new rng_type());
-        rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
+        // rng_ = std::shared_ptr<rng_type>(new rng_type());
+        rng_ = std::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
         (*rng_).seed();
 
         add_world_structure();
@@ -287,7 +286,7 @@ public:
 
     World(
         const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes,
-        const boost::shared_ptr<rng_type>& rng)
+        const std::shared_ptr<rng_type>& rng)
         :ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
     {
         add_world_structure();
@@ -296,7 +295,7 @@ public:
     World(const std::string filename)
         : ps_(new particle_space_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3))), rng_()
     {
-        rng_ = boost::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
+        rng_ = std::shared_ptr<rng_type>(new ecell4::GSLRandomNumberGenerator());
         this->load(filename);
     }
 
@@ -319,12 +318,12 @@ public:
             molecule_info_map_.size());
     }
 
-    bool add_structure(boost::shared_ptr<structure_type> surface)
+    bool add_structure(std::shared_ptr<structure_type> surface)
     {
         return structure_map_.insert(std::make_pair(surface->id(), surface)).second;
     }
 
-    virtual boost::shared_ptr<structure_type> get_structure(
+    virtual std::shared_ptr<structure_type> get_structure(
         structure_id_type const& id) const
     {
         typename structure_map::const_iterator i(structure_map_.find(id));
@@ -359,12 +358,12 @@ public:
     /** ecell4::Space
      */
 
-    inline boost::shared_ptr<rng_type>& rng()
+    inline std::shared_ptr<rng_type>& rng()
     {
         return rng_;
     }
 
-    void set_rng(const boost::shared_ptr<rng_type>& rng)
+    void set_rng(const std::shared_ptr<rng_type>& rng)
     {
         rng_ = rng;
     }
@@ -490,9 +489,9 @@ public:
         return static_cast<ecell4::Real>(num_molecules_exact(sp));
     }
 
-    void bind_to(boost::shared_ptr<model_type> model)
+    void bind_to(std::shared_ptr<model_type> model)
     {
-        if (boost::shared_ptr<model_type> bound_model = lock_model())
+        if (std::shared_ptr<model_type> bound_model = lock_model())
         {
             if (bound_model.get() != model.get())
             {
@@ -504,7 +503,7 @@ public:
         model_ = model;
     }
 
-    boost::shared_ptr<model_type> lock_model() const
+    std::shared_ptr<model_type> lock_model() const
     {
         return model_.lock();
     }
@@ -549,7 +548,7 @@ public:
 
     void add_molecules(
         const ecell4::Species& sp, const ecell4::Integer& num,
-        const boost::shared_ptr<ecell4::Shape> shape)
+        const std::shared_ptr<ecell4::Shape> shape)
     {
         ecell4::extras::throw_in_particles(*this, sp, num, shape, rng());
     }
@@ -598,7 +597,7 @@ public:
                 structure_id = sp.get_attribute_as<std::string>("structure_id");
             }
         }
-        else if (boost::shared_ptr<model_type> bound_model = lock_model())
+        else if (std::shared_ptr<model_type> bound_model = lock_model())
         {
             ecell4::Species newsp(bound_model->apply_species_attributes(sp));
 
@@ -645,13 +644,13 @@ protected:
             cuboidal_region_shape_type;
 
         this->add_structure(
-            boost::shared_ptr<structure_type>(
+            std::shared_ptr<structure_type>(
                 new cuboidal_region_type(
                     "world", cuboidal_region_shape_type(
                         position_type(0, 0, 0), edge_lengths()))));
         // const position_type& center(edge_lengths() * 0.5);
         // this->add_structure(
-        //     boost::shared_ptr<structure_type>(
+        //     std::shared_ptr<structure_type>(
         //         new cuboidal_region_type(
         //             "world", cuboidal_region_shape_type(center, center))));
     }
@@ -868,8 +867,8 @@ public:
     void clear()
     {
         // particle_id_generator pidgen_;
-        // boost::shared_ptr<rng_type> rng_;
-        // boost::weak_ptr<model_type> model_;
+        // std::shared_ptr<rng_type> rng_;
+        // std::weak_ptr<model_type> model_;
         ; // do nothing
 
         // molecule_info_map molecule_info_map_;
@@ -1079,8 +1078,8 @@ private:
 
     /** ecell4::Space
      */
-    boost::shared_ptr<rng_type> rng_;
-    boost::weak_ptr<model_type> model_;
+    std::shared_ptr<rng_type> rng_;
+    std::weak_ptr<model_type> model_;
 };
 
 } // egfrd

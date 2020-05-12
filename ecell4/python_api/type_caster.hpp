@@ -1,13 +1,13 @@
 #ifndef ECELL4_PYTHON_API_TYPE_CASTER
 #define ECELL4_PYTHON_API_TYPE_CASTER
 
+#include <memory>
 #include <boost/variant.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/optional.hpp>
 #include <pybind11/stl.h>
 // #include <pybind11/stl_bind.h>
 
-PYBIND11_DECLARE_HOLDER_TYPE(T, boost::shared_ptr<T>);
+PYBIND11_DECLARE_HOLDER_TYPE(T, std::shared_ptr<T>);
 
 namespace pybind11
 {

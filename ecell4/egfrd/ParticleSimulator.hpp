@@ -1,9 +1,6 @@
 #ifndef PARTICLE_SIMULATOR_HPP
 #define PARTICLE_SIMULATOR_HPP
 
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include "utils/range.hpp"
 #include "ReactionRuleInfo.hpp"
 #include "ReactionRecorder.hpp"
 #include "ReactionRecord.hpp"
@@ -12,6 +9,7 @@
 #include "NetworkRulesAdapter.hpp"
 #include "ReactionRecorderWrapper.hpp"
 #include <ecell4/core/SimulatorBase.hpp>
+#include <memory>
 
 namespace ecell4
 {
@@ -68,8 +66,8 @@ public:
     virtual ~ParticleSimulator() {}
 
     ParticleSimulator(
-        const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<model_type>& model)
+        const std::shared_ptr<world_type>& world,
+        const std::shared_ptr<model_type>& model)
         : base_type(world, model),
         network_rules_(new network_rules_type(model)),
         rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
@@ -79,7 +77,7 @@ public:
     }
 
     ParticleSimulator(
-        const boost::shared_ptr<world_type>& world)
+        const std::shared_ptr<world_type>& world)
         : base_type(world),
         network_rules_(new network_rules_type(this->model())),
         rrec_(new ReactionRecorderWrapper<reaction_record_type>()),
@@ -88,17 +86,17 @@ public:
         ;
     }
 
-    boost::shared_ptr<network_rules_type const> const& network_rules() const
+    std::shared_ptr<network_rules_type const> const& network_rules() const
     {
         return network_rules_;
     }
 
-    // boost::shared_ptr<reaction_recorder_type> const& reaction_recorder() const
+    // std::shared_ptr<reaction_recorder_type> const& reaction_recorder() const
     // {
     //     return rrec_;
     // }
 
-    // boost::shared_ptr<reaction_recorder_type>& reaction_recorder()
+    // std::shared_ptr<reaction_recorder_type>& reaction_recorder()
     // {
     //     return rrec_;
     // }
@@ -138,8 +136,8 @@ public:
     virtual bool step(const time_type& upto) = 0;
 
 protected:
-    boost::shared_ptr<network_rules_type const> network_rules_;
-    boost::shared_ptr<reaction_recorder_type> rrec_;
+    std::shared_ptr<network_rules_type const> network_rules_;
+    std::shared_ptr<reaction_recorder_type> rrec_;
     time_type dt_;
     bool paranoiac_;
 

@@ -5,7 +5,6 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/fusion/container/map.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/sequence/intrinsic/at_key.hpp>
@@ -60,7 +59,7 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
     typedef ecell4::SerialIDGenerator<shell_id_type> shell_id_generator;
     typedef ecell4::SerialIDGenerator<domain_id_type> domain_id_generator;
     typedef Domain<EGFRDSimulatorTraitsBase> domain_type;
-    typedef std::pair<const domain_id_type, boost::shared_ptr<domain_type> > domain_id_pair;
+    typedef std::pair<const domain_id_type, std::shared_ptr<domain_type> > domain_id_pair;
     typedef ecell4::EventScheduler event_scheduler_type; // base_type::time_type == ecell4::Real
     // typedef EventScheduler<typename base_type::time_type> event_scheduler_type;
 
@@ -293,7 +292,7 @@ protected:
             shell_matrix_map_type,
             cylindrical_shell_type>::type>::type
                 cylindrical_shell_matrix_type;
-    typedef std::unordered_map<domain_id_type, boost::shared_ptr<domain_type>> domain_map;
+    typedef std::unordered_map<domain_id_type, std::shared_ptr<domain_type>> domain_map;
     typedef typename network_rules_type::reaction_rules reaction_rules;
     typedef typename network_rules_type::reaction_rule_type reaction_rule_type;
     typedef typename traits_type::rate_type rate_type;
@@ -685,7 +684,7 @@ protected:
     //     position_type draw_com(cylindrical_pair_type const& domain,
     //                            time_type dt) const
     //     {
-    //         boost::shared_ptr<structure_type> const _structure(
+    //         std::shared_ptr<structure_type> const _structure(
     //             world_.find_molecule_info(
     //                 domain.particles()[0].second.sid())
     //             .structure_id);
@@ -941,8 +940,8 @@ public:
     virtual ~EGFRDSimulator() {}
 
     EGFRDSimulator(
-        const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<model_type>& ecell4_model,
+        const std::shared_ptr<world_type>& world,
+        const std::shared_ptr<model_type>& ecell4_model,
         Real bd_dt_factor = 1e-5, int dissociation_retry_moves = 1,
         length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
         : base_type(world, ecell4_model),
@@ -966,7 +965,7 @@ public:
     }
 
     EGFRDSimulator(
-        const boost::shared_ptr<world_type>& world,
+        const std::shared_ptr<world_type>& world,
         Real bd_dt_factor = 1e-5, int dissociation_retry_moves = 1,
         length_type user_max_shell_size = std::numeric_limits<length_type>::infinity())
         : base_type(world),
@@ -1041,7 +1040,7 @@ public:
         return std::make_pair(id, result);
     }
 
-    boost::shared_ptr<domain_type> get_domain(domain_id_type const& id) const
+    std::shared_ptr<domain_type> get_domain(domain_id_type const& id) const
     {
         typename domain_map::const_iterator i(domains_.find(id));
 
@@ -1131,7 +1130,7 @@ public:
         for (particle_id_pair const& pp:
                        (*base_type::world_).get_particles_range())
         {
-            boost::shared_ptr<single_type> single(create_single(pp));
+            std::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
 
@@ -1540,7 +1539,7 @@ protected:
         if (base_type::paranoiac_)
             BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
 
-        boost::shared_ptr<event_type> new_event(
+        std::shared_ptr<event_type> new_event(
             new single_event(this->t() + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
@@ -1551,7 +1550,7 @@ protected:
         if (base_type::paranoiac_)
             BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
 
-        boost::shared_ptr<event_type> new_event(
+        std::shared_ptr<event_type> new_event(
             new pair_event(this->t() + domain.dt(), domain, kind));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
@@ -1562,7 +1561,7 @@ protected:
         if (base_type::paranoiac_)
             BOOST_ASSERT(domains_.find(domain.id()) != domains_.end());
 
-        boost::shared_ptr<event_type> new_event(
+        std::shared_ptr<event_type> new_event(
             new multi_event(this->t() + domain.dt(), domain));
         domain.event() = std::make_pair(scheduler_.add(new_event), new_event);
         LOG_DEBUG(("add_event: #%d - %s", domain.event().first, boost::lexical_cast<std::string>(domain).c_str()));
@@ -1575,7 +1574,7 @@ protected:
     {
         const double rnd(this->rng().uniform(0, 1));
         const double dt(gsl_sf_log(1.0 / rnd) / double(rr.k() * (*base_type::world_).volume()));
-        boost::shared_ptr<event_type> new_event(new birth_event(this->t() + dt, rr));
+        std::shared_ptr<event_type> new_event(new birth_event(this->t() + dt, rr));
         scheduler_.add(new_event);
     }
 
@@ -1591,7 +1590,7 @@ protected:
     }
 
     // create_single {{{
-    boost::shared_ptr<single_type> create_single(particle_id_pair const& p)
+    std::shared_ptr<single_type> create_single(particle_id_pair const& p)
     {
         domain_kind kind(NONE);
         single_type* new_single(0);
@@ -1667,16 +1666,16 @@ protected:
         molecule_info_type const species((*base_type::world_).get_molecule_info(p.second.species()));
         // molecule_info_type const& species((*base_type::world_).find_molecule_info(p.second.species()));
         dynamic_cast<particle_simulation_structure_type const&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p, did, new_single, kind));
-        boost::shared_ptr<domain_type> const retval(new_single);
+        std::shared_ptr<domain_type> const retval(new_single);
         domains_.insert(std::make_pair(did, retval));
         BOOST_ASSERT(kind != NONE);
         ++domain_count_per_type_[kind];
-        return boost::dynamic_pointer_cast<single_type>(retval);
+        return std::dynamic_pointer_cast<single_type>(retval);
     }
     // }}}
 
     // create_pair {{{
-    boost::shared_ptr<pair_type> create_pair(particle_id_pair const& p0,
+    std::shared_ptr<pair_type> create_pair(particle_id_pair const& p0,
                                              particle_id_pair const& p1,
                                              position_type const& com,
                                              position_type const& iv,
@@ -1765,23 +1764,23 @@ protected:
         // molecule_info_type const& species((*base_type::world_).find_molecule_info(p0.second.species()));
         dynamic_cast<particle_simulation_structure_type&>(*(*base_type::world_).get_structure(species.structure_id)).accept(factory(this, p0, p1, com, iv, shell_size, did, new_pair, kind));
 
-        boost::shared_ptr<domain_type> const retval(new_pair);
+        std::shared_ptr<domain_type> const retval(new_pair);
         domains_.insert(std::make_pair(did, retval));
         BOOST_ASSERT(kind != NONE);
         ++domain_count_per_type_[kind];
-        return boost::dynamic_pointer_cast<pair_type>(retval);
+        return std::dynamic_pointer_cast<pair_type>(retval);
     }
     // }}}
 
     // create_multi {{{
-    boost::shared_ptr<multi_type> create_multi()
+    std::shared_ptr<multi_type> create_multi()
     {
         domain_id_type did(didgen_());
         multi_type* new_multi(new multi_type(did, *this, bd_dt_factor_));
-        boost::shared_ptr<domain_type> const retval(new_multi);
+        std::shared_ptr<domain_type> const retval(new_multi);
         domains_.insert(std::make_pair(did, retval));
         ++domain_count_per_type_[MULTI];
-        return boost::dynamic_pointer_cast<multi_type>(retval);
+        return std::dynamic_pointer_cast<multi_type>(retval);
     }
     // }}}
 
@@ -2019,7 +2018,7 @@ protected:
     }
 
     template<typename T>
-    std::array<boost::shared_ptr<single_type>, 2>
+    std::array<std::shared_ptr<single_type>, 2>
     propagate(AnalyticalPair<traits_type, T>& domain,
               std::array<position_type, 2> const& new_pos)
     {
@@ -2048,7 +2047,7 @@ protected:
 
         remove_domain(domain);
 
-        std::array<boost::shared_ptr<single_type>, 2> const singles = { {
+        std::array<std::shared_ptr<single_type>, 2> const singles = { {
             create_single(new_particles[0]),
             create_single(new_particles[1])
         } };
@@ -2069,11 +2068,11 @@ protected:
 
 
     template<typename Trange>
-    void burst_domains(Trange const& domain_ids, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
+    void burst_domains(Trange const& domain_ids, boost::optional<std::vector<std::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<std::shared_ptr<domain_type> >&>())
     {
         for(domain_id_type id: domain_ids)
         {
-            boost::shared_ptr<domain_type> domain(get_domain(id));
+            std::shared_ptr<domain_type> domain(get_domain(id));
             burst(domain, result);
         }
     }
@@ -2116,11 +2115,11 @@ protected:
     }
 
     template<typename T>
-    std::array<boost::shared_ptr<single_type>, 2> burst(AnalyticalPair<traits_type, T>& domain)
+    std::array<std::shared_ptr<single_type>, 2> burst(AnalyticalPair<traits_type, T>& domain)
     {
         length_type const dt(this->t() - domain.last_time());
 
-        std::array<boost::shared_ptr<single_type>, 2> const singles(
+        std::array<std::shared_ptr<single_type>, 2> const singles(
             propagate(domain, draw_new_positions<draw_on_burst>(domain, dt)));
 
         add_event(*singles[0], SINGLE_EVENT_ESCAPE);
@@ -2129,15 +2128,15 @@ protected:
         return singles;
     }
 
-    void burst(multi_type& domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
+    void burst(multi_type& domain, boost::optional<std::vector<std::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<std::shared_ptr<domain_type> >&>())
     {
         for(particle_id_pair p: domain.get_particles_range())
         {
-            boost::shared_ptr<single_type> s(create_single(p));
+            std::shared_ptr<single_type> s(create_single(p));
             add_event(*s, SINGLE_EVENT_ESCAPE);
             if (result)
             {
-                result.get().push_back(boost::dynamic_pointer_cast<domain_type>(s));
+                result.get().push_back(std::dynamic_pointer_cast<domain_type>(s));
             }
         }
         remove_domain(domain);
@@ -2167,7 +2166,7 @@ protected:
         throw ::ecell4::NotImplemented("?");
     }
 
-    void burst(boost::shared_ptr<domain_type> domain, boost::optional<std::vector<boost::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<boost::shared_ptr<domain_type> >&>())
+    void burst(std::shared_ptr<domain_type> domain, boost::optional<std::vector<std::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<std::shared_ptr<domain_type> >&>())
     {
         LOG_DEBUG(("burst: bursting %s", boost::lexical_cast<std::string>(*domain).c_str()));
         {
@@ -2194,11 +2193,11 @@ protected:
             spherical_pair_type* _domain(dynamic_cast<spherical_pair_type*>(domain.get()));
             if (_domain)
             {
-                std::array<boost::shared_ptr<single_type>, 2> bursted(burst(*_domain));
+                std::array<std::shared_ptr<single_type>, 2> bursted(burst(*_domain));
                 if (result)
                 {
-                    result.get().push_back(boost::dynamic_pointer_cast<domain_type>(bursted[0]));
-                    result.get().push_back(boost::dynamic_pointer_cast<domain_type>(bursted[1]));
+                    result.get().push_back(std::dynamic_pointer_cast<domain_type>(bursted[0]));
+                    result.get().push_back(std::dynamic_pointer_cast<domain_type>(bursted[1]));
                 }
                 return;
             }
@@ -2207,11 +2206,11 @@ protected:
             cylindrical_pair_type* _domain(dynamic_cast<cylindrical_pair_type*>(domain.get()));
             if (_domain)
             {
-                std::array<boost::shared_ptr<single_type>, 2> bursted(burst(*_domain));
+                std::array<std::shared_ptr<single_type>, 2> bursted(burst(*_domain));
                 if (result)
                 {
-                    result.get().push_back(boost::dynamic_pointer_cast<domain_type>(bursted[0]));
-                    result.get().push_back(boost::dynamic_pointer_cast<domain_type>(bursted[1]));
+                    result.get().push_back(std::dynamic_pointer_cast<domain_type>(bursted[0]));
+                    result.get().push_back(std::dynamic_pointer_cast<domain_type>(bursted[1]));
                 }
                 return;
             }
@@ -2282,7 +2281,7 @@ protected:
                 particle_id_pair product(
                     (*base_type::world_).new_particle(
                         product_id0, reactant.second.position()).first);
-                boost::shared_ptr<single_type> new_domain(create_single(product));
+                std::shared_ptr<single_type> new_domain(create_single(product));
                 add_event(*new_domain, SINGLE_EVENT_ESCAPE);
                 if (base_type::rrec_)
                 {
@@ -2324,7 +2323,7 @@ protected:
                 int i = num_retries_;
                 while (--i >= 0)
                 {
-                    boost::shared_ptr<structure_type> structure(
+                    std::shared_ptr<structure_type> structure(
                         (*base_type::world_).get_structure(
                             reactant_species.structure_id));
                     position_type vector(
@@ -2689,11 +2688,11 @@ protected:
 
     template<typename Trange>
     void burst_non_multis(Trange const& domain_ids,
-                          std::vector<boost::shared_ptr<domain_type> >& bursted)
+                          std::vector<std::shared_ptr<domain_type> >& bursted)
     {
         for (domain_id_type id: domain_ids)
         {
-            boost::shared_ptr<domain_type> domain(get_domain(id));
+            std::shared_ptr<domain_type> domain(get_domain(id));
             if (dynamic_cast<multi_type*>(domain.get()))
             {
                 bursted.push_back(domain);
@@ -2782,7 +2781,7 @@ protected:
 
     boost::optional<pair_type&>
     form_pair(single_type& domain, single_type& possible_partner,
-              std::vector<boost::shared_ptr<domain_type> > const& neighbors)
+              std::vector<std::shared_ptr<domain_type> > const& neighbors)
     {
         LOG_DEBUG(("trying to form Pair(%s, %s)",
                     boost::lexical_cast<std::string>(domain).c_str(),
@@ -2860,7 +2859,7 @@ protected:
 
         domain_type* closest_domain (0);
         length_type closest_shell_distance(std::numeric_limits<length_type>::infinity());
-        for (boost::shared_ptr<domain_type> _neighbor: neighbors)
+        for (std::shared_ptr<domain_type> _neighbor: neighbors)
         {
             single_type* const neighbor(
                 dynamic_cast<single_type*>(_neighbor.get()));
@@ -2987,7 +2986,7 @@ protected:
         // 6. Ok, Pair makes sense. Create one.
         new_shell_size = std::min(new_shell_size, max_shell_size);
 
-        boost::shared_ptr<pair_type> new_pair(
+        std::shared_ptr<pair_type> new_pair(
             create_pair(
                 domain.particle(),
                 possible_partner.particle(),
@@ -3018,14 +3017,14 @@ protected:
 
     boost::optional<multi_type&>
     form_multi(single_type& domain,
-               std::vector<boost::shared_ptr<domain_type> > const& neighbors,
+               std::vector<std::shared_ptr<domain_type> > const& neighbors,
                std::pair<domain_type*, length_type> closest)
     {
         // do not remove the return value specifier. Without this, you will
         // encounter a problem like "cannot allocate an object of abstract type"
         // because the default return type is `domain_type`.
         const auto dereferencer =
-            [](const boost::shared_ptr<domain_type>& ptr) -> const domain_type& {
+            [](const std::shared_ptr<domain_type>& ptr) -> const domain_type& {
                 return *ptr;
             };
         // this lambda is defined out of the macro because passing lambda
@@ -3062,7 +3061,7 @@ protected:
         position_type const single_pos(domain.position());
         add_to_multi(*retval, domain);
 
-        for (boost::shared_ptr<domain_type> neighbor: neighbors)
+        for (std::shared_ptr<domain_type> neighbor: neighbors)
         {
             length_type const dist(distance(*neighbor, single_pos));
             if (dist < min_shell_size)
@@ -3160,14 +3159,14 @@ protected:
                 std::unique_ptr<std::vector<domain_id_type> > neighbors(
                     get_neighbor_domains(new_shell, single->id()));
 
-                std::vector<boost::shared_ptr<domain_type> > bursted;
+                std::vector<std::shared_ptr<domain_type> > bursted;
                 burst_non_multis(*neighbors, bursted);
 
                 // do not remove the return value specifier. Without this, you
                 // will encounter a problem like "cannot allocate an object of
                 // abstract type" because the default return type is `domain_type`.
                 const auto dereferencer =
-                    [](const boost::shared_ptr<domain_type>& ptr)
+                    [](const std::shared_ptr<domain_type>& ptr)
                         -> const domain_type& {
                         return *ptr;
                     };
@@ -3179,7 +3178,7 @@ protected:
                             make_transform_iterator_range(bursted, dereferencer),
                             ", ").c_str()));
 
-                for (boost::shared_ptr<domain_type> neighbor: bursted)
+                for (std::shared_ptr<domain_type> neighbor: bursted)
                 {
                     length_type const dist(distance(*neighbor, single->position()));
                     if (dist < new_shell.radius())
@@ -3199,14 +3198,14 @@ protected:
 
     boost::optional<domain_type&> form_pair_or_multi(
         single_type& domain,
-        std::vector<boost::shared_ptr<domain_type> > const& neighbors)
+        std::vector<std::shared_ptr<domain_type> > const& neighbors)
     {
         BOOST_ASSERT(!neighbors.empty());
 
         domain_type* possible_partner(0);
         length_type length_to_possible_partner(
                 std::numeric_limits<length_type>::infinity());
-        for (boost::shared_ptr<domain_type> neighbor: neighbors)
+        for (std::shared_ptr<domain_type> neighbor: neighbors)
         {
             length_type const dist(distance(*neighbor, domain.position()));
             if (dist < length_to_possible_partner)
@@ -3319,16 +3318,16 @@ protected:
                     closest.second));
                 if (intruders)
                 {
-                    std::vector<boost::shared_ptr<domain_type> > bursted;
+                    std::vector<std::shared_ptr<domain_type> > bursted;
                     burst_non_multis(*intruders, bursted);
                     if (form_pair_or_multi(domain, bursted))
                         return;
                     // if nothing was formed, recheck closest and restore shells.
                     restore_domain(domain);
-                    for (boost::shared_ptr<domain_type> _single: bursted)
+                    for (std::shared_ptr<domain_type> _single: bursted)
                     {
-                        boost::shared_ptr<single_type> single(
-                            boost::dynamic_pointer_cast<single_type>(_single));
+                        std::shared_ptr<single_type> single(
+                            std::dynamic_pointer_cast<single_type>(_single));
                         if (!single)
                             continue;
                         restore_domain(*single);
@@ -3422,7 +3421,7 @@ protected:
                 position_type const old_CoM(domain.position());
                 LOG_DEBUG(("pair: single reaction %s", boost::lexical_cast<std::string>(domain.particles()[index].first).c_str()));
 
-                std::array<boost::shared_ptr<single_type>, 2> const new_single(burst(domain));
+                std::array<std::shared_ptr<single_type>, 2> const new_single(burst(domain));
 
                 try
                 {
@@ -3443,7 +3442,7 @@ protected:
                 std::array<position_type, 2> const new_pos(
                     draw_new_positions<draw_on_com_escape>(
                         domain, dt));
-                std::array<boost::shared_ptr<single_type>, 2> const new_single(
+                std::array<std::shared_ptr<single_type>, 2> const new_single(
                     propagate(domain, new_pos));
 
                 add_event(*new_single[0], SINGLE_EVENT_ESCAPE);
@@ -3528,7 +3527,7 @@ protected:
                         particle_id_pair const new_particle(
                             (*base_type::world_).new_particle(
                                 new_species_id, new_com).first);
-                        boost::shared_ptr<single_type> new_single(
+                        std::shared_ptr<single_type> new_single(
                             create_single(new_particle));
                         add_event(*new_single, SINGLE_EVENT_ESCAPE);
 
@@ -3560,7 +3559,7 @@ protected:
                 std::array<position_type, 2> const new_pos(
                     draw_new_positions<draw_on_iv_escape>(
                         domain, dt));
-                std::array<boost::shared_ptr<single_type>, 2> const new_single(
+                std::array<std::shared_ptr<single_type>, 2> const new_single(
                     propagate(domain, new_pos));
 
                 add_event(*new_single[0], SINGLE_EVENT_ESCAPE);
@@ -3642,7 +3641,7 @@ protected:
                     reaction_record_type(rr.id(), array_gen(pp)));
             }
 
-            boost::shared_ptr<single_type> single(create_single(pp));
+            std::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
         catch (NoSpace const&)

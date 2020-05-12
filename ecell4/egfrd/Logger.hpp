@@ -5,7 +5,7 @@
 #include <set>
 #include <vector>
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace ecell4
 {
@@ -47,7 +47,7 @@ public:
         return name_.c_str();
     }
 
-    boost::shared_ptr<LoggerManager> manager() const;
+    std::shared_ptr<LoggerManager> manager() const;
 
     void debug(char const* format, ...)
     {
@@ -113,9 +113,9 @@ private:
 protected:
     LoggerManagerRegistry const& registry_; 
     std::string const name_;
-    boost::shared_ptr<LoggerManager> manager_;
+    std::shared_ptr<LoggerManager> manager_;
     enum level level_;
-    std::vector<boost::shared_ptr<LogAppender> > appenders_;
+    std::vector<std::shared_ptr<LogAppender> > appenders_;
 };
 
 class LoggerManager
@@ -133,17 +133,17 @@ public:
 
     char const* name() const;
 
-    std::vector<boost::shared_ptr<LogAppender> > const& appenders() const;
+    std::vector<std::shared_ptr<LogAppender> > const& appenders() const;
 
-    void add_appender(boost::shared_ptr<LogAppender> const& appender);
+    void add_appender(std::shared_ptr<LogAppender> const& appender);
 
     LoggerManager(char const* name, enum Logger::level level = Logger::L_WARNING);
     // LoggerManager(char const* name, enum Logger::level level = Logger::L_INFO);
 
     static void register_logger_manager(char const* logger_name_pattern,
-                                        boost::shared_ptr<LoggerManager> const& manager);
+                                        std::shared_ptr<LoggerManager> const& manager);
 
-    static boost::shared_ptr<LoggerManager> get_logger_manager(char const* logger_name_patern);
+    static std::shared_ptr<LoggerManager> get_logger_manager(char const* logger_name_patern);
 
 protected:
     void manage(Logger* logger);
@@ -152,7 +152,7 @@ protected:
     std::string const name_;
     enum Logger::level level_;
     std::set<Logger*> managed_loggers_;
-    std::vector<boost::shared_ptr<LogAppender> > appenders_;
+    std::vector<std::shared_ptr<LogAppender> > appenders_;
 };
 
 class LogAppender

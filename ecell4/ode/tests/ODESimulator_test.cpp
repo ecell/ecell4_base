@@ -21,8 +21,8 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_constructor)
     const Real L(1e-6);
     const Real3 edge_lengths(L, L, L);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
 
     ODESimulator target(world, model);
 }
@@ -32,8 +32,8 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step1)
     const Real L(1e-6);
     const Real3 edge_lengths(L, L, L);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
 
     ODESimulator target(world, model);
     // target.step(1.0); //XXX: why not?
@@ -51,13 +51,13 @@ BOOST_AUTO_TEST_CASE(ODESimulator_test_step2)
     rr1.add_product(sp2);
     rr1.add_product(sp3);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
     model->add_species_attribute(sp2);
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->reserve_species(sp1);
     world->set_value(sp1, 60);
 

@@ -12,14 +12,7 @@ Integer SubvolumeSpaceVectorImpl::num_molecules(const Species& sp) const
     for (matrix_type::const_iterator i(matrix_.begin());
         i != matrix_.end(); ++i)
     {
-        if (sexp.match((*i).first))
-        {
-            do
-            {
-                // retval += std::accumulate((*i).second.begin(), (*i).second.end(), 0);
-                retval += (*i).second->num_molecules();
-            } while (sexp.next());
-        }
+        retval += (*i).second->num_molecules() * sexp.count((*i).first);
     }
     return retval;
 }
@@ -43,14 +36,7 @@ Integer SubvolumeSpaceVectorImpl::num_molecules(
     for (matrix_type::const_iterator i(matrix_.begin());
         i != matrix_.end(); ++i)
     {
-        if (sexp.match((*i).first))
-        {
-            do
-            {
-                // retval += (*i).second[c];
-                retval += (*i).second->num_molecules(c);
-            } while (sexp.next());
-        }
+        retval += (*i).second->num_molecules(c) * sexp.count((*i).first);
     }
     return retval;
 }
@@ -67,7 +53,7 @@ Integer SubvolumeSpaceVectorImpl::num_molecules_exact(
     return (*i).second->num_molecules(c);
 }
 
-const boost::shared_ptr<SubvolumeSpaceVectorImpl::PoolBase>&
+const std::shared_ptr<SubvolumeSpaceVectorImpl::PoolBase>&
 SubvolumeSpaceVectorImpl::get_pool(const Species& sp) const
 {
     matrix_type::const_iterator i(matrix_.find(sp));
@@ -78,7 +64,7 @@ SubvolumeSpaceVectorImpl::get_pool(const Species& sp) const
     return (*i).second;
 }
 
-const boost::shared_ptr<SubvolumeSpaceVectorImpl::PoolBase>
+const std::shared_ptr<SubvolumeSpaceVectorImpl::PoolBase>
 SubvolumeSpaceVectorImpl::reserve_pool(
     const Species& sp, const Real D, const Species::serial_type& loc)
 {
@@ -88,7 +74,7 @@ SubvolumeSpaceVectorImpl::reserve_pool(
         throw AlreadyExists("Species already exists");
     }
     // matrix_.insert(std::make_pair(sp, std::vector<Integer>(num_subvolumes())));
-    const boost::shared_ptr<PoolBase> pool(new Pool(sp, D, loc, num_subvolumes()));
+    const std::shared_ptr<PoolBase> pool(new Pool(sp, D, loc, num_subvolumes()));
     matrix_.insert(std::make_pair(sp, pool));
     species_.push_back(sp);
     return pool;
@@ -211,7 +197,7 @@ SubvolumeSpaceVectorImpl::list_coordinates_exact(const Species& sp) const
 }
 
 void SubvolumeSpaceVectorImpl::add_structure(
-    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+    const Species& sp, const std::shared_ptr<const Shape>& shape)
 {
     structure_matrix_type::const_iterator it(structure_matrix_.find(sp.serial()));
     if (it != structure_matrix_.end())
@@ -237,7 +223,7 @@ void SubvolumeSpaceVectorImpl::add_structure(
 }
 
 void SubvolumeSpaceVectorImpl::add_structure3(
-    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+    const Species& sp, const std::shared_ptr<const Shape>& shape)
 {
     structure_cell_type overlap(num_subvolumes());
     for (structure_cell_type::size_type i(0); i != overlap.size(); ++i)
@@ -256,7 +242,7 @@ void SubvolumeSpaceVectorImpl::add_structure3(
 }
 
 void SubvolumeSpaceVectorImpl::add_structure2(
-    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+    const Species& sp, const std::shared_ptr<const Shape>& shape)
 {
     structure_cell_type overlap(num_subvolumes());
     for (structure_cell_type::size_type i(0); i != overlap.size(); ++i)
@@ -276,7 +262,7 @@ void SubvolumeSpaceVectorImpl::add_structure2(
 }
 
 bool SubvolumeSpaceVectorImpl::is_surface_subvolume(
-    const coordinate_type& c, const boost::shared_ptr<const Shape>& shape)
+    const coordinate_type& c, const std::shared_ptr<const Shape>& shape)
 {
     const Real3 lengths(subvolume_edge_lengths());
     const Real3 center(coord2position(c));

@@ -4,7 +4,6 @@
 #include "UnitSpecies.hpp"
 #include "Species.hpp"
 #include "ReactionRule.hpp"
-#include <boost/array.hpp>
 #include <boost/optional.hpp>
 #include <unordered_map>
 
@@ -165,17 +164,36 @@ public:
     Integer count(const value_type& another)
     {
         context_type::variable_container_type globals;
-        if (!match(another, globals))
+
+        std::vector<context_type::iterator_container_type> results;
+        boost::optional<context_type> ctx = match(another, globals);
+
+        if (!ctx)
         {
             return 0;
         }
+        results.push_back(ctx.get().iterators);
+        std::sort(results.back().begin(), results.back().end());
 
-        Integer n(1);
-        while (next())
+        while (ctx = next())
         {
-            ++n;
+            results.push_back(ctx.get().iterators);
+            std::sort(results.back().begin(), results.back().end());
         }
-        return n;
+
+        return static_cast<Integer>(std::distance(results.begin(), std::unique(results.begin(), results.end())));
+
+        // if (!match(another, globals))
+        // {
+        //     return 0;
+        // }
+
+        // Integer n(1);
+        // while (next())
+        // {
+        //     ++n;
+        // }
+        // return n;
     }
 
     // const context_type& context() const
@@ -494,10 +512,10 @@ struct SpeciesExpressionMatcher
         return (pttrn.match(sp) ? true : false);
     }
 
-    bool next()
-    {
-        return (pttrn.next() ? true : false);
-    }
+    // bool next()
+    // {
+    //     return (pttrn.next() ? true : false);
+    // }
 
     size_t count(const Species& sp)
     {

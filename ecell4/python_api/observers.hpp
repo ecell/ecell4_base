@@ -35,14 +35,14 @@ namespace python_api
     {
     public:
         using base_type = FixedIntervalObserver;
-        using callback_t = std::function<bool (const boost::shared_ptr<WorldInterface>&, bool)>;
+        using callback_t = std::function<bool (const std::shared_ptr<WorldInterface>&, bool)>;
 
         FixedIntervalPythonHooker(const Real& dt, callback_t callback)
             : base_type(dt), callback_(callback)
         {
         }
 
-        bool fire(const Simulator* sim, const boost::shared_ptr<WorldInterface>& world) override
+        bool fire(const Simulator* sim, const std::shared_ptr<WorldInterface>& world) override
         {
             return callback_(world, sim->check_reaction()) && base_type::fire(sim, world);
         }

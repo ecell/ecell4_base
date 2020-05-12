@@ -158,7 +158,7 @@ void GillespieSimulator::step(void)
     }
     else
     {
-        const boost::shared_ptr<ReactionRuleDescriptor>& desc = next_reaction_.get_descriptor();
+        const std::shared_ptr<ReactionRuleDescriptor>& desc = next_reaction_.get_descriptor();
         assert(desc->is_available());
 
         const ReactionRule::reactant_container_type& reactants(next_reaction_.reactants());
@@ -235,7 +235,7 @@ void GillespieSimulator::check_model()
 
         if (rr.has_descriptor())
         {
-            const boost::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
+            const std::shared_ptr<ReactionRuleDescriptor>& desc = rr.get_descriptor();
 
             if (!desc->is_available())
             {

@@ -40,7 +40,7 @@ protected:
 
         virtual void fire()
         {
-            const boost::shared_ptr<WorldInterface> world = sim_->world();
+            const std::shared_ptr<WorldInterface> world = sim_->world();
             running_ = obs_->fire(sim_, world);
             // running_ = obs_->fire(sim_, sim_->world());
             // running_ = obs_->fire(sim_, static_cast<const WorldInterface*>(sim_->world().get()));
@@ -61,7 +61,7 @@ protected:
 
     struct observer_every
     {
-        bool operator()(boost::shared_ptr<Observer> const& val) const
+        bool operator()(std::shared_ptr<Observer> const& val) const
         {
             return val->every();
         }
@@ -70,19 +70,19 @@ protected:
 public:
 
     SimulatorBase(
-        const boost::shared_ptr<world_type>& world,
-        const boost::shared_ptr<model_type>& model)
+        const std::shared_ptr<world_type>& world,
+        const std::shared_ptr<model_type>& model)
         : world_(world), model_(model), num_steps_(0)
     {
         world_->bind_to(model_);
     }
 
-    SimulatorBase(const boost::shared_ptr<world_type>& world)
+    SimulatorBase(const std::shared_ptr<world_type>& world)
         : world_(world), num_steps_(0)
     {
         std::cerr << "WARNING: Using constructor is deprecated and will be removed."
             " Give both World and Model." << std::endl;
-        if (boost::shared_ptr<model_type> bound_model = world_->lock_model())
+        if (std::shared_ptr<model_type> bound_model = world_->lock_model())
         {
             model_ = bound_model;
         }
@@ -97,12 +97,12 @@ public:
         ; // do nothing
     }
 
-    const boost::shared_ptr<model_type>& model() const
+    const std::shared_ptr<model_type>& model() const
     {
         return model_;
     }
 
-    const boost::shared_ptr<world_type>& world() const
+    const std::shared_ptr<world_type>& world() const
     {
         return world_;
     }
@@ -148,19 +148,19 @@ public:
         }
     }
 
-    void run(const Real& duration, const boost::shared_ptr<Observer>& observer, const bool is_dirty=true)
+    void run(const Real& duration, const std::shared_ptr<Observer>& observer, const bool is_dirty=true)
     {
-        std::vector<boost::shared_ptr<Observer> > observers;
+        std::vector<std::shared_ptr<Observer> > observers;
         observers.push_back(observer);
         run(duration, observers, is_dirty);
     }
 
     bool fire_observers(
-        const std::vector<boost::shared_ptr<Observer> >::iterator begin,
-        const std::vector<boost::shared_ptr<Observer> >::iterator end)
+        const std::vector<std::shared_ptr<Observer> >::iterator begin,
+        const std::vector<std::shared_ptr<Observer> >::iterator end)
     {
         bool retval = true;
-        for (std::vector<boost::shared_ptr<Observer> >::iterator
+        for (std::vector<std::shared_ptr<Observer> >::iterator
             i(begin); i != end; ++i)
         {
             // if (!(*i)->fire(this, static_cast<const WorldInterface*>(world_.get())))
@@ -172,7 +172,7 @@ public:
         return retval;
     }
 
-    void run(const Real& duration, std::vector<boost::shared_ptr<Observer> > observers, const bool is_dirty=true)
+    void run(const Real& duration, std::vector<std::shared_ptr<Observer> > observers, const bool is_dirty=true)
     {
         if (is_dirty)
         {
@@ -181,11 +181,11 @@ public:
 
         const Real upto(t() + duration);
 
-        std::vector<boost::shared_ptr<Observer> >::iterator
+        std::vector<std::shared_ptr<Observer> >::iterator
             offset(std::partition(
                 observers.begin(), observers.end(), observer_every()));
 
-        for (std::vector<boost::shared_ptr<Observer> >::iterator i(observers.begin());
+        for (std::vector<std::shared_ptr<Observer> >::iterator i(observers.begin());
             i != observers.end(); ++i)
         {
             // (*i)->initialize(world_.get());
@@ -193,12 +193,12 @@ public:
         }
 
         EventScheduler scheduler;
-        // for (std::vector<boost::shared_ptr<Observer> >::const_iterator
+        // for (std::vector<std::shared_ptr<Observer> >::const_iterator
         //     i(offset); i != observers.end(); ++i)
-        for (std::vector<boost::shared_ptr<Observer> >::const_iterator
+        for (std::vector<std::shared_ptr<Observer> >::const_iterator
             i(observers.begin()); i != observers.end(); ++i)
         {
-            scheduler.add(boost::shared_ptr<Event>(
+            scheduler.add(std::shared_ptr<Event>(
                 new ObserverEvent(this, (*i).get(), t())));
         }
 
@@ -245,7 +245,7 @@ public:
             }
         }
 
-        for (std::vector<boost::shared_ptr<Observer> >::iterator i(observers.begin());
+        for (std::vector<std::shared_ptr<Observer> >::iterator i(observers.begin());
             i != observers.end(); ++i)
         {
             // (*i)->finalize(world_.get());
@@ -255,8 +255,8 @@ public:
 
 protected:
 
-    boost::shared_ptr<world_type> world_;
-    boost::shared_ptr<model_type> model_;
+    std::shared_ptr<world_type> world_;
+    std::shared_ptr<model_type> model_;
     Integer num_steps_;
 };
 

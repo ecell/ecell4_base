@@ -14,7 +14,7 @@ Integer LatticeSpaceCellListImpl::num_molecules(const Species &sp) const
         const Integer cnt(sexp.count(info.first));
         if (cnt > 0)
         {
-            const boost::shared_ptr<MoleculePool> &vp(info.second);
+            const std::shared_ptr<MoleculePool> &vp(info.second);
             count += vp->size() * cnt;
         }
     }
@@ -36,8 +36,8 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID &pid,
         throw NotSupported("Out of bounds");
     }
 
-    boost::shared_ptr<VoxelPool> new_vp(find_voxel_pool(species));
-    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
+    std::shared_ptr<VoxelPool> new_vp(find_voxel_pool(species));
+    std::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
@@ -46,7 +46,7 @@ bool LatticeSpaceCellListImpl::update_voxel(const ParticleID &pid,
 
     if (pid != ParticleID())
     {
-        const std::pair<boost::shared_ptr<VoxelPool>, coordinate_type> target(
+        const std::pair<std::shared_ptr<VoxelPool>, coordinate_type> target(
             __get_coordinate(pid));
         const coordinate_type &from_coord(target.second);
         if (from_coord != -1)
@@ -84,8 +84,8 @@ bool LatticeSpaceCellListImpl::add_voxel(const Species &sp,
                                          const ParticleID &pid,
                                          const coordinate_type &coord)
 {
-    boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(sp));
-    boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coord));
+    std::shared_ptr<VoxelPool> vpool(find_voxel_pool(sp));
+    std::shared_ptr<VoxelPool> location(get_voxel_pool_at(coord));
 
     if (vpool->location() != location)
         return false;
@@ -97,40 +97,40 @@ bool LatticeSpaceCellListImpl::add_voxel(const Species &sp,
     return true;
 }
 
-std::pair<boost::shared_ptr<VoxelPool>,
+std::pair<std::shared_ptr<VoxelPool>,
           LatticeSpaceCellListImpl::coordinate_type>
 LatticeSpaceCellListImpl::__get_coordinate(const ParticleID &pid)
 {
     for (auto &info : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp(info.second);
+        const std::shared_ptr<MoleculePool> &vp(info.second);
         MoleculePool::container_type::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {
             return std::make_pair(vp, (*j).coordinate);
         }
     }
-    return std::make_pair(boost::shared_ptr<VoxelPool>(),
+    return std::make_pair(std::shared_ptr<VoxelPool>(),
                           -1); // XXX: a bit dirty way
 }
 
-std::pair<boost::shared_ptr<const VoxelPool>,
+std::pair<std::shared_ptr<const VoxelPool>,
           LatticeSpaceCellListImpl::coordinate_type>
 LatticeSpaceCellListImpl::__get_coordinate(const ParticleID &pid) const
 {
     for (const auto &info : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp(info.second);
+        const std::shared_ptr<MoleculePool> &vp(info.second);
         MoleculePool::container_type::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {
         }
     }
-    return std::make_pair(boost::shared_ptr<VoxelPool>(),
+    return std::make_pair(std::shared_ptr<VoxelPool>(),
                           -1); // XXX: a bit dirty way
 }
 
-boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
+std::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
     const LatticeSpaceCellListImpl::coordinate_type &coord) const
 {
     /**
@@ -185,7 +185,7 @@ boost::shared_ptr<VoxelPool> LatticeSpaceCellListImpl::get_voxel_pool_at(
 }
 
 void LatticeSpaceCellListImpl::add_structure(
-    const Species &sp, const boost::shared_ptr<const Shape> &s,
+    const Species &sp, const std::shared_ptr<const Shape> &s,
     const std::string loc)
 {
     make_structure_type(sp, loc);
@@ -198,7 +198,7 @@ void LatticeSpaceCellListImpl::add_structure(
     structures_.insert(std::make_pair(sp, s));
 }
 
-const boost::shared_ptr<const Shape> &
+const std::shared_ptr<const Shape> &
 LatticeSpaceCellListImpl::get_structure(const Species &sp) const
 {
     structure_container_type::const_iterator i(structures_.find(sp));

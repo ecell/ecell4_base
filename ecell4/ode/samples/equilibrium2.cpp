@@ -1,5 +1,4 @@
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
@@ -33,21 +32,21 @@ int main(int argc, char** argv)
     rr2.add_reactant(sp3);
     rr2.add_product(sp1);
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
     model->add_species_attribute(sp2);
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
-    // boost::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel(model) );
+    // std::shared_ptr<ODENetworkModel>  ode_model(new ODENetworkModel(model) );
     // ReactionRule rr3;
     // rr3.add_reactant(sp1);
     // rr3.add_product(sp3);
     // ode_model->add_reaction_rule(rr3);
     // ode_model->dump_reactions();
 
-    boost::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
+    std::shared_ptr<ODEWorld> world(new ODEWorld(edge_lengths));
     world->add_molecules(sp1, N);
 
     ODESimulator target(world, model);

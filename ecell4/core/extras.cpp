@@ -12,7 +12,7 @@ namespace extras
 {
 
 Shape::dimension_kind
-get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>& model)
+get_dimension_from_model(const Species& species, const std::shared_ptr<Model>& model)
 {
     const Shape::dimension_kind DEFAULT_DIMENSION(Shape::THREE);
 
@@ -21,9 +21,10 @@ get_dimension_from_model(const Species& species, const boost::shared_ptr<Model>&
 
     if (!model->has_species_attribute(species))
     {
-        std::stringstream ss;
-        ss << "The model has no attribute for Specis(\"" << species.serial() << "\")";
-        throw NotFound(ss.str());
+        // std::stringstream ss;
+        // ss << "The model has no attribute for Specis(\"" << species.serial() << "\")";
+        // throw NotFound(ss.str());
+        return DEFAULT_DIMENSION;
     }
 
     const Species& attribute(model->apply_species_attributes(species));
@@ -221,7 +222,7 @@ std::vector<std::vector<Real> > get_stoichiometry(
             }
             else
             {
-                const boost::shared_ptr<ReactionRuleDescriptor>& desc(rr.get_descriptor());
+                const std::shared_ptr<ReactionRuleDescriptor>& desc(rr.get_descriptor());
                 {
                     if (rr.reactants().size() != desc->reactant_coefficients().size())
                     {

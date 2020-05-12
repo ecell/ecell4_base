@@ -2,7 +2,7 @@
 #define PARTICLE_CONTAINER_HPP
 
 #include <utility>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/WorldInterface.hpp>
@@ -47,7 +47,7 @@ public:
     // virtual molecule_info_type const& get_molecule_info(species_id_type const& id) = 0;
     // virtual molecule_info_type const& find_molecule_info(species_id_type const& id) const = 0;
 
-    virtual boost::shared_ptr<structure_type> get_structure(
+    virtual std::shared_ptr<structure_type> get_structure(
         structure_id_type const& id) const = 0;
 
     virtual std::pair<particle_id_pair, bool> new_particle(

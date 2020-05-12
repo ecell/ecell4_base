@@ -55,7 +55,7 @@ public:
     typedef std::unordered_map<particle_id_type, position_type> particle_id_position_map_type;
 
     typedef ecell4::egfrd::PotentialField<particle_container_type> potential_field_type;
-    typedef std::unordered_map<species_id_type, boost::shared_ptr<potential_field_type>> potential_field_map_type;
+    typedef std::unordered_map<species_id_type, std::shared_ptr<potential_field_type>> potential_field_map_type;
 
 public:
     template<typename Trange_>

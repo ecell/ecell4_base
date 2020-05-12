@@ -62,7 +62,7 @@ CylindricalSurface Cylinder::surface() const
 }
 
 Real3 Cylinder::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     throw NotImplemented("not implemented yet.");
 }
@@ -128,7 +128,7 @@ Cylinder CylindricalSurface::inside() const
 }
 
 Real3 CylindricalSurface::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     throw NotImplemented("not implemented yet.");
 }

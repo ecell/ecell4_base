@@ -50,13 +50,13 @@ class SGFRDFactory :
         return 0.1; // 0.05 ~ 0.1
     }
 
-    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return std::addressof(this->rng(rng));
     }
@@ -68,7 +68,7 @@ class SGFRDFactory :
     {
         polygon_file_.first = ""; // XXX clear polygon file
 
-        this->polygon_ = boost::make_shared<Polygon>(el, ts);
+        this->polygon_ = std::make_shared<Polygon>(el, ts);
         return (*this);
     }
     this_type* polygon_ptr(const Real3& el, const std::vector<Triangle>& ts)
@@ -132,15 +132,15 @@ class SGFRDFactory :
     }
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
     {
         return new simulator_type(w, m, bd_dt_factor_, bd_reaction_length_factor_);
     }
 
   protected:
 
-    boost::shared_ptr<RandomNumberGenerator> rng_;
-    boost::shared_ptr<Polygon>               polygon_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<Polygon>               polygon_;
     std::pair<std::string, STLFormat>        polygon_file_;
     Integer3 matrix_sizes_;
     Real     bd_dt_factor_;

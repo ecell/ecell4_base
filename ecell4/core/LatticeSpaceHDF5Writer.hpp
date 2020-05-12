@@ -2,8 +2,8 @@
 #define ECELL4_LATTICE_SPACE_HDF5_WRITER_HPP
 
 #include <boost/lexical_cast.hpp>
-#include <boost/scoped_array.hpp>
 #include <cstring>
+#include <memory>
 #include <iostream>
 #include <map>
 #include <sstream>
@@ -61,7 +61,7 @@ struct LatticeSpaceHDF5Traits
             new H5::Group(group->createGroup(species.serial().c_str())));
 
         h5_species_struct property;
-        boost::shared_ptr<const VoxelPool> loc(mtb->location());
+        std::shared_ptr<const VoxelPool> loc(mtb->location());
         // if (loc->is_vacant())
         //     property.location = H5std_string("");
         // else
@@ -88,7 +88,7 @@ struct LatticeSpaceHDF5Traits
         // Save voxels
         const Integer num_voxels(voxels.size());
         std::size_t vidx(0);
-        boost::scoped_array<h5_voxel_struct> h5_voxel_array(
+        std::unique_ptr<h5_voxel_struct[]> h5_voxel_array(
             new h5_voxel_struct[num_voxels]);
         for (const auto &view : voxels)
         {
@@ -152,7 +152,7 @@ void save_lattice_space(const Tspace_ &space, H5::Group *root,
     std::multimap<Species, const VoxelPool *> location_map;
     for (const auto &sp : species)
     {
-        boost::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(sp));
+        std::shared_ptr<const VoxelPool> mtb(space.find_voxel_pool(sp));
         Species location(mtb->location()->species());
         location_map.insert(
             std::make_pair(location, mtb.get())); // XXX: remove .get()
@@ -296,7 +296,7 @@ void load_lattice_space(const H5::Group &root, Tspace_ *space,
         H5::DataSet voxel_dset(group.openDataSet("voxels"));
         const unsigned int num_voxels(
             voxel_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<traits_type::h5_voxel_struct> h5_voxel_array(
+        std::unique_ptr<traits_type::h5_voxel_struct[]> h5_voxel_array(
             new traits_type::h5_voxel_struct[num_voxels]);
         voxel_dset.read(h5_voxel_array.get(), traits_type::get_voxel_comp());
         voxel_dset.close();
