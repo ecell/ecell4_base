@@ -666,15 +666,15 @@ class Polygon : public Shape
         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
 
         const Real radius_sq = radius * radius;
-        for(std::size_t i=0; i<vertices_.size(); ++i)
+        for(std::size_t i=0; i<faces_.size(); ++i)
         {
-            const FaceID fid(i);
+            const FaceID fid = static_cast<FaceID>(i);
             if(filter(fid))
             {
                 continue;
             }
 
-            const Triangle& tri = vertices_[i];
+            const Triangle& tri = faces_[i].triangle;
             const Real dist_sq  = distance_sq_point_Triangle(pos, tri);
             if(dist_sq <= radius_sq)
             {
