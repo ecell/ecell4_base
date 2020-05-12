@@ -107,10 +107,10 @@ struct TriangleView : public Shape
         throw NotImplemented("Triangle::bounding_box(edge_length, lower, upper)");
     }
 
-    boost::array<Real3*, 3> const& get_vertices() const {return vertices_;}
+    std::array<Real3*, 3> const& get_vertices() const {return vertices_;}
 
   private:
-    boost::array<Real3*, 3> vertices_;
+    std::array<Real3*, 3> vertices_;
 };
 
 struct TriangleConstView : public Shape
@@ -225,10 +225,10 @@ struct TriangleConstView : public Shape
         throw NotImplemented("Triangle::bounding_box(edge_length, lower, upper)");
     }
 
-    boost::array<const Real3*, 3> const& get_vertices() const {return vertices_;}
+    std::array<const Real3*, 3> const& get_vertices() const {return vertices_;}
 
   private:
-    boost::array<const Real3*, 3> vertices_;
+    std::array<const Real3*, 3> vertices_;
 };
 
 

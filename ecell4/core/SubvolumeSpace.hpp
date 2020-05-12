@@ -580,7 +580,7 @@ protected:
 protected:
 
     Real3 edge_lengths_;
-    boost::array<Integer, 3> matrix_sizes_;
+    std::array<Integer, 3> matrix_sizes_;
     matrix_type matrix_;
     std::vector<Species> species_;
 

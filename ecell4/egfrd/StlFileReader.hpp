@@ -17,11 +17,11 @@ template<typename coordT>
 struct StlTriangle
 {
     StlTriangle(){}
-    StlTriangle(const coordT& n, const boost::array<coordT, 3>& vtx)
+    StlTriangle(const coordT& n, const std::array<coordT, 3>& vtx)
         : normal(n), vertices(vtx)
     {}
     coordT normal;
-    boost::array<coordT, 3> vertices;
+    std::array<coordT, 3> vertices;
 };
 
 template<typename coordT>
@@ -266,7 +266,7 @@ StlTriangle<coordT>
 StlFileReader<coordT>::read_binary_triangle(std::ifstream& ifs) const
 {
     const coordT normal = read_binary_vector(ifs);
-    boost::array<coordT, 3> vertices;
+    std::array<coordT, 3> vertices;
     vertices[0] = this->read_binary_vector(ifs);
     vertices[1] = this->read_binary_vector(ifs);
     vertices[2] = this->read_binary_vector(ifs);

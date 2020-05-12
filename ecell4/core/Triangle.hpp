@@ -14,7 +14,7 @@ struct Triangle : public Shape
   public:
 
     Triangle();
-    explicit Triangle(const boost::array<Real3, 3>& vertices);
+    explicit Triangle(const std::array<Real3, 3>& vertices);
     explicit Triangle(const TriangleView& tv);
     explicit Triangle(const TriangleConstView& tv);
     Triangle(const Real3& a, const Real3& b, const Real3& c);
@@ -49,15 +49,15 @@ struct Triangle : public Shape
         return angles_.at(i);
     }
 
-    boost::array<Real3, 3> const& vertices() const
+    std::array<Real3, 3> const& vertices() const
     {
         return vertices_;
     }
-    boost::array<Real3, 3> const& edges() const
+    std::array<Real3, 3> const& edges() const
     {
         return edges_;
     }
-    boost::array<Real, 3> const& lengths_of_edges() const
+    std::array<Real, 3> const& lengths_of_edges() const
     {
         return lengths_;
     }
@@ -110,10 +110,10 @@ struct Triangle : public Shape
   private:
 
     Real3 normal_;
-    boost::array<Real, 3>  lengths_;
-    boost::array<Real, 3>  angles_;
-    boost::array<Real3, 3> vertices_;
-    boost::array<Real3, 3> edges_;
+    std::array<Real, 3>  lengths_;
+    std::array<Real, 3>  angles_;
+    std::array<Real3, 3> vertices_;
+    std::array<Real3, 3> edges_;
 };
 
 template<typename charT, typename traits>

@@ -10,7 +10,7 @@ struct Barycentric
     typedef Real        value_type;
     typedef std::size_t size_type;
     typedef size_type   index_type;
-    typedef boost::array<Real, 3> container_type;
+    typedef std::array<Real, 3> container_type;
 
     Barycentric(){}
     ~Barycentric(){}
@@ -41,7 +41,7 @@ struct Barycentric
     Real& at(const index_type i)       {return val.at(i);}
 
   private:
-    boost::array<Real, 3> val;
+    container_type val;
 };
 
 template<typename charT, typename traitsT>

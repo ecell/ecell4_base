@@ -45,7 +45,7 @@ static Real3 read_ascii_stl_normal(const std::string& line)
 
 static Triangle read_ascii_stl_triangle(std::ifstream& ifs)
 {
-    boost::array<Real3, 3> vs;
+    std::array<Real3, 3> vs;
     bool normal_read = false;
     std::size_t vertex_index = 0;
     while(!ifs.eof())
@@ -155,7 +155,7 @@ static Triangle read_binary_stl_triangle(std::ifstream& ifs)
 {
     // ignore normal vector written in the file
     read_binary_stl_vector(ifs);
-    boost::array<Real3, 3> vs;
+    std::array<Real3, 3> vs;
     vs[0] = read_binary_stl_vector(ifs);
     vs[1] = read_binary_stl_vector(ifs);
     vs[2] = read_binary_stl_vector(ifs);

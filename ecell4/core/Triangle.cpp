@@ -8,7 +8,7 @@ Triangle::Triangle()
     // do nothing
 }
 
-Triangle::Triangle(const boost::array<Real3, 3>& vertices)
+Triangle::Triangle(const std::array<Real3, 3>& vertices)
 {
     vertices_[0] = vertices[0];
     vertices_[1] = vertices[1];

@@ -23,7 +23,7 @@ class twofold_container
 public:
     typedef T_ value_type;
 private:
-    typedef boost::array<value_type, 2> containing_type;
+    typedef std::array<value_type, 2> containing_type;
 public:
     typedef typename containing_type::reference reference;
     typedef typename containing_type::const_reference const_reference;

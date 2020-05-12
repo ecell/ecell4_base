@@ -124,7 +124,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     //   - if a vertex shares triangles, put vertices on the triangles together
     for(face_data& fd : this->faces_)
     {
-        boost::array<Real3, 3> vs = fd.triangle.vertices();
+        std::array<Real3, 3> vs = fd.triangle.vertices();
         vs[0] = this->periodic_transpose(
                 this->vertex_at(fd.vertices[0]).position, vs[0]);
         vs[1] = this->periodic_transpose(
@@ -297,7 +297,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                     const Real next_angle = current_angle +
                         this->face_at(fid).triangle.angle_at(vidx0);
 
-                    boost::array<Real3, 3> unfolded;
+                    std::array<Real3, 3> unfolded;
                     unfolded[vidx0] = v_pos;
                     unfolded[vidx1] = v_pos +
                         rotate(current_angle, normal, ref_edge) *
@@ -339,7 +339,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
                     const Real next_angle = current_angle +
                         this->face_at(fid).triangle.angle_at(vidx0);
 
-                    boost::array<Real3, 3> unfolded;
+                    std::array<Real3, 3> unfolded;
                     unfolded[vidx0] = v_pos;
                     unfolded[vidx1] = v_pos +
                         rotate(-next_angle, normal, ref_edge) *

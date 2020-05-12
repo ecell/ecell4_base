@@ -40,9 +40,9 @@ public:
     typedef sorted_list<std::vector<typename all_values_type::size_type> > cell_type;
     typedef boost::multi_array<cell_type, 3> matrix_type;
     typedef typename cell_type::size_type size_type;
-    typedef boost::array<typename matrix_type::size_type, 3>
+    typedef std::array<typename matrix_type::size_type, 3>
             cell_index_type;
-    typedef boost::array<typename matrix_type::difference_type, 3>
+    typedef std::array<typename matrix_type::difference_type, 3>
             cell_offset_type;
     typedef std::unordered_map<key_type, typename all_values_type::size_type>
             key_to_value_mapper_type;
