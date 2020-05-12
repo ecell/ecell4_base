@@ -77,44 +77,6 @@ struct FaceTriangle
     position_container_type edges_;
 };
 
-// for triangle operation
-
-template<typename coordT>
-inline coordT centroid(const FaceTriangle<coordT>& face)
-{
-    const auto& vertices = face.vertices();
-    return (vertices[0] + vertices[1] + vertices[2]) * (1.0 / 3.0);
-}
-
-template<typename coordT>
-inline coordT incenter(const FaceTriangle<coordT>& face)
-{
-    const auto& length_of_edges = face.lengths_of_edges();
-    const auto& vertices        = face.vertices();
-    const auto a = length_of_edges[1];
-    const auto b = length_of_edges[2];
-    const auto c = length_of_edges[0];
-    const auto abc = a + b + c;
-    return (vertices[0] * a + vertices[1] * b + vertices[2] * c) * (1e0 / abc);
-}
-
-template<typename coordT>
-std::size_t match_edge(const coordT& vec, const FaceTriangle<coordT>& face,
-                       const Real tol = 1e-10)
-{
-    const auto& edges = face.edges();
-    for(std::size_t i=0; i<3; ++i)
-    {
-        if((std::abs(vec[0] - edges[i][0]) < tol) &&
-           (std::abs(vec[1] - edges[i][1]) < tol) &&
-           (std::abs(vec[2] - edges[i][2]) < tol))
-        {
-            return i;
-        }
-    }
-    throw std::invalid_argument("not match any edge");
-}
-
 namespace detail
 {
 template<typename coordT>
