@@ -296,7 +296,7 @@ class SGFRDWorld
         return false;
     }
 
-    std::vector<Species> list_species() const
+    std::vector<Species> list_species() const override
     {
         return ps_->list_species();
     }
