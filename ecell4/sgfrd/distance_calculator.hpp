@@ -4,9 +4,6 @@
 #include <ecell4/core/Circle.hpp>
 #include <ecell4/core/Cone.hpp>
 #include <boost/variant.hpp>
-#include <boost/type_traits.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/or.hpp>
 #include "distance.hpp"
 #include "Shell.hpp"
 
@@ -41,15 +38,9 @@ public:
 private:
 
     template<typename shapeT, typename stridT>
-    struct is_2d_shell : boost::mpl::or_<
-        boost::mpl::and_<
-            boost::is_same<shapeT, ecell4::Circle>,
-            boost::is_same<stridT, FaceID>
-            >,
-        boost::mpl::and_<
-            boost::is_same<shapeT, ecell4::ConicalSurface>,
-            boost::is_same<stridT, VertexID>
-            >
+    struct is_2d_shell : std::integral_constant<bool,
+        (std::is_same<shapeT, ecell4::Circle>::value && std::is_same<stridT, FaceID>::value) ||
+        (std::is_same<shapeT, ecell4::ConicalSurface>::value && std::is_same<stridT, VertexID>::value)
         >
     {};
 
@@ -62,7 +53,7 @@ public:
     {}
 
     template<typename shapeT, typename stridT>
-    typename boost::enable_if<is_2d_shell<shapeT, stridT>, Real>::type
+    typename std::enable_if<is_2d_shell<shapeT, stridT>::value, Real>::type
     operator()(const Shell<shapeT, stridT>& sh) const
     {
         return ecell4::polygon::distance(poly_, pos_, sh.get_surface_position()) -

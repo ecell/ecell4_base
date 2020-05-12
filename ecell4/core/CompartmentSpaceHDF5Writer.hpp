@@ -3,7 +3,7 @@
 
 #include <cstring>
 #include <unordered_map>
-#include <boost/scoped_array.hpp>
+#include <memory>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -150,9 +150,9 @@ void save_compartment_space(const typename Ttraits_::space_type& space, H5::Grou
     const std::vector<Species> species_list(space.list_species());
     const std::vector<Species>::size_type num_species(species_list.size());
 
-    boost::scoped_array<species_id_table_struct>
+    std::unique_ptr<species_id_table_struct[]>
         species_id_table(new species_id_table_struct[num_species]);
-    boost::scoped_array<species_num_struct>
+    std::unique_ptr<species_num_struct[]>
         species_num_table(new species_num_struct[num_species]);
 
     for(unsigned int i(0); i < num_species; ++i)
@@ -218,7 +218,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
         H5::DataSet species_dset(root.openDataSet("species"));
         const unsigned int num_species(
             species_dset.getSpace().getSimpleExtentNpoints());
-        boost::scoped_array<species_id_table_struct> species_id_table(
+        std::unique_ptr<species_id_table_struct[]> species_id_table(
             new species_id_table_struct[num_species]);
         species_dset.read(
             species_id_table.get(),
@@ -226,7 +226,7 @@ void load_compartment_space(const H5::Group& root, typename Ttraits_::space_type
         species_dset.close();
 
         H5::DataSet num_dset(root.openDataSet("num_molecules"));
-        boost::scoped_array<species_num_struct> species_num_table(
+        std::unique_ptr<species_num_struct[]> species_num_table(
             new species_num_struct[num_species]);
         num_dset.read(
             species_num_table.get(),

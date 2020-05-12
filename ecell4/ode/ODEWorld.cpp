@@ -9,9 +9,9 @@ namespace ecell4
 namespace ode
 {
 
-void ODEWorld::bind_to(boost::shared_ptr<Model> model)
+void ODEWorld::bind_to(std::shared_ptr<Model> model)
 {
-    if (boost::shared_ptr<Model> bound_model = lock_model())
+    if (std::shared_ptr<Model> bound_model = lock_model())
     {
         if (bound_model.get() != model.get())
         {

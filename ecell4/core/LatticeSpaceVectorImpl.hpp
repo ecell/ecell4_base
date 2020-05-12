@@ -10,7 +10,7 @@ class LatticeSpaceVectorImpl : public HCPLatticeSpace
 {
 public:
     typedef HCPLatticeSpace base_type;
-    typedef std::vector<boost::shared_ptr<VoxelPool>> voxel_container;
+    typedef std::vector<std::shared_ptr<VoxelPool>> voxel_container;
 
 public:
     LatticeSpaceVectorImpl(const Real3 &edge_lengths, const Real &voxel_radius,
@@ -51,7 +51,7 @@ public:
     std::vector<coordinate_type> list_coords(const Species &sp) const;
     std::vector<coordinate_type> list_coords_exact(const Species &sp) const;
 
-    boost::shared_ptr<VoxelPool>
+    std::shared_ptr<VoxelPool>
     get_voxel_pool_at(const coordinate_type &coord) const
     {
         return voxels_.at(coord);
@@ -122,8 +122,8 @@ protected:
 
     voxel_container voxels_;
 
-    boost::shared_ptr<VoxelPool> border_;
-    boost::shared_ptr<VoxelPool> periodic_;
+    std::shared_ptr<VoxelPool> border_;
+    std::shared_ptr<VoxelPool> periodic_;
 };
 
 } // namespace ecell4

@@ -49,7 +49,7 @@ SphericalSurface Sphere::surface() const
 }
 
 Real3 Sphere::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     if (radius_ <= 0.0)
     {
@@ -121,7 +121,7 @@ Sphere SphericalSurface::inside() const
 }
 
 Real3 SphericalSurface::draw_position(
-    boost::shared_ptr<RandomNumberGenerator>& rng) const
+    std::shared_ptr<RandomNumberGenerator>& rng) const
 {
     if (radius_ <= 0.0)
     {

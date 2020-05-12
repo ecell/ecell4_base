@@ -50,13 +50,13 @@ public:
         return 0.0;
     }
 
-    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
@@ -94,7 +94,7 @@ protected:
 
 protected:
 
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
     Integer3 matrix_sizes_;
     Real subvolume_length_;
 };

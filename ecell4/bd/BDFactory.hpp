@@ -47,13 +47,13 @@ public:
         return -1.0;
     }
 
-    this_type& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    this_type& rng(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         rng_ = rng;
         return (*this);
     }
 
-    inline this_type* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline this_type* rng_ptr(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
@@ -73,7 +73,7 @@ protected:
     }
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
     {
         if (bd_dt_factor_ > 0)
         {
@@ -87,7 +87,7 @@ protected:
 
 protected:
 
-    boost::shared_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<RandomNumberGenerator> rng_;
     Integer3 matrix_sizes_;
     Real bd_dt_factor_;
 };

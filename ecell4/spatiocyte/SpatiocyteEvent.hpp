@@ -47,8 +47,8 @@ const Real calc_dt(const Real R, const Real D);
 template <int Dimension>
 struct StepEvent : SpatiocyteEvent
 {
-    StepEvent(boost::shared_ptr<Model> model,
-              boost::shared_ptr<SpatiocyteWorld> world, const Species &species,
+    StepEvent(std::shared_ptr<Model> model,
+              std::shared_ptr<SpatiocyteWorld> world, const Species &species,
               const Real &t, const Real alpha = 1.0)
         : SpatiocyteEvent(t), model_(model), world_(world), alpha_(alpha)
     {
@@ -129,8 +129,8 @@ protected:
                            const Voxel &dst, const Real &alpha)
     {
         const Voxel voxel(space_, info.coordinate);
-        boost::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
-        boost::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
+        std::shared_ptr<const VoxelPool> from_mt(voxel.get_voxel_pool());
+        std::shared_ptr<const VoxelPool> to_mt(dst.get_voxel_pool());
 
         const Species &speciesA(from_mt->species());
         const Species &speciesB(to_mt->species());
@@ -180,17 +180,17 @@ protected:
     }
 
 protected:
-    boost::shared_ptr<Model> model_;
-    boost::shared_ptr<SpatiocyteWorld> world_;
-    boost::weak_ptr<VoxelSpaceBase> space_;
-    boost::shared_ptr<MoleculePool> mpool_;
+    std::shared_ptr<Model> model_;
+    std::shared_ptr<SpatiocyteWorld> world_;
+    std::weak_ptr<VoxelSpaceBase> space_;
+    std::shared_ptr<MoleculePool> mpool_;
 
     const Real alpha_;
 };
 
 struct ZerothOrderReactionEvent : SpatiocyteEvent
 {
-    ZerothOrderReactionEvent(boost::shared_ptr<SpatiocyteWorld> world,
+    ZerothOrderReactionEvent(std::shared_ptr<SpatiocyteWorld> world,
                              const ReactionRule &rule, const Real &t);
 
     virtual ~ZerothOrderReactionEvent() {}
@@ -200,13 +200,13 @@ struct ZerothOrderReactionEvent : SpatiocyteEvent
     virtual void interrupt(Real const &t) { time_ = t + draw_dt(); }
 
 protected:
-    boost::shared_ptr<SpatiocyteWorld> world_;
+    std::shared_ptr<SpatiocyteWorld> world_;
     ReactionRule rule_;
 };
 
 struct FirstOrderReactionEvent : SpatiocyteEvent
 {
-    FirstOrderReactionEvent(boost::shared_ptr<SpatiocyteWorld> world,
+    FirstOrderReactionEvent(std::shared_ptr<SpatiocyteWorld> world,
                             const ReactionRule &rule, const Real &t);
 
     virtual ~FirstOrderReactionEvent() {}
@@ -235,8 +235,8 @@ protected:
         throw "MoleculePool is not found";
     }
 
-    boost::shared_ptr<SpatiocyteWorld> world_;
-    boost::weak_ptr<RandomNumberGenerator> rng_;
+    std::shared_ptr<SpatiocyteWorld> world_;
+    std::weak_ptr<RandomNumberGenerator> rng_;
     ReactionRule rule_;
 };
 

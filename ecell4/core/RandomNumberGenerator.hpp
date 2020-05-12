@@ -3,7 +3,7 @@
 
 #include <ctime>
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include <memory>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
@@ -77,7 +77,7 @@ class GSLRandomNumberGenerator
 {
 public:
 
-    typedef boost::shared_ptr<gsl_rng> rng_handle;
+    typedef std::shared_ptr<gsl_rng> rng_handle;
 
 public:
 

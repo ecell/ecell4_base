@@ -15,7 +15,7 @@ struct PlanarSurface
     PlanarSurface(const PlanarSurface& rhs);
     Real is_inside(const Real3& coord) const;
     Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const;
+        std::shared_ptr<RandomNumberGenerator>& rng) const;
     bool test_AABB(const Real3& lower, const Real3& upper) const;
     void bounding_box(
         const Real3& edge_lengths, Real3& lower, Real3& u) const;

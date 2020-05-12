@@ -16,20 +16,20 @@ int main(int argc, char **argv)
         rr1(create_binding_reaction_rule(sp1, sp2, sp3, kf)),
         rr2(create_unbinding_reaction_rule(sp3, sp1, sp2, kr));
 
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     model->add_species_attribute(sp1);
     model->add_species_attribute(sp2);
     model->add_species_attribute(sp3);
     model->add_reaction_rule(rr1);
     model->add_reaction_rule(rr2);
 
-    boost::shared_ptr<GSLRandomNumberGenerator>
+    std::shared_ptr<GSLRandomNumberGenerator>
         rng(new GSLRandomNumberGenerator());
     rng->seed(time(NULL));
 
     const Real L(1.0);
     const Real3 edge_lengths(L, L, L);
-    boost::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
+    std::shared_ptr<GillespieWorld> world(new GillespieWorld(edge_lengths, rng));
     world->add_molecules(sp3, 10);
     world->save("test_gillespie.h5");
 

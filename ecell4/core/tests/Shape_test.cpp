@@ -52,7 +52,7 @@ struct RodFixture
     const Real length;
     const Real radius;
     Rod rod;
-    boost::shared_ptr<RandomNumberGenerator> rng;
+    std::shared_ptr<RandomNumberGenerator> rng;
     RodFixture() :
         center(5e-6, 5e-6, 5e-6), length(2.5e-6),
         radius(1.25e-6), rod(length, radius, center),

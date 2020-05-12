@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation1)
     seeds[0] = Species("X(p^1,q=a).X(p^1,q=a)");
     // seeds[1] = Species("X(p,q=a)");
 
-    boost::shared_ptr<Model> nwm(nfm.expand(seeds, 10));
+    std::shared_ptr<Model> nwm(nfm.expand(seeds, 10));
 
     // for (NetworkModel::reaction_rule_container_type::const_iterator
     //     i((*nwm).reaction_rules().begin()); i != (*nwm).reaction_rules().end(); ++i)
@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation2)
     std::map<Species, Integer> max_stoich;
     max_stoich[Species("X")] = 5;
 
-    boost::shared_ptr<Model> nwm(nfm.expand(seeds, 10, max_stoich));
+    std::shared_ptr<Model> nwm(nfm.expand(seeds, 10, max_stoich));
 
     // for (NetworkModel::reaction_rule_container_type::const_iterator
     //     i((*nwm).reaction_rules().begin()); i != (*nwm).reaction_rules().end(); ++i)
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation3)
     std::vector<Species> seeds1(1, Species("A(l, r)"));
     std::map<Species, Integer> max_stoich;
     max_stoich[Species("A")] = 4;
-    boost::shared_ptr<Model> m2(m1.expand(seeds1, 100, max_stoich));
+    std::shared_ptr<Model> m2(m1.expand(seeds1, 100, max_stoich));
     std::vector<ReactionRule> const& reaction_rules1 = m2->reaction_rules();
     BOOST_CHECK_EQUAL(reaction_rules1.size(), 4);
     BOOST_CHECK_EQUAL(reaction_rules1[0].k(), 2.0);
@@ -276,14 +276,14 @@ BOOST_AUTO_TEST_CASE(NetfreeModel_generation3)
     BOOST_CHECK_EQUAL(retval4[0].products()[1], Species("A(b)"));
 
     std::vector<Species> seeds2(1, Species("A(b)"));
-    boost::shared_ptr<Model> m5(m4.expand(seeds2));
+    std::shared_ptr<Model> m5(m4.expand(seeds2));
     std::vector<ReactionRule> const& reaction_rules2 = m5->reaction_rules();
     BOOST_CHECK_EQUAL(reaction_rules2.size(), 2);
 
     std::vector<Species> seeds3(2);
     seeds3[0] = Species("A(b)");
     seeds3[1] = Species("B(b)");
-    boost::shared_ptr<Model> m6(m4.expand(seeds3));
+    std::shared_ptr<Model> m6(m4.expand(seeds3));
     std::vector<ReactionRule> const& reaction_rules3 = m6->reaction_rules();
     BOOST_CHECK_EQUAL(reaction_rules3.size(), 6);
     for (std::vector<ReactionRule>::const_iterator i(reaction_rules3.begin());

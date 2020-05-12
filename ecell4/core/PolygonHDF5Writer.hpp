@@ -2,7 +2,7 @@
 #define ECELL4_POLYGON_HDF5_WRITER_HPP
 
 #include <cstring>
-#include <boost/scoped_array.hpp>
+#include <memory>
 
 #include <hdf5.h>
 #include <H5Cpp.h>
@@ -62,7 +62,7 @@ save_triangles_polygon(const T& p, H5::Group* root)
     const auto triangles             = p.triangles();
     const unsigned int num_triangles = triangles.size();
 
-    boost::scoped_array<h5_triangle_struct>
+    std::unique_ptr<h5_triangle_struct[]>
         h5_triangle_table(new h5_triangle_struct[num_triangles]);
     for(std::size_t i=0; i<triangles.size(); ++i)
     {
@@ -118,7 +118,7 @@ load_triangles_polygon(const H5::Group& root, T* p)
     H5::DataSet triangle_dset(root.openDataSet("triangles"));
     const unsigned int num_triangles(
         triangle_dset.getSpace().getSimpleExtentNpoints());
-    boost::scoped_array<h5_triangle_struct> h5_triangle_table(
+    std::unique_ptr<h5_triangle_struct[]> h5_triangle_table(
         new h5_triangle_struct[num_triangles]);
 
     triangle_dset.read(h5_triangle_table.get(),

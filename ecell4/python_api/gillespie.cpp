@@ -33,10 +33,10 @@ static inline
 void define_gillespie_simulator(py::module& m)
 {
     py::class_<GillespieSimulator, Simulator, PySimulator<GillespieSimulator>,
-        boost::shared_ptr<GillespieSimulator>> simulator(m, "GillespieSimulator");
+        std::shared_ptr<GillespieSimulator>> simulator(m, "GillespieSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<GillespieWorld>>(), py::arg("w"))
-        .def(py::init<boost::shared_ptr<GillespieWorld>, boost::shared_ptr<Model>>(),
+        .def(py::init<std::shared_ptr<GillespieWorld>>(), py::arg("w"))
+        .def(py::init<std::shared_ptr<GillespieWorld>, std::shared_ptr<Model>>(),
                 py::arg("w"), py::arg("m"))
         .def("last_reactions", &GillespieSimulator::last_reactions)
         .def("set_t", &GillespieSimulator::set_t);
@@ -49,10 +49,10 @@ static inline
 void define_gillespie_world(py::module& m)
 {
     py::class_<GillespieWorld, WorldInterface, PyWorldImpl<GillespieWorld>,
-        boost::shared_ptr<GillespieWorld>> world(m, "GillespieWorld");
+        std::shared_ptr<GillespieWorld>> world(m, "GillespieWorld");
     world
         .def(py::init<const Real3&>(), py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0))
-        .def(py::init<const Real3&, boost::shared_ptr<RandomNumberGenerator>>(),
+        .def(py::init<const Real3&, std::shared_ptr<RandomNumberGenerator>>(),
                 py::arg("edge_lengths"), py::arg("rng"))
         .def(py::init<const std::string>(), py::arg("filename"))
         .def("set_value", &GillespieWorld::set_value)
@@ -60,7 +60,7 @@ void define_gillespie_world(py::module& m)
             (void (GillespieWorld::*)(const Species&, const Integer&))
             &GillespieWorld::add_molecules)
         .def("add_molecules",
-            (void (GillespieWorld::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>))
+            (void (GillespieWorld::*)(const Species&, const Integer&, const std::shared_ptr<Shape>))
             &GillespieWorld::add_molecules)
         .def("remove_molecules", &GillespieWorld::remove_molecules)
         .def("new_particle",

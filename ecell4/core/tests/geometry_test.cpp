@@ -17,7 +17,7 @@ static const std::size_t  N = 10000;
 
 BOOST_AUTO_TEST_CASE(geometry_test_rotate)
 {
-    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+    std::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
     const Real3 unitx(1, 0, 0);
     const Real3 unity(0, 1, 0);
     const Real3 unitz(0, 0, 1);
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(geometry_test_rotate)
 
 BOOST_AUTO_TEST_CASE(geometry_test_angle)
 {
-    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+    std::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
     const Real3 unitz(0, 0, 1);
     const Real3 unitx(1, 0, 0);
 

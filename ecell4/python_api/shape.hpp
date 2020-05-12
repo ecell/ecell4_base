@@ -38,7 +38,7 @@ namespace python_api
             PYBIND11_OVERLOAD_PURE(Real, Base, is_inside, coord);
         }
 
-        Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const override
+        Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const override
         {
             PYBIND11_OVERLOAD_PURE(Real3, Base, draw_position, rng);
         }
@@ -71,7 +71,7 @@ namespace python_api
             PYBIND11_OVERLOAD(Real, Base, is_inside, coord);
         }
 
-        Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const override
+        Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const override
         {
             PYBIND11_OVERLOAD(Real3, Base, draw_position, rng);
         }

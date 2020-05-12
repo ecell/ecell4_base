@@ -19,7 +19,7 @@ using namespace ecell4::meso;
 
 BOOST_AUTO_TEST_CASE(MesoscopicSimulator_test_step)
 {
-    boost::shared_ptr<NetworkModel> model(new NetworkModel());
+    std::shared_ptr<NetworkModel> model(new NetworkModel());
     Species sp1("A");
     Species sp2("B");
     ReactionRule rr1;
@@ -32,8 +32,8 @@ BOOST_AUTO_TEST_CASE(MesoscopicSimulator_test_step)
 
     const Real L(1.0);
     const Real3 edge_lengths(L, L, L);
-    boost::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
-    boost::shared_ptr<MesoscopicWorld> world(
+    std::shared_ptr<RandomNumberGenerator> rng(new GSLRandomNumberGenerator());
+    std::shared_ptr<MesoscopicWorld> world(
         new MesoscopicWorld(edge_lengths, Integer3(2, 3, 4), rng));
 
     world->add_molecules(sp1, 10, 0);

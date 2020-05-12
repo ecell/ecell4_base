@@ -49,7 +49,7 @@ ReactionRule::ReactionRule(const ReactionRule& rr)
 {
     if (rr.has_descriptor())
     {
-        set_descriptor(boost::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
+        set_descriptor(std::shared_ptr<ReactionRuleDescriptor>(rr.get_descriptor()->clone()));
     }
 }
 
@@ -174,19 +174,19 @@ bool ReactionRule::has_descriptor() const
     return (rr_descriptor_.get() != NULL);
 }
 
-void ReactionRule::set_descriptor(const boost::shared_ptr<ReactionRuleDescriptor>& descriptor)
+void ReactionRule::set_descriptor(const std::shared_ptr<ReactionRuleDescriptor>& descriptor)
 {
     rr_descriptor_ = descriptor;
 }
 
-const boost::shared_ptr<ReactionRuleDescriptor>& ReactionRule::get_descriptor() const
+const std::shared_ptr<ReactionRuleDescriptor>& ReactionRule::get_descriptor() const
 {
     return rr_descriptor_;
 }
 
 void ReactionRule::reset_descriptor()
 {
-    boost::shared_ptr<ReactionRuleDescriptor> tmp;
+    std::shared_ptr<ReactionRuleDescriptor> tmp;
     rr_descriptor_.swap(tmp);
 }
 

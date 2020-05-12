@@ -44,14 +44,14 @@ void define_sgfrd_simulator(py::module& m)
     using simulator_type = ::ecell4::sgfrd::SGFRDSimulator;
 
     py::class_<simulator_type, Simulator, PySimulator<simulator_type>,
-               boost::shared_ptr<simulator_type>
+               std::shared_ptr<simulator_type>
            > simulator(m, "SGFRDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<world_type>, Real, Real>(),
+        .def(py::init<std::shared_ptr<world_type>, Real, Real>(),
              py::arg("w"),
              py::arg("bd_dt_factor")              = factory_type::default_bd_dt_factor(),
              py::arg("bd_reaction_length_factor") = factory_type::default_bd_reaction_length_factor())
-        .def(py::init<boost::shared_ptr<world_type>, boost::shared_ptr<Model>, Real, Real>(),
+        .def(py::init<std::shared_ptr<world_type>, std::shared_ptr<Model>, Real, Real>(),
              py::arg("w"),
              py::arg("m"),
              py::arg("bd_dt_factor")              = factory_type::default_bd_dt_factor(),
@@ -69,12 +69,12 @@ void define_sgfrd_world(py::module& m)
     using world_type = ::ecell4::sgfrd::SGFRDWorld;
 
     py::class_<world_type, WorldInterface, PyWorldImpl<world_type>,
-        boost::shared_ptr<world_type>> world(m, "SGFRDWorld");
+        std::shared_ptr<world_type>> world(m, "SGFRDWorld");
     world
         .def(py::init<const Real3&, const Integer3&>(),
                 py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0),
                 py::arg("matrix_sizes") = Integer3(1, 1, 1))
-        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>>(),
+        .def(py::init<const Real3&, const Integer3&, std::shared_ptr<RandomNumberGenerator>>(),
                 py::arg("edge_lengths"),
                 py::arg("matrix_sizes"),
                 py::arg("rng"))
@@ -83,7 +83,7 @@ void define_sgfrd_world(py::module& m)
                 py::arg("matrix_sizes"),
                 py::arg("stl_file"),
                 py::arg("stl_format"))
-        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>,
+        .def(py::init<const Real3&, const Integer3&, std::shared_ptr<RandomNumberGenerator>,
                       const std::string&, const STLFormat>(),
                 py::arg("edge_lengths"),
                 py::arg("matrix_sizes"),
@@ -136,7 +136,7 @@ void define_sgfrd_world(py::module& m)
             (void (world_type::*)(const Species&, const Integer&))
             &world_type::add_molecules)
         .def("add_molecules",
-            (void (world_type::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>))
+            (void (world_type::*)(const Species&, const Integer&, const std::shared_ptr<Shape>))
             &world_type::add_molecules)
         .def("remove_molecules", &world_type::remove_molecules)
 
@@ -152,7 +152,7 @@ void define_sgfrd_world(py::module& m)
             &world_type::list_surface_positions)
         .def("list_surface_positions_exact", &world_type::list_surface_positions_exact)
         .def("bind_to", &world_type::bind_to)
-        .def("rng", (boost::shared_ptr<RandomNumberGenerator>& (world_type::*)())
+        .def("rng", (std::shared_ptr<RandomNumberGenerator>& (world_type::*)())
                     &world_type::rng);
     m.attr("World") = world;
 }

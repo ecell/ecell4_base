@@ -46,20 +46,20 @@ public:
         return new world_type(filename);
     }
 
-    world_type* world(const boost::shared_ptr<Model>& m) const
+    world_type* world(const std::shared_ptr<Model>& m) const
     {
         return extras::generate_world_from_model(*this, m);
     }
 
     simulator_type* simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
     {
         return create_simulator(w, m);
     }
 
-    simulator_type* simulator(const boost::shared_ptr<world_type>& w) const
+    simulator_type* simulator(const std::shared_ptr<world_type>& w) const
     {
-        if (boost::shared_ptr<Model> bound_model = w->lock_model())
+        if (std::shared_ptr<Model> bound_model = w->lock_model())
         {
             return create_simulator(w, bound_model);
         }
@@ -77,7 +77,7 @@ protected:
     }
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
     {
         return new simulator_type(w, m);
     }

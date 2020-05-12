@@ -63,7 +63,7 @@ public:
 
     ConicalSurface surface() const;
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotImplemented("Cone::draw_position");
     }
@@ -138,7 +138,7 @@ public:
 
     Cone inside() const {return Cone(apex_, apex_angle_, slant_height_);}
 
-    Real3 draw_position(boost::shared_ptr<RandomNumberGenerator>& rng) const
+    Real3 draw_position(std::shared_ptr<RandomNumberGenerator>& rng) const
     {
         throw NotImplemented("ConicalSurface::draw_position");
     }

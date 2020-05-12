@@ -15,9 +15,9 @@ LatticeSpaceVectorImpl::LatticeSpaceVectorImpl(const Real3 &edge_lengths,
     : base_type(edge_lengths, voxel_radius, is_periodic),
       is_periodic_(is_periodic)
 {
-    border_ = boost::shared_ptr<VoxelPool>(
+    border_ = std::shared_ptr<VoxelPool>(
         new MoleculePool(Species("Border", voxel_radius_, 0), vacant_));
-    periodic_ = boost::shared_ptr<VoxelPool>(
+    periodic_ = std::shared_ptr<VoxelPool>(
         new MoleculePool(Species("Periodic", voxel_radius, 0), vacant_));
 
     initialize_voxels(is_periodic_);
@@ -105,7 +105,7 @@ LatticeSpaceVectorImpl::list_coords_exact(const Species &sp) const
         return retval;
     }
 
-    const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+    const std::shared_ptr<MoleculePool> &vp((*itr).second);
 
     for (const auto &voxel : *vp)
     {
@@ -125,7 +125,7 @@ LatticeSpaceVectorImpl::list_coords(const Species &sp) const
             continue;
         }
 
-        const boost::shared_ptr<MoleculePool> &vp(pool.second);
+        const std::shared_ptr<MoleculePool> &vp(pool.second);
 
         for (const auto &voxel : *vp)
         {
@@ -141,7 +141,7 @@ std::vector<VoxelView> LatticeSpaceVectorImpl::list_voxels() const
 
     for (const auto &pool : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp(pool.second);
+        const std::shared_ptr<MoleculePool> &vp(pool.second);
         const Species &sp(vp->species());
 
         for (const auto &voxel : *vp)
@@ -152,7 +152,7 @@ std::vector<VoxelView> LatticeSpaceVectorImpl::list_voxels() const
 
     for (const auto &pool : voxel_pools_)
     {
-        const boost::shared_ptr<VoxelPool> &vp(pool.second);
+        const std::shared_ptr<VoxelPool> &vp(pool.second);
         const Species &sp(vp->species());
 
         for (voxel_container::const_iterator i(voxels_.begin());
@@ -179,7 +179,7 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species &sp) const
         voxel_pool_map_type::const_iterator itr(voxel_pools_.find(sp));
         if (itr != voxel_pools_.end())
         {
-            const boost::shared_ptr<VoxelPool> &vp((*itr).second);
+            const std::shared_ptr<VoxelPool> &vp((*itr).second);
             for (voxel_container::const_iterator i(voxels_.begin());
                  i != voxels_.end(); ++i)
             {
@@ -199,7 +199,7 @@ LatticeSpaceVectorImpl::list_voxels_exact(const Species &sp) const
         molecule_pool_map_type::const_iterator itr(molecule_pools_.find(sp));
         if (itr != molecule_pools_.end())
         {
-            const boost::shared_ptr<MoleculePool> &vp((*itr).second);
+            const std::shared_ptr<MoleculePool> &vp((*itr).second);
             for (const auto &voxel : *vp)
             {
                 retval.push_back(VoxelView(voxel.pid, sp, voxel.coordinate));
@@ -223,7 +223,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
             continue;
         }
 
-        const boost::shared_ptr<VoxelPool> &vp(pool.second);
+        const std::shared_ptr<VoxelPool> &vp(pool.second);
         const Species &sp(vp->species());
         for (voxel_container::const_iterator i(voxels_.begin());
              i != voxels_.end(); ++i)
@@ -245,7 +245,7 @@ LatticeSpaceVectorImpl::list_voxels(const Species &sp) const
             continue;
         }
 
-        const boost::shared_ptr<MoleculePool> &vp(pool.second);
+        const std::shared_ptr<MoleculePool> &vp(pool.second);
         const Species &sp(vp->species());
         for (const auto &voxel : *vp)
         {
@@ -264,7 +264,7 @@ coordinate_type LatticeSpaceVectorImpl::get_coord(const ParticleID &pid) const
 {
     for (const auto &pool : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp(pool.second);
+        const std::shared_ptr<MoleculePool> &vp(pool.second);
         for (const auto &voxel : *vp)
         {
             if (voxel.pid == pid)
@@ -285,7 +285,7 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID &pid)
 {
     for (const auto &pool : molecule_pools_)
     {
-        const boost::shared_ptr<MoleculePool> &vp(pool.second);
+        const std::shared_ptr<MoleculePool> &vp(pool.second);
         MoleculePool::const_iterator j(vp->find(pid));
         if (j != vp->end())
         {
@@ -307,7 +307,7 @@ bool LatticeSpaceVectorImpl::remove_voxel(const ParticleID &pid)
 
 bool LatticeSpaceVectorImpl::remove_voxel(const coordinate_type &coord)
 {
-    boost::shared_ptr<VoxelPool> vp(voxels_.at(coord));
+    std::shared_ptr<VoxelPool> vp(voxels_.at(coord));
     if (auto location_ptr = vp->location())
     {
         if (vp->remove_voxel_if_exists(coord))
@@ -334,11 +334,11 @@ bool LatticeSpaceVectorImpl::can_move(const coordinate_type &src,
     if (src == dest)
         return false;
 
-    boost::shared_ptr<const VoxelPool> src_vp(voxels_.at(src));
+    std::shared_ptr<const VoxelPool> src_vp(voxels_.at(src));
     if (src_vp->is_vacant())
         return false;
 
-    boost::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
+    std::shared_ptr<VoxelPool> dest_vp(voxels_.at(dest));
 
     if (dest_vp == border_)
         return false;
@@ -358,13 +358,13 @@ LatticeSpaceVectorImpl::move_(coordinate_type from, coordinate_type to,
         return std::pair<coordinate_type, bool>(from, false);
     }
 
-    boost::shared_ptr<VoxelPool> from_vp(voxels_.at(from));
+    std::shared_ptr<VoxelPool> from_vp(voxels_.at(from));
     if (from_vp->is_vacant())
     {
         return std::pair<coordinate_type, bool>(from, true);
     }
 
-    boost::shared_ptr<VoxelPool> to_vp(voxels_.at(to));
+    std::shared_ptr<VoxelPool> to_vp(voxels_.at(to));
 
     if (to_vp == border_)
     {
@@ -399,13 +399,13 @@ LatticeSpaceVectorImpl::move_(coordinate_id_pair_type &info, coordinate_type to)
         return std::pair<coordinate_type, bool>(from, false);
     }
 
-    boost::shared_ptr<VoxelPool> from_vp(voxels_.at(from));
+    std::shared_ptr<VoxelPool> from_vp(voxels_.at(from));
     if (from_vp->is_vacant())
     {
         return std::pair<coordinate_type, bool>(from, true);
     }
 
-    boost::shared_ptr<VoxelPool> to_vp(voxels_.at(to));
+    std::shared_ptr<VoxelPool> to_vp(voxels_.at(to));
 
     if (to_vp == border_)
     {
@@ -447,9 +447,9 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID &pid,
         throw NotSupported("Out of bounds");
     }
 
-    boost::shared_ptr<VoxelPool> new_vp(
+    std::shared_ptr<VoxelPool> new_vp(
         find_voxel_pool(species)); // XXX: need MoleculeInfo
-    boost::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
+    std::shared_ptr<VoxelPool> dest_vp(get_voxel_pool_at(to_coord));
 
     if (dest_vp != new_vp->location())
     {
@@ -484,8 +484,8 @@ bool LatticeSpaceVectorImpl::update_voxel(const ParticleID &pid,
 bool LatticeSpaceVectorImpl::add_voxel(const Species &sp, const ParticleID &pid,
                                        const coordinate_type &coordinate)
 {
-    boost::shared_ptr<VoxelPool> vpool(find_voxel_pool(sp));
-    boost::shared_ptr<VoxelPool> location(get_voxel_pool_at(coordinate));
+    std::shared_ptr<VoxelPool> vpool(find_voxel_pool(sp));
+    std::shared_ptr<VoxelPool> location(get_voxel_pool_at(coordinate));
 
     if (vpool->location() != location)
         return false;
@@ -502,7 +502,7 @@ bool LatticeSpaceVectorImpl::add_voxels(
     std::vector<std::pair<ParticleID, coordinate_type>> voxels)
 {
     // this function doesn't check location.
-    boost::shared_ptr<VoxelPool> mtb;
+    std::shared_ptr<VoxelPool> mtb;
     try
     {
         mtb = find_voxel_pool(sp);

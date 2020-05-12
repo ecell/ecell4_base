@@ -29,7 +29,7 @@ void SpatiocyteSimulator::initialize()
         {
             continue;
         }
-        const boost::shared_ptr<SpatiocyteEvent> zeroth_order_reaction_event(
+        const std::shared_ptr<SpatiocyteEvent> zeroth_order_reaction_event(
             create_zeroth_order_reaction_event(rule, world_->t()));
         scheduler_.add(zeroth_order_reaction_event);
     }
@@ -39,7 +39,7 @@ void SpatiocyteSimulator::initialize()
 
 void SpatiocyteSimulator::update_alpha_map()
 {
-    boost::shared_ptr<Model> model_(model());
+    std::shared_ptr<Model> model_(model());
     if (!model_ || !model_->is_static())
         return;
 
@@ -72,34 +72,34 @@ void SpatiocyteSimulator::register_events(const Species &sp)
         // TODO: Call steps only if sp is assigned not to StructureType.
         alpha_map_type::const_iterator itr(alpha_map_.find(sp));
         const Real alpha(itr != alpha_map_.end() ? itr->second : 1.0);
-        const boost::shared_ptr<SpatiocyteEvent> step_event(
+        const std::shared_ptr<SpatiocyteEvent> step_event(
             create_step_event(sp, world_->t(), alpha));
         scheduler_.add(step_event);
     }
 
     for (const auto &rule : model_->query_reaction_rules(sp))
     {
-        const boost::shared_ptr<SpatiocyteEvent> first_order_reaction_event(
+        const std::shared_ptr<SpatiocyteEvent> first_order_reaction_event(
             create_first_order_reaction_event(rule, world_->t()));
         scheduler_.add(first_order_reaction_event);
     }
 }
 
-boost::shared_ptr<SpatiocyteEvent>
+std::shared_ptr<SpatiocyteEvent>
 SpatiocyteSimulator::create_step_event(const Species &species, const Real &t,
                                        const Real &alpha)
 {
-    boost::shared_ptr<MoleculePool> mpool(world_->find_molecule_pool(species));
+    std::shared_ptr<MoleculePool> mpool(world_->find_molecule_pool(species));
     const Shape::dimension_kind dimension(world_->get_dimension(species));
 
     if (dimension == Shape::THREE)
     {
-        return boost::shared_ptr<SpatiocyteEvent>(
+        return std::shared_ptr<SpatiocyteEvent>(
             new StepEvent<3>(model_, world_, species, t, alpha));
     }
     else if (dimension == Shape::TWO)
     {
-        return boost::shared_ptr<SpatiocyteEvent>(
+        return std::shared_ptr<SpatiocyteEvent>(
             new StepEvent<2>(model_, world_, species, t, alpha));
     }
     else
@@ -109,20 +109,20 @@ SpatiocyteSimulator::create_step_event(const Species &species, const Real &t,
     }
 }
 
-boost::shared_ptr<SpatiocyteEvent>
+std::shared_ptr<SpatiocyteEvent>
 SpatiocyteSimulator::create_zeroth_order_reaction_event(
     const ReactionRule &reaction_rule, const Real &t)
 {
-    boost::shared_ptr<SpatiocyteEvent> event(
+    std::shared_ptr<SpatiocyteEvent> event(
         new ZerothOrderReactionEvent(world_, reaction_rule, t));
     return event;
 }
 
-boost::shared_ptr<SpatiocyteEvent>
+std::shared_ptr<SpatiocyteEvent>
 SpatiocyteSimulator::create_first_order_reaction_event(
     const ReactionRule &reaction_rule, const Real &t)
 {
-    boost::shared_ptr<SpatiocyteEvent> event(
+    std::shared_ptr<SpatiocyteEvent> event(
         new FirstOrderReactionEvent(world_, reaction_rule, t));
     return event;
 }
@@ -186,7 +186,7 @@ void SpatiocyteSimulator::step_()
     world_->set_t(time);
     top.second->fire(); // top.second->time_ is updated in fire()
     set_last_event_(
-        boost::const_pointer_cast<const SpatiocyteEvent>(top.second));
+        std::const_pointer_cast<const SpatiocyteEvent>(top.second));
 
     last_reactions_ = last_event_->reactions();
 

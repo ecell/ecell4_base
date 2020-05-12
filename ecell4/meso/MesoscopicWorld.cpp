@@ -22,14 +22,14 @@ double round(const double x)
 MesoscopicWorld::MesoscopicWorld(const Real3& edge_lengths, const Real subvolume_length)
     : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length))))
 {
-    rng_ = boost::shared_ptr<RandomNumberGenerator>(
+    rng_ = std::shared_ptr<RandomNumberGenerator>(
         new GSLRandomNumberGenerator());
     (*rng_).seed();
 }
 
 MesoscopicWorld::MesoscopicWorld(
     const Real3& edge_lengths, const Real subvolume_length,
-    boost::shared_ptr<RandomNumberGenerator> rng)
+    std::shared_ptr<RandomNumberGenerator> rng)
     : cs_(new SubvolumeSpaceVectorImpl(edge_lengths, Integer3(round(edge_lengths[0] / subvolume_length), round(edge_lengths[1] / subvolume_length), round(edge_lengths[2] / subvolume_length)))), rng_(rng)
 {
     ;
@@ -54,7 +54,7 @@ MoleculeInfo MesoscopicWorld::get_molecule_info(const Species& sp) const
     }
     else
     {
-        if (boost::shared_ptr<Model> bound_model = lock_model())
+        if (std::shared_ptr<Model> bound_model = lock_model())
         {
             Species newsp(bound_model->apply_species_attributes(sp));
             if (newsp.has_attribute("D"))
@@ -84,7 +84,7 @@ std::vector<std::pair<ParticleID, Particle> >
     for (std::vector<Species>::const_iterator i(species_list.begin());
         i != species_list.end(); ++i)
     {
-        const boost::shared_ptr<PoolBase>& pool = get_pool(*i);
+        const std::shared_ptr<PoolBase>& pool = get_pool(*i);
         for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
             const Integer num(pool->num_molecules(j));
@@ -113,7 +113,7 @@ std::vector<std::pair<ParticleID, Particle> >
     std::vector<std::pair<ParticleID, Particle> > retval;
     if (has_species(sp))
     {
-        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        const std::shared_ptr<PoolBase>& pool = get_pool(sp);
         for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
             const Integer num(pool->num_molecules(j));
@@ -166,7 +166,7 @@ std::vector<std::pair<ParticleID, Particle> >
             continue;
         }
 
-        const boost::shared_ptr<PoolBase>& pool = get_pool(*i);
+        const std::shared_ptr<PoolBase>& pool = get_pool(*i);
         for (coordinate_type j(0); j < num_subvolumes(); ++j)
         {
             const Integer num(coef * pool->num_molecules(j));
@@ -326,7 +326,7 @@ std::vector<Species> MesoscopicWorld::list_species() const
 }
 
 void MesoscopicWorld::add_structure(
-    const Species& sp, const boost::shared_ptr<const Shape>& shape)
+    const Species& sp, const std::shared_ptr<const Shape>& shape)
 {
     cs_->add_structure(sp, shape);
 }
@@ -336,7 +336,7 @@ bool MesoscopicWorld::on_structure(
 {
     if (has_species(sp))
     {
-        const boost::shared_ptr<PoolBase>& pool = get_pool(sp);
+        const std::shared_ptr<PoolBase>& pool = get_pool(sp);
         return (pool->loc() == "" || cs_->check_structure(pool->loc(), coord));
     }
 

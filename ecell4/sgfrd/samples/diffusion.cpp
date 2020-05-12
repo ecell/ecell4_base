@@ -14,7 +14,7 @@
 #include <boost/lexical_cast.hpp>
 
 void trajectory_output(const std::vector<ecell4::ParticleID>& pids,
-    const boost::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
+    const std::shared_ptr<ecell4::sgfrd::SGFRDWorld>& world)
 {
     for(std::vector<ecell4::ParticleID>::const_iterator
         iter = pids.begin(); iter != pids.end(); ++iter)
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
     const std::string stlname(argv[1]);
     ecell4::STLFileReader reader;
     ecell4::STLPolygonAdapter<polygon_traits> adapter;
-    boost::shared_ptr<polygon_type> polygon =
+    std::shared_ptr<polygon_type> polygon =
         adapter.make_polygon(reader.read(stlname, ecell4::STLFileReader::Ascii));
 
     const ecell4::Real     L(boost::lexical_cast<ecell4::Real>(std::string(argv[2])));
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     const ecell4::Integer3 matrix_sizes(3, 3, 3);
     const ecell4::Real     volume(L * L * L);
 
-    boost::shared_ptr<ecell4::NetworkModel>
+    std::shared_ptr<ecell4::NetworkModel>
         model(new ecell4::NetworkModel());
 
     ecell4::Species sp1(std::string("A"),
@@ -63,12 +63,12 @@ int main(int argc, char **argv)
          /* D = */      std::string("1.e-2"));
     model->add_species_attribute(sp1);
 
-    boost::shared_ptr<ecell4::RandomNumberGenerator> rng =
-        boost::make_shared<ecell4::GSLRandomNumberGenerator>();
+    std::shared_ptr<ecell4::RandomNumberGenerator> rng =
+        std::make_shared<ecell4::GSLRandomNumberGenerator>();
     rng->seed((unsigned long int)123456);
 
-    boost::shared_ptr<world_type> world =
-        boost::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
+    std::shared_ptr<world_type> world =
+        std::make_shared<world_type>(edge_lengths, matrix_sizes, polygon, rng);
 
     const std::size_t num_particle = polygon->num_triangles();
 

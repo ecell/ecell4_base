@@ -35,11 +35,11 @@ static inline
 void define_bd_simulator(py::module& m)
 {
     py::class_<BDSimulator, Simulator, PySimulator<BDSimulator>,
-        boost::shared_ptr<BDSimulator>> simulator(m, "BDSimulator");
+        std::shared_ptr<BDSimulator>> simulator(m, "BDSimulator");
     simulator
-        .def(py::init<boost::shared_ptr<BDWorld>, Real>(),
+        .def(py::init<std::shared_ptr<BDWorld>, Real>(),
                 py::arg("w"), py::arg("bd_dt_factor") = 1e-5)
-        .def(py::init<boost::shared_ptr<BDWorld>, boost::shared_ptr<Model>, Real>(),
+        .def(py::init<std::shared_ptr<BDWorld>, std::shared_ptr<Model>, Real>(),
                 py::arg("w"), py::arg("m"), py::arg("bd_dt_factor") = 1e-5)
         .def("last_reactions", &BDSimulator::last_reactions)
         .def("set_t", &BDSimulator::set_t);
@@ -52,12 +52,12 @@ static inline
 void define_bd_world(py::module& m)
 {
     py::class_<BDWorld, WorldInterface, PyWorldImpl<BDWorld>,
-        boost::shared_ptr<BDWorld>> world(m, "BDWorld");
+        std::shared_ptr<BDWorld>> world(m, "BDWorld");
     world
         .def(py::init<const Real3&, const Integer3&>(),
                 py::arg("edge_lengths") = Real3(1.0, 1.0, 1.0),
                 py::arg("matrix_sizes") = Integer3(1, 1, 1))
-        .def(py::init<const Real3&, const Integer3&, boost::shared_ptr<RandomNumberGenerator>>(),
+        .def(py::init<const Real3&, const Integer3&, std::shared_ptr<RandomNumberGenerator>>(),
                 py::arg("edge_lengths"), py::arg("matrix_sizes"), py::arg("rng"))
         .def(py::init<const std::string&>(), py::arg("filename"))
 
@@ -88,7 +88,7 @@ void define_bd_world(py::module& m)
         .def("add_molecules",
             (void (BDWorld::*)(const Species&, const Integer&)) &BDWorld::add_molecules)
         .def("add_molecules",
-            (void (BDWorld::*)(const Species&, const Integer&, const boost::shared_ptr<Shape>)) &BDWorld::add_molecules)
+            (void (BDWorld::*)(const Species&, const Integer&, const std::shared_ptr<Shape>)) &BDWorld::add_molecules)
         .def("remove_molecules", &BDWorld::remove_molecules)
         .def("bind_to", &BDWorld::bind_to)
         .def("rng", &BDWorld::rng);

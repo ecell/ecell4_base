@@ -2,8 +2,8 @@
 #define ECELL4_EVENTSCHEDULER_HPP
 
 #include <boost/range/iterator_range.hpp>
-#include <boost/shared_ptr.hpp>
 #include <stdexcept>
+#include <memory>
 
 #include "types.hpp"
 #include "DynamicPriorityQueue.hpp"
@@ -50,14 +50,14 @@ protected:
 
     struct event_comparator
     {
-        bool operator()(boost::shared_ptr<EventType> const& lhs,
-                boost::shared_ptr<EventType> const& rhs) const
+        bool operator()(std::shared_ptr<EventType> const& lhs,
+                std::shared_ptr<EventType> const& rhs) const
         {
             return lhs->time() <= rhs->time();
         }
     };
 
-    typedef DynamicPriorityQueue<boost::shared_ptr<EventType>, event_comparator>
+    typedef DynamicPriorityQueue<std::shared_ptr<EventType>, event_comparator>
         EventPriorityQueue;
 
 public:
@@ -106,7 +106,7 @@ public:
         return eventPriorityQueue_.second();
     }
 
-    boost::shared_ptr<EventType> get(identifier_type const& id) const
+    std::shared_ptr<EventType> get(identifier_type const& id) const
     {
         return eventPriorityQueue_.get(id);
     }
@@ -117,7 +117,7 @@ public:
         eventPriorityQueue_.clear();
     }
 
-    identifier_type add(boost::shared_ptr<EventType> const& event)
+    identifier_type add(std::shared_ptr<EventType> const& event)
     {
         return eventPriorityQueue_.push(event);
     }

@@ -62,7 +62,7 @@ struct AABB
     }
 
     Real3 draw_position(
-        boost::shared_ptr<RandomNumberGenerator>& rng) const;
+        std::shared_ptr<RandomNumberGenerator>& rng) const;
     bool test_AABB(const Real3& l, const Real3& u) const;
     bool test_segment(const Real3& p0, const Real3& p1) const;
     std::pair<bool, Real> intersect_ray(const Real3& p, const Real3& d) const;
@@ -88,7 +88,7 @@ struct AABB
 
     Surface surface() const
     {
-        return Surface(boost::shared_ptr<Shape>(new AABB(*this)));
+        return Surface(std::shared_ptr<Shape>(new AABB(*this)));
     }
 
 protected:

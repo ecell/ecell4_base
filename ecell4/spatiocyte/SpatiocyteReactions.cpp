@@ -9,22 +9,22 @@ namespace spatiocyte
 
 // Utilities
 
-inline const std::string get_serial(boost::shared_ptr<SpatiocyteWorld> world,
+inline const std::string get_serial(std::shared_ptr<SpatiocyteWorld> world,
                                     const Voxel &voxel)
 {
     return voxel.get_voxel_pool()->species().serial();
 }
 
-inline const std::string get_location(boost::shared_ptr<SpatiocyteWorld> world,
+inline const std::string get_location(std::shared_ptr<SpatiocyteWorld> world,
                                       const Voxel &voxel)
 {
-    boost::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
+    std::shared_ptr<const VoxelPool> mtype(voxel.get_voxel_pool());
     if (mtype->is_vacant())
         return "";
     return mtype->location()->species().serial();
 }
 
-static inline void make_product(boost::shared_ptr<SpatiocyteWorld> world,
+static inline void make_product(std::shared_ptr<SpatiocyteWorld> world,
                                 ReactionInfo &rinfo, const Species &species,
                                 const Voxel voxel)
 {
@@ -49,7 +49,7 @@ static inline void make_product(boost::shared_ptr<SpatiocyteWorld> world,
 
 // Application of reactions
 
-ReactionInfo apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_a2b(std::shared_ptr<SpatiocyteWorld> world,
                        const ReactionInfo::Item &reactant_item,
                        const Species &product_species)
 {
@@ -107,7 +107,7 @@ ReactionInfo apply_a2b(boost::shared_ptr<SpatiocyteWorld> world,
     return rinfo;
 }
 
-ReactionInfo apply_a2bc(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_a2bc(std::shared_ptr<SpatiocyteWorld> world,
                         const ReactionInfo::Item &reactant_item,
                         const Species &product_species0,
                         const Species &product_species1)
@@ -221,7 +221,7 @@ ReactionInfo apply_a2bc(boost::shared_ptr<SpatiocyteWorld> world,
     return rinfo;
 }
 
-ReactionInfo apply_vanishment(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_vanishment(std::shared_ptr<SpatiocyteWorld> world,
                               const ReactionInfo::Item &reactant_item0,
                               const ReactionInfo::Item &reactant_item1)
 {
@@ -235,7 +235,7 @@ ReactionInfo apply_vanishment(boost::shared_ptr<SpatiocyteWorld> world,
     return rinfo;
 }
 
-ReactionInfo apply_ab2c(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_ab2c(std::shared_ptr<SpatiocyteWorld> world,
                         const ReactionInfo::Item &reactant_item0,
                         const ReactionInfo::Item &reactant_item1,
                         const Species &product_species)
@@ -288,7 +288,7 @@ ReactionInfo apply_ab2c(boost::shared_ptr<SpatiocyteWorld> world,
 }
 
 // For apply_ab2cd
-ReactionInfo apply_ab2cd_in_order(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_ab2cd_in_order(std::shared_ptr<SpatiocyteWorld> world,
                                   const ReactionInfo::Item &reactant_item0,
                                   const ReactionInfo::Item &reactant_item1,
                                   const Species &product_species0,
@@ -305,7 +305,7 @@ ReactionInfo apply_ab2cd_in_order(boost::shared_ptr<SpatiocyteWorld> world,
     return rinfo;
 }
 
-ReactionInfo apply_ab2cd(boost::shared_ptr<SpatiocyteWorld> world,
+ReactionInfo apply_ab2cd(std::shared_ptr<SpatiocyteWorld> world,
                          const ReactionInfo::Item &reactant_item0,
                          const ReactionInfo::Item &reactant_item1,
                          const Species &product_species0,
@@ -428,7 +428,7 @@ ReactionInfo apply_ab2cd(boost::shared_ptr<SpatiocyteWorld> world,
 }
 
 ReactionInfo
-apply_second_order_reaction(boost::shared_ptr<SpatiocyteWorld> world,
+apply_second_order_reaction(std::shared_ptr<SpatiocyteWorld> world,
                             const ReactionRule &reaction_rule,
                             const ReactionInfo::Item &reactant_item0,
                             const ReactionInfo::Item &reactant_item1)

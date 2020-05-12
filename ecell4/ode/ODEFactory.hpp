@@ -59,12 +59,12 @@ public:
         return 0.0;
     }
 
-    ODEFactory& rng(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    ODEFactory& rng(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return (*this);  //XXX: Just for the compatibility
     }
 
-    inline ODEFactory* rng_ptr(const boost::shared_ptr<RandomNumberGenerator>& rng)
+    inline ODEFactory* rng_ptr(const std::shared_ptr<RandomNumberGenerator>& rng)
     {
         return &(this->rng(rng));  //XXX: == this
     }
@@ -72,7 +72,7 @@ public:
 protected:
 
     virtual simulator_type* create_simulator(
-        const boost::shared_ptr<world_type>& w, const boost::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
     {
         simulator_type* sim = new simulator_type(w, m, solver_type_);
         sim->set_dt(dt_);
