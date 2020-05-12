@@ -1,5 +1,5 @@
-#ifndef WORLD_HPP
-#define WORLD_HPP
+#ifndef ECELL4_EGFRD_WORLD_HPP
+#define ECELL4_EGFRD_WORLD_HPP
 
 #include <sstream>
 
@@ -906,7 +906,7 @@ public:
             // just skip it and use normal `apply_boundary`.
             return this->apply_boundary(pos + disp);
         }
-        return this->apply_structure_rec(pos, disp, Polygon<position_type>::make_nonsence_id());
+        return this->apply_structure_rec(pos, disp, Polygon::make_nonsence_id());
     }
 
 protected:
@@ -916,9 +916,9 @@ protected:
     //     Periodic Boundary Condition, it recursively applies PBC and collision.
     position_type
     apply_structure_rec(const position_type& pos, const position_type& disp,
-            const typename Polygon<position_type>::face_id_type ignore) const
+            const typename Polygon::face_id_type ignore) const
     {
-        typedef typename Polygon<position_type>::face_id_type face_id_t;
+        typedef Polygon::face_id_type face_id_t;
 
         const ecell4::AABBSurface unitcell(
                 position_type(0., 0., 0.), this->edge_lengths());
@@ -970,7 +970,7 @@ protected:
 
             return this->apply_structure_rec(
                     next_segment.first, next_segment.second,
-                    Polygon<position_type>::make_nonsence_id());
+                    Polygon::make_nonsence_id());
         }
         else
         {
@@ -1068,7 +1068,7 @@ protected:
 
     std::unique_ptr<particle_space_type> ps_;
 
-    Polygon<position_type> polygon_;
+    Polygon polygon_;
 
 private:
 
