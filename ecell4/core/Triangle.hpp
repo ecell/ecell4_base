@@ -116,6 +116,13 @@ struct Triangle : public Shape
     boost::array<Real3, 3> edges_;
 };
 
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri);
+
+inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri)
+{
+    return std::sqrt(distance_sq_point_Triangle(pos, tri));
+}
+
 template<typename charT, typename traits>
 std::basic_ostream<charT, traits>&
 operator<<(std::basic_ostream<charT, traits>& os, const Triangle& tri)

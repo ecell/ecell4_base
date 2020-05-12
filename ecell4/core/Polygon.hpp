@@ -363,6 +363,33 @@ class Polygon : public Shape
         return this->face_at(fid).neighbors;
     }
 
+    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+    list_faces_within_radius(const Real3& pos, const Real& radius) const
+    {
+        return this->list_faces_within_radius_impl(pos, radius,
+                [](const FaceID&) noexcept -> bool {
+                    return false;
+                });
+    }
+    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+    list_faces_within_radius(const Real3& pos, const Real& radius,
+                             const FaceID& ignore1) const
+    {
+        return this->list_faces_within_radius_impl(pos, radius,
+                [=](const FaceID& fid) noexcept -> bool {
+                    return fid == ignore1;
+                });
+    }
+    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+    list_faces_within_radius(const Real3& pos, const Real& radius,
+                             const FaceID& ignore1, const FaceID& ignore2) const
+    {
+        return this->list_faces_within_radius_impl(pos, radius,
+                [=](const FaceID& fid) noexcept -> bool {
+                    return fid == ignore1 || fid == ignore2;
+                });
+    }
+
     /* inherited from shape --------------------------------------------------*/
     dimension_kind dimension() const {return THREE;} // TWO?
 
@@ -620,6 +647,35 @@ class Polygon : public Shape
     edge_data& edge_at(const EdgeID& eid)
     {
         return this->edges_.at(static_cast<std::size_t>(eid));
+    }
+
+    template<typename Filter>
+    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+    list_faces_within_radius_impl(
+            const Real3& pos, const Real& radius, Filter filter) const
+    {
+        std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
+
+        const Real radius_sq = radius * radius;
+        for(std::size_t i=0; i<faces_.size(); ++i)
+        {
+            const FaceID fid = static_cast<FaceID>(i);
+            if(filter(fid))
+            {
+                continue;
+            }
+
+            const Triangle& tri = faces_[i].triangle;
+            const Real dist_sq  = distance_sq_point_Triangle(pos, tri);
+            if(dist_sq <= radius_sq)
+            {
+                retval.emplace_back(std::make_pair(fid, tri), std::sqrt(dist_sq));
+            }
+        }
+        std::sort(retval.begin(), retval.end(),
+            utils::pair_second_element_comparator<std::pair<FaceID, Triangle>, Real>{});
+
+        return retval;
     }
 
   private:
