@@ -175,7 +175,7 @@ public:
         results.push_back(ctx.get().iterators);
         std::sort(results.back().begin(), results.back().end());
 
-        while (ctx = next())
+        while((ctx = next()))
         {
             results.push_back(ctx.get().iterators);
             std::sort(results.back().begin(), results.back().end());
