@@ -41,7 +41,7 @@ struct is_matrix<T_[N1_][N2_], 2>: public std::true_type {};
 // is_scalar
 
 template<typename T_>
-struct is_scalar: public boost::is_arithmetic<T_> {};
+struct is_scalar: public std::is_arithmetic<T_> {};
 
 // ----------------------------------------------------------------------------
 // is_vector3

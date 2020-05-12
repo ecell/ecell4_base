@@ -30,7 +30,7 @@ struct shape_position_type
 template<typename T_>
 struct shape_length_type
 {
-    typedef typename element_type_of<typename shape_position_type<typename boost::remove_cv<T_>::type >::type>::type type;
+    typedef typename element_type_of<typename shape_position_type<typename std::remove_cv<T_>::type >::type>::type type;
 };
 
 template <std::size_t N_>
