@@ -410,7 +410,7 @@ void CSVObserver::log(const std::shared_ptr<WorldInterface>& world)
     ofs.close();
 }
 
-const std::string CSVObserver::filename() const
+const std::string CSVObserver::filename(const Integer idx) const
 {
     boost::format fmt(prefix_);
 
@@ -420,7 +420,7 @@ const std::string CSVObserver::filename() const
     }
     else
     {
-        return (fmt % num_steps()).str();
+        return (fmt % idx).str();
     }
 }
 

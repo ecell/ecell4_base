@@ -857,9 +857,24 @@ void define_observers(py::module& m)
         .def(py::init<const std::string&, std::vector<std::string>&>(),
                 py::arg("filename"), py::arg("species"))
         .def("log", &CSVObserver::log)
-        .def("filename", &CSVObserver::filename)
+        .def("filename", (const std::string (CSVObserver::*)() const) &CSVObserver::filename)
+        .def("filename", (const std::string (CSVObserver::*)(const Integer) const) &CSVObserver::filename)
         .def("set_header", &CSVObserver::set_header)
-        .def("set_formatter", &CSVObserver::set_formatter);
+        .def("set_formatter", &CSVObserver::set_formatter)
+        .def(py::pickle(
+            [](const CSVObserver& obj) {
+                return py::make_tuple(obj.prefix(), obj.num_steps(), obj.logger());
+                },
+            [](py::tuple state) {
+                if (state.size() != 3)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = CSVObserver(
+                        state[0].cast<std::string>());
+                obj.set_num_steps(state[1].cast<Integer>());
+                obj.set_logger(state[2].cast<PositionLogger>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalTrajectoryObserver, Observer, PyObserver<FixedIntervalTrajectoryObserver>,
         std::shared_ptr<FixedIntervalTrajectoryObserver>>(m, "FixedIntervalTrajectoryObserver")
