@@ -172,6 +172,12 @@ public:
         ;
     }
 
+    FixedIntervalNumberObserver(const Real& dt, const Real& t0, const Integer count)
+        : base_type(dt, t0, count), logger_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalNumberObserver()
     {
         ;
@@ -182,6 +188,16 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    const NumberLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const NumberLogger& logger)
+    {
+        logger_ = logger;
+    }
 
     void save(const std::string& filename) const
     {

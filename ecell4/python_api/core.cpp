@@ -709,9 +709,27 @@ void define_observers(py::module& m)
         .def(py::init<const Real&>(), py::arg("dt"))
         .def(py::init<const Real&, const std::vector<std::string>&>(),
                 py::arg("dt"), py::arg("species"))
+        .def("dt", &FixedIntervalNumberObserver::dt)
+        .def("t0", &FixedIntervalNumberObserver::t0)
+        .def("count", &FixedIntervalNumberObserver::count)
+        .def("next_time", &FixedIntervalNumberObserver::next_time)
         .def("data", &FixedIntervalNumberObserver::data)
         .def("targets", &FixedIntervalNumberObserver::targets)
-        .def("save", &FixedIntervalNumberObserver::save);
+        .def("save", &FixedIntervalNumberObserver::save)
+        .def(py::pickle(
+            [](const FixedIntervalNumberObserver& obj) {
+                return py::make_tuple(obj.logger(), obj.num_steps(), obj.dt(), obj.t0(), obj.count());
+                },
+            [](py::tuple state) {
+                if (state.size() != 5)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalNumberObserver(
+                        state[2].cast<Real>(), state[3].cast<Real>(), state[4].cast<Integer>());
+                obj.set_logger(state[0].cast<NumberLogger>());
+                obj.set_num_steps(state[1].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<NumberObserver, Observer, PyObserver<NumberObserver>,
         std::shared_ptr<NumberObserver>>(m, "NumberObserver")
