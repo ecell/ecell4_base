@@ -801,6 +801,23 @@ void define_observers(py::module& m)
                 }
             ));
 
+    py::class_<PositionLogger>(m, "PositionLogger")
+        .def(py::pickle(
+            [](const PositionLogger& obj) {
+                return py::make_tuple(obj.species, obj.header, obj.formatter, obj.serials);
+                },
+            [](py::tuple state) {
+                if (state.size() != 4)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = PositionLogger();
+                obj.species = state[0].cast<std::vector<std::string> >();
+                obj.header = state[1].cast<std::string>();
+                obj.formatter = state[2].cast<std::string>();
+                obj.serials = state[3].cast<PositionLogger::serial_map_type>();
+                return obj;
+                }
+            ));
+
     py::class_<FixedIntervalCSVObserver, Observer, PyObserver<FixedIntervalCSVObserver>,
         std::shared_ptr<FixedIntervalCSVObserver>>(m, "FixedIntervalCSVObserver")
         .def(py::init<const Real&, const std::string&>(),
@@ -808,9 +825,32 @@ void define_observers(py::module& m)
         .def(py::init<const Real&, const std::string&, std::vector<std::string>&>(),
                 py::arg("dt"), py::arg("filename"), py::arg("species"))
         .def("log", &FixedIntervalCSVObserver::log)
-        .def("filename", &FixedIntervalCSVObserver::filename)
+        .def("prefix", &FixedIntervalCSVObserver::prefix)
+        .def("filename", (const std::string (FixedIntervalCSVObserver::*)() const) &FixedIntervalCSVObserver::filename)
+        .def("filename", (const std::string (FixedIntervalCSVObserver::*)(const Integer) const) &FixedIntervalCSVObserver::filename)
+        .def("dt", &FixedIntervalCSVObserver::dt)
+        .def("t0", &FixedIntervalCSVObserver::t0)
+        .def("count", &FixedIntervalCSVObserver::count)
+        .def("next_time", &FixedIntervalCSVObserver::next_time)
         .def("set_header", &FixedIntervalCSVObserver::set_header)
-        .def("set_formatter", &FixedIntervalCSVObserver::set_formatter);
+        .def("set_formatter", &FixedIntervalCSVObserver::set_formatter)
+        .def(py::pickle(
+            [](const FixedIntervalCSVObserver& obj) {
+                return py::make_tuple(obj.dt(), obj.prefix(), obj.t0(), obj.count(), obj.num_steps(), obj.logger());
+                },
+            [](py::tuple state) {
+                if (state.size() != 6)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalCSVObserver(
+                        state[0].cast<Real>(),
+                        state[1].cast<std::string>(),
+                        state[2].cast<Real>(),
+                        state[3].cast<Integer>());
+                obj.set_num_steps(state[4].cast<Integer>());
+                obj.set_logger(state[5].cast<PositionLogger>());
+                return obj;
+                }
+            ));
 
     py::class_<CSVObserver, Observer, PyObserver<CSVObserver>, std::shared_ptr<CSVObserver>>(m, "CSVObserver")
         .def(py::init<const std::string&>(), py::arg("filename"))

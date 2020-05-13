@@ -540,6 +540,14 @@ public:
         ;
     }
 
+    FixedIntervalCSVObserver(
+        const Real& dt, const std::string& filename,
+        const Real& t0, const Integer count)
+        : base_type(dt, t0, count), prefix_(filename), logger_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalCSVObserver()
     {
         ;
@@ -548,7 +556,6 @@ public:
     virtual void initialize(const std::shared_ptr<WorldInterface>& world, const std::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const std::shared_ptr<WorldInterface>& world);
     void log(const std::shared_ptr<WorldInterface>& world);
-    const std::string filename() const;
     virtual void reset();
 
     void set_header(const std::string& header)
@@ -560,6 +567,28 @@ public:
     {
         logger_.formatter = formatter;
     }
+
+    const PositionLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const PositionLogger& logger)
+    {
+        logger_ = logger;
+    }
+
+    const std::string& prefix() const
+    {
+        return prefix_;
+    }
+
+    inline const std::string filename() const
+    {
+        return filename(num_steps());
+    }
+
+    const std::string filename(const Integer idx) const;
 
 protected:
 
