@@ -434,11 +434,7 @@ void TimeoutObserver::initialize(const std::shared_ptr<WorldInterface>& world, c
 {
     base_type::initialize(world, model);
     duration_ = 0.0;
-#ifndef HAVE_CHRONO
-    time(&tstart_);
-#else
     tstart_ = std::chrono::system_clock::now();
-#endif
 }
 
 void TimeoutObserver::finalize(const std::shared_ptr<WorldInterface>& world)
@@ -449,14 +445,8 @@ void TimeoutObserver::finalize(const std::shared_ptr<WorldInterface>& world)
 
 bool TimeoutObserver::fire(const Simulator* sim, const std::shared_ptr<WorldInterface>& world)
 {
-#ifndef HAVE_CHRONO
-    time_t tnow;
-    time(&tnow);
-    duration_ = difftime(tnow, tstart_);
-#else
     const std::chrono::system_clock::time_point tnow = std::chrono::system_clock::now();
     duration_ = std::chrono::duration_cast<std::chrono::milliseconds>(tnow - tstart_).count() * 1e-3;
-#endif
 
     if (duration_ >= interval_)
     {
@@ -470,11 +460,7 @@ void TimeoutObserver::reset()
     base_type::reset();
     duration_ = 0.0;
     acc_ = 0.0;
-#ifndef HAVE_CHRONO
-    time(&tstart_);
-#else
     tstart_ = std::chrono::system_clock::now();
-#endif
 }
 
 const Real FixedIntervalTrackingObserver::next_time() const
