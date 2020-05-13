@@ -704,11 +704,6 @@ void define_observers(py::module& m)
         .def("reset", &Observer::reset)
         .def("num_steps", &Observer::num_steps);
 
-    py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
-        std::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
-        .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>(),
-                py::arg("dt"), py::arg("pyfunc"));
-
     py::class_<FixedIntervalNumberObserver, Observer, PyObserver<FixedIntervalNumberObserver>,
         std::shared_ptr<FixedIntervalNumberObserver>>(m, "FixedIntervalNumberObserver")
         .def(py::init<const Real&>(), py::arg("dt"))
@@ -896,6 +891,13 @@ void define_observers(py::module& m)
                 }
             ));
 
+    py::class_<TimeoutObserver, Observer, PyObserver<TimeoutObserver>, std::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
+        .def(py::init<>())
+        .def(py::init<const Real>(), py::arg("interval"))
+        .def("interval", &TimeoutObserver::interval)
+        .def("duration", &TimeoutObserver::duration)
+        .def("accumulation", &TimeoutObserver::accumulation);
+
     py::class_<FixedIntervalTrackingObserver, Observer, PyObserver<FixedIntervalTrackingObserver>,
         std::shared_ptr<FixedIntervalTrackingObserver>>(m, "FixedIntervalTrackingObserver")
         .def(py::init<const Real&, const std::vector<Species>&, const bool&, const Real, const Real>(),
@@ -907,12 +909,10 @@ void define_observers(py::module& m)
         .def("num_tracers", &FixedIntervalTrackingObserver::num_tracers)
         .def("t", &FixedIntervalTrackingObserver::t);
 
-    py::class_<TimeoutObserver, Observer, PyObserver<TimeoutObserver>, std::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
-        .def(py::init<>())
-        .def(py::init<const Real>(), py::arg("interval"))
-        .def("interval", &TimeoutObserver::interval)
-        .def("duration", &TimeoutObserver::duration)
-        .def("accumulation", &TimeoutObserver::accumulation);
+    py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
+        std::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
+        .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>(),
+                py::arg("dt"), py::arg("pyfunc"));
 }
 
 static inline
