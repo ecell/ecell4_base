@@ -1182,14 +1182,14 @@ public:
 
 public:
 
-    TimeoutObserver(const Real interval)
-        : base_type(true), interval_(interval), duration_(0.0)
+    TimeoutObserver()
+        : base_type(true), interval_(std::numeric_limits<Real>::infinity()), duration_(0.0), acc_(0.0)
     {
         ;
     }
 
-    TimeoutObserver()
-        : base_type(true), interval_(std::numeric_limits<Real>::infinity()), duration_(0.0), acc_(0.0)
+    TimeoutObserver(const Real interval, const Real duration=0.0, const Real acc=0.0)
+        : base_type(true), interval_(interval), duration_(duration), acc_(acc)
     {
         ;
     }
@@ -1217,6 +1217,16 @@ public:
     const Real accumulation() const
     {
         return acc_;
+    }
+
+    const std::chrono::system_clock::time_point& start_time_point() const
+    {
+        return tstart_;
+    }
+
+    void set_start_time_point(const std::chrono::system_clock::time_point& tstart)
+    {
+        tstart_ = tstart;
     }
 
 protected:

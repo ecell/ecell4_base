@@ -969,7 +969,23 @@ void define_observers(py::module& m)
         .def(py::init<const Real>(), py::arg("interval"))
         .def("interval", &TimeoutObserver::interval)
         .def("duration", &TimeoutObserver::duration)
-        .def("accumulation", &TimeoutObserver::accumulation);
+        .def("accumulation", &TimeoutObserver::accumulation)
+        .def(py::pickle(
+            [](const TimeoutObserver& obj) {
+                return py::make_tuple(
+                        obj.interval(), obj.duration(), obj.accumulation(),
+                        obj.num_steps(), obj.start_time_point());
+                },
+            [](py::tuple state) {
+                if (state.size() != 5)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = TimeoutObserver(
+                        state[0].cast<Real>(), state[1].cast<Real>(), state[2].cast<Real>());
+                obj.set_num_steps(state[3].cast<Integer>());
+                obj.set_start_time_point(state[4].cast<std::chrono::system_clock::time_point>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalTrackingObserver, Observer, PyObserver<FixedIntervalTrackingObserver>,
         std::shared_ptr<FixedIntervalTrackingObserver>>(m, "FixedIntervalTrackingObserver")
