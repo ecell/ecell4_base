@@ -702,7 +702,8 @@ void define_observers(py::module& m)
     py::class_<Observer, PyObserver<>, std::shared_ptr<Observer>>(m, "Observer")
         .def("next_time", &Observer::next_time)
         .def("reset", &Observer::reset)
-        .def("num_steps", &Observer::num_steps);
+        .def("num_steps", &Observer::num_steps)
+        .def("fire", &Observer::fire);
 
     py::class_<FixedIntervalNumberObserver, Observer, PyObserver<FixedIntervalNumberObserver>,
         std::shared_ptr<FixedIntervalNumberObserver>>(m, "FixedIntervalNumberObserver")
