@@ -1258,6 +1258,27 @@ public:
         ;
     }
 
+    FixedIntervalTrackingObserver(
+        const Real& dt,
+        const std::vector<ParticleID>& pids,
+        const bool& resolve_boundary,
+        const Real subdt,
+        const std::vector<Real3>& prev_positions,
+        const std::vector<std::vector<Real3> >& trajectories,
+        const std::vector<Real3>& strides,
+        const std::vector<Real>& times,
+        const std::vector<Species>& species,
+        const Real threshold
+        )
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        pids_(pids), resolve_boundary_(resolve_boundary),
+        prev_positions_(prev_positions), trajectories_(trajectories), strides_(strides), t_(times),
+        species_(species),
+        threshold_(threshold > 0 ? threshold : std::numeric_limits<Real>::infinity())
+    {
+        ;
+    }
+
     virtual ~FixedIntervalTrackingObserver()
     {
         ;
@@ -1317,6 +1338,56 @@ public:
     inline Real distance(const Real3& pos1, const Real3& pos2, const Real3& edge_lengths) const
     {
         return std::sqrt(distance_sq(pos1, pos2, edge_lengths));
+    }
+
+    const FixedIntervalEvent& event() const
+    {
+        return event_;
+    }
+
+    void set_event(const FixedIntervalEvent& event)
+    {
+        event_ = event;
+    }
+
+    const FixedIntervalEvent& subevent() const
+    {
+        return subevent_;
+    }
+
+    void set_subevent(const FixedIntervalEvent& subevent)
+    {
+        subevent_ = subevent;
+    }
+
+    const std::vector<ParticleID>& pids() const
+    {
+        return pids_;
+    }
+
+    const bool resolve_boundary() const
+    {
+        return resolve_boundary_;
+    }
+
+    const std::vector<Real3>& prev_positions() const
+    {
+        return prev_positions_;
+    }
+
+    const std::vector<Real3>& strides() const
+    {
+        return strides_;
+    }
+
+    const std::vector<Species>& species() const
+    {
+        return species_;
+    }
+
+    const Real threshold() const
+    {
+        return threshold_;
     }
 
 protected:

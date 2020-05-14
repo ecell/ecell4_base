@@ -996,7 +996,43 @@ void define_observers(py::module& m)
                 py::arg("threshold") = FixedIntervalTrackingObserver::default_threshold())
         .def("data", &FixedIntervalTrackingObserver::data)
         .def("num_tracers", &FixedIntervalTrackingObserver::num_tracers)
-        .def("t", &FixedIntervalTrackingObserver::t);
+        .def("t", &FixedIntervalTrackingObserver::t)
+        .def(py::pickle(
+            [](const FixedIntervalTrackingObserver& obj) {
+                return py::make_tuple(
+                        obj.pids(),
+                        obj.resolve_boundary(),
+                        obj.prev_positions(),
+                        obj.data(),
+                        obj.strides(),
+                        obj.t(),
+                        obj.event(),
+                        obj.subevent(),
+                        obj.species(),
+                        obj.threshold());
+                },
+            [](py::tuple state) {
+                if (state.size() != 10)
+                    throw std::runtime_error("Invalid state!");
+                const auto event = state[6].cast<FixedIntervalEvent>();
+                const auto subevent = state[7].cast<FixedIntervalEvent>();
+                auto obj = FixedIntervalTrackingObserver(
+                        event.dt,
+                        state[0].cast<std::vector<ParticleID> >(),
+                        state[1].cast<bool>(),
+                        subevent.dt,
+                        state[2].cast<std::vector<Real3> >(),
+                        state[3].cast<std::vector<std::vector<Real3> > >(),
+                        state[4].cast<std::vector<Real3> >(),
+                        state[5].cast<std::vector<Real> >(),
+                        state[8].cast<std::vector<Species> >(),
+                        state[9].cast<Real>()
+                        );
+                obj.set_event(event);
+                obj.set_subevent(subevent);
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
         std::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
