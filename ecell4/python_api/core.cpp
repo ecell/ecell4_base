@@ -702,21 +702,35 @@ void define_observers(py::module& m)
     py::class_<Observer, PyObserver<>, std::shared_ptr<Observer>>(m, "Observer")
         .def("next_time", &Observer::next_time)
         .def("reset", &Observer::reset)
-        .def("num_steps", &Observer::num_steps);
-
-    py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
-        std::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
-        .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>(),
-                py::arg("dt"), py::arg("pyfunc"));
+        .def("num_steps", &Observer::num_steps)
+        .def("fire", &Observer::fire);
 
     py::class_<FixedIntervalNumberObserver, Observer, PyObserver<FixedIntervalNumberObserver>,
         std::shared_ptr<FixedIntervalNumberObserver>>(m, "FixedIntervalNumberObserver")
         .def(py::init<const Real&>(), py::arg("dt"))
         .def(py::init<const Real&, const std::vector<std::string>&>(),
                 py::arg("dt"), py::arg("species"))
+        .def("dt", &FixedIntervalNumberObserver::dt)
+        .def("t0", &FixedIntervalNumberObserver::t0)
+        .def("count", &FixedIntervalNumberObserver::count)
+        .def("next_time", &FixedIntervalNumberObserver::next_time)
         .def("data", &FixedIntervalNumberObserver::data)
         .def("targets", &FixedIntervalNumberObserver::targets)
-        .def("save", &FixedIntervalNumberObserver::save);
+        .def("save", &FixedIntervalNumberObserver::save)
+        .def(py::pickle(
+            [](const FixedIntervalNumberObserver& obj) {
+                return py::make_tuple(obj.logger(), obj.num_steps(), obj.dt(), obj.t0(), obj.count());
+                },
+            [](py::tuple state) {
+                if (state.size() != 5)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalNumberObserver(
+                        state[2].cast<Real>(), state[3].cast<Real>(), state[4].cast<Integer>());
+                obj.set_logger(state[0].cast<NumberLogger>());
+                obj.set_num_steps(state[1].cast<Integer>());
+                return obj;
+                }
+            ));
 
     py::class_<NumberObserver, Observer, PyObserver<NumberObserver>,
         std::shared_ptr<NumberObserver>>(m, "NumberObserver")
@@ -788,6 +802,23 @@ void define_observers(py::module& m)
                 }
             ));
 
+    py::class_<PositionLogger>(m, "PositionLogger")
+        .def(py::pickle(
+            [](const PositionLogger& obj) {
+                return py::make_tuple(obj.species, obj.header, obj.formatter, obj.serials);
+                },
+            [](py::tuple state) {
+                if (state.size() != 4)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = PositionLogger();
+                obj.species = state[0].cast<std::vector<std::string> >();
+                obj.header = state[1].cast<std::string>();
+                obj.formatter = state[2].cast<std::string>();
+                obj.serials = state[3].cast<PositionLogger::serial_map_type>();
+                return obj;
+                }
+            ));
+
     py::class_<FixedIntervalCSVObserver, Observer, PyObserver<FixedIntervalCSVObserver>,
         std::shared_ptr<FixedIntervalCSVObserver>>(m, "FixedIntervalCSVObserver")
         .def(py::init<const Real&, const std::string&>(),
@@ -795,18 +826,56 @@ void define_observers(py::module& m)
         .def(py::init<const Real&, const std::string&, std::vector<std::string>&>(),
                 py::arg("dt"), py::arg("filename"), py::arg("species"))
         .def("log", &FixedIntervalCSVObserver::log)
-        .def("filename", &FixedIntervalCSVObserver::filename)
+        .def("prefix", &FixedIntervalCSVObserver::prefix)
+        .def("filename", (const std::string (FixedIntervalCSVObserver::*)() const) &FixedIntervalCSVObserver::filename)
+        .def("filename", (const std::string (FixedIntervalCSVObserver::*)(const Integer) const) &FixedIntervalCSVObserver::filename)
+        .def("dt", &FixedIntervalCSVObserver::dt)
+        .def("t0", &FixedIntervalCSVObserver::t0)
+        .def("count", &FixedIntervalCSVObserver::count)
+        .def("next_time", &FixedIntervalCSVObserver::next_time)
         .def("set_header", &FixedIntervalCSVObserver::set_header)
-        .def("set_formatter", &FixedIntervalCSVObserver::set_formatter);
+        .def("set_formatter", &FixedIntervalCSVObserver::set_formatter)
+        .def(py::pickle(
+            [](const FixedIntervalCSVObserver& obj) {
+                return py::make_tuple(obj.dt(), obj.prefix(), obj.t0(), obj.count(), obj.num_steps(), obj.logger());
+                },
+            [](py::tuple state) {
+                if (state.size() != 6)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = FixedIntervalCSVObserver(
+                        state[0].cast<Real>(),
+                        state[1].cast<std::string>(),
+                        state[2].cast<Real>(),
+                        state[3].cast<Integer>());
+                obj.set_num_steps(state[4].cast<Integer>());
+                obj.set_logger(state[5].cast<PositionLogger>());
+                return obj;
+                }
+            ));
 
     py::class_<CSVObserver, Observer, PyObserver<CSVObserver>, std::shared_ptr<CSVObserver>>(m, "CSVObserver")
         .def(py::init<const std::string&>(), py::arg("filename"))
         .def(py::init<const std::string&, std::vector<std::string>&>(),
                 py::arg("filename"), py::arg("species"))
         .def("log", &CSVObserver::log)
-        .def("filename", &CSVObserver::filename)
+        .def("filename", (const std::string (CSVObserver::*)() const) &CSVObserver::filename)
+        .def("filename", (const std::string (CSVObserver::*)(const Integer) const) &CSVObserver::filename)
         .def("set_header", &CSVObserver::set_header)
-        .def("set_formatter", &CSVObserver::set_formatter);
+        .def("set_formatter", &CSVObserver::set_formatter)
+        .def(py::pickle(
+            [](const CSVObserver& obj) {
+                return py::make_tuple(obj.prefix(), obj.num_steps(), obj.logger());
+                },
+            [](py::tuple state) {
+                if (state.size() != 3)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = CSVObserver(
+                        state[0].cast<std::string>());
+                obj.set_num_steps(state[1].cast<Integer>());
+                obj.set_logger(state[2].cast<PositionLogger>());
+                return obj;
+                }
+            ));
 
     py::class_<FixedIntervalTrajectoryObserver, Observer, PyObserver<FixedIntervalTrajectoryObserver>,
         std::shared_ptr<FixedIntervalTrajectoryObserver>>(m, "FixedIntervalTrajectoryObserver")
@@ -896,6 +965,29 @@ void define_observers(py::module& m)
                 }
             ));
 
+    py::class_<TimeoutObserver, Observer, PyObserver<TimeoutObserver>, std::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
+        .def(py::init<>())
+        .def(py::init<const Real>(), py::arg("interval"))
+        .def("interval", &TimeoutObserver::interval)
+        .def("duration", &TimeoutObserver::duration)
+        .def("accumulation", &TimeoutObserver::accumulation)
+        .def(py::pickle(
+            [](const TimeoutObserver& obj) {
+                return py::make_tuple(
+                        obj.interval(), obj.duration(), obj.accumulation(),
+                        obj.num_steps(), obj.start_time_point());
+                },
+            [](py::tuple state) {
+                if (state.size() != 5)
+                    throw std::runtime_error("Invalid state!");
+                auto obj = TimeoutObserver(
+                        state[0].cast<Real>(), state[1].cast<Real>(), state[2].cast<Real>());
+                obj.set_num_steps(state[3].cast<Integer>());
+                obj.set_start_time_point(state[4].cast<std::chrono::system_clock::time_point>());
+                return obj;
+                }
+            ));
+
     py::class_<FixedIntervalTrackingObserver, Observer, PyObserver<FixedIntervalTrackingObserver>,
         std::shared_ptr<FixedIntervalTrackingObserver>>(m, "FixedIntervalTrackingObserver")
         .def(py::init<const Real&, const std::vector<Species>&, const bool&, const Real, const Real>(),
@@ -905,14 +997,48 @@ void define_observers(py::module& m)
                 py::arg("threshold") = FixedIntervalTrackingObserver::default_threshold())
         .def("data", &FixedIntervalTrackingObserver::data)
         .def("num_tracers", &FixedIntervalTrackingObserver::num_tracers)
-        .def("t", &FixedIntervalTrackingObserver::t);
+        .def("t", &FixedIntervalTrackingObserver::t)
+        .def(py::pickle(
+            [](const FixedIntervalTrackingObserver& obj) {
+                return py::make_tuple(
+                        obj.pids(),
+                        obj.resolve_boundary(),
+                        obj.prev_positions(),
+                        obj.data(),
+                        obj.strides(),
+                        obj.t(),
+                        obj.event(),
+                        obj.subevent(),
+                        obj.species(),
+                        obj.threshold());
+                },
+            [](py::tuple state) {
+                if (state.size() != 10)
+                    throw std::runtime_error("Invalid state!");
+                const auto event = state[6].cast<FixedIntervalEvent>();
+                const auto subevent = state[7].cast<FixedIntervalEvent>();
+                auto obj = FixedIntervalTrackingObserver(
+                        event.dt,
+                        state[0].cast<std::vector<ParticleID> >(),
+                        state[1].cast<bool>(),
+                        subevent.dt,
+                        state[2].cast<std::vector<Real3> >(),
+                        state[3].cast<std::vector<std::vector<Real3> > >(),
+                        state[4].cast<std::vector<Real3> >(),
+                        state[5].cast<std::vector<Real> >(),
+                        state[8].cast<std::vector<Species> >(),
+                        state[9].cast<Real>()
+                        );
+                obj.set_event(event);
+                obj.set_subevent(subevent);
+                return obj;
+                }
+            ));
 
-    py::class_<TimeoutObserver, Observer, PyObserver<TimeoutObserver>, std::shared_ptr<TimeoutObserver>>(m, "TimeoutObserver")
-        .def(py::init<>())
-        .def(py::init<const Real>(), py::arg("interval"))
-        .def("interval", &TimeoutObserver::interval)
-        .def("duration", &TimeoutObserver::duration)
-        .def("accumulation", &TimeoutObserver::accumulation);
+    py::class_<FixedIntervalPythonHooker, Observer, PyObserver<FixedIntervalPythonHooker>,
+        std::shared_ptr<FixedIntervalPythonHooker>>(m, "FixedIntervalPythonHooker")
+        .def(py::init<const Real&, FixedIntervalPythonHooker::callback_t>(),
+                py::arg("dt"), py::arg("pyfunc"));
 }
 
 static inline

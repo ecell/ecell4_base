@@ -15,11 +15,7 @@
 #include <fstream>
 #include <boost/format.hpp>
 
-#ifndef HAVE_CHRONO
-#include <time.h>
-#else
 #include <chrono>
-#endif
 
 
 namespace ecell4
@@ -172,6 +168,12 @@ public:
         ;
     }
 
+    FixedIntervalNumberObserver(const Real& dt, const Real& t0, const Integer count)
+        : base_type(dt, t0, count), logger_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalNumberObserver()
     {
         ;
@@ -182,6 +184,16 @@ public:
     virtual void reset();
     NumberLogger::data_container_type data() const;
     NumberLogger::species_container_type targets() const;
+
+    const NumberLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const NumberLogger& logger)
+    {
+        logger_ = logger;
+    }
 
     void save(const std::string& filename) const
     {
@@ -524,6 +536,14 @@ public:
         ;
     }
 
+    FixedIntervalCSVObserver(
+        const Real& dt, const std::string& filename,
+        const Real& t0, const Integer count)
+        : base_type(dt, t0, count), prefix_(filename), logger_()
+    {
+        ;
+    }
+
     virtual ~FixedIntervalCSVObserver()
     {
         ;
@@ -532,7 +552,6 @@ public:
     virtual void initialize(const std::shared_ptr<WorldInterface>& world, const std::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const std::shared_ptr<WorldInterface>& world);
     void log(const std::shared_ptr<WorldInterface>& world);
-    const std::string filename() const;
     virtual void reset();
 
     void set_header(const std::string& header)
@@ -544,6 +563,28 @@ public:
     {
         logger_.formatter = formatter;
     }
+
+    const PositionLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const PositionLogger& logger)
+    {
+        logger_ = logger;
+    }
+
+    const std::string& prefix() const
+    {
+        return prefix_;
+    }
+
+    inline const std::string filename() const
+    {
+        return filename(num_steps());
+    }
+
+    const std::string filename(const Integer idx) const;
 
 protected:
 
@@ -588,7 +629,6 @@ public:
     virtual void initialize(const std::shared_ptr<WorldInterface>& world, const std::shared_ptr<Model>& model);
     virtual bool fire(const Simulator* sim, const std::shared_ptr<WorldInterface>& world);
     void log(const std::shared_ptr<WorldInterface>& world);
-    const std::string filename() const;
     virtual void reset();
 
     void set_header(const std::string& header)
@@ -600,6 +640,28 @@ public:
     {
         logger_.formatter = formatter;
     }
+
+    const PositionLogger& logger() const
+    {
+        return logger_;
+    }
+
+    void set_logger(const PositionLogger& logger)
+    {
+        logger_ = logger;
+    }
+
+    const std::string& prefix() const
+    {
+        return prefix_;
+    }
+
+    inline const std::string filename() const
+    {
+        return filename(num_steps());
+    }
+
+    const std::string filename(const Integer idx) const;
 
 protected:
 
@@ -1120,14 +1182,14 @@ public:
 
 public:
 
-    TimeoutObserver(const Real interval)
-        : base_type(true), interval_(interval), duration_(0.0)
+    TimeoutObserver()
+        : base_type(true), interval_(std::numeric_limits<Real>::infinity()), duration_(0.0), acc_(0.0)
     {
         ;
     }
 
-    TimeoutObserver()
-        : base_type(true), interval_(std::numeric_limits<Real>::infinity()), duration_(0.0), acc_(0.0)
+    TimeoutObserver(const Real interval, const Real duration=0.0, const Real acc=0.0)
+        : base_type(true), interval_(interval), duration_(duration), acc_(acc)
     {
         ;
     }
@@ -1157,16 +1219,22 @@ public:
         return acc_;
     }
 
+    const std::chrono::system_clock::time_point& start_time_point() const
+    {
+        return tstart_;
+    }
+
+    void set_start_time_point(const std::chrono::system_clock::time_point& tstart)
+    {
+        tstart_ = tstart;
+    }
+
 protected:
 
     Real interval_;
     Real duration_;
     Real acc_;
-#ifndef HAVE_CHRONO
-    time_t tstart_;
-#else
     std::chrono::system_clock::time_point tstart_;
-#endif
 };
 
 class FixedIntervalTrackingObserver
@@ -1186,6 +1254,27 @@ public:
         species_(species), resolve_boundary_(resolve_boundary),
         threshold_(threshold > 0 ? threshold : std::numeric_limits<Real>::infinity()),
         prev_positions_(), strides_(), pids_(), trajectories_(), t_()
+    {
+        ;
+    }
+
+    FixedIntervalTrackingObserver(
+        const Real& dt,
+        const std::vector<ParticleID>& pids,
+        const bool& resolve_boundary,
+        const Real subdt,
+        const std::vector<Real3>& prev_positions,
+        const std::vector<std::vector<Real3> >& trajectories,
+        const std::vector<Real3>& strides,
+        const std::vector<Real>& times,
+        const std::vector<Species>& species,
+        const Real threshold
+        )
+        : base_type(false), event_(dt), subevent_(subdt > 0 ? subdt : dt),
+        pids_(pids), resolve_boundary_(resolve_boundary),
+        prev_positions_(prev_positions), trajectories_(trajectories), strides_(strides), t_(times),
+        species_(species),
+        threshold_(threshold > 0 ? threshold : std::numeric_limits<Real>::infinity())
     {
         ;
     }
@@ -1249,6 +1338,56 @@ public:
     inline Real distance(const Real3& pos1, const Real3& pos2, const Real3& edge_lengths) const
     {
         return std::sqrt(distance_sq(pos1, pos2, edge_lengths));
+    }
+
+    const FixedIntervalEvent& event() const
+    {
+        return event_;
+    }
+
+    void set_event(const FixedIntervalEvent& event)
+    {
+        event_ = event;
+    }
+
+    const FixedIntervalEvent& subevent() const
+    {
+        return subevent_;
+    }
+
+    void set_subevent(const FixedIntervalEvent& subevent)
+    {
+        subevent_ = subevent;
+    }
+
+    const std::vector<ParticleID>& pids() const
+    {
+        return pids_;
+    }
+
+    const bool resolve_boundary() const
+    {
+        return resolve_boundary_;
+    }
+
+    const std::vector<Real3>& prev_positions() const
+    {
+        return prev_positions_;
+    }
+
+    const std::vector<Real3>& strides() const
+    {
+        return strides_;
+    }
+
+    const std::vector<Species>& species() const
+    {
+        return species_;
+    }
+
+    const Real threshold() const
+    {
+        return threshold_;
     }
 
 protected:
