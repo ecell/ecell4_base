@@ -7,8 +7,6 @@
 #   include <boost/test/included/unit_test.hpp>
 #endif
 
-#include <boost/test/test_case_template.hpp>
-
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/SubvolumeSpace.hpp>
 

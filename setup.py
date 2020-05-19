@@ -106,7 +106,7 @@ LONG_DESCRIPTION = open("README.md").read()
 
 setup(
     name='ecell4_base',
-    version = '2.0.5',
+    version = '2.1.0b1',
     license = "the GNU General Public License v2",
     author = "Kazunari Kaizu",
     author_email = "kaizu@riken.jp",

@@ -8,7 +8,7 @@
 #endif
 
 
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 
 // Some of the CI environments uses relatively old version of Boost.
 // std::tuple can be used with Boost 1.68.0+.
