@@ -18,108 +18,112 @@ namespace egfrd
 
 namespace detail
 {
-template<typename coordT>
-coordT closest_point(const coordT& pos, const std::array<coordT, 3>& vertices)
+inline Real3 closest_point(const Real3& pos, const std::array<Real3, 3>& vertices)
 {
-    typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.141-142
 
-    const coordT a = vertices[0];
-    const coordT b = vertices[1];
-    const coordT c = vertices[2];
+    const Real3 a = vertices[0];
+    const Real3 b = vertices[1];
+    const Real3 c = vertices[2];
 
-    const coordT ab = b - a;
-    const coordT ac = c - a;
-    const coordT ap = pos - a;
-    const valueT d1 = dot_product(ab, ap);
-    const valueT d2 = dot_product(ac, ap);
+    const Real3 ab = b - a;
+    const Real3 ac = c - a;
+    const Real3 ap = pos - a;
+    const Real d1 = dot_product(ab, ap);
+    const Real d2 = dot_product(ac, ap);
     if (d1 <= 0.0 && d2 <= 0.0)
     {
         return a;
     }
 
-    const coordT bp = pos - b;
-    const valueT d3 = dot_product(ab, bp);
-    const valueT d4 = dot_product(ac, bp);
+    const Real3 bp = pos - b;
+    const Real d3 = dot_product(ab, bp);
+    const Real d4 = dot_product(ac, bp);
     if (d3 >= 0.0 && d4 <= d3)
     {
         return b;
     }
 
-    const valueT vc = d1*d4 - d3*d2;
+    const Real vc = d1*d4 - d3*d2;
     if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0)
     {
-        valueT v = d1 / (d1 - d3);
+        Real v = d1 / (d1 - d3);
         return a + ab * v;
     }
 
-    const coordT cp = pos - c;
-    const valueT d5 = dot_product(ab, cp);
-    const valueT d6 = dot_product(ac, cp);
+    const Real3 cp = pos - c;
+    const Real d5 = dot_product(ab, cp);
+    const Real d6 = dot_product(ac, cp);
     if (d6 >= 0.0 && d5 <= d6)
     {
         return c;
     }
 
-    const valueT vb = d5*d2 - d1*d6;
+    const Real vb = d5*d2 - d1*d6;
     if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0)
     {
-        const valueT w = d2 / (d2 - d6);
+        const Real w = d2 / (d2 - d6);
         return a + ac * w;
     }
 
-    const valueT va = d3*d6 - d5*d4;
+    const Real va = d3*d6 - d5*d4;
     if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0)
     {
-        const valueT w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+        const Real w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
         return b + (c - b) * w;
     }
 
-    const valueT denom = 1.0 / (va + vb + vc);
-    const valueT v = vb * denom;
-    const valueT w = vc * denom;
+    const Real denom = 1.0 / (va + vb + vc);
+    const Real v = vb * denom;
+    const Real w = vc * denom;
     return a + ab * v + ac * w;
 }
 
-template<typename coordT>
-std::pair<bool, coordT>
-test_intersect_segment_triangle(const coordT& begin, const coordT& end,
-                                const std::array<coordT, 3>& vertices)
+inline std::pair<bool, Real3>
+test_intersect_segment_triangle(const Real3& begin, const Real3& end,
+                                const std::array<Real3, 3>& vertices)
 {
-    typedef typename element_type_of<coordT>::type valueT;
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
     // pp.190-194
 
-    const coordT line = begin - end;
-    const coordT ab = vertices[1] - vertices[0];
-    const coordT ac = vertices[2] - vertices[0];
-    const coordT normal = cross_product(ab, ac);
+    const Real3 line = begin - end;
+    const Real3 ab = vertices[1] - vertices[0];
+    const Real3 ac = vertices[2] - vertices[0];
+    const Real3 normal = cross_product(ab, ac);
 
-    const valueT d = dot_product(line, normal);
+    const Real d = dot_product(line, normal);
     if(d < 0.0)
-        return std::make_pair(false, coordT(0.,0.,0.));
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
 
-    const coordT ap = begin - vertices[0];
-    const valueT t = dot_product(ap, normal);
+    const Real3 ap = begin - vertices[0];
+    const Real t = dot_product(ap, normal);
     if(t < 0.0 || d < t)
-        return std::make_pair(false, coordT(0.,0.,0.));
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
 
-    const coordT e = cross_product(line, ap);
-    valueT v = dot_product(ac, e);
+    const Real3 e = cross_product(line, ap);
+    Real v = dot_product(ac, e);
     if(v < 0. || d < v)
-        return std::make_pair(false, coordT(0.,0.,0.));
-    valueT w = -1.0 * dot_product(ab, e);
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
+    Real w = -1.0 * dot_product(ab, e);
     if(w < 0. || d < v + w)
-        return std::make_pair(false, coordT(0.,0.,0.));
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
 
-    const valueT ood = 1. / d;
+    const Real ood = 1. / d;
     v *= ood;
     w *= ood;
-    const valueT u = 1. - v - w;
-    const coordT intersect = vertices[0] * u + vertices[1] * v + vertices[2] * w;
+    const Real u = 1. - v - w;
+    const Real3 intersect = vertices[0] * u + vertices[1] * v + vertices[2] * w;
 
     return std::make_pair(true, intersect);
 }
