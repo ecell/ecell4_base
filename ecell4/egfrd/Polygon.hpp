@@ -156,11 +156,6 @@ test_intersect_segment_triangle(const Real3& begin, const Real3& end,
     }
 }
 
-inline Real3 reflect_plane(const Real3& begin, const Real3& end, const Triangle& face)
-{
-    return reflect_plane(begin, end, face.normal(), face.vertex_at(0));
-}
-
 inline std::pair<std::pair<Real3, Real3>, Polygon::FaceID>
 apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
                  const Polygon::FaceID intruder_face)
@@ -168,12 +163,13 @@ apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
     using FaceID = Polygon::FaceID;
 
     const Real3 stop = pos + disp;
+    const auto& tri  = poly.triangle_at(intruder_face);
 
     const std::pair<bool, Real3> test_result =
-        test_intersect_segment_triangle(pos, stop, poly.triangle_at(intruder_face));
+        test_intersect_segment_triangle(pos, stop, tri);
 
     const Real3 next_stop =
-        reflect_plane(pos, stop, poly.triangle_at(intruder_face));
+        reflect_plane(pos, stop, tri.normal(), tri.vertex_at(0));
 
     return std::make_pair(std::make_pair(test_result.second, next_stop),
                           intruder_face);
