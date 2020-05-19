@@ -7,7 +7,7 @@
 #   include <boost/test/included/unit_test.hpp>
 #endif
 
-#include <boost/test/floating_point_comparison.hpp>
+#include <boost/test/tools/floating_point_comparison.hpp>
 
 #include <ecell4/core/Sphere.hpp>
 #include <ecell4/core/Rod.hpp>

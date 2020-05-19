@@ -279,7 +279,7 @@ class SGFRDSimulator :
     Real dt() const override {return dt_;}
     Real reaction_length() const {return reaction_length_;}
 
-    bool check_reaction() const {return last_reactions_.size() > 0;}
+    bool check_reaction() const override {return last_reactions_.size() > 0;}
     std::vector<std::pair<ReactionRule, reaction_info_type> > const&
     last_reactions() const {return last_reactions_;}
 

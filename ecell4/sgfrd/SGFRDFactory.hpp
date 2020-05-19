@@ -93,7 +93,7 @@ class SGFRDFactory :
 
   protected:
 
-    virtual world_type* create_world(const Real3& edge_lengths) const
+    virtual world_type* create_world(const Real3& edge_lengths) const override
     {
         if (rng_)
         {
@@ -132,7 +132,7 @@ class SGFRDFactory :
     }
 
     virtual simulator_type* create_simulator(
-        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const
+        const std::shared_ptr<world_type>& w, const std::shared_ptr<Model>& m) const override
     {
         return new simulator_type(w, m, bd_dt_factor_, bd_reaction_length_factor_);
     }

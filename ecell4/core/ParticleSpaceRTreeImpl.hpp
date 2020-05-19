@@ -100,7 +100,7 @@ public:
     // PeriodicRTree. So it overwrites the default implementation.
     std::vector<Species> list_species() const override;
 
-    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const
+    std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const override
     {
         if(!rtree_.has(pid))
         {
@@ -113,7 +113,7 @@ public:
     }
 
     // returns true if it adds a new particle
-    bool update_particle(const ParticleID& pid, const Particle& newp)
+    bool update_particle(const ParticleID& pid, const Particle& newp) override
     {
         if(rtree_.has(pid))
         {
@@ -135,11 +135,11 @@ public:
         assert(this->diagnosis());
         return retval;
     }
-    bool has_particle(const ParticleID& pid) const
+    bool has_particle(const ParticleID& pid) const override
     {
         return rtree_.has(pid);
     }
-    void remove_particle(const ParticleID& pid)
+    void remove_particle(const ParticleID& pid) override
     {
         if(!rtree_.has(pid))
         {
@@ -154,24 +154,24 @@ public:
         return;
     }
 
-    Integer num_particles() const
+    Integer num_particles() const override
     {
         return rtree_.size();
     }
-    Integer num_particles      (const Species& sp) const;
-    Integer num_particles_exact(const Species& sp) const;
-    Integer num_molecules      (const Species& sp) const;
-    Integer num_molecules_exact(const Species& sp) const;
+    Integer num_particles      (const Species& sp) const override;
+    Integer num_particles_exact(const Species& sp) const override;
+    Integer num_molecules      (const Species& sp) const override;
+    Integer num_molecules_exact(const Species& sp) const override;
 
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles() const
+    list_particles() const override
     {
         return rtree_.list_objects();
     }
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles(const Species& sp) const;
+    list_particles(const Species& sp) const override;
     std::vector<std::pair<ParticleID, Particle> >
-    list_particles_exact(const Species& sp) const;
+    list_particles_exact(const Species& sp) const override;
 
     virtual void save(const std::string& filename) const
     {
@@ -180,27 +180,27 @@ public:
     }
 
 #ifdef WITH_HDF5
-    void save_hdf5(H5::Group* root) const
+    void save_hdf5(H5::Group* root) const override
     {
         save_particle_space(*this, root);
     }
 
-    void load_hdf5(const H5::Group& root)
+    void load_hdf5(const H5::Group& root) override
     {
         load_particle_space(root, this);
     }
 #endif
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
-    list_particles_within_radius(const Real3& pos, const Real& radius) const;
+    list_particles_within_radius(const Real3& pos, const Real& radius) const override;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
     list_particles_within_radius(const Real3& pos, const Real& radius,
-            const ParticleID& ignore) const;
+            const ParticleID& ignore) const override;
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
     list_particles_within_radius(const Real3& pos, const Real& radius,
-            const ParticleID& ignore1, const ParticleID& ignore2) const;
+            const ParticleID& ignore1, const ParticleID& ignore2) const override;
 
     bool diagnosis() const
     {
