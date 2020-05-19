@@ -943,8 +943,8 @@ protected:
         if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
         {
             const std::pair<std::pair<position_type, position_type>, FaceID>
-                    reflected = apply_reflection(*polygon_, pos, disp,
-                                                 *test_polygon.second.second);
+                    reflected = ::ecell4::egfrd::apply_reflection(
+                            *polygon_, pos, disp, *test_polygon.second.second);
             return this->apply_structure_rec(reflected.first.first,
                     reflected.first.second - reflected.first.first, reflected.second);
         }
