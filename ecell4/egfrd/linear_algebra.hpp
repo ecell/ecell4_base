@@ -37,6 +37,9 @@ struct is_matrix: public std::false_type {};
 template<typename T_, std::size_t N1_, std::size_t N2_>
 struct is_matrix<T_[N1_][N2_], 2>: public std::true_type {};
 
+template<typename T_, std::size_t N1_, std::size_t N2_>
+struct is_matrix<std::array<std::array<T_, N1_>, N2_>, 2>: public boost::mpl::true_ {};
+
 // ----------------------------------------------------------------------------
 // is_scalar
 
