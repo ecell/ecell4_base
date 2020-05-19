@@ -43,6 +43,32 @@ struct Polygon : public ecell4::Shape
 
         return intruders;
     }
+    std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+    list_faces_within_radius(const Real3& pos, const Real range, const FaceID& ignore) const
+    {
+        std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+            intruders;
+
+        for(std::size_t i=0; i<this->faces.size(); ++i)
+        {
+            if(i == ignore)
+            {
+                continue;
+            }
+            const auto& face = this->faces.at(i);
+            const Real dist = distance_point_to_triangle(pos, face);
+            if(dist <= range) // is intruder face
+            {
+                intruders.emplace_back(std::make_pair(i, face), dist);
+            }
+        }
+        std::sort(intruders.begin(), intruders.end(),
+            utils::pair_second_element_comparator<
+                std::pair<FaceID, FaceTriangle<Real3>>, Real>{});
+
+        return intruders;
+    }
+
 
     void emplace(const std::array<Real3, 3>& vertices)
     {
@@ -99,14 +125,17 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
     FaceID first_collide_face_idx = std::numeric_limits<std::size_t>::max();
     Real   first_collide_dist_sq  = len * len;
 
-    for(const auto& intruder : poly.list_faces_within_radius(pos, len))
+    const auto intruders =
+        ignore_face ? poly.list_faces_within_radius(pos, len, *ignore_face) :
+                      poly.list_faces_within_radius(pos, len);
+
+    for(const auto& intruder : intruders)
     {
-        if(static_cast<bool>(ignore_face) && intruder.first.first == ignore_face)
-        {
-            continue;
-        }
+        const FaceID&              fid = intruder.first.first;
+        const FaceTriangle<Real3>& tri = intruder.first.second;
+
         const std::pair<bool, Real3> test_result =
-            test_intersect_segment_triangle(pos, stop, intruder.first.second);
+            test_intersect_segment_triangle(pos, stop, tri);
 
         if(test_result.first)
         {
@@ -114,7 +143,7 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
             if(distsq_to_face < first_collide_dist_sq)
             {
                 collide_face           = true;
-                first_collide_face_idx = intruder.first.first;
+                first_collide_face_idx = fid;
                 first_collide_dist_sq  = distsq_to_face;
             }
         }
