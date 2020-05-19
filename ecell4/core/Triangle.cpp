@@ -128,7 +128,7 @@ Triangle& Triangle::operator=(const TriangleConstView& tcv)
     return *this;
 }
 
-Real3 closest_point_on_Triangle(const Real3& pos, const boost::array<Real3, 3>& vertices)
+Real3 closest_point_on_Triangle(const Real3& pos, const std::array<Real3, 3>& vertices)
 {
     // this implementation is from Real-Time Collision Detection by Christer Ericson,
     // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
