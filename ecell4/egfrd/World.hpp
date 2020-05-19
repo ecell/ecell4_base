@@ -916,9 +916,9 @@ protected:
     //     Periodic Boundary Condition, it recursively applies PBC and collision.
     position_type
     apply_structure_rec(const position_type& pos, const position_type& disp,
-            const boost::optional<typename Polygon::face_id_type> ignore) const
+            const boost::optional<typename Polygon::FaceID> ignore) const
     {
-        typedef Polygon::face_id_type face_id_t;
+        typedef Polygon::FaceID face_id_t;
 
         const ecell4::AABBSurface unitcell(
                 position_type(0., 0., 0.), this->edge_lengths());

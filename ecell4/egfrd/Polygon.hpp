@@ -4,6 +4,7 @@
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/AABB.hpp>
 #include <ecell4/core/Real3.hpp>
+#include <ecell4/core/comparators.hpp>
 #include "exceptions.hpp"
 #include "FaceTriangle.hpp"
 #include <limits>
@@ -16,34 +17,30 @@ namespace egfrd
 struct Polygon : public ecell4::Shape
 {
     typedef FaceTriangle<Real3> face_type;
-    typedef std::size_t face_id_type;
+    typedef std::size_t FaceID;
 
     Polygon(){}
     ~Polygon(){}
 
-    std::vector<std::size_t>
-    get_faces_within_radius(const Real3& pos, const Real range) const
+    std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+    list_faces_within_radius(const Real3& pos, const Real range) const
     {
-        std::vector<std::size_t> intruders;
-        std::size_t nearest_idx = std::numeric_limits<std::size_t>::max();
-        Real min_dist = std::numeric_limits<Real>::max();
+        std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+            intruders;
 
-        std::size_t idx = 0;
-        for(const auto& face : this->faces)
+        for(std::size_t i=0; i<this->faces.size(); ++i)
         {
+            const auto& face = this->faces.at(i);
             const Real dist = distance_point_to_triangle(pos, face);
             if(dist <= range) // is intruder face
             {
-                intruders.push_back(idx);
+                intruders.emplace_back(std::make_pair(i, face), dist);
             }
-
-            if(dist < min_dist) // is nearest one
-            {
-                min_dist = dist;
-                nearest_idx = idx;
-            }
-            ++idx;
         }
+        std::sort(intruders.begin(), intruders.end(),
+            utils::pair_second_element_comparator<
+                std::pair<FaceID, FaceTriangle<Real3>>, Real>{});
+
         return intruders;
     }
 
@@ -71,11 +68,11 @@ struct Polygon : public ecell4::Shape
     }
 };
 
-inline std::pair<std::pair<Real3, Real3>, Polygon::face_id_type>
+inline std::pair<std::pair<Real3, Real3>, Polygon::FaceID>
 apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
-                 const Polygon::face_id_type intruder_face)
+                 const Polygon::FaceID intruder_face)
 {
-    using FaceID = Polygon::face_id_type;
+    using FaceID = Polygon::FaceID;
 
     const Real3 stop = pos + disp;
 
@@ -89,11 +86,11 @@ apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
                           intruder_face);
 }
 
-inline std::pair<bool, std::pair<Real, Polygon::face_id_type> >
+inline std::pair<bool, std::pair<Real, Polygon::FaceID> >
 intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
-              const boost::optional<Polygon::face_id_type> ignore_face)
+              const boost::optional<Polygon::FaceID> ignore_face)
 {
-    using FaceID = Polygon::face_id_type;
+    using FaceID = Polygon::FaceID;
 
     const Real3 stop = pos + disp;
     const Real   len  = length(disp);
@@ -102,14 +99,14 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
     FaceID first_collide_face_idx = std::numeric_limits<std::size_t>::max();
     Real   first_collide_dist_sq  = len * len;
 
-    for(const FaceID& intruder : poly.get_faces_within_radius(pos, len))
+    for(const auto& intruder : poly.list_faces_within_radius(pos, len))
     {
-        if(static_cast<bool>(ignore_face) && intruder == ignore_face)
+        if(static_cast<bool>(ignore_face) && intruder.first.first == ignore_face)
         {
             continue;
         }
         const std::pair<bool, Real3> test_result =
-            test_intersect_segment_triangle(pos, stop, poly.faces.at(intruder));
+            test_intersect_segment_triangle(pos, stop, intruder.first.second);
 
         if(test_result.first)
         {
@@ -117,7 +114,7 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
             if(distsq_to_face < first_collide_dist_sq)
             {
                 collide_face           = true;
-                first_collide_face_idx = intruder;
+                first_collide_face_idx = intruder.first.first;
                 first_collide_dist_sq  = distsq_to_face;
             }
         }
