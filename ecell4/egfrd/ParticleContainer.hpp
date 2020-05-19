@@ -111,7 +111,7 @@ public:
 
     virtual position_type apply_boundary(position_type const& v) const = 0;
 
-    virtual void add_surface(const boost::array<position_type, 3>& vertices)
+    virtual void add_surface(const std::array<position_type, 3>& vertices)
     {
         return;
     }

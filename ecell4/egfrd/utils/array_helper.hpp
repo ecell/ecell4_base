@@ -18,10 +18,10 @@ namespace egfrd
 
 #define ARRAY_HELPER_TPL(__z__, __n__, __d__) \
 template<typename T_> \
-inline ::boost::array<T_, __n__> array_gen(\
+inline ::std::array<T_, __n__> array_gen(\
         BOOST_PP_ENUM_PARAMS(__n__, T_ const& p)) \
 { \
-    ::boost::array<T_, __n__> retval; \
+    ::std::array<T_, __n__> retval; \
     BOOST_PP_REPEAT_ ## __z__(__n__, ARRAY_HELPER_INNER_TPL, retval) \
     return retval; \
 }

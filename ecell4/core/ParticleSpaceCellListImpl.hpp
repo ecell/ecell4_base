@@ -32,8 +32,8 @@ public:
 
     typedef std::vector<particle_container_type::size_type> cell_type; // sorted
     typedef boost::multi_array<cell_type, 3> matrix_type;
-    typedef boost::array<matrix_type::size_type, 3> cell_index_type;
-    typedef boost::array<matrix_type::difference_type, 3> cell_offset_type;
+    typedef std::array<matrix_type::size_type, 3> cell_index_type;
+    typedef std::array<matrix_type::difference_type, 3> cell_offset_type;
 
 public:
 
@@ -183,7 +183,7 @@ protected:
                 pos[1] / cell_sizes_[1]) % matrix_.shape()[1],
             static_cast<matrix_type::size_type>(
                 pos[2] / cell_sizes_[2]) % matrix_.shape()[2]
-            }}; // boost::array<matrix_type::size_type, 3>
+            }}; // std::array<matrix_type::size_type, 3>
         return retval;
     }
 

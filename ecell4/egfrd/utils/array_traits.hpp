@@ -23,7 +23,7 @@ struct element_type_of< T_[N_] >
 };
 
 template< typename T_, std::size_t N_ >
-struct element_type_of< boost::array< T_, N_ > >
+struct element_type_of< std::array< T_, N_ > >
 {
     typedef T_ type;
 };

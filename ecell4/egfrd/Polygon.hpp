@@ -28,7 +28,7 @@ struct Polygon : public ecell4::Shape
     std::pair<std::vector<std::size_t>, std::pair<std::size_t, std::pair<Real, Real> > >
     get_faces_within_radius(const coordinate_type& pos, const Real range) const;
 
-    void emplace(const boost::array<coordinate_type, 3>& vertices)
+    void emplace(const std::array<coordinate_type, 3>& vertices)
     {
         this->faces.push_back(face_type(vertices));
     }

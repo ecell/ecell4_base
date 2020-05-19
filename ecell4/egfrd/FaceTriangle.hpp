@@ -17,8 +17,8 @@ struct FaceTriangle
     typedef typename element_type_of<coordT>::type length_type;
     typedef std::size_t                              size_type;
     typedef size_type                                index_type;
-    typedef boost::array<length_type, 3>             length_container_type;
-    typedef boost::array<position_type, 3>           position_container_type;
+    typedef std::array<length_type, 3>             length_container_type;
+    typedef std::array<position_type, 3>           position_container_type;
 
   public:
     FaceTriangle(){}
@@ -115,7 +115,7 @@ distance(const coordT& pos, const FaceTriangle<coordT>& face)
     }
     else
     {
-        boost::array<coordT, 3> rev;
+        std::array<coordT, 3> rev;
         rev[0] = face.vertex_at(2);
         rev[1] = face.vertex_at(1);
         rev[2] = face.vertex_at(0);
@@ -135,7 +135,7 @@ test_intersect_segment_triangle(const coordT& begin, const coordT& end,
     }
     else
     {
-        boost::array<coordT, 3> rev;
+        std::array<coordT, 3> rev;
         rev[0] = face.vertex_at(2);
         rev[1] = face.vertex_at(1);
         rev[2] = face.vertex_at(0);

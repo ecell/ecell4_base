@@ -101,7 +101,7 @@ Barycentric force_put_inside(const Barycentric& bary)
     }
 
     Barycentric retval(bary);
-    boost::array<bool, 3> over;
+    std::array<bool, 3> over;
     over[0] = over[1] = over[2] = false;
     for(std::size_t i=0; i<3; ++i)
     {

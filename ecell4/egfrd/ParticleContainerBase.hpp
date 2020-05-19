@@ -288,7 +288,7 @@
 //     // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
 //     //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
 //     // {
-//     //     typename utils::template overlap_checker<boost::array<particle_id_type, 0> > oc;
+//     //     typename utils::template overlap_checker<std::array<particle_id_type, 0> > oc;
 //     //     traits_type::take_neighbor(*pmat_, oc, s);
 //     //     return oc.result();
 //     // }
