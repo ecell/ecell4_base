@@ -187,9 +187,8 @@ test_intersect_segment_triangle(const coordT& begin, const coordT& end,
 } // detail
 
 template<typename coordT>
-std::pair<typename element_type_of<coordT>::type, // distance
-          typename element_type_of<coordT>::type> // r of circle in triangle
-distance(const coordT& pos, const FaceTriangle<coordT>& face)
+typename element_type_of<coordT>::type
+distance_point_to_triangle(const coordT& pos, const FaceTriangle<coordT>& face)
 {
     std::array<coordT, 3> triangle = face.vertices();
     if(dot_product(pos - face.vertex_at(0), face.normal()) < 0)
@@ -198,7 +197,7 @@ distance(const coordT& pos, const FaceTriangle<coordT>& face)
         triangle[1] = face.vertex_at(1);
         triangle[2] = face.vertex_at(0);
     }
-    return std::make_pair(length(detail::closest_point(pos, triangle) - pos), 0.0);
+    return length(detail::closest_point(pos, triangle) - pos);
 }
 
 template<typename coordT>

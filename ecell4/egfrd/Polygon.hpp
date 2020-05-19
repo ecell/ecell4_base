@@ -21,25 +21,23 @@ struct Polygon : public ecell4::Shape
     Polygon(){}
     ~Polygon(){}
 
-    // nearest
-    // (intruders, (idx, (distance, max_radius)))
     std::vector<std::size_t>
     get_faces_within_radius(const Real3& pos, const Real range) const
     {
         std::vector<std::size_t> intruders;
         std::size_t nearest_idx = std::numeric_limits<std::size_t>::max();
-        std::pair<Real, Real> min_dist(std::numeric_limits<Real>::max(), 0.0);
+        Real min_dist = std::numeric_limits<Real>::max();
 
         std::size_t idx = 0;
         for(const auto& face : this->faces)
         {
-            std::pair<Real, Real> dist = distance(pos, face);
-            if(dist.first <= range) // is intruder face
+            const Real dist = distance_point_to_triangle(pos, face);
+            if(dist <= range) // is intruder face
             {
                 intruders.push_back(idx);
             }
 
-            if(dist.first < min_dist.first) // is nearest one
+            if(dist < min_dist) // is nearest one
             {
                 min_dist = dist;
                 nearest_idx = idx;
