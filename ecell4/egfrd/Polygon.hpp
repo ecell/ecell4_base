@@ -18,11 +18,6 @@ struct Polygon : public ecell4::Shape
     typedef FaceTriangle<Real3> face_type;
     typedef std::size_t face_id_type;
 
-    static face_id_type make_nonsence_id()
-    {
-        return std::numeric_limits<std::size_t>::max();
-    }
-
     Polygon(){}
     ~Polygon(){}
 
@@ -98,7 +93,7 @@ apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
 
 inline std::pair<bool, std::pair<Real, Polygon::face_id_type> >
 intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
-              const Polygon::face_id_type ignore_face)
+              const boost::optional<Polygon::face_id_type> ignore_face)
 {
     using FaceID = Polygon::face_id_type;
 
@@ -111,7 +106,7 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
 
     for(const FaceID& intruder : poly.get_faces_within_radius(pos, len).first)
     {
-        if(intruder == ignore_face)
+        if(static_cast<bool>(ignore_face) && intruder == ignore_face)
         {
             continue;
         }
