@@ -23,7 +23,7 @@ struct Polygon : public ecell4::Shape
 
     // nearest
     // (intruders, (idx, (distance, max_radius)))
-    std::pair<std::vector<std::size_t>, std::pair<std::size_t, std::pair<Real, Real> > >
+    std::vector<std::size_t>
     get_faces_within_radius(const Real3& pos, const Real range) const
     {
         std::vector<std::size_t> intruders;
@@ -46,7 +46,7 @@ struct Polygon : public ecell4::Shape
             }
             ++idx;
         }
-        return std::make_pair(intruders, std::make_pair(nearest_idx, min_dist));
+        return intruders;
     }
 
     void emplace(const std::array<Real3, 3>& vertices)
@@ -104,7 +104,7 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
     FaceID first_collide_face_idx = std::numeric_limits<std::size_t>::max();
     Real   first_collide_dist_sq  = len * len;
 
-    for(const FaceID& intruder : poly.get_faces_within_radius(pos, len).first)
+    for(const FaceID& intruder : poly.get_faces_within_radius(pos, len))
     {
         if(static_cast<bool>(ignore_face) && intruder == ignore_face)
         {

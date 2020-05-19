@@ -969,8 +969,7 @@ protected:
                 apply_periodic_only_once(pos, disp, test_unitcell.second, unitcell);
 
             return this->apply_structure_rec(
-                    next_segment.first, next_segment.second,
-                    Polygon::make_nonsence_id());
+                    next_segment.first, next_segment.second, boost::none);
         }
         else
         {
