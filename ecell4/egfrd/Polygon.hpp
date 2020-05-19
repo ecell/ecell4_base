@@ -16,17 +16,16 @@ namespace egfrd
 {
 struct Polygon : public ecell4::Shape
 {
-    typedef FaceTriangle<Real3> face_type;
+    typedef Triangle face_type;
     typedef std::size_t FaceID;
 
     Polygon(){}
     ~Polygon(){}
 
-    std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
     list_faces_within_radius(const Real3& pos, const Real range) const
     {
-        std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
-            intruders;
+        std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> intruders;
 
         for(std::size_t i=0; i<this->faces.size(); ++i)
         {
@@ -39,14 +38,14 @@ struct Polygon : public ecell4::Shape
         }
         std::sort(intruders.begin(), intruders.end(),
             utils::pair_second_element_comparator<
-                std::pair<FaceID, FaceTriangle<Real3>>, Real>{});
+                std::pair<FaceID, Triangle>, Real>{});
 
         return intruders;
     }
-    std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
     list_faces_within_radius(const Real3& pos, const Real range, const FaceID& ignore) const
     {
-        std::vector<std::pair<std::pair<FaceID, FaceTriangle<Real3>>, Real>>
+        std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
             intruders;
 
         for(std::size_t i=0; i<this->faces.size(); ++i)
@@ -64,7 +63,7 @@ struct Polygon : public ecell4::Shape
         }
         std::sort(intruders.begin(), intruders.end(),
             utils::pair_second_element_comparator<
-                std::pair<FaceID, FaceTriangle<Real3>>, Real>{});
+                std::pair<FaceID, Triangle>, Real>{});
 
         return intruders;
     }
@@ -131,8 +130,8 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
 
     for(const auto& intruder : intruders)
     {
-        const FaceID&              fid = intruder.first.first;
-        const FaceTriangle<Real3>& tri = intruder.first.second;
+        const FaceID&   fid = intruder.first.first;
+        const Triangle& tri = intruder.first.second;
 
         const std::pair<bool, Real3> test_result =
             test_intersect_segment_triangle(pos, stop, tri);
