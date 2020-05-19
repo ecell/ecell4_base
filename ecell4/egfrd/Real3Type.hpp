@@ -1,5 +1,5 @@
-#ifndef POSITION3_TRAITS_HPP
-#define POSITION3_TRAITS_HPP
+#ifndef ECELL4_EGFRD_REAL3_TRAITS_HPP
+#define ECELL4_EGFRD_REAL3_TRAITS_HPP
 
 // This file containing the reference to the ecell4::Real3 and 
 //   some template traits of ecell4::Real3.

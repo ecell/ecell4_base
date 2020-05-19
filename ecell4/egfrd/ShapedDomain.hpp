@@ -1,5 +1,5 @@
-#ifndef SHAPED_DOMAIN_HPP
-#define SHAPED_DOMAIN_HPP
+#ifndef ECELL4_EGFRD_SHAPED_DOMAIN_HPP
+#define ECELL4_EGFRD_SHAPED_DOMAIN_HPP
 
 #include "Domain.hpp"
 

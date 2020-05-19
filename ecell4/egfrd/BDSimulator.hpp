@@ -1,5 +1,5 @@
-#ifndef BD_SIMULATOR_HPP
-#define BD_SIMULATOR_HPP
+#ifndef ECELL4_EGFRD_BD_SIMULATOR_HPP
+#define ECELL4_EGFRD_BD_SIMULATOR_HPP
 
 #include <algorithm>
 #include <limits>

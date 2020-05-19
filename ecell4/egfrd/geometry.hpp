@@ -1,5 +1,5 @@
-#ifndef GEOMETRY_HPP
-#define GEOMETRY_HPP
+#ifndef ECELL4_EGFRD_GEOMETRY_HPP
+#define ECELL4_EGFRD_GEOMETRY_HPP
 
 #include <boost/mpl/and.hpp>
 #include "linear_algebra.hpp"

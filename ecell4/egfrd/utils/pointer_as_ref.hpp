@@ -1,5 +1,5 @@
-#ifndef UTILS_POINTER_AS_REF_HPP
-#define UTILS_POINTER_AS_REF_HPP
+#ifndef ECELL4_EGFRD_UTILS_POINTER_AS_REF_HPP
+#define ECELL4_EGFRD_UTILS_POINTER_AS_REF_HPP
 
 #include <boost/get_pointer.hpp>
 

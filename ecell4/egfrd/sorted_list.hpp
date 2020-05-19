@@ -1,5 +1,5 @@
-#ifndef EGFRD_SORTED_LIST
-#define EGFRD_SORTED_LIST
+#ifndef ECELL4_EGFRD_SORTED_LIST
+#define ECELL4_EGFRD_SORTED_LIST
 
 #include <algorithm>
 #include <functional>

@@ -1,5 +1,5 @@
-#ifndef PAIR_HPP
-#define PAIR_HPP
+#ifndef ECELL4_EGFRD_PAIR_HPP
+#define ECELL4_EGFRD_PAIR_HPP
 
 #include <cmath>
 #include <utility>

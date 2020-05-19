@@ -1,5 +1,5 @@
-#ifndef UTILS_RANGE_HPP
-#define UTILS_RANGE_HPP
+#ifndef ECELL4_EGFRD_UTILS_RANGE_HPP
+#define ECELL4_EGFRD_UTILS_RANGE_HPP
 
 #include <type_traits>
 #include <boost/range/size.hpp>

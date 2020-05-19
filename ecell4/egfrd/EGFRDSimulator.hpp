@@ -1,5 +1,5 @@
-#ifndef EGFRDSIMULATOR_HPP
-#define EGFRDSIMULATOR_HPP
+#ifndef ECELL4_EGFRD_EGFRDSIMULATOR_HPP
+#define ECELL4_EGFRD_EGFRDSIMULATOR_HPP
 
 #include <boost/bind.hpp>
 #include <boost/format.hpp>

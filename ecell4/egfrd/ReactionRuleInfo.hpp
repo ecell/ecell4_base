@@ -1,5 +1,5 @@
-#ifndef REACTION_RULE_INFO_HPP
-#define REACTION_RULE_INFO_HPP
+#ifndef ECELL4_EGFRD_REACTION_RULE_INFO_HPP
+#define ECELL4_EGFRD_REACTION_RULE_INFO_HPP
 
 #include <vector>
 #include <algorithm>

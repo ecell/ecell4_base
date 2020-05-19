@@ -1,5 +1,5 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef ECELL4_EGFRD_LOGGER_HPP
+#define ECELL4_EGFRD_LOGGER_HPP
 
 #include <cstdarg>
 #include <set>

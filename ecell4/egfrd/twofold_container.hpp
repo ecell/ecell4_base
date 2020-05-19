@@ -1,5 +1,5 @@
-#ifndef TWOFOLD_CONTAINER_HPP
-#define TWOFOLD_CONTAINER_HPP
+#ifndef ECELL4_EGFRD_TWOFOLD_CONTAINER_HPP
+#define ECELL4_EGFRD_TWOFOLD_CONTAINER_HPP
 
 #include <algorithm>
 #include <array>

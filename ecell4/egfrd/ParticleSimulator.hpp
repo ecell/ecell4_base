@@ -1,5 +1,5 @@
-#ifndef PARTICLE_SIMULATOR_HPP
-#define PARTICLE_SIMULATOR_HPP
+#ifndef ECELL4_EGFRD_PARTICLE_SIMULATOR_HPP
+#define ECELL4_EGFRD_PARTICLE_SIMULATOR_HPP
 
 #include "ReactionRuleInfo.hpp"
 #include "ReactionRecorder.hpp"

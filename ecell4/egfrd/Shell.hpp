@@ -1,5 +1,5 @@
-#ifndef SHELL_HPP
-#define SHELL_HPP
+#ifndef ECELL4_EGFRD_SHELL_HPP
+#define ECELL4_EGFRD_SHELL_HPP
 
 #include <functional>
 #include <ostream>

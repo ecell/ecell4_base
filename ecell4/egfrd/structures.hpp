@@ -1,5 +1,5 @@
-#ifndef ECELL4_STRUCTURES_HPP
-#define ECELL4_STRUCTURES_HPP
+#ifndef ECELL4_EGFRD_STRUCTURES_HPP
+#define ECELL4_EGFRD_STRUCTURES_HPP
 
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/AABB.hpp>

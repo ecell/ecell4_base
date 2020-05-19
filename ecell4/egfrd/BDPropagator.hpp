@@ -1,5 +1,5 @@
-#ifndef BD_PROPAGATOR_HPP
-#define BD_PROPAGATOR_HPP
+#ifndef ECELL4_EGFRD_BD_PROPAGATOR_HPP
+#define ECELL4_EGFRD_BD_PROPAGATOR_HPP
 
 #include <algorithm>
 #include <limits>

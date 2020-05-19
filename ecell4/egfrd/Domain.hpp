@@ -1,5 +1,5 @@
-#ifndef DOMAIN_HPP
-#define DOMAIN_HPP
+#ifndef ECELL4_EGFRD_DOMAIN_HPP
+#define ECELL4_EGFRD_DOMAIN_HPP
 
 #include <string>
 #include <cstddef>

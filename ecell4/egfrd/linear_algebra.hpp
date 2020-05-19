@@ -1,5 +1,5 @@
-#ifndef LINEAR_ALGEBRA_HPP
-#define LINEAR_ALGEBRA_HPP
+#ifndef ECELL4_EGFRD_LINEAR_ALGEBRA_HPP
+#define ECELL4_EGFRD_LINEAR_ALGEBRA_HPP
 
 #include <algorithm>
 #include <type_traits>

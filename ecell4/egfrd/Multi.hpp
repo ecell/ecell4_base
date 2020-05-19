@@ -1,5 +1,5 @@
-#ifndef MULTI_HPP
-#define MULTI_HPP
+#ifndef ECELL4_EGFRD_MULTI_HPP
+#define ECELL4_EGFRD_MULTI_HPP
 
 #include <ecell4/core/functions.hpp>
 #include <ecell4/core/comparators.hpp>

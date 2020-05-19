@@ -1,5 +1,5 @@
-#ifndef POTENTIAL_FIELD_HPP
-#define POTENTIAL_FIELD_HPP
+#ifndef ECELL4_EGFRD_POTENTIAL_FIELD_HPP
+#define ECELL4_EGFRD_POTENTIAL_FIELD_HPP
 
 #include <memory>
 #include <ecell4/core/types.hpp>

@@ -1,5 +1,5 @@
-#ifndef MATRIX_SPACE_HPP
-#define MATRIX_SPACE_HPP
+#ifndef ECELL4_EGFRD_MATRIX_SPACE_HPP
+#define ECELL4_EGFRD_MATRIX_SPACE_HPP
 
 // #include <iostream>
 #include <cstddef>
