@@ -14,84 +14,84 @@ namespace ecell4
 {
 namespace egfrd
 {
-struct Polygon : public ecell4::Shape
-{
-    typedef Triangle face_type;
-    typedef std::size_t FaceID;
-
-    Polygon(){}
-    ~Polygon(){}
-
-    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
-    list_faces_within_radius(const Real3& pos, const Real range) const
-    {
-        std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> intruders;
-
-        for(std::size_t i=0; i<this->faces.size(); ++i)
-        {
-            const auto& face = this->faces.at(i);
-            const Real dist = distance_point_to_triangle(pos, face);
-            if(dist <= range) // is intruder face
-            {
-                intruders.emplace_back(std::make_pair(i, face), dist);
-            }
-        }
-        std::sort(intruders.begin(), intruders.end(),
-            utils::pair_second_element_comparator<
-                std::pair<FaceID, Triangle>, Real>{});
-
-        return intruders;
-    }
-    std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
-    list_faces_within_radius(const Real3& pos, const Real range, const FaceID& ignore) const
-    {
-        std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
-            intruders;
-
-        for(std::size_t i=0; i<this->faces.size(); ++i)
-        {
-            if(i == ignore)
-            {
-                continue;
-            }
-            const auto& face = this->faces.at(i);
-            const Real dist = distance_point_to_triangle(pos, face);
-            if(dist <= range) // is intruder face
-            {
-                intruders.emplace_back(std::make_pair(i, face), dist);
-            }
-        }
-        std::sort(intruders.begin(), intruders.end(),
-            utils::pair_second_element_comparator<
-                std::pair<FaceID, Triangle>, Real>{});
-
-        return intruders;
-    }
-
-
-    void emplace(const std::array<Real3, 3>& vertices)
-    {
-        this->faces.push_back(face_type(vertices));
-    }
-
-// data member
-    std::vector<face_type> faces;
-
-// for shapes (not implemented yet)
-    dimension_kind dimension() const {return THREE;}
-    Real  is_inside(const Real3& coord) const
-    {
-        throw ecell4::NotImplemented("polygon::is_inside");
-    }
-    Real3 draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
-    {
-        throw ecell4::NotImplemented("polygon::draw_position");
-    }
-    bool  test_AABB(const Real3& l, const Real3& u) const
-    {
-        throw ecell4::NotImplemented("polygon::test_AABB");
-    }
-};
+// struct Polygon : public ecell4::Shape
+// {
+//     typedef Triangle face_type;
+//     typedef std::size_t FaceID;
+//
+//     Polygon(){}
+//     ~Polygon(){}
+//
+//     std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+//     list_faces_within_radius(const Real3& pos, const Real range) const
+//     {
+//         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> intruders;
+//
+//         for(std::size_t i=0; i<this->faces.size(); ++i)
+//         {
+//             const auto& face = this->faces.at(i);
+//             const Real dist = distance_point_to_triangle(pos, face);
+//             if(dist <= range) // is intruder face
+//             {
+//                 intruders.emplace_back(std::make_pair(i, face), dist);
+//             }
+//         }
+//         std::sort(intruders.begin(), intruders.end(),
+//             utils::pair_second_element_comparator<
+//                 std::pair<FaceID, Triangle>, Real>{});
+//
+//         return intruders;
+//     }
+//     std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+//     list_faces_within_radius(const Real3& pos, const Real range, const FaceID& ignore) const
+//     {
+//         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
+//             intruders;
+//
+//         for(std::size_t i=0; i<this->faces.size(); ++i)
+//         {
+//             if(i == ignore)
+//             {
+//                 continue;
+//             }
+//             const auto& face = this->faces.at(i);
+//             const Real dist = distance_point_to_triangle(pos, face);
+//             if(dist <= range) // is intruder face
+//             {
+//                 intruders.emplace_back(std::make_pair(i, face), dist);
+//             }
+//         }
+//         std::sort(intruders.begin(), intruders.end(),
+//             utils::pair_second_element_comparator<
+//                 std::pair<FaceID, Triangle>, Real>{});
+//
+//         return intruders;
+//     }
+//
+//
+//     void emplace(const std::array<Real3, 3>& vertices)
+//     {
+//         this->faces.push_back(face_type(vertices));
+//     }
+//
+// // data member
+//     std::vector<face_type> faces;
+//
+// // for shapes (not implemented yet)
+//     dimension_kind dimension() const {return THREE;}
+//     Real  is_inside(const Real3& coord) const
+//     {
+//         throw ecell4::NotImplemented("polygon::is_inside");
+//     }
+//     Real3 draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
+//     {
+//         throw ecell4::NotImplemented("polygon::draw_position");
+//     }
+//     bool  test_AABB(const Real3& l, const Real3& u) const
+//     {
+//         throw ecell4::NotImplemented("polygon::test_AABB");
+//     }
+// };
 
 inline std::pair<std::pair<Real3, Real3>, Polygon::FaceID>
 apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
@@ -102,16 +102,16 @@ apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
     const Real3 stop = pos + disp;
 
     const std::pair<bool, Real3> test_result =
-        test_intersect_segment_triangle(pos, stop, poly.faces.at(intruder_face));
+        test_intersect_segment_triangle(pos, stop, poly.triangle_at(intruder_face));
 
     const Real3 next_stop =
-        reflect_plane(pos, stop, poly.faces.at(intruder_face));
+        reflect_plane(pos, stop, poly.triangle_at(intruder_face));
 
     return std::make_pair(std::make_pair(test_result.second, next_stop),
                           intruder_face);
 }
 
-inline std::pair<bool, std::pair<Real, Polygon::FaceID> >
+inline std::pair<bool, std::pair<Real, boost::optional<Polygon::FaceID>>>
 intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
               const boost::optional<Polygon::FaceID> ignore_face)
 {
@@ -120,9 +120,9 @@ intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
     const Real3 stop = pos + disp;
     const Real   len  = length(disp);
 
-    bool   collide_face           = false;
-    FaceID first_collide_face_idx = std::numeric_limits<std::size_t>::max();
-    Real   first_collide_dist_sq  = len * len;
+    bool collide_face          = false;
+    Real first_collide_dist_sq = len * len;
+    boost::optional<FaceID> first_collide_face_idx = boost::none;
 
     const auto intruders =
         ignore_face ? poly.list_faces_within_radius(pos, len, *ignore_face) :

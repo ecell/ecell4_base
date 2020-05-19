@@ -30,9 +30,9 @@
 #include <ecell4/core/NetworkModel.hpp>
 #include <ecell4/core/Species.hpp>
 #include <ecell4/core/ReactionRule.hpp>
+#include <ecell4/core/STLFileIO.hpp>
 
 #include <ecell4/egfrd/egfrd.hpp>
-#include <ecell4/egfrd/StlFileReader.hpp>
 
 
 // typedef double Real;
@@ -89,10 +89,21 @@ int main(int argc, char **argv)
     // rng->seed(time(NULL));
     // }}}
 
+    // Read Polygon from an STL file
+    // {{{
+    std::cerr << "polygon setup begin" << std::endl;
+
+    ecell4::Polygon poly = ecell4::read_polygon(
+            "sphere_radius_24_center_50.stl", ecell4::STLFormat::Ascii,
+            edge_lengths);
+
+    std::cerr << "polygon setup end" << std::endl;
+    // }}}
+
     // World Definition
     // {{{
     std::shared_ptr<world_type>
-        world(new world_type(edge_lengths, matrix_sizes, rng));
+        world(new world_type(edge_lengths, matrix_sizes, rng, poly));
     world->bind_to(model);
     // }}}
 
@@ -124,17 +135,6 @@ int main(int argc, char **argv)
         }
     }
     std::cerr << "particle generate end" << std::endl;
-
-    std::cerr << "polygon setup begin" << std::endl;
-    ecell4::egfrd::StlFileReader<ecell4::Real3> stlreader;
-    std::vector<ecell4::egfrd::StlTriangle<ecell4::Real3> > triangles =
-        stlreader.read("sphere_radius_24_center_50.stl", ecell4::egfrd::StlFileReader<ecell4::Real3>::Ascii);
-    for(std::vector<ecell4::egfrd::StlTriangle<ecell4::Real3> >::const_iterator
-        iter = triangles.begin(); iter != triangles.end(); ++iter)
-    {
-        world->add_surface(iter->vertices);
-    }
-    std::cerr << "polygon setup end" << std::endl;
     // }}}
 
     // Logger Settings

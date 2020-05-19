@@ -15,6 +15,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/Polygon.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -288,6 +289,15 @@ public:
         const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes,
         const std::shared_ptr<rng_type>& rng)
         :ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng)
+    {
+        add_world_structure();
+    }
+
+    World(
+        const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes,
+        const std::shared_ptr<rng_type>& rng, const Polygon& poly)
+        :ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng),
+         polygon_(poly)
     {
         add_world_structure();
     }
@@ -880,12 +890,6 @@ public:
         (*ps_).reset((*ps_).edge_lengths());
     }
 
-    // for polygon
-    virtual void add_surface(const std::array<position_type, 3>& vertices)
-    {
-        polygon_.emplace(vertices);
-    }
-
 //     virtual position_type
 //     apply_reflection(const position_type& pos, const position_type& disp)
 //     {
@@ -899,7 +903,7 @@ public:
     virtual position_type
     apply_structure(const position_type& pos, const position_type& disp) const
     {
-        if(this->polygon_.faces.empty())
+        if(!polygon_)
         {
             // if there is no polygon face, particle never collides.
             // to avoid overhead because of calling apply_structure_rec,
@@ -918,7 +922,8 @@ protected:
     apply_structure_rec(const position_type& pos, const position_type& disp,
             const boost::optional<typename Polygon::FaceID> ignore) const
     {
-        typedef Polygon::FaceID face_id_t;
+        assert(this->polygon_);
+        typedef Polygon::FaceID FaceID;
 
         const ecell4::AABBSurface unitcell(
                 position_type(0., 0., 0.), this->edge_lengths());
@@ -927,8 +932,8 @@ protected:
         const length_type dist_to_unit_cell =
                 length(disp) * test_unitcell.second;
 
-        const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon =
-                intersect_ray(this->polygon_, pos, disp, ignore);
+        const std::pair<bool, std::pair<length_type, boost::optional<FaceID>>>
+            test_polygon = intersect_ray(*polygon_, pos, disp, ignore);
 
         if(!test_unitcell.first && !test_polygon.first)
         {
@@ -937,9 +942,9 @@ protected:
 
         if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
         {
-            const std::pair<std::pair<position_type, position_type>, face_id_t>
-                    reflected = apply_reflection(this->polygon_, pos, disp,
-                                                 test_polygon.second.second);
+            const std::pair<std::pair<position_type, position_type>, FaceID>
+                    reflected = apply_reflection(*polygon_, pos, disp,
+                                                 *test_polygon.second.second);
             return this->apply_structure_rec(reflected.first.first,
                     reflected.first.second - reflected.first.first, reflected.second);
         }
@@ -962,7 +967,7 @@ protected:
                 std::cerr << "test_unitcell.second       = " << test_unitcell.second       << '\n';
                 std::cerr << "test_polygon.first         = " << test_polygon.first         << '\n';
                 std::cerr << "test_polygon.second.first  = " << test_polygon.second.first  << '\n';
-                std::cerr << "test_polygon.second.second = " << test_polygon.second.second << '\n';
+                std::cerr << "test_polygon.second.second = " << *test_polygon.second.second << '\n';
                 assert(false);
             }
             const std::pair<position_type, position_type> next_segment =
@@ -1067,7 +1072,7 @@ protected:
 
     std::unique_ptr<particle_space_type> ps_;
 
-    Polygon polygon_;
+    boost::optional<Polygon> polygon_;
 
 private:
 
