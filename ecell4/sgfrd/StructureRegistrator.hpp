@@ -16,48 +16,52 @@ public:
     typedef T_element_id     element_id_type;
     typedef T_structure_id   structure_id_type;
     typedef std::vector<element_id_type> element_id_array_type;
-    typedef std::pair<structure_id_type, element_id_array_type> value_type;
-    typedef std::vector<value_type>                 container_type;
+    typedef std::unordered_map<structure_id_type, element_id_array_type> container_type;
+    typedef std::unordered_map<element_id_type, structure_id_type> elemid_to_strid_map_type;
+
     typedef typename container_type::iterator       iterator;
     typedef typename container_type::const_iterator const_iterator;
-
     typedef ecell4::Polygon polygon_type;
-    typedef std::unordered_map<
-        element_id_type, structure_id_type> elemid_to_strid_map_type;
-
 public:
 
-    StructureRegistrator(const polygon_type& poly)
-        : container_(poly.face_size())
-    {}
-    ~StructureRegistrator(){}
+    StructureRegistrator()  = default;
+    ~StructureRegistrator() = default;
 
-    void emplace(const element_id_type&, const structure_id_type&);
-    void update(const element_id_type&, const structure_id_type&);
-    void remove(const element_id_type&, const structure_id_type&); // use hint
-    void remove(const element_id_type&);
+    void emplace(const element_id_type&, const structure_id_type&); // add new relation
+    void update (const element_id_type&, const structure_id_type&); // remove old relation and add new one
+    void remove (const element_id_type&, const structure_id_type&); // use hint
+    void remove (const element_id_type& eid)
+    {
+        this->remove(eid, elemid_to_strid_map_.at(eid));
+        return ;
+    }
 
-    bool have(const element_id_type&) const;
+    bool have(const element_id_type& eid) const
+    {
+        return elemid_to_strid_map_.count(eid) != 0;
+    }
 
-    element_id_array_type&       elements_over(const structure_id_type&);
-    element_id_array_type const& elements_over(const structure_id_type&) const;
-    structure_id_type&           structure_on(const element_id_type&);
-    structure_id_type const&     structure_on(const element_id_type&) const;
+    element_id_array_type&       elements_over(const structure_id_type& sid)
+    {
+        return container_.at(sid);
+    }
+    element_id_array_type const& elements_over(const structure_id_type& sid) const
+    {
+        return container_.at(sid);
+    }
+    structure_id_type&           structure_on(const element_id_type& eid)
+    {
+        return elemid_to_strid_map_.at(eid);
+    }
+    structure_id_type const&     structure_on(const element_id_type& eid) const
+    {
+        return elemid_to_strid_map_.at(eid);
+    }
 
     void reset(){elemid_to_strid_map_.clear(); container_.clear();}
     bool empty() const throw() {return container_.empty();}
     std::size_t size() const throw() {return container_.size();}
     void resize(std::size_t i){return container_.resize(i);}
-
-    value_type&       operator[](std::size_t i)       throw() {return container_[i];}
-    value_type const& operator[](std::size_t i) const throw() {return container_[i];}
-    value_type&       at(std::size_t i)       {return container_.at(i);}
-    value_type const& at(std::size_t i) const {return container_.at(i);}
-
-    element_id_array_type&       element_ids_at(std::size_t i);
-    element_id_array_type const& element_ids_at(std::size_t i) const;
-    structure_id_type&           structure_id_at(std::size_t i);
-    structure_id_type const&     structure_id_at(std::size_t i) const;
 
     iterator begin() throw() {return container_.begin();}
     iterator end()   throw() {return container_.begin();}
@@ -70,24 +74,8 @@ public:
 
 protected:
 
-    std::size_t to_index(const structure_id_type& sid) const
-    {
-        return static_cast<std::size_t>(sid);
-    }
-
-    std::size_t to_index(const element_id_type& eid) const
-    {
-        typename elemid_to_strid_map_type::const_iterator iter(
-            elemid_to_strid_map_.find(eid));
-        if(iter == elemid_to_strid_map_.end())
-            throw std::out_of_range("no structure id");
-        return to_index(iter->second);
-    }
-
-protected:
-
     elemid_to_strid_map_type elemid_to_strid_map_;   //ex {pID -> fID}
-    container_type           container_;  //ex {<fid, {pid,...}>, ...}
+    container_type container_;  // {fid -> {pid,...}, ...}
 };
 
 
@@ -99,14 +87,13 @@ void StructureRegistrator<Te, Ts>::emplace(
     {
         throw std::logic_error("already have");
     }
-    const std::size_t idx = this->to_index(sid);
-    if(container_.size() <= idx) {container_.resize(idx+1);}
     elemid_to_strid_map_[eid] = sid;
 
-    value_type& contained = container_[idx];
-    contained.first = sid;
-    contained.second.push_back(eid);
-
+    if(container_.count(sid) == 0)
+    {
+        container_[sid] = element_id_array_type{};
+    }
+    container_[sid].push_back(eid);
     return;
 }
 
@@ -114,23 +101,21 @@ template<typename Te, typename Ts>
 void StructureRegistrator<Te, Ts>::update(
         const element_id_type& eid, const structure_id_type& sid)
 {
-    const std::size_t idx = this->to_index(sid);
-    if(container_.size() <= idx) {container_.resize(idx+1);}
+    // remove older eid-sid relationship
+    const structure_id_type old_sid   = elemid_to_strid_map_[eid];
+    element_id_array_type&  old_value = container_[old_sid];
 
-    // cleanup eid->sid map
-    const structure_id_type old_sid = elemid_to_strid_map_[eid];
-    value_type& old_value = container_[this->to_index(old_sid)];
+    const auto found = std::find(old_value.begin(), old_value.end(), eid);
+    assert(found != old_value.end()); // should be found
+    old_value.erase(found);
 
-    // cleanup container.second
-    const typename element_id_array_type::iterator found =
-        std::find(old_value.second.begin(), old_value.second.end(), eid);
-    assert(found != old_value.second.end());
-    old_value.second.erase(found);
-
-    // update
-    container_[idx].first = sid;
-    container_[idx].second.push_back(eid);
+    // add new relationship
     elemid_to_strid_map_[eid] = sid;
+    if(container_.count(sid) == 0)
+    {
+        container_[sid] = element_id_array_type{};
+    }
+    container_[sid].push_back(eid);
     return;
 }
 
@@ -138,85 +123,14 @@ template<typename Te, typename Ts>
 void StructureRegistrator<Te, Ts>::remove(
         const element_id_type& eid, const structure_id_type& sid)
 {
-    const std::size_t idx = this->to_index(sid);
-    value_type& old_value = container_[idx];
+    element_id_array_type& old_value = container_[sid];
 
-    const typename element_id_array_type::iterator found =
-        std::find(old_value.second.begin(), old_value.second.end(), eid);
-    assert(found != old_value.second.end());
-    old_value.second.erase(found);
+    const auto found = std::find(old_value.begin(), old_value.end(), eid);
+    assert(found != old_value.end());
+    old_value.erase(found);
 
     elemid_to_strid_map_.erase(eid);
     return;
-}
-
-template<typename Te, typename Ts>
-void StructureRegistrator<Te, Ts>::remove(const element_id_type& eid)
-{
-    remove(eid, structure_id_at(to_index(eid)));
-    return;
-}
-
-template<typename Te, typename Ts>
-inline bool StructureRegistrator<Te, Ts>::have(const element_id_type& eid) const
-{
-    return elemid_to_strid_map_.count(eid) == 1;
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::element_id_array_type&
-StructureRegistrator<Te, Ts>::elements_over(const structure_id_type& sid)
-{
-    return element_ids_at(this->to_index(sid));
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::element_id_array_type const&
-StructureRegistrator<Te, Ts>::elements_over(const structure_id_type& sid) const
-{
-    return element_ids_at(this->to_index(sid));
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::structure_id_type&
-StructureRegistrator<Te, Ts>::structure_on(const element_id_type& eid)
-{
-    return structure_id_at(this->to_index(eid));
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::structure_id_type const&
-StructureRegistrator<Te, Ts>::structure_on(const element_id_type& eid) const
-{
-    return structure_id_at(this->to_index(eid));
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::element_id_array_type&
-StructureRegistrator<Te, Ts>::element_ids_at(std::size_t i)
-{
-    return container_.at(i).second;
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::element_id_array_type const&
-StructureRegistrator<Te, Ts>::element_ids_at(std::size_t i) const
-{
-    return container_.at(i).second;
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::structure_id_type&
-StructureRegistrator<Te, Ts>::structure_id_at(std::size_t i)
-{
-    return container_.at(i).first;
-}
-
-template<typename Te, typename Ts>
-inline typename StructureRegistrator<Te, Ts>::structure_id_type const&
-StructureRegistrator<Te, Ts>::structure_id_at(std::size_t i) const
-{
-    return container_.at(i).first;
 }
 
 template<typename Te, typename Ts>
