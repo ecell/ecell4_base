@@ -18,9 +18,9 @@ using ecell4::Real3;
 using ecell4::Triangle;
 using ecell4::RandomNumberGenerator;
 using ecell4::GSLRandomNumberGenerator;
-typedef ecell4::Polygon::FaceID   FaceID;
-typedef ecell4::Polygon::EdgeID   EdgeID;
-typedef ecell4::Polygon::VertexID VertexID;
+typedef ecell4::FaceID   FaceID;
+typedef ecell4::EdgeID   EdgeID;
+typedef ecell4::VertexID VertexID;
 
 bool check_equal(const Real3& lhs, const Real3& rhs, const Real tol)
 {

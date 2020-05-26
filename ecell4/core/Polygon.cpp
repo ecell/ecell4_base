@@ -943,7 +943,7 @@ Real3 Polygon::direction(const std::pair<Real3, FaceID>& pos1,
         pos2.first % pos2.second).str());
 }
 
-std::pair<Real3, Polygon::FaceID> Polygon::travel(
+std::pair<Real3, FaceID> Polygon::travel(
         const std::pair<Real3, FaceID>& pos, const Real3& disp) const
 {
     const Real3& p = pos.first;
@@ -1051,7 +1051,7 @@ std::pair<Real3, Polygon::FaceID> Polygon::travel(
                disp * (1 - cs.second)));              // the rest of displacement
 }
 
-std::pair<Real3, Polygon::FaceID> Polygon::travel(
+std::pair<Real3, FaceID> Polygon::travel(
         const std::pair<Real3, FaceID>& pos, const Real3& disp,
         const std::size_t restraint) const
 {

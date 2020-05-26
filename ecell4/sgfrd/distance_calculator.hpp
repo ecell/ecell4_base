@@ -32,8 +32,6 @@ struct distance_calculator_on_surface : public boost::static_visitor<Real>
 public:
     typedef strID structure_id_type;
     typedef ecell4::Polygon polygon_type;
-    typedef typename polygon_type::FaceID   FaceID;
-    typedef typename polygon_type::VertexID VertexID;
 
 private:
 

@@ -43,9 +43,6 @@ class SGFRDSimulator :
     // polygon
     typedef ecell4::Polygon  polygon_type;
     typedef ecell4::Triangle Triangle;
-    typedef polygon_type::FaceID   FaceID;
-    typedef polygon_type::EdgeID   EdgeID;
-    typedef polygon_type::VertexID VertexID;
 
     // Event & Domain
     typedef SGFRDEvent                      event_type;

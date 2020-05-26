@@ -130,10 +130,6 @@ class Polygon : public Shape
     static const Real absolute_tolerance;
     static const Real relative_tolerance;
 
-    using FaceID   = FaceID;
-    using EdgeID   = EdgeID;
-    using VertexID = VertexID;
-
     struct vertex_data
     {
         Real  apex_angle; // total angle around this vertex
@@ -835,24 +831,24 @@ inline Real3 direction(const Polygon& p,
     return p.direction(p1, p2);
 }
 
-inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp)
+inline std::pair<Real3, FaceID> travel(const Polygon& p,
+        const std::pair<Real3, FaceID>& pos, const Real3& disp)
 {
     return p.travel(pos, disp);
 }
 
-inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp,
+inline std::pair<Real3, FaceID> travel(const Polygon& p,
+        const std::pair<Real3, FaceID>& pos, const Real3& disp,
         const std::size_t edge_restraint)
 {
     return p.travel(pos, disp, edge_restraint);
 }
 
 // for sGFRD
-inline std::pair<Real3, Polygon::FaceID>
+inline std::pair<Real3, FaceID>
 roll(const Polygon& poly,
-     const std::pair<Real3, Polygon::FaceID>& pos,
-     const Polygon::VertexID vid, const Real r, const Real theta_)
+     const std::pair<Real3, FaceID>& pos,
+     const VertexID vid, const Real r, const Real theta_)
 {
     const Real3 vpos = poly.periodic_transpose(poly.position_at(vid), pos.first);
     if(theta_ == 0.0)
@@ -866,9 +862,6 @@ roll(const Polygon& poly,
 
     const Real apex_angle = poly.apex_angle_at(vid);
     assert(std::abs(theta_) < apex_angle);
-
-    typedef Polygon::FaceID FaceID;
-    typedef Polygon::EdgeID EdgeID;
 
     std::vector<std::pair<EdgeID, Real> > const& outedges =
         poly.outgoing_edge_and_angles(vid);

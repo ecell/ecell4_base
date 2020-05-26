@@ -32,9 +32,6 @@ class SGFRDWorld
 {
   public:
     typedef ecell4::Polygon  polygon_type;
-    typedef polygon_type::FaceID   FaceID;
-    typedef polygon_type::EdgeID   EdgeID;
-    typedef polygon_type::VertexID VertexID;
     typedef Barycentric barycentric_type;
 
     typedef ecell4::sgfrd::MoleculeInfo molecule_info_type;

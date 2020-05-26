@@ -13,9 +13,6 @@ class MultiContainer
   public:
     typedef SGFRDWorld world_type;
     typedef Polygon  polygon_type;
-    typedef world_type::FaceID   FaceID;
-    typedef world_type::EdgeID   EdgeID;
-    typedef world_type::VertexID VertexID;
     typedef world_type::structure_registrator_type structure_registrator_type;
     typedef world_type::particle_space_type        particle_space_type;
     typedef world_type::particle_container_type    particle_container_type;
