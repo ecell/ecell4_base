@@ -504,6 +504,7 @@ class Polygon : public Shape
         return modulo(pos, edge_length_);
     }
 
+    // transpose pos1 relative to pos2
     Real3 periodic_transpose(Real3 pos1, const Real3& pos2) const
     {
         const Real3 dpos = pos2 - pos1;
@@ -666,7 +667,12 @@ class Polygon : public Shape
             }
 
             const Triangle& tri = faces_[i].triangle;
-            const Real dist_sq  = distance_sq_point_Triangle(pos, tri);
+
+            const auto& vtx = tri.vertices();
+            const auto  com = (vtx[0] + vtx[1] + vtx[2]) / 3.0;
+
+            const Real dist_sq  = distance_sq_point_Triangle(
+                    this->periodic_transpose(pos, com), tri);
             if(dist_sq <= radius_sq)
             {
                 retval.emplace_back(std::make_pair(fid, tri), std::sqrt(dist_sq));
