@@ -96,6 +96,14 @@ public:
     bool has(const identifier_type& id) const {return idxmap_.count(id) != 0;}
     container_type const& list() const noexcept {return objects_;}
 
+    void clear()
+    {
+        idgen_  = id_generator_type();
+        idxmap_ .clear();
+        objects_.clear();
+        return;
+    }
+
     std::size_t size() const noexcept {return objects_.size();}
     bool       empty() const noexcept {return objects_.empty();}
 
@@ -170,6 +178,11 @@ public:
     {
         return objects_[idxmap_[id]];
     }
+
+    value_type const& front() const noexcept {return objects_.front();}
+    value_type&       front()       noexcept {return objects_.front();}
+    value_type const& back()  const noexcept {return objects_.back();}
+    value_type&       back()        noexcept {return objects_.back();}
 
     iterator       begin()        noexcept {return objects_.begin();}
     iterator       end()          noexcept {return objects_.end();}
