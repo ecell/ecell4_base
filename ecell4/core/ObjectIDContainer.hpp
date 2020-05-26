@@ -5,6 +5,7 @@
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <functional>
+#include <unordered_map>
 #include <utility>
 #include <cassert>
 
@@ -64,7 +65,7 @@ public:
         const auto found(this->idxmap_.find(id));
         if(found == this->idxmap_.end())
         {
-            throw_exceptions<NotFound>(utils::type_name_of<self_type>::value(),
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
                     "::remove(id=", id, "): object not found");
         }
 
@@ -86,7 +87,7 @@ public:
         const auto found(this->idxmap_.find(id));
         if(found == this->idxmap_.end())
         {
-            throw_exceptions<NotFound>(utils::type_name_of<self_type>::value(),
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
                     "::get(id=", id, "): object not found");
         }
         return objects_[found->second];
@@ -100,7 +101,7 @@ public:
 
     bool diagnosis() const
     {
-        for(const auto& item : this->idxmap_);
+        for(const auto& item : this->idxmap_)
         {
             const auto& id  = item.first;
             const auto& idx = item.second;
@@ -112,12 +113,12 @@ public:
             }
             catch(std::out_of_range& oor)
             {
-                throw_exceptions<IllegalState>(utils::type_name_of<self_type>::value(),
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
                     "::diagnosis: object(id=", id, ") not found in the container");
             }
             if(id_by_cont != id)
             {
-                throw_exceptions<IllegalState>(utils::type_name_of<self_type>::value(),
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
                     "::diagnosis: object(id=", id, ") index is invalid: ", idx,
                     "-th object has id ", id_by_cont);
             }
@@ -127,12 +128,12 @@ public:
             const auto& id = objects_.at(i).first;
             if(this->idxmap_.count(id) == 0)
             {
-                throw_exceptions<IllegalState>(utils::type_name_of<self_type>::value(),
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
                     "::diagnosis: object(id=", id, ") not found in idxmap");
             }
             if(this->idxmap_.at(id) != i)
             {
-                throw_exceptions<IllegalState>(utils::type_name_of<self_type>::value(),
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
                     "::diagnosis: object(id=", id, ") has different idx (", idxmap_.at(id),
                     ") in idxmap");
             }
@@ -145,7 +146,7 @@ public:
         const auto found(idxmap_.find(id));
         if(found == idxmap_.end())
         {
-            throw_exceptions<NotFound>(utils::type_name_of<self_type>::value(),
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
                     "::at(id=", id, "): object not found");
         }
         return objects_.at(found->second);
@@ -155,7 +156,7 @@ public:
         const auto found(idxmap_.find(id));
         if(found == idxmap_.end())
         {
-            throw_exceptions<NotFound>(utils::type_name_of<self_type>::value(),
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
                     "::at(id=", id, "): object not found");
         }
         return objects_.at(found->second);
@@ -180,7 +181,7 @@ public:
 private:
 
     id_generator_type idgen_;
-    id_index_map_type idxmap_;
+    id_idx_map_type   idxmap_;
     container_type    objects_;
 };
 } // ecell4
