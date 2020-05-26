@@ -11,6 +11,7 @@
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
+#include <ecell4/core/ObjectIDContainer.hpp>
 
 #ifdef WITH_HDF5
 #include "PolygonHDF5Writer.hpp"
@@ -27,6 +28,98 @@
 namespace ecell4
 {
 
+struct FaceID:
+        public Identifier<FaceID, unsigned long long, int>
+{
+    typedef Identifier<FaceID, unsigned long long, int> base_type;
+
+    FaceID(const value_type& value = value_type(0, 0))
+        : base_type(value)
+    {}
+};
+struct EdgeID:
+        public Identifier<EdgeID, unsigned long long, int>
+{
+    typedef Identifier<EdgeID, unsigned long long, int> base_type;
+
+    EdgeID(const value_type& value = value_type(0, 0))
+        : base_type(value)
+    {}
+};
+struct VertexID:
+        public Identifier<VertexID, unsigned long long, int>
+{
+    typedef Identifier<VertexID, unsigned long long, int> base_type;
+
+    VertexID(const value_type& value = value_type(0, 0))
+        : base_type(value)
+    {}
+};
+
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const FaceID& fid)
+{
+    os << "FID(" << fid().first << ':' << fid().second << ")";
+    return os;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const EdgeID& eid)
+{
+    os << "EID(" << eid().first << ':' << eid().second << ")";
+    return os;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const VertexID& vid)
+{
+    os << "VID(" << vid().first << ':' << vid().second << ")";
+    return os;
+}
+
+} // ecell4
+
+namespace std {
+
+template<>
+struct hash<ecell4::FaceID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::FaceID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+template<>
+struct hash<ecell4::EdgeID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::EdgeID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+template<>
+struct hash<ecell4::VertexID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::VertexID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+} // std
+
+namespace ecell4
+{
+
 // Static Polygon. once made, the shape never change.
 // (Face|Edge|Vertex)ID are just std::size_t.
 // Any hole or duplicated vertex will be treated as invalid structure.
@@ -37,10 +130,9 @@ class Polygon : public Shape
     static const Real absolute_tolerance;
     static const Real relative_tolerance;
 
-    // (strong|opaque) typedef
-    enum class FaceID   : std::size_t {};
-    enum class EdgeID   : std::size_t {};
-    enum class VertexID : std::size_t {};
+    using FaceID   = FaceID;
+    using EdgeID   = EdgeID;
+    using VertexID = VertexID;
 
     struct vertex_data
     {
@@ -107,9 +199,9 @@ class Polygon : public Shape
         //      increasing the apex angle between the vertex.
     };
 
-    typedef std::vector<vertex_data> vertex_container_type;
-    typedef std::vector<  face_data>   face_container_type;
-    typedef std::vector<  edge_data>   edge_container_type;
+    typedef ObjectIDContainer<VertexID, vertex_data> vertex_container_type;
+    typedef ObjectIDContainer<  FaceID,   face_data>   face_container_type;
+    typedef ObjectIDContainer<  EdgeID,   edge_data>   edge_container_type;
 
   public:
 
@@ -413,13 +505,13 @@ class Polygon : public Shape
         for(vertex_container_type::const_iterator
                 i(this->vertices_.begin()), e(this->vertices_.end()); i!=e; ++i)
         {
-            lower[0] = std::min(lower[0], i->position[0]);
-            lower[1] = std::min(lower[1], i->position[1]);
-            lower[2] = std::min(lower[2], i->position[2]);
+            lower[0] = std::min(lower[0], i->second.position[0]);
+            lower[1] = std::min(lower[1], i->second.position[1]);
+            lower[2] = std::min(lower[2], i->second.position[2]);
 
-            upper[0] = std::max(upper[0], i->position[0]);
-            upper[1] = std::max(upper[1], i->position[1]);
-            upper[2] = std::max(upper[2], i->position[2]);
+            upper[0] = std::max(upper[0], i->second.position[0]);
+            upper[1] = std::max(upper[1], i->second.position[1]);
+            upper[2] = std::max(upper[2], i->second.position[2]);
         }
         return;
     }
@@ -439,21 +531,22 @@ class Polygon : public Shape
     {
         Real draw_triangle = rng->uniform(0.0, total_area_);
 
-        for(std::size_t i=0; i<this->faces_.size(); ++i)
+        for(const auto& fidf : this->faces_)
         {
-            const face_data& fd = this->faces_[i];
+            const face_data& fd = fidf.second;
 
             draw_triangle -= fd.triangle.area();
             if(draw_triangle <= 0.0)
             {
-                fid = FaceID(i);
+                fid = fidf.first;
                 return fd.triangle.draw_position(rng);
             }
         }
+
         // if draw_triangle was positive throughout the loop,
         // maybe because of numerical error, put it on the last face.
-        fid = FaceID(faces_.size() - 1);
-        return faces_.back().triangle.draw_position(rng);
+        fid = this->faces_.back().first;
+        return faces_.back().second.triangle.draw_position(rng);
     }
 
     // XXX This function considers `fid`.
@@ -477,7 +570,7 @@ class Polygon : public Shape
         retval.reserve(this->faces_.size());
         for(const auto& f : this->faces_)
         {
-            retval.push_back(f.triangle);
+            retval.push_back(f.second.triangle);
         }
         return retval;
     }
@@ -540,27 +633,27 @@ class Polygon : public Shape
     std::vector<VertexID> list_vertex_ids() const
     {
         std::vector<VertexID> retval; retval.reserve(this->vertex_size());
-        for(std::size_t i=0; i<this->vertex_size(); ++i)
+        for(const auto& vidv : this->vertices_)
         {
-            retval.push_back(VertexID(i));
+            retval.push_back(vidv.first);
         }
         return retval;
     }
     std::vector<FaceID> list_face_ids() const
     {
         std::vector<FaceID> retval; retval.reserve(this->face_size());
-        for(std::size_t i=0; i<this->face_size(); ++i)
+        for(const auto& fidf : this->faces_)
         {
-            retval.push_back(FaceID(i));
+            retval.push_back(fidf.first);
         }
         return retval;
     }
     std::vector<EdgeID> list_edge_ids() const
     {
         std::vector<EdgeID> retval; retval.reserve(this->edge_size());
-        for(std::size_t i=0; i<this->edge_size(); ++i)
+        for(const auto& eide : this->edges_)
         {
-            retval.push_back(EdgeID(i));
+            retval.push_back(eide.first);
         }
         return retval;
     }
@@ -571,15 +664,15 @@ class Polygon : public Shape
         const Real tol_rel2 = relative_tolerance * relative_tolerance;
         const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
 
-        for(std::size_t i=0; i<vertices_.size(); ++i)
+        for(const auto& vidv : this->vertices_)
         {
-            const vertex_data& vd = vertices_[i];
+            const vertex_data& vd = vidv.second;
             const Real dist_sq = length_sq(
                 this->periodic_transpose(vd.position, pos) - pos);
 
             if(dist_sq < tol_abs2 || dist_sq < length_sq(pos) * tol_rel2)
             {
-                return VertexID(i);
+                return vidv.first;
             }
         }
         return boost::none;
@@ -626,28 +719,28 @@ class Polygon : public Shape
 
     vertex_data const& vertex_at(const VertexID& vid) const
     {
-        return this->vertices_.at(static_cast<std::size_t>(vid));
+        return this->vertices_.at(vid).second;
     }
     face_data const& face_at(const FaceID& fid) const
     {
-        return this->faces_.at(static_cast<std::size_t>(fid));
+        return this->faces_.at(fid).second;
     }
     edge_data const& edge_at(const EdgeID& eid) const
     {
-        return this->edges_.at(static_cast<std::size_t>(eid));
+        return this->edges_.at(eid).second;
     }
 
     vertex_data& vertex_at(const VertexID& vid)
     {
-        return this->vertices_.at(static_cast<std::size_t>(vid));
+        return this->vertices_.at(vid).second;
     }
     face_data& face_at(const FaceID& fid)
     {
-        return this->faces_.at(static_cast<std::size_t>(fid));
+        return this->faces_.at(fid).second;
     }
     edge_data& edge_at(const EdgeID& eid)
     {
-        return this->edges_.at(static_cast<std::size_t>(eid));
+        return this->edges_.at(eid).second;
     }
 
     template<typename Filter>
@@ -658,15 +751,15 @@ class Polygon : public Shape
         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
 
         const Real radius_sq = radius * radius;
-        for(std::size_t i=0; i<faces_.size(); ++i)
+        for(const auto& fidf : this->faces_)
         {
-            const FaceID fid = static_cast<FaceID>(i);
+            const FaceID fid = fidf.first;
             if(filter(fid))
             {
                 continue;
             }
 
-            const Triangle& tri = faces_[i].triangle;
+            const Triangle& tri = fidf.second.triangle;
 
             const auto& vtx = tri.vertices();
             const auto  com = (vtx[0] + vtx[1] + vtx[2]) / 3.0;
@@ -693,30 +786,6 @@ class Polygon : public Shape
     face_container_type   faces_;
     edge_container_type   edges_;
 };
-
-template<typename charT, typename traits>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const Polygon::FaceID& fid)
-{
-    os << "FID(" << static_cast<std::size_t>(fid) << ")";
-    return os;
-}
-
-template<typename charT, typename traits>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const Polygon::EdgeID& eid)
-{
-    os << "EID(" << static_cast<std::size_t>(eid) << ")";
-    return os;
-}
-
-template<typename charT, typename traits>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const Polygon::VertexID& vid)
-{
-    os << "VID(" << static_cast<std::size_t>(vid) << ")";
-    return os;
-}
 
 /********************** free functions to use a Polygon **********************/
 
@@ -864,39 +933,5 @@ roll(const Polygon& poly,
 
 } // polygon
 } // ecell4
-
-namespace std {
-
-template<>
-struct hash<ecell4::Polygon::FaceID>
-{
-    typedef std::size_t result_type;
-    typedef ecell4::Polygon::FaceID argument_type;
-    result_type operator()(const argument_type& val) const
-    {
-        return static_cast<std::size_t>(val);
-    }
-};
-template<>
-struct hash<ecell4::Polygon::EdgeID>
-{
-    typedef std::size_t result_type;
-    typedef ecell4::Polygon::EdgeID argument_type;
-    result_type operator()(const argument_type& val) const
-    {
-        return static_cast<std::size_t>(val);
-    }
-};
-template<>
-struct hash<ecell4::Polygon::VertexID>
-{
-    typedef std::size_t result_type;
-    typedef ecell4::Polygon::VertexID argument_type;
-    result_type operator()(const argument_type& val) const
-    {
-        return static_cast<std::size_t>(val);
-    }
-};
-} // std
 
 #endif// ECELL4_POLYGON
