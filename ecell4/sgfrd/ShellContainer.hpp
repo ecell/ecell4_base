@@ -48,7 +48,7 @@ public:
 public:
 
     ShellContainer(const std::shared_ptr<polygon_type>& poly)
-        : polygon_(poly), face_registrator_(*poly), vertex_registrator_(*poly)
+        : polygon_(poly)
     {}
     ~ShellContainer(){}
 

@@ -23,7 +23,7 @@ class MultiContainer
 
   public:
 
-    MultiContainer(world_type& w) : world_(w), registrator_(*(w.polygon())){}
+    MultiContainer(world_type& w) : world_(w){}
     ~MultiContainer(){}
 
     bool make_entry(const ParticleID& pid)

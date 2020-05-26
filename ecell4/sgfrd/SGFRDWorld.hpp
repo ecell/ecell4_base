@@ -54,8 +54,7 @@ class SGFRDWorld
     SGFRDWorld(const Real3&    edge_lengths =    Real3(1, 1, 1),
                const Integer3& matrix_sizes = Integer3(3, 3, 3))
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes)),
-          registrator_(*polygon_)
+          polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes))
     {
         rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -69,8 +68,7 @@ class SGFRDWorld
                std::shared_ptr<RandomNumberGenerator> rng)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng),
-          polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes)),
-          registrator_(*polygon_)
+          polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes))
     {
         this->prepare_restrictions();
     }
@@ -80,8 +78,7 @@ class SGFRDWorld
                const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           polygon_(std::make_shared<Polygon>(
-                      read_polygon(polygon_file, fmt, edge_lengths))),
-          registrator_(*polygon_)
+                      read_polygon(polygon_file, fmt, edge_lengths)))
     {
         rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -96,8 +93,7 @@ class SGFRDWorld
                const std::string& polygon_file, const STLFormat fmt)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
           rng_(rng), polygon_(std::make_shared<Polygon>(
-                      read_polygon(polygon_file, fmt, edge_lengths))),
-          registrator_(*polygon_)
+                      read_polygon(polygon_file, fmt, edge_lengths)))
     {
         this->prepare_restrictions();
     }
@@ -106,7 +102,7 @@ class SGFRDWorld
     SGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
                const std::shared_ptr<Polygon>& poly)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          polygon_(poly), registrator_(*polygon_)
+          polygon_(poly)
     {
         rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
@@ -122,15 +118,14 @@ class SGFRDWorld
                std::shared_ptr<RandomNumberGenerator> rng,
                const std::shared_ptr<Polygon>& poly)
         : ps_(new default_particle_space_type(edge_lengths, matrix_sizes)),
-          rng_(rng), polygon_(poly), registrator_(*polygon_)
+          rng_(rng), polygon_(poly)
     {
         this->prepare_restrictions();
     }
 
     SGFRDWorld(const std::string& filename) // from HDF5
         : ps_(new default_particle_space_type(Real3(1, 1, 1))),
-          polygon_(std::make_shared<Polygon>(Real3(1, 1, 1))),
-          registrator_(*polygon_)
+          polygon_(std::make_shared<Polygon>(Real3(1, 1, 1)))
     {
         rng_ = std::shared_ptr<RandomNumberGenerator>(
             new GSLRandomNumberGenerator());
