@@ -83,7 +83,7 @@ public:
 
     // NetworkModelTraits
 
-    bool is_static() const
+    bool is_static() const final
     {
         return true;
     }

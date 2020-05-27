@@ -511,6 +511,10 @@ public:
 
     void initialize()
     {
+        if (!model_->is_static())
+        {
+            throw std::runtime_error("Only a NetworkModel is accepted. Use expand");
+        }
         const std::vector<Species> species(model_->list_species());
         for(std::vector<Species>::const_iterator it = species.begin();
                 it != species.end(); it++)
