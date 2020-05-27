@@ -1,5 +1,5 @@
-#ifndef WORLD_HPP
-#define WORLD_HPP
+#ifndef ECELL4_EGFRD_WORLD_HPP
+#define ECELL4_EGFRD_WORLD_HPP
 
 #include <sstream>
 
@@ -15,6 +15,7 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/Polygon.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -30,18 +31,11 @@
 #include <map>
 #include <memory>
 #include <boost/lexical_cast.hpp>
-#include <boost/array.hpp>
-#include <boost/utility/enable_if.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/foreach.hpp>
 #include "generator.hpp"
-#include "filters.hpp"
 //#include "ParticleID.hpp"
 //#include "SpeciesTypeID.hpp"
 //#include "SpeciesInfo.hpp"
-#include "Defs.hpp"
 //#include "SerialIDGenerator.hpp"
-#include "Transaction.hpp"
 // #include "Structure.hpp"
 // #include "Surface.hpp"
 // #include "Region.hpp"
@@ -61,13 +55,11 @@
  * ParticleContainerBase
  */
 #include "utils/range.hpp"
-#include "utils/unassignable_adapter.hpp"
-#include "MatrixSpace.hpp"
-#include "abstract_set.hpp"
+#include "utils/collection_contains.hpp"
 #include "generator.hpp"
 #include "exceptions.hpp"
+#include "MatrixSpace.hpp"
 #include "ParticleContainer.hpp"
-#include "Transaction.hpp"
 
 #include <ecell4/core/AABBSurface.hpp>
 #include "Polygon.hpp"
@@ -76,19 +68,6 @@ namespace ecell4
 {
 namespace egfrd
 {
-
-// For twofold_container
-inline
-bool is_initialized(std::string const &obj)
-{
-    return (0 < obj.size());
-}
-
-inline
-bool is_initialized(ecell4::Species const &obj)
-{
-    return (0 < obj.serial().size());
-}
 
 template<typename Tderived_, typename TD_>
 struct WorldTraitsBase
@@ -193,18 +172,6 @@ public:
     {
         oc.each_neighbor(oc.index(pos), fun);
     }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor(oc, fun, cmp);
-    }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_ const& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor(oc, fun, cmp);
-    }
 };
 
 template<typename TD_>
@@ -248,18 +215,6 @@ public:
     {
         oc.each_neighbor_cyclic(oc.index(pos), fun);
     }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor_cyclic(oc, fun, cmp);
-    }
-
-    template<typename Toc_, typename Tfun_, typename Tsphere_>
-    static void take_neighbor(Toc_ const& oc, Tfun_& fun, const Tsphere_& cmp)
-    {
-        take_neighbor_cyclic(oc, fun, cmp);
-    }
 };
 
 template<typename Ttraits_>
@@ -296,7 +251,6 @@ public:
     typedef sized_iterator_range<typename particle_matrix_type::const_iterator> particle_id_pair_range;
     typedef typename particle_matrix_type::matrix_sizes_type matrix_sizes_type;
     typedef ecell4::ParticleSpaceCellListImpl particle_space_type;
-    typedef typename base_type::transaction_type transaction_type;
     typedef typename base_type::time_type time_type;
 
 protected:
@@ -339,6 +293,15 @@ public:
         add_world_structure();
     }
 
+    World(
+        const position_type& edge_lengths, const matrix_sizes_type& matrix_sizes,
+        const std::shared_ptr<rng_type>& rng, const Polygon& poly)
+        :ps_(new particle_space_type(edge_lengths, matrix_sizes)), rng_(rng),
+         polygon_(poly)
+    {
+        add_world_structure();
+    }
+
     World(const std::string filename)
         : ps_(new particle_space_type(position_type(1, 1, 1), matrix_sizes_type(3, 3, 3))), rng_()
     {
@@ -376,7 +339,7 @@ public:
         typename structure_map::const_iterator i(structure_map_.find(id));
         if (structure_map_.end() == i)
         {
-            throw not_found(std::string("Unknown surface (id=")
+            throw ::ecell4::NotFound(std::string("Unknown surface (id=")
                 + boost::lexical_cast<std::string>(id) + ")");
         }
         return (*i).second;
@@ -396,7 +359,7 @@ public:
     //         particle_pool_.find(sid));
     //     if (i == particle_pool_.end())
     //     {
-    //         throw not_found(std::string("Unknown species (id=")
+    //         throw ::ecell4::NotFound(std::string("Unknown species (id=")
     //             + boost::lexical_cast<std::string>(sid) + ")");
     //     }
     //     return (*i).second;
@@ -894,24 +857,6 @@ public:
         return (*ps_).list_particles_within_radius(s.position(), s.radius(), ignore1, ignore2);
     }
 
-    // template<typename Tsph_, typename Tset_>
-    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s, Tset_ const& ignore,
-    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
-    // {
-    //     typename utils::template overlap_checker<Tset_> oc(ignore);
-    //     traits_type::take_neighbor(*pmat_, oc, s);
-    //     return oc.result();
-    // }
-
-    // template<typename Tsph_>
-    // particle_id_pair_and_distance_list* check_overlap(Tsph_ const& s,
-    //     typename boost::disable_if<boost::is_same<Tsph_, particle_id_pair> >::type* = 0) const
-    // {
-    //     typename utils::template overlap_checker<std::array<particle_id_type, 0> > oc;
-    //     traits_type::take_neighbor(*pmat_, oc, s);
-    //     return oc.result();
-    // }
-
     particle_id_pair_range get_particles_range() const
     {
         const particle_space_type::particle_container_type& particles((*ps_).particles());
@@ -921,8 +866,6 @@ public:
     /**
      *
      */
-
-    virtual transaction_type* create_transaction();
 
     template<typename T_>
     length_type distance(T_ const& lhs, position_type const& rhs) const
@@ -947,12 +890,6 @@ public:
         (*ps_).reset((*ps_).edge_lengths());
     }
 
-    // for polygon
-    virtual void add_surface(const std::array<position_type, 3>& vertices)
-    {
-        polygon_.emplace(vertices);
-    }
-
 //     virtual position_type
 //     apply_reflection(const position_type& pos, const position_type& disp)
 //     {
@@ -966,78 +903,135 @@ public:
     virtual position_type
     apply_structure(const position_type& pos, const position_type& disp) const
     {
-        if(this->polygon_.faces.empty())
+        if(!polygon_)
         {
             // if there is no polygon face, particle never collides.
             // to avoid overhead because of calling apply_structure_rec,
             // just skip it and use normal `apply_boundary`.
             return this->apply_boundary(pos + disp);
         }
-        return this->apply_structure_rec(pos, disp, Polygon<position_type>::make_nonsence_id());
+        return this->apply_structure_rec(pos, disp, boost::none, boost::none);
     }
 
 protected:
 
+    enum class BoundaryAxis : std::uint8_t
+    {
+        X_lower = 0, X_upper = 1,
+        Y_lower = 2, Y_upper = 3,
+        Z_lower = 4, Z_upper = 5
+    };
+
     //XXX: this code is for BD (Multi Domain), with polygon.
     //     To deal with the collision between particle and polygon under the
-    //     Periodic Boundary Condition, it recursively applies PBC and collision.
+    //     Periodic Boundary Condition, it applies PBC and collision in order.
     position_type
     apply_structure_rec(const position_type& pos, const position_type& disp,
-            const typename Polygon<position_type>::face_id_type ignore) const
+            const boost::optional<typename Polygon::FaceID> ignore_face,
+            const boost::optional<BoundaryAxis> ignore_boundary) const
     {
-        typedef typename Polygon<position_type>::face_id_type face_id_t;
+        assert(this->polygon_);
+        typedef Polygon::FaceID FaceID;
 
-        const ecell4::AABBSurface unitcell(
-                position_type(0., 0., 0.), this->edge_lengths());
-        const std::pair<bool, length_type> test_unitcell =
-                unitcell.intersect_ray(pos, disp);
-        const length_type dist_to_unit_cell =
-                length(disp) * test_unitcell.second;
+        const auto& edge = edge_lengths();
 
-        const std::pair<bool, std::pair<length_type, face_id_t> > test_polygon = 
-                this->polygon_.intersect_ray(pos, disp, ignore);
+        // ---------------------------------------------------------------------
+        // first, check the particle go across the boundary.
+        //
+        // Here we can assume that the particle position is currently inside of
+        // the boundary.
+        //
+        // Also, if particle once go across the boundary, we need to skip it to
+        // avoid infinite recursion.
 
-        if(!test_unitcell.first && !test_polygon.first)
+        boost::optional<BoundaryAxis> collided_boundary = boost::none;
+        Real tmin_unitcell = std::numeric_limits<Real>::infinity();
+        for(std::size_t i=0; i<3; ++i)
+        {
+            if(std::abs(disp[i]) < std::numeric_limits<Real>::epsilon())
+            {
+                continue; // in this direction, it does not move.
+            }
+
+            if(0 < disp[i]) // upper boundary (edge_lengths)
+            {
+                const BoundaryAxis b = static_cast<BoundaryAxis>(i * 2 + 1);
+                if(ignore_boundary && *ignore_boundary == b)
+                {
+                    continue;
+                }
+                const Real tmp = (edge[i] - pos[i]) / disp[i];
+                if(tmp < tmin_unitcell)
+                {
+                    tmin_unitcell = tmp;
+                    collided_boundary = b;
+                }
+            }
+            else // lower boundary (0,0,0)
+            {
+                const BoundaryAxis b = static_cast<BoundaryAxis>(i * 2);
+                if(ignore_boundary && *ignore_boundary == b)
+                {
+                    continue;
+                }
+                const Real tmp = (0.0 - pos[i]) / disp[i];
+                if(tmp < tmin_unitcell)
+                {
+                    tmin_unitcell = tmp;
+                    collided_boundary = b;
+                }
+            }
+        }
+
+        const bool test_unitcell = (0.0 <= tmin_unitcell && tmin_unitcell <= 1.0);
+        const Real dist_to_unit_cell = length(disp) * tmin_unitcell;
+
+        // ---------------------------------------------------------------------
+        // next, we need to check whether a particle collides with a polygon
+
+        const std::pair<bool, std::pair<length_type, boost::optional<FaceID>>>
+            test_polygon = intersect_ray(*polygon_, pos, disp, ignore_face);
+
+        // ---------------------------------------------------------------------
+        // If the particle does not collide neither of them, do nothing special.
+
+        if(!test_unitcell && !test_polygon.first)
         {
             return pos + disp;
         }
 
+        // ---------------------------------------------------------------------
+        // If the particle collides to a polygon before boundary, reflect the
+        // displacement.
+
         if(test_polygon.first && test_polygon.second.first < dist_to_unit_cell)
         {
-            const std::pair<std::pair<position_type, position_type>, face_id_t>
-                    reflected = this->polygon_.apply_reflection(
-                            pos, disp, test_polygon.second.second);
+            const std::pair<std::pair<position_type, position_type>, FaceID>
+                    reflected = ::ecell4::egfrd::apply_reflection(
+                            *polygon_, pos, disp, *test_polygon.second.second);
             return this->apply_structure_rec(reflected.first.first,
-                    reflected.first.second - reflected.first.first, reflected.second);
+                    reflected.first.second - reflected.first.first,
+                    reflected.second, boost::none);
         }
-        else if(test_unitcell.first)
+        else if(test_unitcell)
         {
-            // XXX: test_unitcell.second means the distance between the particle
-            //      and the unitcell relative to the length of the displacement
-            //      (`disp` in this code).
-            //      it never be negative.
-            //      if it's 0.0, that means the particle is on the surface of
-            //      the unitcell.
-            //      if it is larger than 1.0, that means that particle does not
-            //      intersect and unitcell.first never be true.
-            if(test_unitcell.second < 0.0 || 1.0 < test_unitcell.second)
-            {
-                std::cerr << "aabb.is_inside(begin)      = " << unitcell._is_inside(pos)   << '\n';
-                std::cerr << "begin                      = " << pos                        << '\n';
-                std::cerr << "edge_length                = " << this->edge_lengths()       << '\n';
-                std::cerr << "test_unitcell.first        = " << test_unitcell.first        << '\n';
-                std::cerr << "test_unitcell.second       = " << test_unitcell.second       << '\n';
-                std::cerr << "test_polygon.first         = " << test_polygon.first         << '\n';
-                std::cerr << "test_polygon.second.first  = " << test_polygon.second.first  << '\n';
-                std::cerr << "test_polygon.second.second = " << test_polygon.second.second << '\n';
-                assert(false);
-            }
-            const std::pair<position_type, position_type> next_segment =
-                apply_periodic_only_once(pos, disp, test_unitcell.second, unitcell);
+            assert(0.0 <= tmin_unitcell && tmin_unitcell <= 1.0);
 
-            return this->apply_structure_rec(
-                    next_segment.first, next_segment.second,
-                    Polygon<position_type>::make_nonsence_id());
+            Real3       next_pos  = pos + disp * tmin_unitcell;
+            const Real3 next_disp = disp * (1.0 - tmin_unitcell);
+
+            switch(*collided_boundary)
+            {
+                case BoundaryAxis::X_lower: {next_pos[0] += edge[0]; break;}
+                case BoundaryAxis::X_upper: {next_pos[0] -= edge[0]; break;}
+                case BoundaryAxis::Y_lower: {next_pos[1] += edge[1]; break;}
+                case BoundaryAxis::Y_upper: {next_pos[1] -= edge[1]; break;}
+                case BoundaryAxis::Z_lower: {next_pos[2] += edge[2]; break;}
+                case BoundaryAxis::Z_upper: {next_pos[2] -= edge[2]; break;}
+                defaut: {assert(false);}
+            }
+            return this->apply_structure_rec(next_pos, next_disp, boost::none,
+                                             collided_boundary);
         }
         else
         {
@@ -1045,97 +1039,11 @@ protected:
         }
     }
 
-    std::pair<position_type, position_type>
-    apply_periodic_only_once(
-            const position_type& pos, const position_type& disp,
-            const length_type   tmin, const ecell4::AABBSurface& aabb) const
-    {
-        //XXX: this function assumes the conditions described below is satisfied.
-        // - aabb.lower = (0, 0, 0)
-        // - periodic boundary is applied
-        assert(0.0 <= tmin && tmin <= 1.0);
-
-        //       disp__    _____________________________________________________
-        //           |\   / particle starts here (initial position). it's at
-        //    _________\ <  the edge of the simulation box. in order to consider
-        //    |         | | collisions between particle and polygon collectly,
-        //    |         | | we need to put our particle at somewhere else where
-        // __ |     x__ | \ the particle does not escape from the box by `disp`.
-        // |\ |      |\ | ________________________________________________
-        //   \|________\|< paritcle should be here with this displacement!
-        //    ^   _____________________________________________________________
-        //    |  / particle always come here after transposing initial position
-        //    +-<  according to the PBC because in both dimension it locates at
-        //       | the boundary. after this transposition, particle will escape
-        //       | boundary one more time. and in the next transposition, it
-        //       | goes back to the initial position! we need to consider the
-        //       | direction of the displacement in order to transpose particle
-        //       \ into the correct position to avoid infinite loop here.
-
-        const position_type width = aabb.upper() - aabb.lower();
-
-        const Real min_width = std::min(width[0], std::min(width[1], width[2]));
-
-              position_type next_pos  = pos  + disp * tmin;
-        const position_type next_disp = disp * (1.0 - tmin);
-
-        // a temporal position to determine where should particle be put
-        const position_type probe =
-            next_pos + next_disp * (min_width * 0.01 / length(next_disp));
-
-        if     (probe[0] < aabb.lower()[0]) {next_pos[0] += width[0];}
-        else if(probe[0] > aabb.upper()[0]) {next_pos[0] -= width[0];}
-        if     (probe[1] < aabb.lower()[1]) {next_pos[1] += width[1];}
-        else if(probe[1] > aabb.upper()[1]) {next_pos[1] -= width[1];}
-        if     (probe[2] < aabb.lower()[2]) {next_pos[2] += width[2];}
-        else if(probe[2] > aabb.upper()[2]) {next_pos[2] -= width[2];}
-
-        if(!aabb._is_inside(next_pos))
-        {
-            // here, next_pos should be at the edge of boundary.
-            // but above calculation might introduces numerical error.
-            // to avoid the error, check it and put back.
-            if     (next_pos[0] < aabb.lower()[0])
-            {
-                assert(std::abs(next_pos[0] - aabb.lower()[0]) < 1e-12);
-                next_pos[0] = aabb.lower()[0];
-            }
-            else if(next_pos[0] > aabb.upper()[0])
-            {
-                assert(std::abs(next_pos[0] - aabb.upper()[0]) < 1e-12);
-                next_pos[0] = aabb.upper()[0];
-            }
-            if     (next_pos[1] < aabb.lower()[1])
-            {
-                assert(std::abs(next_pos[1] - aabb.lower()[1]) < 1e-12);
-                next_pos[1] = aabb.lower()[1];
-            }
-            else if(next_pos[1] > aabb.upper()[1])
-            {
-                assert(std::abs(next_pos[1] - aabb.lower()[1]) < 1e-12);
-                next_pos[1] = aabb.upper()[1];
-            }
-            if     (next_pos[2] < aabb.lower()[2])
-            {
-                assert(std::abs(next_pos[2] - aabb.lower()[2]) < 1e-12);
-                next_pos[2] = aabb.lower()[2];
-            }
-            else if(next_pos[2] > aabb.upper()[2])
-            {
-                assert(std::abs(next_pos[2] - aabb.lower()[2]) < 1e-12);
-                next_pos[2] = aabb.upper()[2];
-            }
-        }
-        assert(aabb._is_inside(next_pos));
-
-        return std::make_pair(next_pos, next_disp);
-    }
-
 protected:
 
     std::unique_ptr<particle_space_type> ps_;
 
-    Polygon<position_type> polygon_;
+    boost::optional<Polygon> polygon_;
 
 private:
 
@@ -1148,13 +1056,6 @@ private:
     std::shared_ptr<rng_type> rng_;
     std::weak_ptr<model_type> model_;
 };
-
-template<typename Ttraits_>
-inline typename World<Ttraits_>::transaction_type*
-World<Ttraits_>::create_transaction()
-{
-    return new TransactionImpl<World>(*this);
-}
 
 } // egfrd
 } // ecell4

@@ -1,11 +1,13 @@
-#ifndef EGFRD_POLYGON
-#define EGFRD_POLYGON
+#ifndef ECELL4_EGFRD_POLYGON_HPP
+#define ECELL4_EGFRD_POLYGON_HPP
 
+#include <ecell4/core/geometry.hpp>
+#include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/AABB.hpp>
-#include <ecell4/core/Real3.hpp>
+#include <ecell4/core/Triangle.hpp>
+#include <ecell4/core/comparators.hpp>
 #include "exceptions.hpp"
-#include "FaceTriangle.hpp"
 #include <limits>
 #include <algorithm>
 
@@ -13,209 +15,210 @@ namespace ecell4
 {
 namespace egfrd
 {
-template<typename coordT>
-struct Polygon : public ecell4::Shape
+
+namespace detail
 {
-    typedef coordT coordinate_type;
-    typedef FaceTriangle<coordinate_type> face_type;
-    typedef std::size_t face_id_type;
+inline Real3 closest_point(const Real3& pos, const std::array<Real3, 3>& vertices)
+{
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
+    // pp.141-142
 
-    Polygon(){}
-    ~Polygon(){}
+    const Real3 a = vertices[0];
+    const Real3 b = vertices[1];
+    const Real3 c = vertices[2];
 
-    // nearest
-    // (intruders, (idx, (distance, max_radius)))
-    std::pair<std::vector<std::size_t>, std::pair<std::size_t, std::pair<Real, Real> > >
-    get_faces_within_radius(const coordinate_type& pos, const Real range) const;
-
-    void emplace(const std::array<coordinate_type, 3>& vertices)
+    const Real3 ab = b - a;
+    const Real3 ac = c - a;
+    const Real3 ap = pos - a;
+    const Real d1 = dot_product(ab, ap);
+    const Real d2 = dot_product(ac, ap);
+    if (d1 <= 0.0 && d2 <= 0.0)
     {
-        this->faces.push_back(face_type(vertices));
+        return a;
     }
 
-    // assume the segment collides a face at first and
-    // return pairof(new begin, new end) and id of collided face
-    std::pair<std::pair<coordinate_type, coordinate_type>, face_id_type>
-    apply_reflection(const coordinate_type& pos, const coordinate_type& displacement,
-                     const std::vector<face_id_type>& intruder_faces,
-                     const face_id_type ignore_face) const;
-
-    std::pair<std::pair<coordinate_type, coordinate_type>, face_id_type>
-    apply_reflection(const coordinate_type& pos, const coordinate_type& displacement,
-                     const face_id_type intruder_face) const;
-
-    std::pair<bool, std::pair<Real, face_id_type> >
-    intersect_ray(const coordinate_type& pos, const coordinate_type& disp,
-                  const face_id_type ignore_face) const;
-
-    static face_id_type make_nonsence_id(){return std::numeric_limits<std::size_t>::max();}
-
-// data member
-    std::vector<face_type> faces;
-
-// for shapes (not implemented yet)
-    dimension_kind dimension() const {return THREE;}
-    Real  is_inside(const coordinate_type& coord) const;
-    coordinate_type draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const;
-    bool  test_AABB(const coordinate_type& l, const coordinate_type& u) const;
-};
-
-template<typename coordT>
-std::pair<std::vector<std::size_t>, std::pair<std::size_t, std::pair<Real, Real> > >
-Polygon<coordT>::get_faces_within_radius(const coordinate_type& pos, const Real range) const
-{
-    std::vector<std::size_t> intruders;
-    std::size_t nearest_idx = std::numeric_limits<std::size_t>::max();
-    std::pair<Real, Real> min_dist(std::numeric_limits<Real>::max(), 0.);
-    std::size_t idx = 0;
-    for(typename std::vector<FaceTriangle<coordinate_type> >::const_iterator
-            iter = faces.begin(); iter != faces.end(); ++iter)
+    const Real3 bp = pos - b;
+    const Real d3 = dot_product(ab, bp);
+    const Real d4 = dot_product(ac, bp);
+    if (d3 >= 0.0 && d4 <= d3)
     {
-        std::pair<Real, Real> dist = distance(pos, *iter);
-        if(dist.first <= range) // is intruder face
-            intruders.push_back(idx);
-
-        if(dist.first < min_dist.first) // is nearest one
-        {
-            min_dist = dist;
-            nearest_idx = idx;
-        }
-        ++idx;
+        return b;
     }
-    return std::make_pair(intruders, std::make_pair(nearest_idx, min_dist));
+
+    const Real vc = d1*d4 - d3*d2;
+    if (vc <= 0.0 && d1 >= 0.0 && d3 <= 0.0)
+    {
+        Real v = d1 / (d1 - d3);
+        return a + ab * v;
+    }
+
+    const Real3 cp = pos - c;
+    const Real d5 = dot_product(ab, cp);
+    const Real d6 = dot_product(ac, cp);
+    if (d6 >= 0.0 && d5 <= d6)
+    {
+        return c;
+    }
+
+    const Real vb = d5*d2 - d1*d6;
+    if (vb <= 0.0 && d2 >= 0.0 && d6 <= 0.0)
+    {
+        const Real w = d2 / (d2 - d6);
+        return a + ac * w;
+    }
+
+    const Real va = d3*d6 - d5*d4;
+    if (va <= 0.0 && (d4 - d3) >= 0.0 && (d5 - d6) >= 0.0)
+    {
+        const Real w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
+        return b + (c - b) * w;
+    }
+
+    const Real denom = 1.0 / (va + vb + vc);
+    const Real v = vb * denom;
+    const Real w = vc * denom;
+    return a + ab * v + ac * w;
 }
 
-template<typename coordT>
-std::pair<std::pair<typename Polygon<coordT>::coordinate_type,
-                    typename Polygon<coordT>::coordinate_type>,
-          typename Polygon<coordT>::face_id_type>
-Polygon<coordT>::apply_reflection(
-        const coordinate_type& pos, const coordinate_type& displacement,
-        const std::vector<face_id_type>& intruder_faces,
-        const face_id_type ignore_face) const
+inline std::pair<bool, Real3>
+test_intersect_segment_triangle(const Real3& begin, const Real3& end,
+                                const std::array<Real3, 3>& vertices)
 {
-    const coordinate_type end = pos + displacement;
-    if(intruder_faces.empty())
-        return std::make_pair(std::make_pair(end, end), make_nonsence_id());
+    // this implementation is from Real-Time Collision Detection by Christer Ericson,
+    // published by Morgan Kaufmann Publishers, (c) 2005 Elsevier Inc.
+    // pp.190-194
 
-    bool collide_face = false;
-    coordinate_type next_begin = end;
-    face_id_type first_collide_face_idx = make_nonsence_id();
-    Real         first_collide_distance = length(displacement);
+    const Real3 line = begin - end;
+    const Real3 ab = vertices[1] - vertices[0];
+    const Real3 ac = vertices[2] - vertices[0];
+    const Real3 normal = cross_product(ab, ac);
 
-    for(typename std::vector<face_id_type>::const_iterator
-        iter = intruder_faces.begin(); iter != intruder_faces.end(); ++iter)
+    const Real d = dot_product(line, normal);
+    if(d < 0.0)
     {
-        if(*iter == ignore_face) continue;
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
 
-        const std::pair<bool, coordinate_type> test_result =
-            test_intersect_segment_triangle(pos, end, faces.at(*iter));
+    const Real3 ap = begin - vertices[0];
+    const Real t = dot_product(ap, normal);
+    if(t < 0.0 || d < t)
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
+
+    const Real3 e = cross_product(line, ap);
+    Real v = dot_product(ac, e);
+    if(v < 0. || d < v)
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
+    Real w = -1.0 * dot_product(ab, e);
+    if(w < 0. || d < v + w)
+    {
+        return std::make_pair(false, Real3(0.,0.,0.));
+    }
+
+    const Real ood = 1. / d;
+    v *= ood;
+    w *= ood;
+    const Real u = 1. - v - w;
+    const Real3 intersect = vertices[0] * u + vertices[1] * v + vertices[2] * w;
+
+    return std::make_pair(true, intersect);
+}
+} // detail
+
+inline Real distance_point_to_triangle(const Real3& pos, const Triangle& face)
+{
+    std::array<Real3, 3> triangle = face.vertices();
+    if(dot_product(pos - face.vertex_at(0), face.normal()) < 0)
+    {
+        triangle[0] = face.vertex_at(2);
+        triangle[1] = face.vertex_at(1);
+        triangle[2] = face.vertex_at(0);
+    }
+    return length(detail::closest_point(pos, triangle) - pos);
+}
+
+inline std::pair<bool, Real3>
+test_intersect_segment_triangle(const Real3& begin, const Real3& end,
+                                const Triangle& face)
+{
+    const Real3 line = end - begin;
+    if(dot_product(line, face.normal()) < 0.0)
+    {
+        return detail::test_intersect_segment_triangle(begin, end, face.vertices());
+    }
+    else
+    {
+        std::array<Real3, 3> rev;
+        rev[0] = face.vertex_at(2);
+        rev[1] = face.vertex_at(1);
+        rev[2] = face.vertex_at(0);
+        return detail::test_intersect_segment_triangle(begin, end, rev);
+    }
+}
+
+inline std::pair<std::pair<Real3, Real3>, Polygon::FaceID>
+apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
+                 const Polygon::FaceID intruder_face)
+{
+    using FaceID = Polygon::FaceID;
+
+    const Real3 stop = pos + disp;
+    const auto& tri  = poly.triangle_at(intruder_face);
+
+    const std::pair<bool, Real3> test_result =
+        test_intersect_segment_triangle(pos, stop, tri);
+
+    const Real3 next_stop =
+        reflect_plane(pos, stop, tri.normal(), tri.vertex_at(0));
+
+    return std::make_pair(std::make_pair(test_result.second, next_stop),
+                          intruder_face);
+}
+
+inline std::pair<bool, std::pair<Real, boost::optional<Polygon::FaceID>>>
+intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
+              const boost::optional<Polygon::FaceID> ignore_face)
+{
+    using FaceID = Polygon::FaceID;
+
+    const Real3 stop = pos + disp;
+    const Real   len  = length(disp);
+
+    bool collide_face          = false;
+    Real first_collide_dist_sq = len * len;
+    boost::optional<FaceID> first_collide_face_idx = boost::none;
+
+    const auto intruders =
+        ignore_face ? poly.list_faces_within_radius(pos, len, *ignore_face) :
+                      poly.list_faces_within_radius(pos, len);
+
+    for(const auto& intruder : intruders)
+    {
+        const FaceID&   fid = intruder.first.first;
+        const Triangle& tri = intruder.first.second;
+
+        const std::pair<bool, Real3> test_result =
+            test_intersect_segment_triangle(pos, stop, tri);
 
         if(test_result.first)
         {
-            const Real dist_to_face = length(test_result.second - pos);
-
-            if(dist_to_face < first_collide_distance)
+            const Real distsq_to_face = length_sq(test_result.second - pos);
+            if(distsq_to_face < first_collide_dist_sq)
             {
-                collide_face = true;
-                first_collide_face_idx = *iter;
-                first_collide_distance = dist_to_face;
-                next_begin = test_result.second;
-            }
-            else if(dist_to_face == first_collide_distance)
-            {
-                throw ecell4::NotImplemented("collide 2 object at the same time");
+                collide_face           = true;
+                first_collide_face_idx = fid;
+                first_collide_dist_sq  = distsq_to_face;
             }
         }
     }
-    if(!collide_face)
-        return std::make_pair(std::make_pair(end, end), make_nonsence_id());
-
-    const coordinate_type next_end =
-        reflect_plane(pos, end, faces.at(first_collide_face_idx));
-
-    return std::make_pair(
-            std::make_pair(next_begin, next_end), first_collide_face_idx);
-}
-
-
-template<typename coordT>
-std::pair<std::pair<typename Polygon<coordT>::coordinate_type,
-                    typename Polygon<coordT>::coordinate_type>,
-          typename Polygon<coordT>::face_id_type>
-Polygon<coordT>::apply_reflection(
-        const coordinate_type& pos, const coordinate_type& displacement,
-        const face_id_type intruder_face) const
-{
-    const coordinate_type end = pos + displacement;
-    const std::pair<bool, coordinate_type> test_result =
-        test_intersect_segment_triangle(pos, end, faces.at(intruder_face));
-
-    const coordinate_type next_end =
-        reflect_plane(pos, end, faces.at(intruder_face));
-
-    return std::make_pair(
-            std::make_pair(test_result.second, next_end), intruder_face);
-}
-
-
-template<typename coordT>
-std::pair<bool, std::pair<Real, typename Polygon<coordT>::face_id_type> >
-Polygon<coordT>::intersect_ray(
-        const coordinate_type& pos, const coordinate_type& disp, 
-        const face_id_type ignore_face) const
-{
-    const std::pair<std::vector<face_id_type>,
-                    std::pair<face_id_type, std::pair<Real, Real> > > intruders =
-            this->get_faces_within_radius(pos, length(disp));
-
-    bool collide_face = false;
-    face_id_type first_collide_face_idx = std::numeric_limits<std::size_t>::max();
-    Real         first_collide_distance = length(disp);
-    const coordinate_type end = pos + disp;
-    for(typename std::vector<face_id_type>::const_iterator
-        iter = intruders.first.begin(); iter != intruders.first.end(); ++iter)
-    {
-        if(*iter == ignore_face) continue;
-
-        const std::pair<bool, coordinate_type> test_result =
-            test_intersect_segment_triangle(pos, end, this->faces.at(*iter));
-
-        if(test_result.first)
-        {
-            const Real dist_to_face = length(test_result.second - pos);
-            if(dist_to_face < first_collide_distance)
-            {
-                collide_face = true;
-                first_collide_face_idx = *iter;
-                first_collide_distance = dist_to_face;
-            }
-        }
-    }
-
-    return std::make_pair(collide_face,
-                std::make_pair(first_collide_distance, first_collide_face_idx));
-}
-
-template<typename coordT>
-Real Polygon<coordT>::is_inside(const coordinate_type& coord) const
-{
-    throw ecell4::NotImplemented("polygon::is_inside");
-}
-
-template<typename coordT>
-typename Polygon<coordT>::coordinate_type
-Polygon<coordT>::draw_position(std::shared_ptr<ecell4::RandomNumberGenerator>& rng) const
-{
-    throw ecell4::NotImplemented("polygon::draw_position");
-}
-
-template<typename coordT>
-bool Polygon<coordT>::test_AABB(const coordinate_type& l, const coordinate_type& u) const
-{
-    throw ecell4::NotImplemented("polygon::test_AABB");
+    return std::make_pair(collide_face, std::make_pair(
+                std::sqrt(first_collide_dist_sq), first_collide_face_idx));
 }
 
 } // egfrd
 } // ecell4
-#endif //EGFRD_POLYGON
+#endif // ECELL4_EGFRD_POLYGON_HPP

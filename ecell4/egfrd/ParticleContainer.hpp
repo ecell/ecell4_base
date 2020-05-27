@@ -1,10 +1,8 @@
-#ifndef PARTICLE_CONTAINER_HPP
-#define PARTICLE_CONTAINER_HPP
+#ifndef ECELL4_EGFRD_PARTICLE_CONTAINER_HPP
+#define ECELL4_EGFRD_PARTICLE_CONTAINER_HPP
 
 #include <utility>
 #include <memory>
-#include "generator.hpp"
-#include "utils/unassignable_adapter.hpp"
 
 #include <ecell4/core/types.hpp>
 #include <ecell4/core/WorldInterface.hpp>
@@ -13,8 +11,6 @@ namespace ecell4
 {
 namespace egfrd
 {
-template<typename Ttraits_>
-class Transaction;
 
 template<typename Ttraits_>
 class ParticleContainer
@@ -23,7 +19,6 @@ class ParticleContainer
 public:
 
     typedef Ttraits_ traits_type;
-    typedef Transaction<traits_type> transaction_type;
 
     typedef typename traits_type::particle_type particle_type;
     typedef typename traits_type::particle_shape_type particle_shape_type;
@@ -91,8 +86,6 @@ public:
         return (overlapped.size() == 0);
     }
 
-    virtual transaction_type* create_transaction() = 0;
-
     virtual bool update_particle(const particle_id_type& pid, const particle_type& p) = 0;
 
     virtual position_type periodic_transpose(
@@ -110,11 +103,6 @@ public:
         position_type const& lhs, position_type const& rhs) const = 0;
 
     virtual position_type apply_boundary(position_type const& v) const = 0;
-
-    virtual void add_surface(const std::array<position_type, 3>& vertices)
-    {
-        return;
-    }
 
     virtual position_type apply_reflection(const position_type& pos, const position_type& disp)
     {

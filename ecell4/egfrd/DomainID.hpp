@@ -1,5 +1,5 @@
-#ifndef DOMAIN_ID_HPP
-#define DOMAIN_ID_HPP
+#ifndef ECELL4_EGFRD_DOMAIN_ID_HPP
+#define ECELL4_EGFRD_DOMAIN_ID_HPP
 
 #include <ostream>
 #include <functional>

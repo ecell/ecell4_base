@@ -1,5 +1,5 @@
-#ifndef UTILS_RANDOM_HPP
-#define UTILS_RANDOM_HPP
+#ifndef ECELL4_EGFRD_UTILS_RANDOM_HPP
+#define ECELL4_EGFRD_UTILS_RANDOM_HPP
 
 #include <boost/range/size.hpp>
 #include <boost/range/size_type.hpp>

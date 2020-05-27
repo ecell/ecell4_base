@@ -1,12 +1,11 @@
-#ifndef LOGGER_HPP
-#define LOGGER_HPP
+#ifndef ECELL4_EGFRD_LOGGER_HPP
+#define ECELL4_EGFRD_LOGGER_HPP
 
 #include <cstdarg>
 #include <set>
 #include <vector>
 #include <string>
 #include <memory>
-#include <boost/noncopyable.hpp>
 
 namespace ecell4
 {
@@ -17,7 +16,7 @@ class LogAppender;
 class LoggerManager;
 class LoggerManagerRegistry;
 
-class Logger: boost::noncopyable
+class Logger
 {
 public:
     enum level
@@ -32,6 +31,10 @@ public:
 
 public:
     ~Logger();
+
+    Logger(const Logger&)            = delete;
+    Logger& operator=(const Logger&) = delete;
+
 
     LoggerManager const& logging_manager() const;
 
@@ -115,11 +118,15 @@ protected:
     std::vector<std::shared_ptr<LogAppender> > appenders_;
 };
 
-class LoggerManager: boost::noncopyable
+class LoggerManager
 {
     friend class Logger;
 
 public:
+
+    LoggerManager(const LoggerManager&) = delete;
+    LoggerManager& operator=(const LoggerManager&) = delete;
+
     void level(enum Logger::level level);
 
     enum Logger::level level() const;

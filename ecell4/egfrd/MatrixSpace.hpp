@@ -1,12 +1,12 @@
-#ifndef MATRIX_SPACE_HPP
-#define MATRIX_SPACE_HPP
+#ifndef ECELL4_EGFRD_MATRIX_SPACE_HPP
+#define ECELL4_EGFRD_MATRIX_SPACE_HPP
 
 // #include <iostream>
 #include <cstddef>
 #include <algorithm>
 #include <iterator>
+#include <type_traits>
 #include <boost/multi_array.hpp>
-#include <boost/mpl/if.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/difference_type.hpp>
 // #include "Vector3.hpp"
@@ -14,7 +14,6 @@
 #include "sorted_list.hpp"
 #include "utils/array_helper.hpp"
 #include "utils/range.hpp"
-#include "utils/unassignable_adapter.hpp"
 
 #include <ecell4/core/Integer3.hpp>
 
@@ -31,7 +30,7 @@ public:
     typedef Tkey_ key_type;
     typedef Tobj_ mapped_type;
     // typedef Vector3<length_type> position_type;
-    typedef ecell4::Real3 position_type;
+    typedef Real3 position_type;
 
     // typedef std::pair<const key_type, mapped_type> value_type;
     typedef std::pair<key_type, mapped_type> value_type;
@@ -52,7 +51,7 @@ public:
     typedef typename all_values_type::reference reference;
     typedef typename all_values_type::const_reference const_reference;
 
-    typedef ecell4::Integer3 matrix_sizes_type;
+    typedef Integer3 matrix_sizes_type;
 
 private:
     typedef std::pair<key_type, mapped_type> nonconst_value_type;
@@ -119,8 +118,8 @@ public:
             typename matrix_type::size_type t(
                 (i[0] + matrix_.shape()[0] - (-o[0] % matrix_.shape()[0])) %
                 matrix_.shape()[0]);
-            retval[0] 
-                = (o[0] - 
+            retval[0]
+                = (o[0] -
                    static_cast<typename matrix_type::difference_type>
                    (t - i[0])) * cell_sizes_[0];
             i[0] = t;
@@ -129,8 +128,8 @@ public:
         {
             typename matrix_type::size_type t(
                     (i[0] + (o[0] % matrix_.shape()[0])) % matrix_.shape()[0]);
-            retval[0] 
-                = (o[0] - 
+            retval[0]
+                = (o[0] -
                    static_cast<typename matrix_type::difference_type>
                    (t - i[0])) * cell_sizes_[0];
             i[0] = t;
@@ -326,7 +325,7 @@ public:
             // BOOST_ASSERT(old_c.erase(last_index));
             old_c.push(old_index);
             rmap_[last.first] = old_index;
-            reinterpret_cast<nonconst_value_type&>(*i) = last; 
+            reinterpret_cast<nonconst_value_type&>(*i) = last;
         }
         values_.pop_back();
         return true;
@@ -508,7 +507,7 @@ private:
                         continue;
                     }
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, position_type());
                     }
@@ -534,7 +533,7 @@ private:
                         continue;
                     }
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, position_type());
                     }
@@ -558,7 +557,7 @@ private:
                     cell_index_type _idx(idx);
                     const position_type pos_off(offset_index_cyclic(_idx, off));
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, pos_off);
                     }
@@ -582,7 +581,7 @@ private:
                     cell_index_type _idx(idx);
                     const position_type pos_off(offset_index_cyclic(_idx, off));
                     cell_type const& c(cell(_idx));
-                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i) 
+                    for (typename cell_type::const_iterator i(c.begin()); i != c.end(); ++i)
                     {
                         collector(values_.begin() + *i, pos_off);
                     }
@@ -614,7 +613,7 @@ operator+=(
 }
 
 template<typename T_, typename Tkey_>
-struct is_sized<MatrixSpace<T_, Tkey_> >: boost::mpl::true_ {};
+struct is_sized<MatrixSpace<T_, Tkey_> >: std::true_type {};
 
 template<typename T_, typename Tkey_>
 struct range_size<MatrixSpace<T_, Tkey_> >

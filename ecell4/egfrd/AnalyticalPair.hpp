@@ -1,8 +1,8 @@
-#ifndef ANALYTICAL_PAIR_HPP
-#define ANALYTICAL_PAIR_HPP
+#ifndef ECELL4_EGFRD_ANALYTICAL_PAIR_HPP
+#define ECELL4_EGFRD_ANALYTICAL_PAIR_HPP
 
 #include <cmath>
-#include <boost/array.hpp>
+#include <array>
 #include "Pair.hpp"
 #include "AnalyticalSingle.hpp"
 

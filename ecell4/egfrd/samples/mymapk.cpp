@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 #include <numeric>
-#include <boost/foreach.hpp>
+
 #include <cstdlib>
 #include <gsl/gsl_roots.h>
 

@@ -1,9 +1,8 @@
-#ifndef EGFRD_SORTED_LIST
-#define EGFRD_SORTED_LIST
+#ifndef ECELL4_EGFRD_SORTED_LIST
+#define ECELL4_EGFRD_SORTED_LIST
 
 #include <algorithm>
 #include <functional>
-#include <boost/call_traits.hpp>
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
@@ -148,16 +147,14 @@ public:
     reverse_iterator rfind(value_type const& v)
     {
         reverse_iterator i(std::upper_bound(rbegin(), rend(), v,
-                compose_binary(std::logical_not<bool>(),
-                    static_cast<TweakOrdering_ const&>(ord_))));
+                fun_composition(std::logical_not<bool>(), ord_)));
         return i != rend() && *i == v ? i: rend();
     }
 
     const_reverse_iterator rfind(value_type const& v) const
     {
         const_reverse_iterator i(std::upper_bound(rbegin(), rend(), v,
-                compose_binary(std::logical_not<bool>(),
-                    static_cast<TweakOrdering_ const&>(ord_))));
+                fun_composition(std::logical_not<bool>(), ord_)));
         return i != rend() && *i == v ? i: rend();
     }
 
@@ -186,14 +183,13 @@ public:
 		return cntnr_;
 	}
 
-    sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord,
-			    typename boost::call_traits<holder_type>::param_type holder)
+    sorted_list(const TweakOrdering_& ord, const holder_type& holder)
 		: ord_(ord), cntnr_(holder) {}
 
-    explicit sorted_list(typename boost::call_traits<holder_type>::param_type holder)
+    explicit sorted_list(const holder_type& holder)
 		: ord_(), cntnr_(holder) {}
 
-    explicit sorted_list(typename boost::call_traits<TweakOrdering_>::param_type ord): ord_(ord) {}
+    explicit sorted_list(const TweakOrdering_& ord): ord_(ord) {}
 
     sorted_list(): ord_() {}
 

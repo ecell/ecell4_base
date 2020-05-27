@@ -7,7 +7,6 @@
 // #include "Sphere.hpp"
 // #include "Shape.hpp"
 //XXX: Shape.hpp
-#include <boost/type_traits/remove_cv.hpp>
 #include "Real3Type.hpp"
 #include "geometry.hpp"
 //XXX

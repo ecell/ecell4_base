@@ -1,10 +1,8 @@
-#ifndef EGFRDSIMULATOR_HPP
-#define EGFRDSIMULATOR_HPP
+#ifndef ECELL4_EGFRD_EGFRDSIMULATOR_HPP
+#define ECELL4_EGFRD_EGFRDSIMULATOR_HPP
 
 #include <boost/bind.hpp>
-#include <boost/array.hpp>
 #include <boost/format.hpp>
-#include <boost/foreach.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/fusion/container/map.hpp>
@@ -22,8 +20,7 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 
 #include "utils/array_helper.hpp"
-#include "utils/fun_composition.hpp"
-#include "utils/fun_wrappers.hpp"
+#include "utils/collection_contains.hpp"
 #include "utils/pointer_as_ref.hpp"
 #include "utils/pair.hpp"
 #include "utils/math.hpp"
@@ -76,34 +73,20 @@ struct EGFRDSimulatorTraitsBase: public ParticleSimulatorTraitsBase<Tworld_>
         typedef Shell<Tshape_, domain_id_type> type;
     };
 
-    static const Real safety();
-    static const Real single_shell_factor();
-    static const Real default_dt_factor();
-    static const Real cutoff_factor();
-
-    static const Real SAFETY;
-    static const Real SINGLE_SHELL_FACTOR;
-    static const Real DEFAULT_DT_FACTOR;
-    static const Real CUTOFF_FACTOR;
+    static constexpr Real SAFETY              = 1.0 + 1e-5;
+    static constexpr Real SINGLE_SHELL_FACTOR = 0.1;
+    static constexpr Real DEFAULT_DT_FACTOR   = 1e-5;
+    static constexpr Real CUTOFF_FACTOR       = 5.6;
 };
 
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::safety() { return 1. + 1e-5; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::SAFETY;
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor() { return 0.1; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::SINGLE_SHELL_FACTOR;
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor() { return 1e-5; }
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::DEFAULT_DT_FACTOR;
 template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor() { return 5.6; }
-
-template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::SAFETY = EGFRDSimulatorTraitsBase<Tworld_>::safety();
-template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::SINGLE_SHELL_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::single_shell_factor();
-template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::DEFAULT_DT_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::default_dt_factor();
-template<typename Tworld_>
-const Real EGFRDSimulatorTraitsBase<Tworld_>::CUTOFF_FACTOR = EGFRDSimulatorTraitsBase<Tworld_>::cutoff_factor();
+constexpr Real EGFRDSimulatorTraitsBase<Tworld_>::CUTOFF_FACTOR;
 
 namespace detail {
 
@@ -115,18 +98,6 @@ struct get_greens_function<ecell4::Sphere>
 {
     typedef greens_functions::GreensFunction3DAbsSym type;
 };
-
-// template<>
-// struct get_greens_function<Cylinder>
-// {
-//     typedef greens_functions::GreensFunction3DAbsSym type;
-// };
-// 
-// template<>
-// struct get_greens_function<Sphere>
-// {
-//     typedef greens_functions::GreensFunction3DAbsSym type;
-// };
 
 template<>
 struct get_greens_function<ecell4::Cylinder>
@@ -150,20 +121,6 @@ struct get_pair_greens_function<ecell4::Cylinder>
     typedef greens_functions::GreensFunction3DRadAbs iv_type;
     typedef greens_functions::GreensFunction3DAbsSym com_type;
 };
-
-// template<>
-// struct get_pair_greens_function<Sphere>
-// {
-//     typedef greens_functions::GreensFunction3DRadAbs iv_type;
-//     typedef greens_functions::GreensFunction3DAbsSym com_type;
-// };
-// 
-// template<>
-// struct get_pair_greens_function<Cylinder>
-// {
-//     typedef greens_functions::GreensFunction3DRadAbs iv_type;
-//     typedef greens_functions::GreensFunction3DAbsSym com_type;
-// };
 
 } // namespace detail
 
@@ -228,8 +185,6 @@ public:
     typedef Ttraits_ traits_type;
     typedef ParticleSimulator<Ttraits_> base_type;
 
-    // typedef typename base_type::sphere_type sphere_type;
-    // typedef typename base_type::cylinder_type cylinder_type;
     typedef typename base_type::model_type model_type;
 
     typedef typename traits_type::world_type world_type;
@@ -237,8 +192,6 @@ public:
     typedef typename traits_type::shell_id_type shell_id_type;
     typedef typename traits_type::template shell_generator<ecell4::Sphere>::type spherical_shell_type;
     typedef typename traits_type::template shell_generator<ecell4::Cylinder>::type cylindrical_shell_type;
-    // typedef typename traits_type::template shell_generator<sphere_type>::type spherical_shell_type;
-    // typedef typename traits_type::template shell_generator<cylinder_type>::type cylindrical_shell_type;
     typedef typename traits_type::domain_type domain_type;
     typedef typename traits_type::domain_id_pair domain_id_pair;
     typedef typename traits_type::time_type time_type;
@@ -323,7 +276,7 @@ public:
 
 protected:
     typedef boost::fusion::map<
-        boost::fusion::pair<spherical_shell_type, 
+        boost::fusion::pair<spherical_shell_type,
                             MatrixSpace<spherical_shell_type,
                                         shell_id_type>*>,
         boost::fusion::pair<cylindrical_shell_type, MatrixSpace<cylindrical_shell_type,
@@ -478,7 +431,7 @@ protected:
     };
 
     template<typename TfilterFn_>
-    struct domain_collector 
+    struct domain_collector
     {
         typedef TfilterFn_ filter_function;
 
@@ -581,7 +534,7 @@ protected:
         void operator()(T const& smat) const
         {
             BOOST_ASSERT(world_.edge_lengths() == (*smat.second).edge_lengths());
-            BOOST_FOREACH (typename boost::remove_pointer<typename T::second_type>::type::value_type pair, *smat.second)
+            for(typename boost::remove_pointer<typename T::second_type>::type::value_type pair : *smat.second)
             {
                 did_map_[pair.second.did()].insert(pair.first);
             }
@@ -596,23 +549,21 @@ protected:
     struct shell_id_collector
     {
         shell_id_collector(Tset_& shell_ids)
-            : shell_ids_(shell_ids) {}
+            : shell_ids_(shell_ids)
+        {}
 
+        // type of smat is `MatrixSpace<xxx_shell_type, shell_id_type>*`.
         template<typename T>
         void operator()(T const& smat) const
         {
-            std::for_each(
-                boost::begin(*smat.second),
-                boost::end(*smat.second),
-                compose_unary(
-                    boost::bind(&insert<Tset_>,
-                                boost::reference_wrapper<Tset_>(shell_ids_),
-                                _1),
-                    select_first<typename boost::remove_pointer<
-                        typename T::second_type>::type::value_type>()));
+            for(const auto& sids : *smat.second)
+            {
+                this->shell_ids_.insert(sids.first);
+            }
         }
 
     private:
+        // Tset is normally a std::set<shell_id_type>.
         Tset_& shell_ids_;
     };
 
@@ -668,8 +619,8 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt) const
         {
-            throw not_implemented("unsupported pair type.");
-            // std::shared_ptr<structure_type> const _structure(
+            throw ::ecell4::NotImplemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
             //             domain.particles()[0].second.sid())
@@ -687,7 +638,7 @@ protected:
                               time_type dt, position_type const& old_iv) const
         {
             BOOST_ASSERT(ecell4::egfrd::size(domain.reactions()) == 1);
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // length_type const r(
             //     draw_r(rng_, greens_functions::GreensFunction3DRadAbs(domain.D_tot(),
             //         domain.reactions()[0].k(), domain.r0(),
@@ -802,8 +753,8 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            throw not_implemented("unsupported pair type.");
-            // std::shared_ptr<structure_type> const _structure(
+            throw ::ecell4::NotImplemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
             //             domain.particles()[0].second.sid())
@@ -826,7 +777,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // return multiply(normalize(old_iv), domain.a_r());
         }
 
@@ -871,8 +822,8 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            throw not_implemented("unsupported pair type.");
-            // std::shared_ptr<structure_type> const _structure(
+            throw ::ecell4::NotImplemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
             //             domain.particles()[0].second.sid()).structure_id));
@@ -894,7 +845,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // return multiply(domain.sigma(), normalize(old_iv));
         }
 
@@ -940,8 +891,8 @@ protected:
         position_type draw_com(cylindrical_pair_type const& domain,
                                time_type dt)
         {
-            throw not_implemented("unsupported pair type.");
-            // std::shared_ptr<structure_type> const _structure(
+            throw ::ecell4::NotImplemented("unsupported pair type.");
+            // boost::shared_ptr<structure_type> const _structure(
             //     world_.get_structure(
             //         world_.find_molecule_info(
             //             domain.particles()[0].second.sid())
@@ -964,7 +915,7 @@ protected:
         position_type draw_iv(cylindrical_pair_type const& domain,
                               time_type dt, position_type const& old_iv)
         {
-            throw not_implemented("unsupported pair type.");
+            throw ::ecell4::NotImplemented("unsupported pair type.");
             // BOOST_ASSERT(::size(domain.reactions()) == 1);
             // length_type const r(
             //     draw_r(rng_,
@@ -986,12 +937,7 @@ public:
     typedef abstract_limited_generator<domain_id_pair> domain_id_pair_generator;
 
 public:
-    virtual ~EGFRDSimulator()
-    {
-        //std::for_each(domains_.begin(), domains_.end(),
-        //    compose_unary(delete_ptr<domain_type>(),
-        //                  select_second<typename domain_map::value_type>()));
-    }
+    virtual ~EGFRDSimulator() {}
 
     EGFRDSimulator(
         const std::shared_ptr<world_type>& world,
@@ -1076,11 +1022,11 @@ public:
                 shell_matrix_map_type, T>::type>::type shell_matrix_type;
 
         shell_matrix_type const& smat(*boost::fusion::at_key<T>(smatm_));
-        
+
         typename shell_matrix_type::const_iterator i(smat.find(id));
         if (i == smat.end())
         {
-            throw not_found(
+            throw ::ecell4::NotFound(
                 (boost::format("shell id #%s not found") % boost::lexical_cast<std::string>(id)).str());
         }
 
@@ -1100,7 +1046,7 @@ public:
 
         if (i == domains_.end())
         {
-            throw not_found(
+            throw ::ecell4::NotFound(
                 (boost::format("domain id #%s not found") % boost::lexical_cast<std::string>(id)).str());
         }
 
@@ -1181,14 +1127,14 @@ public:
             boost::fusion::at_key<cylindrical_shell_type>(smatm_) = csmat_.get();
         }
 
-        BOOST_FOREACH (particle_id_pair const& pp,
+        for (particle_id_pair const& pp:
                        (*base_type::world_).get_particles_range())
         {
             std::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
 
-        BOOST_FOREACH (reaction_rule_type const& rr,
+        for (reaction_rule_type const& rr:
                        (*base_type::network_rules_).zeroth_order_reaction_rules())
         {
             add_event(rr);
@@ -1231,7 +1177,7 @@ public:
         std::vector<domain_id_type> non_singles;
 
         // first burst all Singles.
-        BOOST_FOREACH (event_id_pair_type const& event, scheduler_.events())
+        for (event_id_pair_type const& event: scheduler_.events())
         {
             {
                 single_event const* single_ev(
@@ -1339,7 +1285,7 @@ public:
         typename domain_type::size_type shells_correspond_to_domains(0);
         std::size_t particles_correspond_to_domains(0);
 
-        BOOST_FOREACH (typename event_scheduler_type::value_type const& value,
+        for (typename event_scheduler_type::value_type const& value:
                        scheduler_.events())
         {
             domain_type const& domain(dynamic_cast<domain_event_base&>(*value.second).domain());
@@ -1367,14 +1313,17 @@ public:
 
         {
             std::vector<domain_id_type> diff;
-            ecell4::egfrd::difference(make_select_first_range(did_map), scheduled_domains,
+            const auto first_selected = make_select_first_range(did_map);
+            std::set_difference(
+                    std::begin(first_selected),    std::end(first_selected),
+                    std::begin(scheduled_domains), std::end(scheduled_domains),
                     std::back_inserter(diff));
 
             if (diff.size() != 0)
             {
                 LOG_WARNING(("domains not scheduled: %s",
                     stringize_and_join(diff, ", ").c_str()));
-                BOOST_FOREACH (domain_id_type const& domain_id, diff)
+                for (domain_id_type const& domain_id: diff)
                 {
                     LOG_WARNING(("  shells that belong to unscheduled domain %s: %s",
                         boost::lexical_cast<std::string>(domain_id).c_str(),
@@ -1458,7 +1407,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("unsupported domain type");
+        throw ::ecell4::NotImplemented("unsupported domain type");
     }
 
     // remove_domain_but_shell {{{
@@ -1532,7 +1481,7 @@ protected:
 
     void remove_domain(multi_type& domain)
     {
-        BOOST_FOREACH (spherical_shell_id_pair const& shell, domain.get_shells())
+        for (spherical_shell_id_pair const& shell: domain.get_shells())
         {
             boost::fusion::at_key<spherical_shell_type>(smatm_)->erase(shell.first);
         }
@@ -1581,7 +1530,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
     // }}}
 
@@ -1653,7 +1602,7 @@ protected:
 
             // virtual void operator()(spherical_surface_type const& structure) const
             // {
-            //     throw not_implemented(
+            //     throw ::ecell4::NotImplemented(
             //         (boost::format("unsupported structure type: %s") %
             //             boost::lexical_cast<std::string>(structure)).str());
             // }
@@ -1740,7 +1689,7 @@ protected:
         {
             // virtual void operator()(spherical_surface_type const& structure) const
             // {
-            //     throw not_implemented(
+            //     throw ::ecell4::NotImplemented(
             //         (boost::format("unsupported structure type: %s") %
             //             boost::lexical_cast<std::string>(structure)).str());
             // }
@@ -1762,7 +1711,7 @@ protected:
             //     kind = CYLINDRICAL_PAIR;
             // }
 
-        
+
             // virtual void operator()(planar_surface_type const& structure) const
             // {
             //     cylindrical_shell_id_pair const new_shell(
@@ -1857,7 +1806,7 @@ protected:
         }
         catch (std::exception const& e)
         {
-            throw propagation_error(
+            throw PropagationError(
                 (boost::format(
                     "gf.drawR() failed: %s, gf=%s, rnd=%.16g, dt=%.16g, a=%.16g, sigma=%.16g: %s") % e.what() % gf.getName() % rnd % dt % a % sigma % gf.dump()).str());
         }
@@ -1882,7 +1831,7 @@ protected:
         }
         catch (std::exception const& e)
         {
-            throw propagation_error(
+            throw PropagationError(
                 (boost::format(
                     "gf.drawTheta() failed: %s, gf=%s, rnd=%.16g, dt=%.16g, r=%.16g: %s") % e.what() % gf.getName() % rnd % dt % r % gf.dump()).str());
         }
@@ -1970,7 +1919,7 @@ protected:
                 return draw_new_position(*_domain, dt);
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
     // }}}
 
@@ -2010,7 +1959,7 @@ protected:
                 return draw_escape_position(*_domain);
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
 
     // draw_new_positions {{{
@@ -2031,13 +1980,13 @@ protected:
 
     // propagate {{{
     /**
-     * The difference between a burst and a propagate is that a burst 
-     * always takes place before the actual scheduled event for the single, 
+     * The difference between a burst and a propagate is that a burst
+     * always takes place before the actual scheduled event for the single,
      * while propagate_single can be called for an escape event.
      *
-     * Another subtle difference is that burst_single always reschedules 
-     * (update_event) the single, while just calling propagate does not. 
-     * So whoever calls propagate_single directly should reschedule the single 
+     * Another subtle difference is that burst_single always reschedules
+     * (update_event) the single, while just calling propagate does not.
+     * So whoever calls propagate_single directly should reschedule the single
      * afterwards.
      */
     //template<typename T>
@@ -2100,7 +2049,7 @@ protected:
 
         std::array<std::shared_ptr<single_type>, 2> const singles = { {
             create_single(new_particles[0]),
-            create_single(new_particles[1]) 
+            create_single(new_particles[1])
         } };
 
         if (log_.level() == Logger::L_DEBUG)
@@ -2121,7 +2070,7 @@ protected:
     template<typename Trange>
     void burst_domains(Trange const& domain_ids, boost::optional<std::vector<std::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<std::shared_ptr<domain_type> >&>())
     {
-        BOOST_FOREACH(domain_id_type id, domain_ids)
+        for(domain_id_type id: domain_ids)
         {
             std::shared_ptr<domain_type> domain(get_domain(id));
             burst(domain, result);
@@ -2133,7 +2082,7 @@ protected:
     void burst(AnalyticalSingle<traits_type, T>& domain)
     {
         position_type const old_pos(domain.position());
-        //length_type const old_shell_size(domain.size()); 
+        //length_type const old_shell_size(domain.size());
         length_type const particle_radius(domain.particle().second.radius());
 
         // Override dt, burst happens before single's scheduled event.
@@ -2181,7 +2130,7 @@ protected:
 
     void burst(multi_type& domain, boost::optional<std::vector<std::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<std::shared_ptr<domain_type> >&>())
     {
-        BOOST_FOREACH(particle_id_pair p, domain.get_particles_range())
+        for(particle_id_pair p: domain.get_particles_range())
         {
             std::shared_ptr<single_type> s(create_single(p));
             add_event(*s, SINGLE_EVENT_ESCAPE);
@@ -2214,7 +2163,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("?");
+        throw ::ecell4::NotImplemented("?");
     }
 
     void burst(std::shared_ptr<domain_type> domain, boost::optional<std::vector<std::shared_ptr<domain_type> >&> const& result = boost::optional<std::vector<std::shared_ptr<domain_type> >&>())
@@ -2274,7 +2223,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("?");
+        throw ::ecell4::NotImplemented("?");
     }
     // }}}
 
@@ -2308,7 +2257,7 @@ protected:
                     r.id(), array_gen<particle_id_pair>(), reactant));
             }
             break;
-        case 1: 
+        case 1:
             {
                 species_id_type const& product_id0(r.get_products()[0]);
                 molecule_info_type const product_species(
@@ -2321,7 +2270,7 @@ protected:
                     ecell4::egfrd::shape(reactant.second), reactant.first))
                 {
                     LOG_INFO(("no space for product particle."));
-                    throw no_space();
+                    throw NoSpace();
                 }
 
                 remove_domain(domain);
@@ -2416,7 +2365,7 @@ protected:
                 if (i < 0)
                 {
                     LOG_INFO(("no space for product particles."));
-                    throw no_space();
+                    throw NoSpace();
                 }
 
                 remove_domain(domain);
@@ -2444,7 +2393,7 @@ protected:
             }
             break;
         default:
-            throw not_implemented("reactions that produces more than two products are not supported.");
+            throw ::ecell4::NotImplemented("reactions that produces more than two products are not supported.");
         }
         return true;
     }
@@ -2509,7 +2458,7 @@ protected:
             com_greens_function(domain.D_R(), domain.a_R()).drawTime(this->rng().uniform(0., 1.)));
 
         Real k_tot = 0;
-        BOOST_FOREACH(reaction_rule_type const& rule, domain.reactions())
+        for(reaction_rule_type const& rule: domain.reactions())
         {
             k_tot += rule.k();
         }
@@ -2593,7 +2542,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented("unsupported domain type");
+        throw ::ecell4::NotImplemented("unsupported domain type");
     }
 
     template<typename Tshell>
@@ -2629,11 +2578,11 @@ protected:
                 return;
             }
         }
-        throw not_implemented("unsupported domain type");
+        throw ::ecell4::NotImplemented("unsupported domain type");
     }
     // }}}
 
-    // get_intruders {{{ 
+    // get_intruders {{{
     std::pair<std::vector<domain_id_type>*,
               std::pair<domain_id_type, length_type> >
     get_intruders(particle_shape_type const& p,
@@ -2662,7 +2611,7 @@ protected:
     {
         std::pair<domain_id_type, length_type> const closest(
             get_closest_domain(
-                domain.position(), 
+                domain.position(),
                 array_gen(domain.id())));
         restore_domain(domain, closest);
     }
@@ -2693,7 +2642,7 @@ protected:
             } else {
                 new_shell_size = closest.second / traits_type::SAFETY;
             }
-            new_shell_size = std::min(max_shell_size(), 
+            new_shell_size = std::min(max_shell_size(),
                 std::max(domain.particle().second.radius(), new_shell_size));
         }
         else
@@ -2734,14 +2683,14 @@ protected:
             if (_domain)
                 return restore_domain(*_domain, closest);
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
 
     template<typename Trange>
     void burst_non_multis(Trange const& domain_ids,
                           std::vector<std::shared_ptr<domain_type> >& bursted)
     {
-        BOOST_FOREACH (domain_id_type id, domain_ids)
+        for (domain_id_type id: domain_ids)
         {
             std::shared_ptr<domain_type> domain(get_domain(id));
             if (dynamic_cast<multi_type*>(domain.get()))
@@ -2772,8 +2721,7 @@ protected:
     length_type distance(multi_type const& domain, position_type const& pos) const
     {
         length_type retval(std::numeric_limits<length_type>::infinity());
-        BOOST_FOREACH (spherical_shell_id_pair const& shell,
-                       domain.get_shells())
+        for (spherical_shell_id_pair const& shell: domain.get_shells())
         {
             length_type const dist((*base_type::world_).distance(
                     shape(shell.second), pos));
@@ -2879,7 +2827,7 @@ protected:
         length_type const min_shell_size(shell_size[larger_shell_index]);
         length_type const min_shell_size_margin(shell_size_margin[larger_shell_index]);
 
-        // 2. Check if min shell size not larger than max shell size or 
+        // 2. Check if min shell size not larger than max shell size or
         // sim cell size.
         position_type com((*base_type::world_).apply_boundary(
             (*base_type::world_).calculate_pair_CoM(
@@ -2911,7 +2859,7 @@ protected:
 
         domain_type* closest_domain (0);
         length_type closest_shell_distance(std::numeric_limits<length_type>::infinity());
-        BOOST_FOREACH (std::shared_ptr<domain_type> _neighbor, neighbors)
+        for (std::shared_ptr<domain_type> _neighbor: neighbors)
         {
             single_type* const neighbor(
                 dynamic_cast<single_type*>(_neighbor.get()));
@@ -2943,7 +2891,7 @@ protected:
             }
         }
 
-        // 4. Determine shell size and check if closest object not too 
+        // 4. Determine shell size and check if closest object not too
         // close (squeezing).
         {
             std::pair<domain_id_type, length_type> possible_closest(
@@ -2988,11 +2936,11 @@ protected:
                 // options for shell size:
                 // a. ideal shell size
                 // b. closest shell is from a bursted single
-                // c. closest shell is closer than ideal shell size 
+                // c. closest shell is closer than ideal shell size
                 new_shell_size = std::min(
                     std::min(
                         (D01 / D_tot) * (
-                            closest_particle_distance - min_shell_size 
+                            closest_particle_distance - min_shell_size
                             - closest_domain_particle.radius())
                         + min_shell_size,
                         closest_particle_distance - closest_min_shell),
@@ -3072,11 +3020,20 @@ protected:
                std::vector<std::shared_ptr<domain_type> > const& neighbors,
                std::pair<domain_type*, length_type> closest)
     {
+        // do not remove the return value specifier. Without this, you will
+        // encounter a problem like "cannot allocate an object of abstract type"
+        // because the default return type is `domain_type`.
+        const auto dereferencer =
+            [](const std::shared_ptr<domain_type>& ptr) -> const domain_type& {
+                return *ptr;
+            };
+        // this lambda is defined out of the macro because passing lambda
+        // to macro causes a problem in some cases.
+
         LOG_DEBUG(("form multi: neighbors=[%s], closest=%s",
                 stringize_and_join(
-                    make_transform_iterator_range(neighbors,
-                        dereference<std::shared_ptr<domain_type> >()),
-                    ", ").c_str(),
+                    make_transform_iterator_range(neighbors, dereferencer), ", "
+                    ).c_str(),
                 boost::lexical_cast<std::string>(*closest.first).c_str()));
         length_type const min_shell_size(
                 domain.particle().second.radius() *
@@ -3104,11 +3061,11 @@ protected:
         position_type const single_pos(domain.position());
         add_to_multi(*retval, domain);
 
-        BOOST_FOREACH (std::shared_ptr<domain_type> neighbor, neighbors)
+        for (std::shared_ptr<domain_type> neighbor: neighbors)
         {
             length_type const dist(distance(*neighbor, single_pos));
             if (dist < min_shell_size)
-                add_to_multi_recursive(*retval, *neighbor); 
+                add_to_multi_recursive(*retval, *neighbor);
         }
 
         return *retval;
@@ -3160,7 +3117,7 @@ protected:
         // merge other_multi into multi. other_multi will be removed.
         spherical_shell_matrix_type& mat(
             *boost::fusion::at_key<spherical_shell_type>(smatm_));
-        BOOST_FOREACH (spherical_shell_id_pair const& _shell,
+        for (spherical_shell_id_pair const& _shell:
                        other_multi.get_shells())
         {
             typename spherical_shell_matrix_type::iterator const i(
@@ -3171,7 +3128,7 @@ protected:
             multi.add_shell(spherical_shell_id_pair(_shell.first, shell));
         }
 
-        BOOST_FOREACH (particle_id_pair const& particle,
+        for (particle_id_pair const& particle:
                        other_multi.get_particles_range())
         {
             multi.add_particle(particle);
@@ -3205,18 +3162,27 @@ protected:
                 std::vector<std::shared_ptr<domain_type> > bursted;
                 burst_non_multis(*neighbors, bursted);
 
+                // do not remove the return value specifier. Without this, you
+                // will encounter a problem like "cannot allocate an object of
+                // abstract type" because the default return type is `domain_type`.
+                const auto dereferencer =
+                    [](const std::shared_ptr<domain_type>& ptr)
+                        -> const domain_type& {
+                        return *ptr;
+                    };
+                // this lambda is defined out of the macro because passing lambda
+                // to macro causes a problem in some cases.
+
                 LOG_DEBUG(("add_to_multi_recursive: bursted=[%s]",
                         stringize_and_join(
-                            make_transform_iterator_range(
-                                bursted,
-                                dereference<std::shared_ptr<domain_type> >()),
+                            make_transform_iterator_range(bursted, dereferencer),
                             ", ").c_str()));
 
-                BOOST_FOREACH (std::shared_ptr<domain_type> neighbor, bursted)
+                for (std::shared_ptr<domain_type> neighbor: bursted)
                 {
                     length_type const dist(distance(*neighbor, single->position()));
                     if (dist < new_shell.radius())
-                        add_to_multi_recursive(multi, *neighbor); 
+                        add_to_multi_recursive(multi, *neighbor);
                 }
                 return;
             }
@@ -3239,7 +3205,7 @@ protected:
         domain_type* possible_partner(0);
         length_type length_to_possible_partner(
                 std::numeric_limits<length_type>::infinity());
-        BOOST_FOREACH (std::shared_ptr<domain_type> neighbor, neighbors)
+        for (std::shared_ptr<domain_type> neighbor: neighbors)
         {
             length_type const dist(distance(*neighbor, domain.position()));
             if (dist < length_to_possible_partner)
@@ -3278,7 +3244,7 @@ protected:
         }
         return boost::optional<domain_type&>();
     }
-  
+
     void fire_event(single_event const& event)
     {
         single_type& domain(event.domain());
@@ -3298,7 +3264,7 @@ protected:
             {
                 attempt_single_reaction(domain);
             }
-            catch (no_space const&)
+            catch (NoSpace const&)
             {
                 LOG_DEBUG(("single reaction rejected"));
                 ++rejected_moves_;
@@ -3332,11 +3298,11 @@ protected:
                 //     particle_shape_type(
                 //         domain.position(), min_shell_radius), domain.id());
                 {
-                    std::pair<std::vector<domain_id_type>*, 
-                        std::pair<domain_id_type, length_type> > 
+                    std::pair<std::vector<domain_id_type>*,
+                        std::pair<domain_id_type, length_type> >
                         res(get_intruders(particle_shape_type(
-                                              domain.position(), 
-                                              min_shell_radius), 
+                                              domain.position(),
+                                              min_shell_radius),
                                           domain.id()));
                     intruders = res.first;
                     closest = res.second;
@@ -3358,7 +3324,7 @@ protected:
                         return;
                     // if nothing was formed, recheck closest and restore shells.
                     restore_domain(domain);
-                    BOOST_FOREACH (std::shared_ptr<domain_type> _single, bursted)
+                    for (std::shared_ptr<domain_type> _single: bursted)
                     {
                         std::shared_ptr<single_type> single(
                             std::dynamic_pointer_cast<single_type>(_single));
@@ -3446,7 +3412,7 @@ protected:
         switch (kind)
         {
         default: /* never get here */ BOOST_ASSERT(0); break;
-        case PAIR_EVENT_SINGLE_REACTION_0: 
+        case PAIR_EVENT_SINGLE_REACTION_0:
         case PAIR_EVENT_SINGLE_REACTION_1:
             {
                 int const index(kind == PAIR_EVENT_SINGLE_REACTION_0 ? 0 : 1);
@@ -3461,7 +3427,7 @@ protected:
                 {
                     attempt_single_reaction(*new_single[index]);
                 }
-                catch (no_space const&)
+                catch (NoSpace const&)
                 {
                     LOG_DEBUG(("pair event single reaction rejected"));
                     ++rejected_moves_;
@@ -3483,7 +3449,7 @@ protected:
                 add_event(*new_single[1], SINGLE_EVENT_ESCAPE);
             }
             break;
-        
+
         case PAIR_EVENT_IV_REACTION:
             {
                 LOG_DEBUG(("=> iv_reaction"));
@@ -3492,7 +3458,7 @@ protected:
 //                 reaction_rule_type const& r(domain.reactions()[0]);
 
                 Real k_tot = 0;
-                BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
+                for(reaction_rule_type const& rl: domain.reactions())
                 {
                     k_tot += rl.k();
                 }
@@ -3501,7 +3467,7 @@ protected:
                 if(ecell4::egfrd::size(domain.reactions()) != 1)
                 {
                     Real rndr = this->rng().uniform(0., k_tot);
-                    BOOST_FOREACH(reaction_rule_type const& rl, domain.reactions())
+                    for(reaction_rule_type const& rl: domain.reactions())
                     {
                         rndr -= rl.k();
                         if(rndr < 0.0)
@@ -3548,7 +3514,7 @@ protected:
                                     this->rng(),
                                     *base_type::world_).draw_com(
                                         domain, domain.dt())));
-                   
+
                         BOOST_ASSERT(
                             (*base_type::world_).distance(
                                 domain.shell().second.position(),
@@ -3581,7 +3547,7 @@ protected:
                     }
                     break;
                 default:
-                    throw not_implemented("num products >= 2 not supported.");
+                    throw ::ecell4::NotImplemented("num products >= 2 not supported.");
                 }
                 remove_domain(domain);
             }
@@ -3608,7 +3574,7 @@ protected:
         multi_type& domain(event.domain());
         domain.step();
         LOG_DEBUG(("fire_multi: last_event=%s", boost::lexical_cast<std::string>(domain.last_event()).c_str()));
-        multi_step_count_[domain.last_event()]++; 
+        multi_step_count_[domain.last_event()]++;
         switch (domain.last_event())
         {
         default: /* never get here */ BOOST_ASSERT(0); break;
@@ -3658,7 +3624,7 @@ protected:
                         continue;
                     }
                     LOG_INFO(("no space for product particle."));
-                    throw no_space();
+                    throw NoSpace();
                 }
                 else
                 {
@@ -3678,7 +3644,7 @@ protected:
             std::shared_ptr<single_type> single(create_single(pp));
             add_event(*single, SINGLE_EVENT_ESCAPE);
         }
-        catch (no_space const&)
+        catch (NoSpace const&)
         {
             LOG_DEBUG(("birth reaction rejected."));
             ++rejected_moves_;
@@ -3721,7 +3687,7 @@ protected:
                 return;
             }
         }
-        throw not_implemented(std::string("unsupported domain type"));
+        throw ::ecell4::NotImplemented(std::string("unsupported domain type"));
     }
 
     void _step()
@@ -3758,7 +3724,7 @@ protected:
             ++zero_step_count_;
             if (zero_step_count_ >= std::max(scheduler_.size() * 3, static_cast<std::size_t>(10u)))
             {
-                throw illegal_state("too many dt=zero steps. simulator halted?");
+                throw ::ecell4::IllegalState("too many dt=zero steps. simulator halted?");
             }
         }
         else
@@ -3836,7 +3802,7 @@ protected:
     void dump_events() const
     {
         LOG_INFO(("QUEUED EVENTS:"));
-        BOOST_FOREACH (event_id_pair_type const& ev, scheduler_.events())
+        for (event_id_pair_type const& ev: scheduler_.events())
         {
             LOG_INFO(("  #%d: %s", ev.first, stringize_event(*ev.second).c_str()));
         }
@@ -3904,7 +3870,7 @@ protected:
         case PAIR_EVENT_IV_REACTION:
             return "iv_reaction";
         }
-        throw illegal_state("EGFRDSimulator::stringize_event_kind: never get here");
+        throw ::ecell4::IllegalState("EGFRDSimulator::stringize_event_kind: never get here");
     }
 
     static std::string stringize_event(single_event const& ev)
@@ -3957,7 +3923,7 @@ protected:
     {
         LOG_DEBUG(("checking domain %s", boost::lexical_cast<std::string>(domain).c_str()));
         bool retval(true);
-        BOOST_FOREACH (typename multi_type::spherical_shell_id_pair const& shell,
+        for (typename multi_type::spherical_shell_id_pair const& shell:
                        domain.get_shells())
         {
             std::pair<domain_id_type, length_type> closest(
@@ -4062,7 +4028,7 @@ protected:
     {
         if (log_.level() == Logger::L_DEBUG)
         {
-            BOOST_FOREACH (particle_id_pair_and_distance const& i, list)
+            for (particle_id_pair_and_distance const& i: list)
             {
                 log_.debug("  (%s:%s) %.16g",
                     boost::lexical_cast<std::string>(i.first.first).c_str(),
@@ -4075,7 +4041,7 @@ protected:
     static rate_type calculate_k_tot(reaction_rules const& rules)
     {
         rate_type k_tot(0.);
-        BOOST_FOREACH (reaction_rule_type const& rule, rules)
+        for (reaction_rule_type const& rule: rules)
         {
             k_tot += rule.k();
         }
@@ -4093,7 +4059,7 @@ protected:
 
         const rate_type t(this->rng().uniform(0., 1.) * k_tot);
         rate_type a(0.);
-        BOOST_FOREACH(reaction_rule_type const& r, rules)
+        for(reaction_rule_type const& r: rules)
         {
             a += r.k();
             if (a > t)
@@ -4101,7 +4067,7 @@ protected:
         }
 
         BOOST_ASSERT(false); // should never happen
-        throw illegal_state("EGFRDSimulator::draw_reaction_rule: should never happen");
+        throw ::ecell4::IllegalState("EGFRDSimulator::draw_reaction_rule: should never happen");
     }
 
     //template<typename T1, typename T2>
@@ -4122,7 +4088,7 @@ protected:
         }
         else
         {
-            return position_type(new_iv[0], new_iv[1], -new_iv[1]); 
+            return position_type(new_iv[0], new_iv[1], -new_iv[1]);
         }
     }
 
@@ -4205,7 +4171,7 @@ protected:
             }
             else
             {
-                // distant from both a and sigma; 
+                // distant from both a and sigma;
                 LOG_DEBUG(("GF: free"));
                 return new greens_functions::GreensFunction3D(domain.D_tot(), r0);
             }

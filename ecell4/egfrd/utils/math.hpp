@@ -1,5 +1,5 @@
-#ifndef UTILS_MATH_HPP
-#define UTILS_MATH_HPP
+#ifndef ECELL4_EGFRD_UTILS_MATH_HPP
+#define ECELL4_EGFRD_UTILS_MATH_HPP
 
 #include <algorithm>
 #include <cmath>

@@ -1,8 +1,8 @@
-#ifndef TWOFOLD_CONTAINER_HPP
-#define TWOFOLD_CONTAINER_HPP
+#ifndef ECELL4_EGFRD_TWOFOLD_CONTAINER_HPP
+#define ECELL4_EGFRD_TWOFOLD_CONTAINER_HPP
 
 #include <algorithm>
-#include <boost/array.hpp>
+#include <array>
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include "utils/memberwise_compare.hpp"
@@ -11,6 +11,17 @@ namespace ecell4
 {
 namespace egfrd
 {
+
+inline bool is_initialized(std::string const &obj)
+{
+    return (0 < obj.size());
+}
+
+inline bool is_initialized(ecell4::Species const &obj)
+{
+    return (0 < obj.serial().size());
+}
+
 template <typename T>
 bool is_initialized(T const &obj)
 {
@@ -63,7 +74,10 @@ public:
         iterator(twofold_container& cntnr, size_type idx)
             : cntnr_(cntnr), idx_(idx) {}
 
-        iterator(const_iterator const&);
+        iterator(const_iterator const& that)
+            : cntnr_(const_cast<twofold_container&>(that.cntnr_)),
+              idx_(that.idx_)
+        {}
 
     private:
         twofold_container& cntnr_;
@@ -271,13 +285,6 @@ public:
 protected:
     containing_type items_;
 };
-
-template<typename T_>
-inline twofold_container<T_>::iterator::iterator(
-        typename twofold_container<T_>::const_iterator const& that)
-    : cntnr_(const_cast<twofold_container&>(that.cntnr_)), idx_(that.idx_)
-{
-}
 
 } // egfrd
 } // ecell4

@@ -1,22 +1,19 @@
-#ifndef UTILS_RANGE_HPP
-#define UTILS_RANGE_HPP
+#ifndef ECELL4_EGFRD_UTILS_RANGE_HPP
+#define ECELL4_EGFRD_UTILS_RANGE_HPP
 
+#include <type_traits>
 #include <boost/range/size.hpp>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/iterator.hpp>
 #include <boost/range/const_iterator.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/type_traits/is_same.hpp>
-#include <boost/mpl/bool.hpp>
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
 #include <boost/iterator/iterator_traits.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/filter_iterator.hpp>
-#include <boost/utility/enable_if.hpp>
 
 namespace ecell4
 {
@@ -29,7 +26,7 @@ struct range_iterator_category
 
 template<typename Trange_, typename Ticat_>
 struct check_range_iterator_category
-    : boost::is_convertible<
+    : std::is_convertible<
         typename boost::iterator_category_to_traversal<
             typename range_iterator_category<Trange_>::type >::type,
         typename boost::iterator_category_to_traversal<Ticat_>::type > {};
@@ -104,49 +101,10 @@ private:
     typename base_type::size_type size_;
 };
 
-template<typename Trange_>
-struct is_referencing_range: boost::mpl::false_ {};
-
 template<typename Titer_>
-struct is_referencing_range<std::pair<Titer_, Titer_> >: boost::mpl::true_ {};
-
-template<typename Titer_>
-struct is_referencing_range<boost::iterator_range<Titer_> >: boost::mpl::true_ {};
-
-template<typename Titer_>
-struct is_sized<sized_iterator_range<Titer_> >: boost::mpl::true_
+struct is_sized<sized_iterator_range<Titer_> >: std::true_type
 {
 };
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn& fn, Trange const &range,
-    typename boost::enable_if<is_sized<Trange> >::type* = 0)
-{
-    fn(ecell4::egfrd::size(range));
-}
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn& fn, Trange const &range,
-    typename boost::disable_if<is_sized<Trange> >::type* = 0)
-{
-}
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn const& fn, Trange const &range,
-    typename boost::enable_if<is_sized<Trange> >::type* = 0)
-{
-    fn(ecell4::egfrd::size(range));
-}
-
-template<typename Tfn, typename Trange>
-inline void call_with_size_if_randomly_accessible(
-    Tfn const& fn, Trange const &range,
-    typename boost::disable_if<is_sized<Trange> >::type* = 0)
-{
-}
 
 template<typename Titer_>
 struct range_size<sized_iterator_range<Titer_> >
@@ -169,7 +127,7 @@ struct range_size_retriever<sized_iterator_range<Titer_> >
 namespace detail {
 
 template<typename Trange_ = void, bool N_ = boost::mpl::and_<
-    boost::mpl::not_<boost::is_same<Trange_, void> >,
+    boost::mpl::not_<std::is_same<Trange_, void> >,
     is_sized<Trange_> >::value>
 struct get_default_range_holder
 {
@@ -292,48 +250,6 @@ struct range_size_retriever<transformed_range<Titer_, Tfun_, Tholder_getter_> >
         return range.size();
     }
 };
-
-namespace detail {
-
-template<typename Tpred_, typename Trange_>
-struct get_filter_iterator_range
-{
-    typedef boost::filter_iterator<Tpred_, typename boost::range_iterator<Trange_>::type> iterator_type;
-    typedef boost::iterator_range<iterator_type> type;
-};
-
-template<typename Tpred_, typename Trange_>
-struct get_filter_iterator_range<Tpred_, const Trange_>
-{
-    typedef boost::filter_iterator<Tpred_, typename boost::range_const_iterator<Trange_>::type> iterator_type;
-    typedef boost::iterator_range<iterator_type> type;
-};
-
-} // namespace detail
-
-template<typename Trange_, typename Tpred_>
-inline typename detail::get_filter_iterator_range<Tpred_, Trange_>::type
-make_filter_iterator_range(Trange_& range, Tpred_ pred)
-{
-    typedef typename detail::get_filter_iterator_range<Tpred_, Trange_> filter_range_gen;
-    typedef typename filter_range_gen::iterator_type iterator;
-    typedef typename filter_range_gen::type result_type;
-
-    return result_type(iterator(pred, boost::begin(range)),
-                       iterator(pred, boost::end(range)));
-}
-
-template<typename Trange_, typename Tpred_>
-inline typename detail::get_filter_iterator_range<Tpred_, const Trange_>::type
-make_filter_iterator_range(Trange_ const& range, Tpred_ pred)
-{
-    typedef typename detail::get_filter_iterator_range<Tpred_, const Trange_> filter_range_gen;
-    typedef typename filter_range_gen::iterator_type iterator;
-    typedef typename filter_range_gen::type result_type;
-
-    return result_type(iterator(pred, boost::begin(range)),
-                       iterator(pred, boost::end(range)));
-}
 
 } // egfrd
 } // ecell4

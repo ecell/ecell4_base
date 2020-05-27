@@ -1,5 +1,5 @@
-#ifndef SINGLE_HPP
-#define SINGLE_HPP
+#ifndef ECELL4_EGFRD_SINGLE_HPP
+#define ECELL4_EGFRD_SINGLE_HPP
 
 #include <utility>
 #include "ShapedDomain.hpp"
