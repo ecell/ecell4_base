@@ -754,14 +754,12 @@ class Polygon : public Shape
             {
                 continue;
             }
-
             const Triangle& tri = fidf.second.triangle;
-
             const auto& vtx = tri.vertices();
-            const auto  com = (vtx[0] + vtx[1] + vtx[2]) / 3.0;
 
-            const Real dist_sq  = distance_sq_point_Triangle(
-                    this->periodic_transpose(pos, com), tri);
+            PeriodicBoundary pbc(this->edge_length_);
+            const Real dist_sq = distance_sq_point_Triangle(pos, tri, pbc);
+
             if(dist_sq <= radius_sq)
             {
                 retval.emplace_back(std::make_pair(fid, tri), std::sqrt(dist_sq));
