@@ -1,4 +1,5 @@
 #include "Triangle.hpp"
+#include <boost/container/static_vector.hpp>
 
 namespace ecell4
 {
@@ -207,15 +208,15 @@ Real minmaxdist_sq(const Real3& lw, const Real3& up, const Real3& p) noexcept
     Real3 rM_sq(sq(up[0] - p[0]), sq(up[1] - p[1]), sq(up[2] - p[2]));
 
     using std::swap;
-    if((lhs.upper[0] + lhs.lower[0]) * 0.5 < p[0])
+    if((up[0] + lw[0]) * 0.5 < p[0])
     {
         swap(rm_sq[0], rM_sq[0]);
     }
-    if((lhs.upper[1] + lhs.lower[1]) * 0.5 < p[1])
+    if((up[1] + lw[1]) * 0.5 < p[1])
     {
         swap(rm_sq[1], rM_sq[1]);
     }
-    if((lhs.upper[2] + lhs.lower[2]) * 0.5 < p[2])
+    if((up[2] + lw[2]) * 0.5 < p[2])
     {
         swap(rm_sq[2], rM_sq[2]);
     }
@@ -272,24 +273,24 @@ Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, cons
     //      :              :
     //      :              :
 
-    boost::static_vector<Real, 27> dists{
-        length_sq(closest_point_on_Triangle(p1, vtxs) - p1);
+    boost::container::static_vector<Real, 27> dists{
+        length_sq(closest_point_on_Triangle(p1, vtxs) - p1)
     };
 
     // check all the possible transpose and find the minimum distance
     for(std::int32_t i_x=-1; i_x<=1; ++i_x)
     {
-        const p_x = p1[0] + i_x * edge[0];
+        const Real p_x = p1[0] + i_x * edge[0];
         if(p_x < lower[0] || upper[0] < p_x) {continue;}
 
         for(std::int32_t i_y=-1; i_y<=1; ++i_y)
         {
-            const p_y = p1[1] + i_y * edge[1];
+            const Real p_y = p1[1] + i_y * edge[1];
             if(p_y < lower[1] || upper[1] < p_y) {continue;}
 
             for(std::int32_t i_z=-1; i_z<=1; ++i_z)
             {
-                const p_z = p1[2] + i_z * edge[2];
+                const Real p_z = p1[2] + i_z * edge[2];
                 if(p_z < lower[2] || upper[2] < p_z) {continue;}
                 if(i_x == 0 && i_y == 0 && i_z == 0) {continue;}
 
