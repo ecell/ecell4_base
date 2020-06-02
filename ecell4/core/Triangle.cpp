@@ -302,6 +302,12 @@ Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, cons
 }
 
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const Boundary& b)
+{
+    return distance_sq_point_Triangle_impl(pos, tri, std::addressof(b));
+}
+
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
                                 const std::unique_ptr<Boundary>& b)
 {
     return distance_sq_point_Triangle_impl(pos, tri, b.get());

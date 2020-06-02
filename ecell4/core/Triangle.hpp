@@ -117,14 +117,26 @@ struct Triangle : public Shape
 };
 
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri);
+
+inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri)
+{
+    return std::sqrt(distance_sq_point_Triangle(pos, tri));
+}
+
+// ------------------------------------------------------------------------
+// considering PBC
+
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const Boundary& b);
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
                                 const std::unique_ptr<Boundary>& b);
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
                                 const std::shared_ptr<Boundary>& b);
 
-inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri)
+inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri,
+                                    const Boundary& b);
 {
-    return std::sqrt(distance_sq_point_Triangle(pos, tri));
+    return std::sqrt(distance_sq_point_Triangle(pos, tri, b));
 }
 inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri,
                                     const std::unique_ptr<Boundary>& b);
