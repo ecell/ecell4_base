@@ -11,6 +11,7 @@
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ObjectIDContainer.hpp>
 #include <ecell4/core/PeriodicRTree.hpp>
 
@@ -796,10 +797,12 @@ class Polygon : public Shape
     Real  total_area_;
     Real3 edge_length_; // boundary({0,0,0}, {edge_length})
 
-    SerialIDGenerator<FaceID> face_idgen_;
-    face_container_type       faces_;
+    SerialIDGenerator<VertexID> vertex_idgen_;
+    SerialIDGenerator<FaceID>   face_idgen_;
+    SerialIDGenerator<EdgeID>   edge_idgen_;
 
     vertex_container_type vertices_;
+    face_container_type   faces_;
     edge_container_type   edges_;
 };
 
