@@ -67,12 +67,11 @@ struct Query
 
     boost::optional<std::pair<std::pair<ParticleID, Particle>, Real>>
     operator()(const std::pair<ParticleID, Particle>& pidp,
-               const Real3& edges) const noexcept
+               const PeriodicBoundary& pbc) const noexcept
     {
         if(pidp.first == ignore) {return boost::none;}
         const auto rr = radius + pidp.second.radius();
-        const auto rhs = this->periodic_transpose(pidp.second.position(),
-                                                  center, edges);
+        const auto rhs = pbc.periodic_transpose(pidp.second.position(), center);
         const auto dist_sq = length_sq(rhs - center);
         if(rr * rr < dist_sq)
         {
@@ -81,17 +80,17 @@ struct Query
         return std::make_pair(pidp, std::sqrt(dist_sq));
     }
 
-    bool operator()(const AABB& box, const Real3& edge_lengths) const noexcept
+    bool operator()(const AABB& box, const PeriodicBoundary& pbc) const noexcept
     {
-        return this->distance_sq(box, center, edge_lengths) < radius * radius;
+        return this->distance_sq(box, center, pbc) < radius * radius;
     }
 
   private:
 
     // AABB-sphere intersection query under the PBC
-    Real distance_sq(const AABB& box, Real3 pos, const Real3& edge_lengths) const noexcept
+    Real distance_sq(const AABB& box, Real3 pos, const PeriodicBoundary& pbc) const noexcept
     {
-        pos = periodic_transpose(pos, (box.upper() + box.lower()) * 0.5, edge_lengths);
+        pos = pbc.periodic_transpose(pos, (box.upper() + box.lower()) * 0.5);
 
         Real dist_sq = 0;
         for(std::size_t i=0; i<3; ++i)
@@ -108,28 +107,6 @@ struct Query
         }
         return dist_sq;
     }
-
-    // transpose a position based on the periodic boundary condition.
-    Real3 periodic_transpose(
-        const Real3& pos1, const Real3& pos2, const Real3& edges) const
-    {
-        Real3 retval(pos1);
-        for(Real3::size_type dim(0); dim < 3; ++dim)
-        {
-            const Real edge_length(edges[dim]);
-            const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
-
-            if (half < diff)
-            {
-                retval[dim] += edge_length;
-            }
-            else if (diff < -half)
-            {
-                retval[dim] -= edge_length;
-            }
-        }
-        return retval;
-    }
 };
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
@@ -137,6 +114,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
     constexpr std::size_t N = 500;
     constexpr Real        L = 1.0;
     const Real3 edge_lengths(L, 2*L, 3*L);
+    const PeriodicBoundary pbc(edge_lengths);
     std::mt19937 mt(123456789);
     std::uniform_real_distribution<Real> uni(0.0, L);
 
@@ -198,7 +176,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
         bool all_found = true;
         for(const auto& pidp : full_list)
         {
-            if(query(pidp, edge_lengths))
+            if(query(pidp, pbc))
             {
                 const auto found = std::find_if(
                     query_results.begin(), query_results.end(),
@@ -271,7 +249,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
 
         for(const auto& pidp : full_list)
         {
-            if(query(pidp, edge_lengths))
+            if(query(pidp, pbc))
             {
                 const auto found = std::find_if(
                     query_results.begin(), query_results.end(),
@@ -322,7 +300,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(PeriodicRTree_query, AABBGetter, aabb_getters)
 
         for(const auto& pidp : full_list)
         {
-            if(query(pidp, edge_lengths))
+            if(query(pidp, pbc))
             {
                 const auto found = std::find_if(
                     query_results.begin(), query_results.end(),
