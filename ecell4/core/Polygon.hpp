@@ -783,7 +783,7 @@ class Polygon : public Shape
         boost::optional<std::pair<std::pair<FaceID, Triangle>, Real>>
         operator()(const std::pair<FaceID, face_data>& fidp, const Real3& edges) const noexcept
         {
-            if(ignores(pidp)){return boost::none;}
+            if(ignores(fidp.first)){return boost::none;}
 
             PeriodicBoundary pbc(edges);
             const auto dist_sq = distance_sq_point_Triangle(
@@ -791,7 +791,9 @@ class Polygon : public Shape
 
             if(dist_sq <= this->radius * this->radius)
             {
-                return std::make_pair(pidp, std::sqrt(dist));
+                return std::make_pair(
+                        std::make_pair(fidp.first, fidp.second.triangle),
+                        std::sqrt(dist_sq));
             }
             return boost::none;
         }
