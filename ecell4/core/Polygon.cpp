@@ -16,6 +16,13 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
     const Real tol_rel2 = relative_tolerance * relative_tolerance;
 
+    // To make IDs after saving/loading the triangles, IDGenerators should be
+    // re-initialized here.
+
+    vertex_idgen_ = SerialIDGenerator<VertexID>{};
+    face_idgen_   = SerialIDGenerator<FaceID>{};
+    edge_idgen_   = SerialIDGenerator<EdgeID>{};
+
     vertices_.clear();
        faces_.clear();
        edges_.clear();
@@ -65,7 +72,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
             }
             if(!found_vtx) // new vertices! add VertexID.
             {
-                const VertexID new_vid = vertices_.gen_id();
+                const VertexID new_vid = this->vertex_idgen_();
                 tmp_vtxs[new_vid] = std::make_pair(this->apply_boundary(v1),
                         std::vector<fid_vidx_pair>(1, std::make_pair(fid, i)));
                 found_vtx = new_vid;
@@ -78,7 +85,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
         {
             // in this point, edge length and direction are not fixed (because
             // vertex positions are corrected after all the faces are assigned).
-            const EdgeID eid = edges_.gen_id();
+            const EdgeID eid = this->edge_idgen_();
             edge_data ed;
             ed.face   = fid;
             ed.target = fd.vertices[i==2?0:i+1];
