@@ -759,32 +759,113 @@ class Polygon : public Shape
         return this->edges_.at(eid).second;
     }
 
+    // -----------------------------------------------------------------------
+    // list_faces_within_radius_impl and its query
+
+    template<typename Filter>
+    struct IntersectionQuery
+    {
+        Real3  center;
+        Real   radius;
+        Filter ignores;
+
+        IntersectionQuery(const Real3& c, const Real r, Filter f) noexcept
+            : center(c), radius(r), ignores(std::move(f))
+        {}
+        IntersectionQuery(const IntersectionQuery&) = default;
+        IntersectionQuery(IntersectionQuery&&)      = default;
+        IntersectionQuery& operator=(const IntersectionQuery&) = default;
+        IntersectionQuery& operator=(IntersectionQuery&&)      = default;
+        ~IntersectionQuery() = default;
+
+        // If it does not matches, return boost::none.
+        // If it matches, return pairof(pidp, distance).
+        boost::optional<std::pair<std::pair<FaceID, Triangle>, Real>>
+        operator()(const std::pair<FaceID, face_data>& fidp, const Real3& edges) const noexcept
+        {
+            if(ignores(pidp)){return boost::none;}
+
+            PeriodicBoundary pbc(edges);
+            const auto dist_sq = distance_sq_point_Triangle(
+                    center, fidp.second.triangle, pbc);
+
+            if(dist_sq <= this->radius * this->radius)
+            {
+                return std::make_pair(pidp, std::sqrt(dist));
+            }
+            return boost::none;
+        }
+
+        bool operator()(const AABB& box, const Real3& edges) const noexcept
+        {
+            return this->distance_sq(box, this->center, edges) <=
+                   this->radius * this->radius;
+        }
+
+        // -------------------------------------------------------------------
+        // geometry stuffs (common part)
+
+        // AABB-sphere intersection query under the PBC
+        Real distance_sq(const AABB& box, Real3 pos, const Real3& edge_lengths) const noexcept
+        {
+            pos = periodic_transpose(pos, (box.upper() + box.lower()) * 0.5, edge_lengths);
+
+            Real dist_sq = 0;
+            for(std::size_t i=0; i<3; ++i)
+            {
+                const auto v = pos[i];
+                if(v < box.lower()[i])
+                {
+                    dist_sq += (v - box.lower()[i]) * (v - box.lower()[i]);
+                }
+                else if(box.upper()[i] < v)
+                {
+                    dist_sq += (v - box.upper()[i]) * (v - box.upper()[i]);
+                }
+            }
+            return dist_sq;
+        }
+
+        // transpose a position based on the periodic boundary condition.
+        Real3 periodic_transpose(
+            const Real3& pos1, const Real3& pos2, const Real3& edges) const
+        {
+            Real3 retval(pos1);
+            for(std::size_t dim(0); dim < 3; ++dim)
+            {
+                const Real edge_length(edges[dim]);
+                const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
+
+                if (half < diff)
+                {
+                    retval[dim] += edge_length;
+                }
+                else if (diff < -half)
+                {
+                    retval[dim] -= edge_length;
+                }
+            }
+            return retval;
+        }
+    };
+    template<typename Filter>
+    static IntersectionQuery<Filter> make_intersection_query(
+            const Real3& c, const Real r, Filter&& f)
+    {
+        return IntersectionQuery<Filter>(c, r, std::forward<Filter>(f));
+    }
+
     template<typename Filter>
     std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
     list_faces_within_radius_impl(
-            const Real3& pos, const Real& radius, Filter filter) const
+            const Real3& pos, const Real& radius, Filter&& filter) const
     {
         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
 
-        const Real radius_sq = radius * radius;
-        for(const auto& fidf : this->faces_)
-        {
-            const FaceID fid = fidf.first;
-            if(filter(fid))
-            {
-                continue;
-            }
-            const Triangle& tri = fidf.second.triangle;
-            const auto& vtx = tri.vertices();
+        this->faces_.query(make_intersection_query(
+                    pos, radius, std::forward<Filter>(filter)
+                ), std::back_inserter(retval));
 
-            PeriodicBoundary pbc(this->edge_length_);
-            const Real dist_sq = distance_sq_point_Triangle(pos, tri, pbc);
-
-            if(dist_sq <= radius_sq)
-            {
-                retval.emplace_back(std::make_pair(fid, tri), std::sqrt(dist_sq));
-            }
-        }
         std::sort(retval.begin(), retval.end(),
             utils::pair_second_element_comparator<std::pair<FaceID, Triangle>, Real>{});
 
