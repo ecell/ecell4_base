@@ -12,6 +12,7 @@
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
 #include <ecell4/core/ObjectIDContainer.hpp>
+#include <ecell4/core/PeriodicRTree.hpp>
 
 #ifdef WITH_HDF5
 #include "PolygonHDF5Writer.hpp"
@@ -195,15 +196,34 @@ class Polygon : public Shape
         //      increasing the apex angle between the vertex.
     };
 
+    struct FaceAABBGetter
+    {
+        AABB operator()(const face_data& f, const Real margin) const noexcept
+        {
+            const auto& v1 = f.triangle.vertices()[0];
+            const auto& v2 = f.triangle.vertices()[1];
+            const auto& v3 = f.triangle.vertices()[2];
+            const Real3 upper(std::max(std::max(v1[0], v2[0]), v3[0]),
+                              std::max(std::max(v1[1], v2[1]), v3[1]),
+                              std::max(std::max(v1[2], v2[2]), v3[2]));
+            const Real3 lower(std::min(std::min(v1[0], v2[0]), v3[0]),
+                              std::min(std::min(v1[1], v2[1]), v3[1]),
+                              std::min(std::min(v1[2], v2[2]), v3[2]));
+
+            const auto padding = (upper - lower) * (margin * 0.5);
+            return AABB(lower - padding, upper + padding);
+        }
+    };
+    typedef PeriodicRTree<FaceID, face_data, FaceAABBGetter> face_container_type;
+
     typedef ObjectIDContainer<VertexID, vertex_data> vertex_container_type;
-    typedef ObjectIDContainer<  FaceID,   face_data>   face_container_type;
     typedef ObjectIDContainer<  EdgeID,   edge_data>   edge_container_type;
 
   public:
 
     Polygon(const Real3&    edge_lengths =    Real3(1, 1, 1),
             const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : total_area_(0.0), edge_length_(edge_lengths)
+        : total_area_(0.0), edge_length_(edge_lengths), faces_(edge_lengths, 0.0)
     {
         const std::size_t x_size = matrix_sizes[0];
         const std::size_t y_size = matrix_sizes[1];
@@ -241,7 +261,7 @@ class Polygon : public Shape
         this->assign(ts);
     }
     Polygon(const Real3& edge_length, const std::vector<Triangle>& ts)
-        : total_area_(0.0), edge_length_(edge_length)
+        : total_area_(0.0), edge_length_(edge_length), faces_(edge_length, 0.0)
     {
         this->assign(ts);
     }
@@ -776,8 +796,10 @@ class Polygon : public Shape
     Real  total_area_;
     Real3 edge_length_; // boundary({0,0,0}, {edge_length})
 
+    SerialIDGenerator<FaceID> face_idgen_;
+    face_container_type       faces_;
+
     vertex_container_type vertices_;
-    face_container_type   faces_;
     edge_container_type   edges_;
 };
 
@@ -923,6 +945,16 @@ roll(const Polygon& poly,
 }
 
 } // polygon
-} // ecell4
 
+// for error message generation in PeriodicRTree
+template<typename charT, typename traitsT>
+std::basic_ostream<charT, traitsT>&
+operator<<(std::basic_ostream<charT, traitsT>& os, const Polygon::face_data& fd)
+{
+    os << fd.triangle;
+    return os;
+}
+
+
+} // ecell4
 #endif// ECELL4_POLYGON

@@ -33,7 +33,7 @@ void Polygon::assign(const std::vector<Triangle>& ts)
     {
         this->total_area_ += triangle.area();
 
-        const FaceID fid = faces_.gen_id();
+        const FaceID fid = face_idgen_();
         face_data fd;
         fd.triangle = triangle;
 
