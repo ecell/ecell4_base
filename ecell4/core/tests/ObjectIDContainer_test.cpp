@@ -8,6 +8,7 @@
 #endif
 
 #include <boost/test/tools/floating_point_comparison.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/ObjectIDContainer.hpp>
 #include <ecell4/core/Identifier.hpp>
 #include <ecell4/core/Particle.hpp>
@@ -18,11 +19,12 @@ BOOST_AUTO_TEST_CASE(ObjectIDContainer_add_update_remove)
 {
     using namespace ecell4;
     ObjectIDContainer<ParticleID, Particle> container;
+    SerialIDGenerator<ParticleID> idgen;
 
     std::vector<ParticleID> ids;
     for(std::size_t i=0; i<N; ++i)
     {
-        ids.push_back(container.gen_id());
+        ids.push_back(idgen());
         const bool newly_added = container.update(ids.back(), Particle());
         BOOST_CHECK(newly_added);
         BOOST_CHECK(container.diagnosis());
