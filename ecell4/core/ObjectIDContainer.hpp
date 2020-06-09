@@ -3,7 +3,6 @@
 #include <ecell4/core/type_name_of.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/Identifier.hpp>
-#include <ecell4/core/SerialIDGenerator.hpp>
 #include <functional>
 #include <unordered_map>
 #include <utility>
@@ -16,8 +15,6 @@ namespace ecell4
 // A container that combines map<id, index> and vector<{id, object}>.
 // It does not check collision or any other kind of object dependent tests,
 // but encapsulates relationships between id-idx map and a vector.
-// It also has a SerialIDGenerator, but it does not automatically generate
-// a new ID. World or some other higher order container does it.
 //
 template<typename Tid, typename Tobject>
 class ObjectIDContainer
@@ -33,7 +30,6 @@ public:
     using difference_type   = typename container_type::difference_type;
     using iterator          = typename container_type::iterator;
     using const_iterator    = typename container_type::const_iterator;
-    using id_generator_type = SerialIDGenerator<identifier_type>;
 
 public:
 
@@ -80,8 +76,6 @@ public:
         return;
     }
 
-    identifier_type gen_id() {return this->idgen_();}
-
     std::pair<identifier_type, object_type> get(const identifier_type& id) const
     {
         const auto found(this->idxmap_.find(id));
@@ -98,7 +92,6 @@ public:
 
     void clear()
     {
-        idgen_  = id_generator_type();
         idxmap_ .clear();
         objects_.clear();
         return;
@@ -193,7 +186,6 @@ public:
 
 private:
 
-    id_generator_type idgen_;
     id_idx_map_type   idxmap_;
     container_type    objects_;
 };
