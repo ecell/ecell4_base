@@ -595,12 +595,11 @@ class Polygon : public Shape
 #ifdef WITH_HDF5
     void save_hdf5(H5::Group* root) const
     {
-        save_triangles_polygon(*this, root);
+        save_polygon_hdf5(*this, root);
     }
-
     void load_hdf5(const H5::Group& root)
     {
-        load_triangles_polygon(root, this);
+        load_polygon_hdf5(root, this);
     }
 #endif
 
