@@ -310,6 +310,33 @@ public:
     // container = std::vector<std::pair<ObjectID, Object>>.
     container_type const& list_objects() const {return container_;}
 
+    value_type const& at(const ObjectID& id) const
+    {
+        assert(id == container_.at(rmap_.at(id)).first);
+        return container_.at(rmap_.at(id));
+    }
+    // Unsafe. If an object of a shape is modified via this function,
+    // RTree cannot notice that. In such a case, the consistency in the geometry
+    // would be broken. DON'T MODIFY THE SHAPE through the reference.
+    value_type&       at(const ObjectID& id)
+    {
+        assert(id == container_.at(rmap_.at(id)).first);
+        return container_.at(rmap_.at(id));
+    }
+
+    value_type&       front()       noexcept {return this->container_.front();}
+    value_type const& front() const noexcept {return this->container_.front();}
+
+    value_type&       back()       noexcept {return this->container_.back();}
+    value_type const& back() const noexcept {return this->container_.back();}
+
+    iterator        begin()       noexcept {return this->container_.begin();}
+    iterator        end()         noexcept {return this->container_.end();}
+    const_iterator  begin() const noexcept {return this->container_.begin();}
+    const_iterator  end()   const noexcept {return this->container_.end();}
+    const_iterator cbegin() const noexcept {return this->container_.cbegin();}
+    const_iterator cend()   const noexcept {return this->container_.cend();}
+
     // check the tree structure and relationships between nodes
     bool diagnosis() const
     {
