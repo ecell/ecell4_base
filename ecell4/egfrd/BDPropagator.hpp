@@ -1,5 +1,5 @@
-#ifndef BD_PROPAGATOR_HPP
-#define BD_PROPAGATOR_HPP
+#ifndef ECELL4_EGFRD_BD_PROPAGATOR_HPP
+#define ECELL4_EGFRD_BD_PROPAGATOR_HPP
 
 #include <algorithm>
 #include <limits>
@@ -9,8 +9,7 @@
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 #include <boost/range/const_iterator.hpp>
-#include <boost/utility/enable_if.hpp>
-#include "Defs.hpp"
+#include <ecell4/core/types.hpp>
 #include "generator.hpp"
 #include "exceptions.hpp"
 #include "utils/random.hpp"
@@ -71,14 +70,10 @@ public:
           queue_(), rejected_move_count_(0),
           potentials_(potentials)
     {
-        call_with_size_if_randomly_accessible(
-            boost::bind(&particle_id_vector_type::reserve, &queue_, _1),
-            particles);
-        for (typename boost::range_const_iterator<Trange_>::type
-                i(boost::begin(particles)),
-                e(boost::end(particles)); i != e; ++i)
+        queue_.reserve(ecell4::egfrd::size(particles));
+        for(const auto& p : particles)
         {
-            queue_.push_back(*i);
+            queue_.push_back(p);
         }
         shuffle(rng, queue_);
     }
@@ -99,7 +94,7 @@ public:
             if (attempt_reaction(pp))
                 return true;
         }
-        catch (propagation_error const& reason)
+        catch (PropagationError const& reason)
         {
             log_.info("first-order reaction rejected (reason: %s)", reason.what());
             ++rejected_move_count_;
@@ -147,7 +142,7 @@ public:
                         ++rejected_move_count_;
                     }
                 }
-                catch (propagation_error const& reason)
+                catch (PropagationError const& reason)
                 {
                     log_.info("second-order reaction rejected (reason: %s)", reason.what());
                     ++rejected_move_count_;
@@ -163,7 +158,7 @@ public:
         }
         if (vc_)
         {
-            if (!(*vc_)(shape(particle_to_update.second), 
+            if (!(*vc_)(shape(particle_to_update.second),
                         particle_to_update.first))
             {
                 log_.info("propagation move rejected.");
@@ -219,14 +214,14 @@ private:
                                 pp.second.position(), s0.radius, s0.D));
                         if (!tx_.no_overlap(shape(new_p.second), new_p.first))
                         {
-                            throw propagation_error("no space");
+                            throw PropagationError("no space");
                         }
 
                         if (vc_)
                         {
                             if (!(*vc_)(shape(new_p.second), pp.first))
                             {
-                                throw propagation_error("no space");
+                                throw PropagationError("no space");
                             }
                         }
 
@@ -258,7 +253,7 @@ private:
                         {
                             if (--i < 0)
                             {
-                                throw propagation_error("no space");
+                                throw PropagationError("no space");
                             }
 
                             const Real rnd(rng_.random());
@@ -283,7 +278,7 @@ private:
                         {
                             if (!(*vc_)(particle_shape_type(np0, s0.radius), pp.first) || !(*vc_)(particle_shape_type(np1, s1.radius), pp.first))
                             {
-                                throw propagation_error("no space");
+                                throw PropagationError("no space");
                             }
                         }
 
@@ -304,7 +299,7 @@ private:
                     }
                     break;
                 default:
-                    throw not_implemented("monomolecular reactions that produce more than two products are not supported");
+                    throw ::ecell4::NotImplemented("monomolecular reactions that produce more than two products are not supported");
                 }
                 return true;
             }
@@ -336,7 +331,7 @@ private:
             prob += p;
             if (prob >= 1.)
             {
-                throw propagation_error(
+                throw PropagationError(
                     "invalid acceptance ratio ("
                     + boost::lexical_cast<std::string>(p)
                     + ") for reaction rate "
@@ -368,16 +363,16 @@ private:
                             particle_shape_type(new_pos, sp.radius),
                             pp0.first, pp1.first))
                         {
-                            throw propagation_error("no space");
+                            throw PropagationError("no space");
                         }
 
                         if (vc_)
                         {
                             if (!(*vc_)(
-                                    particle_shape_type(new_pos, sp.radius), 
+                                    particle_shape_type(new_pos, sp.radius),
                                     pp0.first, pp1.first))
                             {
-                                throw propagation_error("no space");
+                                throw PropagationError("no space");
                             }
                         }
 
@@ -398,7 +393,7 @@ private:
                     remove_particle(pp1.first);
                     break;
                 default:
-                    throw not_implemented("bimolecular reactions that produce more than one product are not supported");
+                    throw ::ecell4::NotImplemented("bimolecular reactions that produce more than one product are not supported");
                 }
 
                 return true;

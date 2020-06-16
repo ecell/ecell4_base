@@ -1,8 +1,7 @@
-#ifndef REACTION_RECORD_HPP
-#define REACTION_RECORD_HPP
+#ifndef ECELL4_EGFRD_REACTION_RECORD_HPP
+#define ECELL4_EGFRD_REACTION_RECORD_HPP
 
 #include <vector>
-#include "twofold_container.hpp"
 #include "utils/memberwise_compare.hpp"
 
 namespace ecell4

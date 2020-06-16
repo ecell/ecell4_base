@@ -1,30 +1,23 @@
-#ifndef MULTI_HPP
-#define MULTI_HPP
-
-#include <boost/foreach.hpp>
-#include <boost/algorithm/string/join.hpp>
+#ifndef ECELL4_EGFRD_MULTI_HPP
+#define ECELL4_EGFRD_MULTI_HPP
 
 #include <ecell4/core/functions.hpp>
-using ecell4::pow_2;
 #include <ecell4/core/comparators.hpp>
-#ifdef WIN32_MSC
-#include <boost/container/map.hpp>
-#endif
 
 #include "exceptions.hpp"
 #include "Domain.hpp"
 #include "ParticleContainer.hpp"
-#include "ParticleContainerBase.hpp"
 // #include "Sphere.hpp"
 // #include "BDSimulator.hpp"
 #include "BDPropagator.hpp"
 #include "Logger.hpp"
 #include "VolumeClearer.hpp"
 #include "utils/array_helper.hpp"
+#include "utils/collection_contains.hpp"
 #include "utils/range.hpp"
+#include "utils/stringizer.hpp"
 
 #include <greens_functions/PairGreensFunction.hpp>
-// using namespace greens_functions;
 
 namespace ecell4
 {
@@ -59,8 +52,6 @@ public:
         particle_id_pair_and_distance;
     typedef typename traits_type::particle_id_pair_and_distance_list
         particle_id_pair_and_distance_list;
-
-    typedef typename base_type::transaction_type transaction_type;
 
     //XXX: typedef std::map<particle_id_type, particle_type> particle_map;
     typedef std::unordered_map<particle_id_type, particle_type> particle_map;
@@ -140,7 +131,7 @@ public:
         typename particle_map::const_iterator i(particles_.find(id));
         if (particles_.end() == i)
         {
-            throw not_found(std::string("No such particle: id=")
+            throw ::ecell4::NotFound(std::string("No such particle: id=")
                     + boost::lexical_cast<std::string>(id));
         }
         return *i;
@@ -183,11 +174,6 @@ public:
         std::sort(retval.begin(), retval.end(),
             ecell4::utils::pair_second_element_comparator<particle_id_pair, length_type>());
         return retval;
-    }
-
-    virtual transaction_type* create_transaction()
-    {
-        return new TransactionImpl<MultiParticleContainer>(*this);
     }
 
     virtual length_type distance(position_type const& lhs,
@@ -373,14 +359,19 @@ public:
 
     static Real determine_dt(world_type const& world)
     {
+        using ecell4::pow_2;
         Real D_max(0.), radius_min(std::numeric_limits<Real>::max());
 
-        BOOST_FOREACH(molecule_info_type s, world.get_molecule_info_range())
+        for(const molecule_info_type& s : world.get_molecule_info_range())
         {
             if (D_max < s.D)
+            {
                 D_max = s.D;
+            }
             if (radius_min > s.radius)
+            {
                 radius_min = s.radius;
+            }
         }
         return pow_2(radius_min * 2) / (D_max * 2);
     }
@@ -439,12 +430,11 @@ public:
 
     bool within_shell(particle_shape_type const& sphere) const
     {
-        for (typename spherical_shell_map::const_iterator
-                i(shells_.begin()), e(shells_.end()); i != e; ++i)
+        for (const spherical_shell_id_pair& sp : shells_)
         {
-            spherical_shell_id_pair const& sp(*i);
             position_type ppos(main_.world()->periodic_transpose(sphere.position(), (sp).second.position()));
-            if (ecell4::egfrd::distance(ppos, (sp).second.shape().position()) < (sp).second.shape().radius() - sphere.radius())
+            if (ecell4::egfrd::distance(ppos, (sp).second.shape().position()) <
+                (sp).second.shape().radius() - sphere.radius())
             {
                 return true;
             }
@@ -490,15 +480,10 @@ public:
 
     void step()
     {
-        std::unique_ptr<
-            typename multi_particle_container_type::transaction_type>
-                tx(pc_.create_transaction());
-        // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_generator particle_id_pair_generator;
-        // typedef typename multi_particle_container_type::transaction_type::particle_id_pair_and_distance_list particle_id_pair_and_distance_list;
         last_reaction_setter rs(*this);
         volume_clearer vc(*this);
         BDPropagator<traits_type> ppg(
-            *tx, *main_.network_rules(), main_.rng(),
+            pc_, *main_.network_rules(), main_.rng(),
             base_type::dt_,
             1 /* FIXME: dissociation_retry_moves */, &rs, &vc,
             make_select_first_range(pc_.get_particles_range()));
