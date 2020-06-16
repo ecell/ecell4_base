@@ -160,12 +160,10 @@ test_intersect_segment_triangle(const Real3& begin, const Real3& end,
     }
 }
 
-inline std::pair<std::pair<Real3, Real3>, Polygon::FaceID>
+inline std::pair<std::pair<Real3, Real3>, FaceID>
 apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
-                 const Polygon::FaceID intruder_face)
+                 const FaceID intruder_face)
 {
-    using FaceID = Polygon::FaceID;
-
     const Real3 stop = pos + disp;
     const auto& tri  = poly.triangle_at(intruder_face);
 
@@ -179,12 +177,10 @@ apply_reflection(const Polygon& poly, const Real3& pos, const Real3& disp,
                           intruder_face);
 }
 
-inline std::pair<bool, std::pair<Real, boost::optional<Polygon::FaceID>>>
+inline std::pair<bool, std::pair<Real, boost::optional<FaceID>>>
 intersect_ray(const Polygon& poly, const Real3& pos, const Real3& disp,
-              const boost::optional<Polygon::FaceID> ignore_face)
+              const boost::optional<FaceID> ignore_face)
 {
-    using FaceID = Polygon::FaceID;
-
     const Real3 stop = pos + disp;
     const Real   len  = length(disp);
 
