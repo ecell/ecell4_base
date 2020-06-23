@@ -15,7 +15,7 @@ const Real SGFRDSimulator::single_conical_surface_shell_factor = 1.2;
 const Real SGFRDSimulator::single_conical_surface_shell_mergin = 1.0 - 1e-7;
 const Real SGFRDSimulator::minimum_separation_factor           = 1e-7;
 
-std::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+std::tuple<ParticleID, Particle, FaceID>
 SGFRDSimulator::propagate_single_circular(
         const circular_shell_type& sh, const Single& dom, const Real tm)
 {
@@ -75,7 +75,7 @@ SGFRDSimulator::propagate_single_circular(
     return std::make_tuple(pid, p, state.first.second);
 }
 
-std::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+std::tuple<ParticleID, Particle, FaceID>
 SGFRDSimulator::propagate_single_conical(
     const conical_surface_shell_type& sh, const Single& dom, const Real tm)
 {
@@ -129,7 +129,7 @@ SGFRDSimulator::propagate_single_conical(
 }
 
 boost::container::static_vector<
-    std::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>, 2>
+    std::tuple<ParticleID, Particle, FaceID>, 2>
 SGFRDSimulator::reaction_single(
         const shell_type& sh, const Single& dom, const DomainID did)
 {
@@ -344,7 +344,7 @@ SGFRDSimulator::attempt_reaction_1_to_2(const ReactionRule& rule,
     return retval;
 }
 
-std::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+std::tuple<ParticleID, Particle, FaceID>
 SGFRDSimulator::escape_single_circular(
         const circular_shell_type& sh, const Single& dom)
 {
@@ -395,7 +395,7 @@ SGFRDSimulator::escape_single_circular(
     return std::make_tuple(pid, p, state.first.second);
 }
 
-std::tuple<ParticleID, Particle, SGFRDSimulator::FaceID>
+std::tuple<ParticleID, Particle, FaceID>
 SGFRDSimulator::escape_single_conical(
         const conical_surface_shell_type& sh, const Single& dom)
 {

@@ -23,9 +23,6 @@ class BDSimulator :
 
     // polygon
     typedef ecell4::Polygon  polygon_type;
-    typedef polygon_type::FaceID   FaceID;
-    typedef polygon_type::EdgeID   EdgeID;
-    typedef polygon_type::VertexID VertexID;
 
     // world & particles
     typedef ecell4::SimulatorBase<SGFRDWorld, ecell4::Model> base_type;

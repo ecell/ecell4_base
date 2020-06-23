@@ -1411,7 +1411,7 @@ void define_shape(py::module& m)
         .def("__getitem__", [](const Barycentric& x, Barycentric::size_type i) { return x.at(i); }, py::is_operator())
         ;
 
-    py::class_<Polygon::FaceID>(m, "FaceID");
+    py::class_<FaceID>(m, "FaceID");
 
     py::class_<Polygon, Shape, PyShapeImpl<Polygon>, std::shared_ptr<Polygon>>(m, "Polygon")
         .def(py::init<const Real3&, const Integer3&>(), py::arg("edge_lengths"), py::arg("matrix_sizes"))

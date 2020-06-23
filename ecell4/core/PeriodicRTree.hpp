@@ -4,6 +4,7 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/AABB.hpp>
+#include <ecell4/core/BoundaryCondition.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/optional.hpp>
@@ -126,7 +127,7 @@ public:
 public:
 
     explicit PeriodicRTree(const Real3& edge_lengths, const Real margin = 0.0)
-        : root_(nil), margin_(margin), edge_lengths_(edge_lengths)
+        : root_(nil), margin_(margin), pbc_(edge_lengths)
     {
         // do nothing
     }
@@ -298,8 +299,8 @@ public:
         throw NotFound("PeriodicRTree::erase: value not found.");
     }
 
-    Real3 const& edge_lengths() const noexcept {return edge_lengths_;}
-    Real3&       edge_lengths()       noexcept {return edge_lengths_;}
+    Real3 const& edge_lengths() const noexcept {return pbc_.edge_lengths();}
+    void reset_boundary(const Real3& edges) noexcept {return pbc_.reset(edges);}
 
     // user-defined AABBGetter may be stateful (unlikely).
     AABBGetter const& get_aabb_getter() const noexcept {return box_getter_;}
@@ -309,6 +310,33 @@ public:
 
     // container = std::vector<std::pair<ObjectID, Object>>.
     container_type const& list_objects() const {return container_;}
+
+    value_type const& at(const ObjectID& id) const
+    {
+        assert(id == container_.at(rmap_.at(id)).first);
+        return container_.at(rmap_.at(id));
+    }
+    // Unsafe. If an object of a shape is modified via this function,
+    // RTree cannot notice that. In such a case, the consistency in the geometry
+    // would be broken. DON'T MODIFY THE SHAPE through the reference.
+    value_type&       at(const ObjectID& id)
+    {
+        assert(id == container_.at(rmap_.at(id)).first);
+        return container_.at(rmap_.at(id));
+    }
+
+    value_type&       front()       noexcept {return this->container_.front();}
+    value_type const& front() const noexcept {return this->container_.front();}
+
+    value_type&       back()       noexcept {return this->container_.back();}
+    value_type const& back() const noexcept {return this->container_.back();}
+
+    iterator        begin()       noexcept {return this->container_.begin();}
+    iterator        end()         noexcept {return this->container_.end();}
+    const_iterator  begin() const noexcept {return this->container_.begin();}
+    const_iterator  end()   const noexcept {return this->container_.end();}
+    const_iterator cbegin() const noexcept {return this->container_.cbegin();}
+    const_iterator cend()   const noexcept {return this->container_.cend();}
 
     // check the tree structure and relationships between nodes
     bool diagnosis() const
@@ -507,7 +535,7 @@ private:
             for(const auto& entry : node.leaf_entry())
             {
                 const auto& value = container_.at(rmap_.at(entry));
-                if(const auto info = matches(value, this->edge_lengths_))
+                if(const auto info = matches(value, this->pbc_))
                 {
                     *out = *info;
                     ++out;
@@ -519,7 +547,7 @@ private:
         for(const std::size_t entry : node.inode_entry())
         {
             const auto& node_aabb = node_at(entry).box;
-            if(matches(node_aabb, this->edge_lengths_))
+            if(matches(node_aabb, this->pbc_))
             {
                 this->query_recursive(entry, matches, out);
             }
@@ -1380,36 +1408,39 @@ private:
 
         // if the radius (of the right hand side) is larger than the half width,
         // that means that the right hand side wraps the whole world.
-        return ((dc[0] - dr[0]) <= tol || (edge_lengths_[0] * 0.5 <= rr[0])) &&
-               ((dc[1] - dr[1]) <= tol || (edge_lengths_[1] * 0.5 <= rr[1])) &&
-               ((dc[2] - dr[2]) <= tol || (edge_lengths_[2] * 0.5 <= rr[2]));
+        const auto& edges = pbc_.edge_lengths();
+        return ((dc[0] - dr[0]) <= tol || (edges[0] * 0.5 <= rr[0])) &&
+               ((dc[1] - dr[1]) <= tol || (edges[1] * 0.5 <= rr[1])) &&
+               ((dc[2] - dr[2]) <= tol || (edges[2] * 0.5 <= rr[2]));
     }
 
     bool is_inside_of_boundary(const Real3 r, const Real tol = 1e-8) const noexcept
     {
-        const auto rel_tol = edge_lengths_ * tol;
-        if(r[0] < -rel_tol[0] || edge_lengths_[0] + rel_tol[0] < r[0]) {return false;}
-        if(r[1] < -rel_tol[1] || edge_lengths_[1] + rel_tol[1] < r[1]) {return false;}
-        if(r[2] < -rel_tol[2] || edge_lengths_[2] + rel_tol[2] < r[2]) {return false;}
+        const auto& edges = pbc_.edge_lengths();
+        const auto rel_tol = edges * tol;
+        if(r[0] < -rel_tol[0] || edges[0] + rel_tol[0] < r[0]) {return false;}
+        if(r[1] < -rel_tol[1] || edges[1] + rel_tol[1] < r[1]) {return false;}
+        if(r[2] < -rel_tol[2] || edges[2] + rel_tol[2] < r[2]) {return false;}
         return true;
     }
 
     Real3 restrict_position(Real3 r) const noexcept
     {
-        return modulo(r, edge_lengths_);
+        return pbc_.apply_boundary(r);
     }
     Real3 restrict_direction(Real3 dr) const noexcept
     {
         // Assuming that ...
         //  - dr = r1 - r2
         //  - Both r1 and r2 are inside of the boundary.
-        const auto halfw = edge_lengths_ * 0.5;
-        if     (   dr[0] < -halfw[0]) {dr[0] += edge_lengths_[0];}
-        else if(halfw[0] <=    dr[0]) {dr[0] -= edge_lengths_[0];}
-        if     (   dr[1] < -halfw[1]) {dr[1] += edge_lengths_[1];}
-        else if(halfw[1] <=    dr[1]) {dr[1] -= edge_lengths_[1];}
-        if     (   dr[2] < -halfw[2]) {dr[2] += edge_lengths_[2];}
-        else if(halfw[2] <=    dr[2]) {dr[2] -= edge_lengths_[2];}
+        const auto edges = pbc_.edge_lengths();
+        const auto halfw = edges * 0.5;
+        if     (   dr[0] < -halfw[0]) {dr[0] += edges[0];}
+        else if(halfw[0] <=    dr[0]) {dr[0] -= edges[0];}
+        if     (   dr[1] < -halfw[1]) {dr[1] += edges[1];}
+        else if(halfw[1] <=    dr[1]) {dr[1] -= edges[1];}
+        if     (   dr[2] < -halfw[2]) {dr[2] += edges[2];}
+        else if(halfw[2] <=    dr[2]) {dr[2] -= edges[2];}
         return dr;
     }
 
@@ -1417,7 +1448,7 @@ private:
 
     std::size_t           root_;                // index of the root node.
     Real                  margin_;              // margin of the Box.
-    Real3                 edge_lengths_;        // (Lx, Ly, Lz) of PBC.
+    PeriodicBoundary      pbc_;                 // boundary condition.
     tree_type             tree_;                // vector of nodes.
     container_type        container_;           // vector of Objects.
     key_to_value_map_type rmap_;                // map from ObjectID to index

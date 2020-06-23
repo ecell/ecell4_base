@@ -1,45 +1,52 @@
-#ifndef ECELL4_OBJECT_ID_CONTAINER
-#define ECELL4_OBJECT_ID_CONTAINER
+#ifndef ECELL4_CORE_OBJECT_ID_CONTAINER_HPP
+#define ECELL4_CORE_OBJECT_ID_CONTAINER_HPP
 #include <ecell4/core/type_name_of.hpp>
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/Identifier.hpp>
-#include <ecell4/core/SerialIDGenerator.hpp>
-#include <boost/format.hpp>
 #include <functional>
+#include <unordered_map>
 #include <utility>
 #include <cassert>
 
 namespace ecell4
 {
 
-//! @brief utility container to contain an object (e.g. Particle) with its ID.
-template<typename T_id, typename T_obj>
+//
+// A container that combines map<id, index> and vector<{id, object}>.
+// It does not check collision or any other kind of object dependent tests,
+// but encapsulates relationships between id-idx map and a vector.
+//
+template<typename Tid, typename Tobject>
 class ObjectIDContainer
 {
 public:
-    typedef T_id    identifier_type;
-    typedef T_obj   object_type;
-    typedef ObjectIDContainer<T_id, T_obj> self_type;
-    typedef std::unordered_map<identifier_type, std::size_t>
-            id_index_map_type;
-
-    typedef std::pair<identifier_type, object_type>  value_type;
-    typedef std::vector<value_type>                  container_type;
-    typedef typename container_type::size_type       size_type;
-    typedef typename container_type::difference_type difference_type;
-    typedef typename container_type::iterator        iterator;
-    typedef typename container_type::const_iterator  const_iterator;
+    using identifier_type   = Tid;
+    using object_type       = Tobject;
+    using self_type         = ObjectIDContainer<identifier_type, object_type>;
+    using id_idx_map_type   = std::unordered_map<identifier_type, std::size_t>;
+    using value_type        = std::pair<identifier_type, object_type>;
+    using container_type    = std::vector<value_type>;
+    using size_type         = typename container_type::size_type;
+    using difference_type   = typename container_type::difference_type;
+    using iterator          = typename container_type::iterator;
+    using const_iterator    = typename container_type::const_iterator;
 
 public:
 
+    ObjectIDContainer()  = default;
+    ~ObjectIDContainer() = default;
+    ObjectIDContainer(const ObjectIDContainer&) = default;
+    ObjectIDContainer(ObjectIDContainer&&)      = default;
+    ObjectIDContainer& operator=(const ObjectIDContainer&) = default;
+    ObjectIDContainer& operator=(ObjectIDContainer&&)      = default;
+
     bool update(const identifier_type& id, const object_type& obj)
     {
-        const typename id_index_map_type::iterator found(this->idxmap_.find(id));
+        const auto found(this->idxmap_.find(id));
         if(found == this->idxmap_.end())
         {
-            const size_type idx(this->objects_.size());
-            idxmap_[id] = idx;
-            objects_.push_back(std::make_pair(id, obj));
+            idxmap_[id] = this->objects_.size();
+            objects_.emplace_back(id, obj);
             return true;
         }
         else
@@ -48,67 +55,88 @@ public:
             return false;
         }
     }
+
     void remove(const identifier_type& id)
     {
-        const typename id_index_map_type::iterator found(this->idxmap_.find(id));
+        const auto found(this->idxmap_.find(id));
         if(found == this->idxmap_.end())
         {
-            throw NotFound((boost::format(
-                    "%1%::remove: object(id=%2%) not found") %
-                    (utils::type_name_of<self_type>::value()) %
-                    id).str());
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
+                    "::remove(id=", id, "): object not found");
         }
+
         const size_type idx(found->second), last(objects_.size()-1);
         if(idx != last)
         {
             idxmap_[objects_[last].first] = idx;
-            objects_[idx] = objects_[last];
+            objects_[idx] = std::move(objects_[last]);
         }
         objects_.pop_back();
         idxmap_.erase(id);
+        return;
     }
 
-    bool has(const identifier_type& id) const {return idxmap_.count(id) == 1;}
-    container_type const& list() const throw() {return objects_;}
+    std::pair<identifier_type, object_type> get(const identifier_type& id) const
+    {
+        const auto found(this->idxmap_.find(id));
+        if(found == this->idxmap_.end())
+        {
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
+                    "::get(id=", id, "): object not found");
+        }
+        return objects_[found->second];
+    }
 
-    std::size_t size() const throw() {return objects_.size();}
-    bool       empty() const throw() {return objects_.empty();}
+    bool has(const identifier_type& id) const {return idxmap_.count(id) != 0;}
+    container_type const& list() const noexcept {return objects_;}
+
+    void clear()
+    {
+        idxmap_ .clear();
+        objects_.clear();
+        return;
+    }
+
+    std::size_t size() const noexcept {return objects_.size();}
+    bool       empty() const noexcept {return objects_.empty();}
 
     bool diagnosis() const
     {
-        for(typename id_index_map_type::const_iterator
-                i(idxmap_.begin()), e(idxmap_.end()); i!=e; ++i)
+        for(const auto& item : this->idxmap_)
         {
+            const auto& id  = item.first;
+            const auto& idx = item.second;
+
             identifier_type id_by_cont;
             try
             {
-                id_by_cont = objects_.at(i->second);
+                id_by_cont = objects_.at(idx).first;
             }
             catch(std::out_of_range& oor)
             {
-                throw std::runtime_error((boost::format(
-                    "%1%::diagnosis: object(id=%2%) not found in the container") %
-                    (utils::type_name_of<self_type>::value()) %
-                    i->first).str());
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
+                    "::diagnosis: object(id=", id, ") not found in the container");
             }
-            if(id_by_cont != i->first)
+            if(id_by_cont != id)
             {
-                 throw std::runtime_error((boost::format(
-                    "%1%::diagnosis: object(id=%2%) index invalid: "
-                    "index %3% has different id %4%.") %
-                    (utils::type_name_of<self_type>::value()) %
-                    i->first % i->second % id_by_cont).str());
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
+                    "::diagnosis: object(id=", id, ") index is invalid: ", idx,
+                    "-th object has id ", id_by_cont);
             }
         }
-
-        for(std::size_t i=0, e(this->objects_.size()); i<e; ++i)
+        for(std::size_t i=0; i<objects_.size(); ++i)
         {
-            if(this->idxmap_.count(this->objects_.at(i).first) == 0)
+            const auto& id = objects_.at(i).first;
+            if(this->idxmap_.count(id) == 0)
             {
-                throw std::runtime_error((boost::format(
-                    "%1%::diagnosis: object(id=%2%) not found in the map") %
-                    (utils::type_name_of<self_type>::value()) %
-                    this->objects_.at(i).first).str());
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
+                    "::diagnosis: object(id=", id, ") not found in idxmap");
+            }
+            if(this->idxmap_.at(id) != i)
+            {
+                throw_exception<IllegalState>(utils::type_name_of<self_type>::value(),
+                    "::diagnosis: object(id=", id, ") has different idx (", idxmap_.at(id),
+                    ") in idxmap");
             }
         }
         return true;
@@ -116,52 +144,49 @@ public:
 
     value_type& at(const identifier_type& id)
     {
-        typename id_index_map_type::const_iterator found(idxmap_.find(id));
+        const auto found(idxmap_.find(id));
         if(found == idxmap_.end())
         {
-            throw std::out_of_range((
-                boost::format("%1%::at: no element with id (%2%)") %
-                (utils::type_name_of<self_type>::value()) % id).str());
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
+                    "::at(id=", id, "): object not found");
         }
-        return objects_[found->second];
+        return objects_.at(found->second);
     }
     value_type const& at(const identifier_type& id) const
     {
-        // C++98 std::map does not have std::map::at() const.
-        typename id_index_map_type::const_iterator found(idxmap_.find(id));
+        const auto found(idxmap_.find(id));
         if(found == idxmap_.end())
         {
-            throw std::out_of_range((
-                boost::format("%1%::at const: no element with id (%2%)") %
-                (utils::type_name_of<self_type>::value()) % id).str());
+            throw_exception<NotFound>(utils::type_name_of<self_type>::value(),
+                    "::at(id=", id, "): object not found");
         }
         return objects_.at(found->second);
     }
 
     value_type& operator[](const identifier_type& id)
     {
-        return objects_[idxmap_.at(id)];
+        return objects_[idxmap_[id]];
     }
     value_type const& operator[](const identifier_type& id) const
     {
-        return objects_[idxmap_.at(id)];
+        return objects_[idxmap_[id]];
     }
 
-    value_type&       front()       throw() {return objects_.front();}
-    value_type const& front() const throw() {return objects_.front();}
-    value_type&       back()        throw() {return objects_.back();}
-    value_type const& back()  const throw() {return objects_.back();}
+    value_type const& front() const noexcept {return objects_.front();}
+    value_type&       front()       noexcept {return objects_.front();}
+    value_type const& back()  const noexcept {return objects_.back();}
+    value_type&       back()        noexcept {return objects_.back();}
 
-    iterator       begin()        throw() {return objects_.begin();}
-    iterator       end()          throw() {return objects_.end();}
-    const_iterator begin()  const throw() {return objects_.begin();}
-    const_iterator end()    const throw() {return objects_.end();}
-    const_iterator cbegin() const throw() {return objects_.begin();}
-    const_iterator cend()   const throw() {return objects_.end();}
+    iterator       begin()        noexcept {return objects_.begin();}
+    iterator       end()          noexcept {return objects_.end();}
+    const_iterator begin()  const noexcept {return objects_.begin();}
+    const_iterator end()    const noexcept {return objects_.end();}
+    const_iterator cbegin() const noexcept {return objects_.begin();}
+    const_iterator cend()   const noexcept {return objects_.end();}
 
 private:
 
-    id_index_map_type idxmap_;
+    id_idx_map_type   idxmap_;
     container_type    objects_;
 };
 } // ecell4

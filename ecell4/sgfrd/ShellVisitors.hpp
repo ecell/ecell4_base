@@ -62,7 +62,6 @@ struct inside_checker : boost::static_visitor<bool>
 {
     typedef minimal_eval_or eval_manner;
     typedef ecell4::Polygon polygon_type;
-    typedef polygon_type::FaceID FaceID;
 
 
     inside_checker(Real3 pos, Real rad, FaceID f, polygon_type const& p)

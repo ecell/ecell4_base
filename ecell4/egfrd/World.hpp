@@ -927,11 +927,10 @@ protected:
     //     Periodic Boundary Condition, it applies PBC and collision in order.
     position_type
     apply_structure_rec(const position_type& pos, const position_type& disp,
-            const boost::optional<typename Polygon::FaceID> ignore_face,
+            const boost::optional<FaceID> ignore_face,
             const boost::optional<BoundaryAxis> ignore_boundary) const
     {
         assert(this->polygon_);
-        typedef Polygon::FaceID FaceID;
 
         const auto& edge = edge_lengths();
 

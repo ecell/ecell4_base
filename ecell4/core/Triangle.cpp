@@ -1,4 +1,5 @@
 #include "Triangle.hpp"
+#include <boost/container/static_vector.hpp>
 
 namespace ecell4
 {
@@ -194,6 +195,128 @@ Real3 closest_point_on_Triangle(const Real3& pos, const std::array<Real3, 3>& ve
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri)
 {
     return length_sq(closest_point_on_Triangle(pos, tri.vertices()) - pos);
+}
+
+// ----------------------------------------------------------------------------
+// considering boundary condition
+
+Real minmaxdist_sq(const Real3& lw, const Real3& up, const Real3& p) noexcept
+{
+    const auto sq = [](const Real x) noexcept -> Real {return x * x;};
+
+    Real3 rm_sq(sq(lw[0] - p[0]), sq(lw[1] - p[1]), sq(lw[2] - p[2]));
+    Real3 rM_sq(sq(up[0] - p[0]), sq(up[1] - p[1]), sq(up[2] - p[2]));
+
+    using std::swap;
+    if((up[0] + lw[0]) * 0.5 < p[0])
+    {
+        swap(rm_sq[0], rM_sq[0]);
+    }
+    if((up[1] + lw[1]) * 0.5 < p[1])
+    {
+        swap(rm_sq[1], rM_sq[1]);
+    }
+    if((up[2] + lw[2]) * 0.5 < p[2])
+    {
+        swap(rm_sq[2], rM_sq[2]);
+    }
+
+    const Real dx = rm_sq[0] + rM_sq[1] + rM_sq[2];
+    const Real dy = rM_sq[0] + rm_sq[1] + rM_sq[2];
+    const Real dz = rM_sq[0] + rM_sq[1] + rm_sq[2];
+    return std::min(dx, std::min(dy, dz));
+}
+
+Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, const Boundary* b)
+{
+    const auto& vtxs = tri.vertices();
+
+    // first, calculate the AABB of triangle
+    constexpr Real inf = std::numeric_limits<Real>::infinity();
+    Real3 lower, upper;
+    lower[0] = std::min(vtxs[0][0], std::min(vtxs[1][0], vtxs[2][0]));
+    lower[1] = std::min(vtxs[0][1], std::min(vtxs[1][1], vtxs[2][1]));
+    lower[2] = std::min(vtxs[0][2], std::min(vtxs[1][2], vtxs[2][2]));
+    upper[0] = std::max(vtxs[0][0], std::max(vtxs[1][0], vtxs[2][0]));
+    upper[1] = std::max(vtxs[0][1], std::max(vtxs[1][1], vtxs[2][1]));
+    upper[2] = std::max(vtxs[0][2], std::max(vtxs[1][2], vtxs[2][2]));
+
+    const Real3 center = (lower + upper) * 0.5;
+    const Real3 width  = (upper - lower) * 0.5;
+    const Real3 edge   = b->edge_lengths();
+
+    assert(0.0 <= width[0] && 0.0 <= width[1] && 0.0 <= width[2]);
+
+    // transpose `pos` according to the center of the AABB
+    const Real3 p1 = b->periodic_transpose(pos, center);
+    const Real3 d  = center - p1;
+
+    // the maximum min-dist between point and point in an AABB
+    const Real  minmaxdist = std::sqrt(minmaxdist_sq(lower, upper, p1));
+
+    // expand the AABB of Triangle by minmaxdist
+    lower[0] -= minmaxdist;
+    lower[1] -= minmaxdist;
+    lower[2] -= minmaxdist;
+
+    upper[0] += minmaxdist;
+    upper[1] += minmaxdist;
+    upper[2] += minmaxdist;
+
+    //      :              :) minmaxdist
+    //      :    AABB      :).--.
+    // .....+--------------+.....
+    //      |   center     |
+    //    <---d--->x<--w-->|
+    //   o--+--------------+-->o  periodic transpose
+    // .....+--------------+.....
+    //      :              :
+    //      :              :
+
+    boost::container::static_vector<Real, 27> dists{
+        length_sq(closest_point_on_Triangle(p1, vtxs) - p1)
+    };
+
+    // check all the possible transpose and find the minimum distance
+    for(std::int32_t i_x=-1; i_x<=1; ++i_x)
+    {
+        const Real p_x = p1[0] + i_x * edge[0];
+        if(p_x < lower[0] || upper[0] < p_x) {continue;}
+
+        for(std::int32_t i_y=-1; i_y<=1; ++i_y)
+        {
+            const Real p_y = p1[1] + i_y * edge[1];
+            if(p_y < lower[1] || upper[1] < p_y) {continue;}
+
+            for(std::int32_t i_z=-1; i_z<=1; ++i_z)
+            {
+                const Real p_z = p1[2] + i_z * edge[2];
+                if(p_z < lower[2] || upper[2] < p_z) {continue;}
+                if(i_x == 0 && i_y == 0 && i_z == 0) {continue;}
+
+                dists.push_back(
+                    length_sq(closest_point_on_Triangle(p1, vtxs) - p1));
+            }
+        }
+    }
+    return *std::min_element(dists.begin(), dists.end());
+}
+
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const Boundary& b)
+{
+    return distance_sq_point_Triangle_impl(pos, tri, std::addressof(b));
+}
+
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const std::unique_ptr<Boundary>& b)
+{
+    return distance_sq_point_Triangle_impl(pos, tri, b.get());
+}
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const std::shared_ptr<Boundary>& b)
+{
+    return distance_sq_point_Triangle_impl(pos, tri, b.get());
 }
 
 }// ecell4

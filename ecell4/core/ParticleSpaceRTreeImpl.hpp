@@ -258,13 +258,13 @@ protected:
         // If it does not matches, return boost::none.
         // If it matches, return pairof(pidp, distance).
         boost::optional<std::pair<value_type, Real>>
-        operator()(const value_type& pidp, const Real3& edges) const noexcept
+        operator()(const value_type& pidp, const PeriodicBoundary& pbc) const noexcept
         {
             if(ignores(pidp)){return boost::none;}
 
             // use the same algorithm as the ParticleSpaceVectorImpl.
-            const auto rhs = this->periodic_transpose(pidp.second.position(),
-                                                      this->center, edges);
+            const auto rhs = pbc.periodic_transpose(pidp.second.position(),
+                                                    this->center);
             const auto dist = length(this->center - rhs) - pidp.second.radius();
             if(dist <= this->radius)
             {
@@ -273,19 +273,17 @@ protected:
             return boost::none;
         }
 
-        bool operator()(const AABB& box, const Real3& edges) const noexcept
+        bool operator()(const AABB& box, const PeriodicBoundary& pbc) const noexcept
         {
-            return this->distance_sq(box, this->center, edges) <=
+            return this->distance_sq(box, this->center, pbc) <=
                    this->radius * this->radius;
         }
 
         // -------------------------------------------------------------------
-        // geometry stuffs
-
-        // AABB-sphere intersection query under the PBC
-        Real distance_sq(const AABB& box, Real3 pos, const Real3& edge_lengths) const noexcept
+        // AABB-sphere distance under the PBC
+        Real distance_sq(const AABB& box, Real3 pos, const PeriodicBoundary& pbc) const noexcept
         {
-            pos = periodic_transpose(pos, (box.upper() + box.lower()) * 0.5, edge_lengths);
+            pos = pbc.periodic_transpose(pos, (box.upper() + box.lower()) * 0.5);
 
             Real dist_sq = 0;
             for(std::size_t i=0; i<3; ++i)
@@ -301,28 +299,6 @@ protected:
                 }
             }
             return dist_sq;
-        }
-
-        // transpose a position based on the periodic boundary condition.
-        Real3 periodic_transpose(
-            const Real3& pos1, const Real3& pos2, const Real3& edges) const
-        {
-            Real3 retval(pos1);
-            for(std::size_t dim(0); dim < 3; ++dim)
-            {
-                const Real edge_length(edges[dim]);
-                const Real diff(pos2[dim] - pos1[dim]), half(edge_length * 0.5);
-
-                if (half < diff)
-                {
-                    retval[dim] += edge_length;
-                }
-                else if (diff < -half)
-                {
-                    retval[dim] -= edge_length;
-                }
-            }
-            return retval;
         }
     };
 

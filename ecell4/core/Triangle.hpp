@@ -5,6 +5,7 @@
 #include "geometry.hpp"
 #include "exceptions.hpp"
 #include "TriangleView.hpp"
+#include "BoundaryCondition.hpp"
 
 namespace ecell4
 {
@@ -121,6 +122,32 @@ Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri);
 inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri)
 {
     return std::sqrt(distance_sq_point_Triangle(pos, tri));
+}
+
+// ------------------------------------------------------------------------
+// considering PBC
+
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const Boundary& b);
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const std::unique_ptr<Boundary>& b);
+Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
+                                const std::shared_ptr<Boundary>& b);
+
+inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri,
+                                    const Boundary& b)
+{
+    return std::sqrt(distance_sq_point_Triangle(pos, tri, b));
+}
+inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri,
+                                    const std::unique_ptr<Boundary>& b)
+{
+    return std::sqrt(distance_sq_point_Triangle(pos, tri, b));
+}
+inline Real distance_point_Triangle(const Real3& pos, const Triangle& tri,
+                                    const std::shared_ptr<Boundary>& b)
+{
+    return std::sqrt(distance_sq_point_Triangle(pos, tri, b));
 }
 
 template<typename charT, typename traits>

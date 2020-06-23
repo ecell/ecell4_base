@@ -3,8 +3,8 @@ set(TEST_NAMES
     ReactionRule_test NetworkModel_test NetfreeModel_test
     EventScheduler_test Shape_test SubvolumeSpace_test extras_test
     LatticeSpace_test OffLatticeSpace_test ParticleSpace_test ParticleSpaceRTreeImpl_test
-    Barycentric_test Halfedge_test STLIO_test
-    PeriodicRTree_test
+    Barycentric_test Polygon_test STLIO_test
+    PeriodicRTree_test ObjectIDContainer_test
     )
 
 set(test_library_dependencies)

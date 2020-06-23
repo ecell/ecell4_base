@@ -17,9 +17,6 @@ class ShellContainer
 public:
 
     typedef ::ecell4::Polygon polygon_type;
-    typedef typename polygon_type::FaceID   FaceID;
-    typedef typename polygon_type::EdgeID   EdgeID;
-    typedef typename polygon_type::VertexID VertexID;
 
     typedef ecell4::Circle         circle_type;
     typedef ecell4::ConicalSurface conical_surface_type;
@@ -48,7 +45,7 @@ public:
 public:
 
     ShellContainer(const std::shared_ptr<polygon_type>& poly)
-        : polygon_(poly), face_registrator_(*poly), vertex_registrator_(*poly)
+        : polygon_(poly)
     {}
     ~ShellContainer(){}
 

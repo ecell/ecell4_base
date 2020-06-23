@@ -18,9 +18,9 @@ using ecell4::Real3;
 using ecell4::Triangle;
 using ecell4::RandomNumberGenerator;
 using ecell4::GSLRandomNumberGenerator;
-typedef ecell4::Polygon::FaceID   FaceID;
-typedef ecell4::Polygon::EdgeID   EdgeID;
-typedef ecell4::Polygon::VertexID VertexID;
+typedef ecell4::FaceID   FaceID;
+typedef ecell4::EdgeID   EdgeID;
+typedef ecell4::VertexID VertexID;
 
 bool check_equal(const Real3& lhs, const Real3& rhs, const Real tol)
 {
@@ -1645,4 +1645,75 @@ BOOST_AUTO_TEST_CASE(Polygon_hill_construction_from_triangles)
             }
         }
     }
+}
+
+// ============================================================================
+//
+// | |\                                        Z
+// | |_\                            p4 (5,2,28)
+// +--+-----------+--------------+             |\`.
+// |  *           |              |             | \ `.
+// |              |              |             |  \  `.
+// | |\           | |\           |    p1       |   \   `.  p3 (6,3,25)
+// | |_\       *--+>|_\       *  |    (5,2,25) `-.  \   .` Y
+// +--------------+--------------+                `-.\.'
+// 0             20                        p2 (6,2,25) X
+//
+
+BOOST_AUTO_TEST_CASE(Polygon_list_faces_within_radius)
+{
+    const Real3 edges(10.0, 20.0, 30.0);
+
+    const Real3 p1(5.0, 2.0, 25.0);
+    const Real3 p2(6.0, 2.0, 25.0);
+    const Real3 p3(5.0, 3.0, 25.0);
+    const Real3 p4(5.0, 2.0, 28.0);
+
+    std::vector<Triangle> triangles;
+    triangles.push_back(Triangle(p1, p2, p4)); // f1
+    triangles.push_back(Triangle(p1, p4, p3)); // f2
+    triangles.push_back(Triangle(p1, p3, p2)); // f3
+    triangles.push_back(Triangle(p2, p3, p4)); // f4
+
+    ecell4::Polygon poly(edges, triangles);
+
+    const VertexID v1 = *poly.find_vertex(p1);
+    const VertexID v2 = *poly.find_vertex(p2);
+    const VertexID v3 = *poly.find_vertex(p3);
+    const VertexID v4 = *poly.find_vertex(p4);
+
+    const FaceID f1 = *(poly.find_face(v1, v2, v3));
+    const FaceID f2 = *(poly.find_face(v1, v2, v4));
+    const FaceID f3 = *(poly.find_face(v1, v3, v4));
+    const FaceID f4 = *(poly.find_face(v2, v3, v4));
+
+    const auto check_x = poly.list_faces_within_radius(Real3(4.0, 2.0, 25.0), 1.1);
+    bool find_x = false;
+    for(const auto& found_x : check_x)
+    {
+        if(found_x.first.first == f2) {find_x = true;}
+    }
+    BOOST_CHECK(find_x);
+
+    const auto check_y = poly.list_faces_within_radius(Real3(5.0, 19.0, 25.0), 3.1);
+    bool find_y = false;
+    for(const auto& found_y : check_y)
+    {
+        if(found_y.first.first == f1) {find_y = true;}
+    }
+    BOOST_CHECK(find_y);
+
+    const auto check_z = poly.list_faces_within_radius(Real3(5.0, 2.0, 0.0), 2.1);
+    bool find_z_2 = false;
+    bool find_z_3 = false;
+    bool find_z_4 = false;
+    for(const auto& found_z : check_z)
+    {
+        if(found_z.first.first == f2) {find_z_2 = true;}
+        if(found_z.first.first == f3) {find_z_3 = true;}
+        if(found_z.first.first == f4) {find_z_4 = true;}
+    }
+    BOOST_CHECK(find_z_2);
+    BOOST_CHECK(find_z_3);
+    BOOST_CHECK(find_z_4);
 }

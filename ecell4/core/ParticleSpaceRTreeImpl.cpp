@@ -9,8 +9,8 @@ void ParticleSpaceRTreeImpl::reset(const Real3& edge_lengths)
     this->t_ = 0.0;
     this->particle_pool_.clear();
     this->rtree_.clear();
-    this->rtree_.edge_lengths() = edge_lengths;
-    return;
+    this->rtree_.reset_boundary(edge_lengths);
+    return ;
 }
 
 std::vector<Species> ParticleSpaceRTreeImpl::list_species() const

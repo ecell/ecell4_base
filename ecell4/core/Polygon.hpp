@@ -11,6 +11,9 @@
 #include <ecell4/core/geometry.hpp>
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
+#include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/ObjectIDContainer.hpp>
+#include <ecell4/core/PeriodicRTree.hpp>
 
 #ifdef WITH_HDF5
 #include "PolygonHDF5Writer.hpp"
@@ -27,6 +30,98 @@
 namespace ecell4
 {
 
+struct FaceID:
+        public Identifier<FaceID, unsigned long long, int>
+{
+    typedef Identifier<FaceID, unsigned long long, int> base_type;
+
+    FaceID(const value_type& value = value_type(0, 0))
+        : base_type(value)
+    {}
+};
+struct EdgeID:
+        public Identifier<EdgeID, unsigned long long, int>
+{
+    typedef Identifier<EdgeID, unsigned long long, int> base_type;
+
+    EdgeID(const value_type& value = value_type(0, 0))
+        : base_type(value)
+    {}
+};
+struct VertexID:
+        public Identifier<VertexID, unsigned long long, int>
+{
+    typedef Identifier<VertexID, unsigned long long, int> base_type;
+
+    VertexID(const value_type& value = value_type(0, 0))
+        : base_type(value)
+    {}
+};
+
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const FaceID& fid)
+{
+    os << "FID(" << fid().first << ':' << fid().second << ")";
+    return os;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const EdgeID& eid)
+{
+    os << "EID(" << eid().first << ':' << eid().second << ")";
+    return os;
+}
+
+template<typename charT, typename traits>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os, const VertexID& vid)
+{
+    os << "VID(" << vid().first << ':' << vid().second << ")";
+    return os;
+}
+
+} // ecell4
+
+namespace std {
+
+template<>
+struct hash<ecell4::FaceID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::FaceID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+template<>
+struct hash<ecell4::EdgeID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::EdgeID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+template<>
+struct hash<ecell4::VertexID>
+{
+    typedef std::size_t result_type;
+    typedef ecell4::VertexID argument_type;
+    result_type operator()(const argument_type& val) const
+    {
+        return static_cast<std::size_t>(val().first ^ val().second);
+    }
+};
+} // std
+
+namespace ecell4
+{
+
 // Static Polygon. once made, the shape never change.
 // (Face|Edge|Vertex)ID are just std::size_t.
 // Any hole or duplicated vertex will be treated as invalid structure.
@@ -36,11 +131,6 @@ class Polygon : public Shape
 
     static const Real absolute_tolerance;
     static const Real relative_tolerance;
-
-    // (strong|opaque) typedef
-    enum class FaceID   : std::size_t {};
-    enum class EdgeID   : std::size_t {};
-    enum class VertexID : std::size_t {};
 
     struct vertex_data
     {
@@ -107,15 +197,34 @@ class Polygon : public Shape
         //      increasing the apex angle between the vertex.
     };
 
-    typedef std::vector<vertex_data> vertex_container_type;
-    typedef std::vector<  face_data>   face_container_type;
-    typedef std::vector<  edge_data>   edge_container_type;
+    struct FaceAABBGetter
+    {
+        AABB operator()(const face_data& f, const Real margin) const noexcept
+        {
+            const auto& v1 = f.triangle.vertices()[0];
+            const auto& v2 = f.triangle.vertices()[1];
+            const auto& v3 = f.triangle.vertices()[2];
+            const Real3 upper(std::max(std::max(v1[0], v2[0]), v3[0]),
+                              std::max(std::max(v1[1], v2[1]), v3[1]),
+                              std::max(std::max(v1[2], v2[2]), v3[2]));
+            const Real3 lower(std::min(std::min(v1[0], v2[0]), v3[0]),
+                              std::min(std::min(v1[1], v2[1]), v3[1]),
+                              std::min(std::min(v1[2], v2[2]), v3[2]));
+
+            const auto padding = (upper - lower) * (margin * 0.5);
+            return AABB(lower - padding, upper + padding);
+        }
+    };
+    typedef PeriodicRTree<FaceID, face_data, FaceAABBGetter> face_container_type;
+
+    typedef ObjectIDContainer<VertexID, vertex_data> vertex_container_type;
+    typedef ObjectIDContainer<  EdgeID,   edge_data>   edge_container_type;
 
   public:
 
     Polygon(const Real3&    edge_lengths =    Real3(1, 1, 1),
             const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : total_area_(0.0), edge_length_(edge_lengths)
+        : total_area_(0.0), edge_length_(edge_lengths), faces_(edge_lengths, 0.0)
     {
         const std::size_t x_size = matrix_sizes[0];
         const std::size_t y_size = matrix_sizes[1];
@@ -153,7 +262,7 @@ class Polygon : public Shape
         this->assign(ts);
     }
     Polygon(const Real3& edge_length, const std::vector<Triangle>& ts)
-        : total_area_(0.0), edge_length_(edge_length)
+        : total_area_(0.0), edge_length_(edge_length), faces_(edge_length, 0.0)
     {
         this->assign(ts);
     }
@@ -413,13 +522,13 @@ class Polygon : public Shape
         for(vertex_container_type::const_iterator
                 i(this->vertices_.begin()), e(this->vertices_.end()); i!=e; ++i)
         {
-            lower[0] = std::min(lower[0], i->position[0]);
-            lower[1] = std::min(lower[1], i->position[1]);
-            lower[2] = std::min(lower[2], i->position[2]);
+            lower[0] = std::min(lower[0], i->second.position[0]);
+            lower[1] = std::min(lower[1], i->second.position[1]);
+            lower[2] = std::min(lower[2], i->second.position[2]);
 
-            upper[0] = std::max(upper[0], i->position[0]);
-            upper[1] = std::max(upper[1], i->position[1]);
-            upper[2] = std::max(upper[2], i->position[2]);
+            upper[0] = std::max(upper[0], i->second.position[0]);
+            upper[1] = std::max(upper[1], i->second.position[1]);
+            upper[2] = std::max(upper[2], i->second.position[2]);
         }
         return;
     }
@@ -439,21 +548,22 @@ class Polygon : public Shape
     {
         Real draw_triangle = rng->uniform(0.0, total_area_);
 
-        for(std::size_t i=0; i<this->faces_.size(); ++i)
+        for(const auto& fidf : this->faces_)
         {
-            const face_data& fd = this->faces_[i];
+            const face_data& fd = fidf.second;
 
             draw_triangle -= fd.triangle.area();
             if(draw_triangle <= 0.0)
             {
-                fid = FaceID(i);
+                fid = fidf.first;
                 return fd.triangle.draw_position(rng);
             }
         }
+
         // if draw_triangle was positive throughout the loop,
         // maybe because of numerical error, put it on the last face.
-        fid = FaceID(faces_.size() - 1);
-        return faces_.back().triangle.draw_position(rng);
+        fid = this->faces_.back().first;
+        return faces_.back().second.triangle.draw_position(rng);
     }
 
     // XXX This function considers `fid`.
@@ -477,7 +587,7 @@ class Polygon : public Shape
         retval.reserve(this->faces_.size());
         for(const auto& f : this->faces_)
         {
-            retval.push_back(f.triangle);
+            retval.push_back(f.second.triangle);
         }
         return retval;
     }
@@ -485,12 +595,11 @@ class Polygon : public Shape
 #ifdef WITH_HDF5
     void save_hdf5(H5::Group* root) const
     {
-        save_triangles_polygon(*this, root);
+        save_polygon_hdf5(*this, root);
     }
-
     void load_hdf5(const H5::Group& root)
     {
-        load_triangles_polygon(root, this);
+        load_polygon_hdf5(root, this);
     }
 #endif
 
@@ -504,6 +613,7 @@ class Polygon : public Shape
         return modulo(pos, edge_length_);
     }
 
+    // transpose pos1 relative to pos2
     Real3 periodic_transpose(Real3 pos1, const Real3& pos2) const
     {
         const Real3 dpos = pos2 - pos1;
@@ -539,27 +649,27 @@ class Polygon : public Shape
     std::vector<VertexID> list_vertex_ids() const
     {
         std::vector<VertexID> retval; retval.reserve(this->vertex_size());
-        for(std::size_t i=0; i<this->vertex_size(); ++i)
+        for(const auto& vidv : this->vertices_)
         {
-            retval.push_back(VertexID(i));
+            retval.push_back(vidv.first);
         }
         return retval;
     }
     std::vector<FaceID> list_face_ids() const
     {
         std::vector<FaceID> retval; retval.reserve(this->face_size());
-        for(std::size_t i=0; i<this->face_size(); ++i)
+        for(const auto& fidf : this->faces_)
         {
-            retval.push_back(FaceID(i));
+            retval.push_back(fidf.first);
         }
         return retval;
     }
     std::vector<EdgeID> list_edge_ids() const
     {
         std::vector<EdgeID> retval; retval.reserve(this->edge_size());
-        for(std::size_t i=0; i<this->edge_size(); ++i)
+        for(const auto& eide : this->edges_)
         {
-            retval.push_back(EdgeID(i));
+            retval.push_back(eide.first);
         }
         return retval;
     }
@@ -570,15 +680,15 @@ class Polygon : public Shape
         const Real tol_rel2 = relative_tolerance * relative_tolerance;
         const Real tol_abs2 = absolute_tolerance * absolute_tolerance;
 
-        for(std::size_t i=0; i<vertices_.size(); ++i)
+        for(const auto& vidv : this->vertices_)
         {
-            const vertex_data& vd = vertices_[i];
+            const vertex_data& vd = vidv.second;
             const Real dist_sq = length_sq(
                 this->periodic_transpose(vd.position, pos) - pos);
 
             if(dist_sq < tol_abs2 || dist_sq < length_sq(pos) * tol_rel2)
             {
-                return VertexID(i);
+                return vidv.first;
             }
         }
         return boost::none;
@@ -625,53 +735,114 @@ class Polygon : public Shape
 
     vertex_data const& vertex_at(const VertexID& vid) const
     {
-        return this->vertices_.at(static_cast<std::size_t>(vid));
+        return this->vertices_.at(vid).second;
     }
     face_data const& face_at(const FaceID& fid) const
     {
-        return this->faces_.at(static_cast<std::size_t>(fid));
+        return this->faces_.at(fid).second;
     }
     edge_data const& edge_at(const EdgeID& eid) const
     {
-        return this->edges_.at(static_cast<std::size_t>(eid));
+        return this->edges_.at(eid).second;
     }
 
     vertex_data& vertex_at(const VertexID& vid)
     {
-        return this->vertices_.at(static_cast<std::size_t>(vid));
+        return this->vertices_.at(vid).second;
     }
     face_data& face_at(const FaceID& fid)
     {
-        return this->faces_.at(static_cast<std::size_t>(fid));
+        return this->faces_.at(fid).second;
     }
     edge_data& edge_at(const EdgeID& eid)
     {
-        return this->edges_.at(static_cast<std::size_t>(eid));
+        return this->edges_.at(eid).second;
+    }
+
+    // -----------------------------------------------------------------------
+    // list_faces_within_radius_impl and its query
+
+    template<typename Filter>
+    struct IntersectionQuery
+    {
+        Real3  center;
+        Real   radius;
+        Filter ignores;
+
+        IntersectionQuery(const Real3& c, const Real r, Filter f) noexcept
+            : center(c), radius(r), ignores(std::move(f))
+        {}
+        IntersectionQuery(const IntersectionQuery&) = default;
+        IntersectionQuery(IntersectionQuery&&)      = default;
+        IntersectionQuery& operator=(const IntersectionQuery&) = default;
+        IntersectionQuery& operator=(IntersectionQuery&&)      = default;
+        ~IntersectionQuery() = default;
+
+        // If it does not matches, return boost::none.
+        // If it matches, return pairof(pidp, distance).
+        boost::optional<std::pair<std::pair<FaceID, Triangle>, Real>>
+        operator()(const std::pair<FaceID, face_data>& fidp, const PeriodicBoundary& pbc) const noexcept
+        {
+            if(ignores(fidp.first)){return boost::none;}
+
+            const auto dist_sq = distance_sq_point_Triangle(
+                    center, fidp.second.triangle, pbc);
+
+            if(dist_sq <= this->radius * this->radius)
+            {
+                return std::make_pair(
+                        std::make_pair(fidp.first, fidp.second.triangle),
+                        std::sqrt(dist_sq));
+            }
+            return boost::none;
+        }
+
+        bool operator()(const AABB& box, const PeriodicBoundary& pbc) const noexcept
+        {
+            return this->distance_sq(box, this->center, pbc) <=
+                   this->radius * this->radius;
+        }
+
+        // -------------------------------------------------------------------
+        // AABB-sphere distance calculation under the PBC
+        Real distance_sq(const AABB& box, Real3 pos, const PeriodicBoundary& pbc) const noexcept
+        {
+            pos = pbc.periodic_transpose(pos, (box.upper() + box.lower()) * 0.5);
+
+            Real dist_sq = 0;
+            for(std::size_t i=0; i<3; ++i)
+            {
+                const auto v = pos[i];
+                if(v < box.lower()[i])
+                {
+                    dist_sq += (v - box.lower()[i]) * (v - box.lower()[i]);
+                }
+                else if(box.upper()[i] < v)
+                {
+                    dist_sq += (v - box.upper()[i]) * (v - box.upper()[i]);
+                }
+            }
+            return dist_sq;
+        }
+    };
+    template<typename Filter>
+    static IntersectionQuery<Filter> make_intersection_query(
+            const Real3& c, const Real r, Filter&& f)
+    {
+        return IntersectionQuery<Filter>(c, r, std::forward<Filter>(f));
     }
 
     template<typename Filter>
     std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
     list_faces_within_radius_impl(
-            const Real3& pos, const Real& radius, Filter filter) const
+            const Real3& pos, const Real& radius, Filter&& filter) const
     {
         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
 
-        const Real radius_sq = radius * radius;
-        for(std::size_t i=0; i<faces_.size(); ++i)
-        {
-            const FaceID fid = static_cast<FaceID>(i);
-            if(filter(fid))
-            {
-                continue;
-            }
+        this->faces_.query(make_intersection_query(
+                    pos, radius, std::forward<Filter>(filter)
+                ), std::back_inserter(retval));
 
-            const Triangle& tri = faces_[i].triangle;
-            const Real dist_sq  = distance_sq_point_Triangle(pos, tri);
-            if(dist_sq <= radius_sq)
-            {
-                retval.emplace_back(std::make_pair(fid, tri), std::sqrt(dist_sq));
-            }
-        }
         std::sort(retval.begin(), retval.end(),
             utils::pair_second_element_comparator<std::pair<FaceID, Triangle>, Real>{});
 
@@ -683,34 +854,14 @@ class Polygon : public Shape
     Real  total_area_;
     Real3 edge_length_; // boundary({0,0,0}, {edge_length})
 
+    SerialIDGenerator<VertexID> vertex_idgen_;
+    SerialIDGenerator<FaceID>   face_idgen_;
+    SerialIDGenerator<EdgeID>   edge_idgen_;
+
     vertex_container_type vertices_;
     face_container_type   faces_;
     edge_container_type   edges_;
 };
-
-template<typename charT, typename traits>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const Polygon::FaceID& fid)
-{
-    os << "FID(" << static_cast<std::size_t>(fid) << ")";
-    return os;
-}
-
-template<typename charT, typename traits>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const Polygon::EdgeID& eid)
-{
-    os << "EID(" << static_cast<std::size_t>(eid) << ")";
-    return os;
-}
-
-template<typename charT, typename traits>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const Polygon::VertexID& vid)
-{
-    os << "VID(" << static_cast<std::size_t>(vid) << ")";
-    return os;
-}
 
 /********************** free functions to use a Polygon **********************/
 
@@ -760,24 +911,24 @@ inline Real3 direction(const Polygon& p,
     return p.direction(p1, p2);
 }
 
-inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp)
+inline std::pair<Real3, FaceID> travel(const Polygon& p,
+        const std::pair<Real3, FaceID>& pos, const Real3& disp)
 {
     return p.travel(pos, disp);
 }
 
-inline std::pair<Real3, Polygon::FaceID> travel(const Polygon& p,
-        const std::pair<Real3, Polygon::FaceID>& pos, const Real3& disp,
+inline std::pair<Real3, FaceID> travel(const Polygon& p,
+        const std::pair<Real3, FaceID>& pos, const Real3& disp,
         const std::size_t edge_restraint)
 {
     return p.travel(pos, disp, edge_restraint);
 }
 
 // for sGFRD
-inline std::pair<Real3, Polygon::FaceID>
+inline std::pair<Real3, FaceID>
 roll(const Polygon& poly,
-     const std::pair<Real3, Polygon::FaceID>& pos,
-     const Polygon::VertexID vid, const Real r, const Real theta_)
+     const std::pair<Real3, FaceID>& pos,
+     const VertexID vid, const Real r, const Real theta_)
 {
     const Real3 vpos = poly.periodic_transpose(poly.position_at(vid), pos.first);
     if(theta_ == 0.0)
@@ -791,9 +942,6 @@ roll(const Polygon& poly,
 
     const Real apex_angle = poly.apex_angle_at(vid);
     assert(std::abs(theta_) < apex_angle);
-
-    typedef Polygon::FaceID FaceID;
-    typedef Polygon::EdgeID EdgeID;
 
     std::vector<std::pair<EdgeID, Real> > const& outedges =
         poly.outgoing_edge_and_angles(vid);
@@ -857,40 +1005,16 @@ roll(const Polygon& poly,
 }
 
 } // polygon
+
+// for error message generation in PeriodicRTree
+template<typename charT, typename traitsT>
+std::basic_ostream<charT, traitsT>&
+operator<<(std::basic_ostream<charT, traitsT>& os, const Polygon::face_data& fd)
+{
+    os << fd.triangle;
+    return os;
+}
+
+
 } // ecell4
-
-namespace std {
-
-template<>
-struct hash<ecell4::Polygon::FaceID>
-{
-    typedef std::size_t result_type;
-    typedef ecell4::Polygon::FaceID argument_type;
-    result_type operator()(const argument_type& val) const
-    {
-        return static_cast<std::size_t>(val);
-    }
-};
-template<>
-struct hash<ecell4::Polygon::EdgeID>
-{
-    typedef std::size_t result_type;
-    typedef ecell4::Polygon::EdgeID argument_type;
-    result_type operator()(const argument_type& val) const
-    {
-        return static_cast<std::size_t>(val);
-    }
-};
-template<>
-struct hash<ecell4::Polygon::VertexID>
-{
-    typedef std::size_t result_type;
-    typedef ecell4::Polygon::VertexID argument_type;
-    result_type operator()(const argument_type& val) const
-    {
-        return static_cast<std::size_t>(val);
-    }
-};
-} // std
-
 #endif// ECELL4_POLYGON

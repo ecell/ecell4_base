@@ -168,7 +168,7 @@ int main(int argc, char **argv)
                     input["polygon"], ecell4::STLFormat::Ascii))
         );
 
-    const std::vector<polygon_type::FaceID> fids = polygon->list_face_ids();
+    const std::vector<ecell4::FaceID> fids = polygon->list_face_ids();
 
     std::shared_ptr<ecell4::NetworkModel> model(new ecell4::NetworkModel());
 
@@ -211,8 +211,8 @@ int main(int argc, char **argv)
     const ecell4::Real distA_safety = RA * safety * std::sqrt(0.5);
     const ecell4::Real distB_safety = RB * safety * std::sqrt(0.5);
 
-    polygon_type::FaceID fid_A = fids.front();
-    polygon_type::FaceID fid_B = fids.front();
+    ecell4::::FaceID fid_A = fids.front();
+    ecell4::::FaceID fid_B = fids.front();
     ecell4::Real3 pos_A = com + ecell4::Real3(distA_safety, distA_safety, 0);
     ecell4::Real3 pos_B = com - ecell4::Real3(distB_safety, distB_safety, 0);
 
