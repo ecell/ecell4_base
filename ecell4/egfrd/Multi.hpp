@@ -296,11 +296,11 @@ private:
         Multi& outer_;
     };
 
-    struct volume_clearer: VolumeClearer<particle_shape_type, particle_id_type>
+    struct volume_clearer final: VolumeClearer
     {
-        virtual ~volume_clearer() {}
+        ~volume_clearer() override {}
 
-        virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore)
+        bool operator()(particle_shape_type const& shape, particle_id_type const& ignore) override
         {
             if (!outer_.within_shell(shape))
             {
@@ -310,7 +310,7 @@ private:
             return true;
         }
 
-        virtual bool operator()(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1)
+        bool operator()(particle_shape_type const& shape, particle_id_type const& ignore0, particle_id_type const& ignore1) override
         {
             if (!outer_.within_shell(shape))
             {
