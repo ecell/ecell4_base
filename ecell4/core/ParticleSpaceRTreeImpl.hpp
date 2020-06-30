@@ -82,17 +82,7 @@ public:
 
     const particle_container_type& particles() const override
     {
-        // Since PeriodicRTree manages particles as their index, the container
-        // can occasionally contains "already-erased" particles marked as
-        // "overwritable", like a colony (P0447R1). Because of this, the raw
-        // reference may contain an invalid particle that is already removed
-        // from the space. It may invalidates subsequent operation.
-        //     To avoid confusion, this method throws an exception. This will
-        // never be implemented, so it throws a `NotSupported`, not a
-        // `NotImplemented`. Since the default implementation of `list_species()`
-        // uses this function, it is overriden later.
-        throw NotSupported("ParticleSpaceRTreeImpl does not support "
-                           "`particle_container_type const& particles()`");
+        return rtree_.list_objects();
     }
 
     // ParticleSpace has the default list_species implementation.
