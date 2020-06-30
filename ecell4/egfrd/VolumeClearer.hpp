@@ -1,17 +1,18 @@
 #ifndef ECELL4_EGFRD_VOLUME_CLEARER_HPP
 #define ECELL4_EGFRD_VOLUME_CLEARER_HPP
+#include <ecell4/core/Identifier.hpp>
+#include <ecell4/core/Sphere.hpp>
 
 namespace ecell4
 {
 namespace egfrd
 {
 
-template<typename Tps_, typename Tpid_>
 class VolumeClearer
 {
 public:
-    typedef Tps_ particle_shape_type;
-    typedef Tpid_ particle_id_type;
+    typedef ecell4::Sphere     particle_shape_type;
+    typedef ecell4::ParticleID particle_id_type;
 
 public:
     virtual ~VolumeClearer() {}
