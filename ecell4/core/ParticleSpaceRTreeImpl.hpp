@@ -7,6 +7,7 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/PeriodicRTree.hpp>
+#include <ecell4/core/exceptions.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -94,10 +95,8 @@ public:
     {
         if(!rtree_.has(pid))
         {
-            std::ostringstream oss;
-            oss << "ParticleSpaceRTreeImpl::get_particle: No such particle ("
-                << pid << ").";
-            throw NotFound(oss.str());
+            throw_exception<NotFound>("ParticleSpaceRTreeImpl::get_particle: "
+                    "No such particle (", pid, ").");
         }
         return rtree_.get(pid);
     }
@@ -133,10 +132,8 @@ public:
     {
         if(!rtree_.has(pid))
         {
-            std::ostringstream oss;
-            oss << "ParticleSpaceRTreeImpl::remove_particle: No such particle ("
-                << pid << ").";
-            throw NotFound(oss.str());
+            throw_exception<NotFound>("ParticleSpaceRTreeImpl::remove_particle:"
+                    " No such particle (", pid, ").");
         }
         const auto& p = rtree_.get(pid).second;
         particle_pool_[p.species_serial()].erase(pid);
