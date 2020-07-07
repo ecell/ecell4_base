@@ -183,7 +183,8 @@ private:
             const auto rhs = pbc.periodic_transpose(sidp.second.position(),
                                                     this->center);
 
-            const auto dist = distance(this->center, sidp.second, pbc);
+            const auto dist = visit(ShellDistanceCalculator(this->center, pbc),
+                                    sidp.second);
             if(dist <= this->radius)
             {
                 return std::make_pair(sidp, dist);
