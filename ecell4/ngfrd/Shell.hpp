@@ -132,6 +132,101 @@ typename Visitor::result_type visit(Visitor&& visitor, Shells&& ... sh)
             std::forward<Shells>(sh).as_variant() ...);
 }
 
+struct ShellDistanceCalculator
+    : boost::static_visitor<Real>
+{
+    Real3           pos;
+    Boundary const* boundary;
+
+    ShellDistanceCalculator(const Real3& p, const Boundary& b)
+        : pos(p), boundary(&b)
+    {}
+
+    Real operator()(const SphericalShell& sh) const noexcept
+    {
+        return length(pos - boundary.periodic_transpose(sh.position(), pos));
+    }
+    Real operator()(const CylindricalShell& sh) const noexcept
+    {
+        // a candidate of nearest point
+        const auto p1 = boundary->periodic_transpose(pos, cyl.center());
+
+        const auto& cyl_r = sh.shape().radius();
+        const auto& cyl_h = sh.shape().half_height();
+        const Real  r = std::sqrt(cyl_r * cyl_r + cyl_h * cyl_h) +
+                        distance(sh.shape(), p1);
+
+        // an AABB that includes minmaxdist region. If a point exceeds this,
+        // the point will never be the mindist point.
+        const Real3 lower(sh.position() - Real3(r,r,r));
+        const Real3 upper(sh.position() + Real3(r,r,r));
+
+        const auto& edge = boundary->edge_lengths();
+
+        // check all the mirror image. using the AABB we constructed, we can
+        // skip most of the images.
+        Real dist = std::numeric_limits<Real>::max();
+        for(int ix=-1; ix<=1; ++ix)
+        {
+            const Real px = p1[0] + i_x * edge[0];
+            if(px < lower[0] || upper[0] < px) {continue;}
+            for(int iy=-1; iy<=1; ++iy)
+            {
+                const Real py = p1[1] + i_y * edge[1];
+                if(py < lower[1] || upper[1] < py) {continue;}
+
+                for(int iz=-1; iz<=1; ++iz)
+                {
+                    const Real pz = p1[2] + i_z * edge[2];
+                    if(pz < lower[2] || upper[2] < pz) {continue;}
+                    dist = std::min(dist,
+                            this->distance(sh.shape(), Real3(px,py,pz)));
+                }
+            }
+        }
+        return dist;
+    }
+    Real operator()(const CircularShell& sh) const noexcept
+    {
+        // sometimes circle wraps two triangles. it is difficult to calculate
+        // distance between position and such a shell.
+        throw NotImplemented("ShellSquaredDistanceCalculator(circular)");
+    }
+    Real operator()(const ConicalShell& sh) const noexcept
+    {
+        // check distance to polygon first.
+        throw NotImplemented("ShellSquaredDistanceCalculator(conical)");
+    }
+
+private:
+
+    // a helper function to calculate cylinder-point distance
+    static Real distance(const Cylinder& cyl, const Real3& pos) noexcept
+    {
+        const auto dr = pos - cyl.center();
+        const auto ax = cyl.axis() / length(cyl.axis());
+        const auto z  = dot_product(dr, ax) * ax;
+        const auto r  = dr - z;
+        const auto lz = length(z);
+        const auto lr = length(r);
+
+        if(lz < cyl.half_height())
+        {
+            return lr - cyl.radius();
+        }
+        else if(lr < cyl.radius())
+        {
+            return lz - cyl.half_height();
+        }
+        else
+        {
+            const auto a = lz - cyl.half_height();
+            const auto b = lr - cyl.radius();
+            return std::sqrt(a * a + b * b);
+        }
+    }
+};
+
 } // ngfrd
 } // ecell4
 #endif//ECELL4_NGFRD_SPHERICAL_SHELL_HPP
