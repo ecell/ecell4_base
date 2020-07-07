@@ -273,9 +273,7 @@ Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, cons
     //      :              :
     //      :              :
 
-    boost::container::static_vector<Real, 27> dists{
-        length_sq(closest_point_on_Triangle(p1, vtxs) - p1)
-    };
+    Real dist_sq = length_sq(closest_point_on_Triangle(p1, vtxs) - p1);
 
     // check all the possible transpose and find the minimum distance
     for(std::int32_t i_x=-1; i_x<=1; ++i_x)
@@ -294,12 +292,14 @@ Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, cons
                 if(p_z < lower[2] || upper[2] < p_z) {continue;}
                 if(i_x == 0 && i_y == 0 && i_z == 0) {continue;}
 
-                dists.push_back(
-                    length_sq(closest_point_on_Triangle(p1, vtxs) - p1));
+                const Real3 p(p_x, p_y, p_z);
+
+                dist_sq = std::min(dist_sq,
+                    length_sq(closest_point_on_Triangle(p, vtxs) - p));
             }
         }
     }
-    return *std::min_element(dists.begin(), dists.end());
+    return dist_sq;
 }
 
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
