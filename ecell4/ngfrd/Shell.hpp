@@ -144,7 +144,8 @@ struct ShellDistanceCalculator
 
     Real operator()(const SphericalShell& sh) const noexcept
     {
-        return length(pos - boundary.periodic_transpose(sh.position(), pos));
+        return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
+               sh.shape().radius();
     }
     Real operator()(const CylindricalShell& sh) const noexcept
     {
@@ -189,13 +190,22 @@ struct ShellDistanceCalculator
     Real operator()(const CircularShell& sh) const noexcept
     {
         // sometimes circle wraps two triangles. it is difficult to calculate
-        // distance between position and such a shell.
-        throw NotImplemented("ShellSquaredDistanceCalculator(circular)");
+        // distance between position and such a shell. But, in any case, shell
+        // does not go beyond the bounding sphere. Here, it returns a distance
+        // to the bounding sphere. So it UNDER-ESTIMATES the distance.
+
+        return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
+               sh.shape().radius();
     }
     Real operator()(const ConicalShell& sh) const noexcept
     {
-        // check distance to polygon first.
-        throw NotImplemented("ShellSquaredDistanceCalculator(conical)");
+        // sometimes circle wraps two triangles. it is difficult to calculate
+        // distance between position and such a shell. But, in any case, shell
+        // does not go beyond the bounding sphere. Here, it returns a distance
+        // to the bounding sphere. So it UNDER-ESTIMATES the distance.
+
+        return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
+               sh.shape().slant_height();
     }
 
 private:
