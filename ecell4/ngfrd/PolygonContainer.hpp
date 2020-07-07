@@ -9,13 +9,16 @@ namespace ecell4
 namespace ngfrd
 {
 
+// This contains the following two maps
+// - ObjectID -> FaceID
+// - FaceID -> {ObjectID ...}
+// and the same for EdgeID and VertexID.
 template<typename ObjectID> // ShellID or ParticleID
 class PolygonContainer
 {
 public:
-    explicit PolygonContainer(const std::shared_ptr<Polygon>& poly)
-        : polygon_(poly)
-    {}
+
+    PolygonContainer() = default;
     ~PolygonContainer() = default;
     PolygonContainer(const PolygonContainer&) = default;
     PolygonContainer(PolygonContainer&&)      = default;
@@ -314,7 +317,6 @@ private:
     }
 
 private:
-    std::shared_ptr<Polygon> polygon_;
 
     std::unordered_map<ObjectID, FaceID  > obj_to_face_;
     std::unordered_map<ObjectID, EdgeID  > obj_to_edge_;
