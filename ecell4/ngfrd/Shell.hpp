@@ -151,22 +151,28 @@ struct ShellDistanceCalculator
     {
         // a candidate of nearest point
         const auto p1 = boundary->periodic_transpose(pos, cyl.center());
+        const auto d  = distance(sh.shape(), p1);
 
         const auto& cyl_r = sh.shape().radius();
         const auto& cyl_h = sh.shape().half_height();
-        const Real  r = std::sqrt(cyl_r * cyl_r + cyl_h * cyl_h) +
-                        distance(sh.shape(), p1);
-
-        // an AABB that includes minmaxdist region. If a point exceeds this,
-        // the point will never be the mindist point.
-        const Real3 lower(sh.position() - Real3(r,r,r));
-        const Real3 upper(sh.position() + Real3(r,r,r));
+        const Real  R = std::sqrt(cyl_r * cyl_r + cyl_h * cyl_h) + d;
 
         const auto& edge = boundary->edge_lengths();
 
+        // likely
+        if(2 * R < edge[0] && 2 * R < edge[1] && 2 * R < edge[2])
+        {
+            return d;
+        }
+
+        // an AABB that includes minmaxdist region. If a point exceeds this,
+        // the point will never be the mindist point.
+        const Real3 lower(sh.position() - Real3(R,R,R));
+        const Real3 upper(sh.position() + Real3(R,R,R));
+
         // check all the mirror image. using the AABB we constructed, we can
         // skip most of the images.
-        Real dist = std::numeric_limits<Real>::max();
+        Real dist = d;
         for(int ix=-1; ix<=1; ++ix)
         {
             const Real px = p1[0] + i_x * edge[0];
