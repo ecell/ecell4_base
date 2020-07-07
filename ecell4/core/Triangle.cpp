@@ -1,5 +1,4 @@
 #include "Triangle.hpp"
-#include <boost/container/static_vector.hpp>
 
 namespace ecell4
 {
