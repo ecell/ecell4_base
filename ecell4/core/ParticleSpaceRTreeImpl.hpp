@@ -7,6 +7,7 @@
 #include <ecell4/core/Real3.hpp>
 #include <ecell4/core/Integer3.hpp>
 #include <ecell4/core/PeriodicRTree.hpp>
+#include <ecell4/core/exceptions.hpp>
 
 #ifdef WITH_HDF5
 #include <ecell4/core/ParticleSpaceHDF5Writer.hpp>
@@ -82,17 +83,7 @@ public:
 
     const particle_container_type& particles() const override
     {
-        // Since PeriodicRTree manages particles as their index, the container
-        // can occasionally contains "already-erased" particles marked as
-        // "overwritable", like a colony (P0447R1). Because of this, the raw
-        // reference may contain an invalid particle that is already removed
-        // from the space. It may invalidates subsequent operation.
-        //     To avoid confusion, this method throws an exception. This will
-        // never be implemented, so it throws a `NotSupported`, not a
-        // `NotImplemented`. Since the default implementation of `list_species()`
-        // uses this function, it is overriden later.
-        throw NotSupported("ParticleSpaceRTreeImpl does not support "
-                           "`particle_container_type const& particles()`");
+        return rtree_.list_objects();
     }
 
     // ParticleSpace has the default list_species implementation.
@@ -104,10 +95,8 @@ public:
     {
         if(!rtree_.has(pid))
         {
-            std::ostringstream oss;
-            oss << "ParticleSpaceRTreeImpl::get_particle: No such particle ("
-                << pid << ").";
-            throw NotFound(oss.str());
+            throw_exception<NotFound>("ParticleSpaceRTreeImpl::get_particle: "
+                    "No such particle (", pid, ").");
         }
         return rtree_.get(pid);
     }
@@ -143,10 +132,8 @@ public:
     {
         if(!rtree_.has(pid))
         {
-            std::ostringstream oss;
-            oss << "ParticleSpaceRTreeImpl::remove_particle: No such particle ("
-                << pid << ").";
-            throw NotFound(oss.str());
+            throw_exception<NotFound>("ParticleSpaceRTreeImpl::remove_particle:"
+                    " No such particle (", pid, ").");
         }
         const auto& p = rtree_.get(pid).second;
         particle_pool_[p.species_serial()].erase(pid);
