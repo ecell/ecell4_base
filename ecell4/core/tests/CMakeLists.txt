@@ -5,6 +5,7 @@ set(TEST_NAMES
     LatticeSpace_test OffLatticeSpace_test ParticleSpace_test ParticleSpaceRTreeImpl_test
     Barycentric_test Polygon_test STLIO_test
     PeriodicRTree_test ObjectIDContainer_test
+    Triangle_test
     )
 
 set(test_library_dependencies)
