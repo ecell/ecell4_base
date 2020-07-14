@@ -366,8 +366,8 @@ bool BDPropagator::attempt_pair_reaction_2D(
         {
             case 0:
             {
-                world_.remove_particle(pid, p);
-                world_.remove_particle(pidp.first, pidp.second);
+                world_.remove_particle(pid);
+                world_.remove_particle(pidp.first);
 
                 const auto found = std::find(queue_.begin(), queue_.end(), pidp.first);
                 if(found != queue_.end())
