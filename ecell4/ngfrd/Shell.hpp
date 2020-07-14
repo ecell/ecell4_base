@@ -4,6 +4,7 @@
 #include <ecell4/core/Cylinder.hpp>
 #include <ecell4/core/Circle.hpp>
 #include <ecell4/core/Cone.hpp>
+#include <ecell4/core/Polygon.hpp>
 #include <boost/variant.hpp>
 
 namespace ecell4
@@ -57,8 +58,12 @@ struct CircularShell
     shape_type&       shape()       noexcept {return shape_;}
     shape_type const& shape() const noexcept {return shape_;}
 
+    FaceID&       fid()       noexcept {return fid_;}
+    FaceID const& fid() const noexcept {return fid_;}
+
   private:
 
+    FaceID     fid_;
     shape_type shape_;
 };
 
@@ -75,8 +80,12 @@ struct ConicalShell
     shape_type&       shape()       noexcept {return shape_;}
     shape_type const& shape() const noexcept {return shape_;}
 
+    FaceID&       vid()       noexcept {return vid_;}
+    FaceID const& vid() const noexcept {return vid_;}
+
   private:
 
+    VertexID   vid_;
     shape_type shape_;
 };
 
@@ -95,6 +104,19 @@ public:
 
     using storage_type = boost::variant<
         SphericalShell, CylindricalShell, CircularShell, ConicalShell>;
+
+    struct position_getter : public boost::static_visitior<Real3>
+    {
+        Real3& operator()(SphericalShell&   sh) const noexcept {return sh.position();}
+        Real3& operator()(CylindricalShell& sh) const noexcept {return sh.position();}
+        Real3& operator()(CircularShell&    sh) const noexcept {return sh.position();}
+        Real3& operator()(ConicalShell&     sh) const noexcept {return sh.position();}
+
+        Real3 const& operator()(SphericalShell const&   sh) const noexcept {return sh.position();}
+        Real3 const& operator()(CylindricalShell const& sh) const noexcept {return sh.position();}
+        Real3 const& operator()(CircularShell const&    sh) const noexcept {return sh.position();}
+        Real3 const& operator()(ConicalShell const&     sh) const noexcept {return sh.position();}
+    };
 
 public:
 
@@ -119,6 +141,15 @@ public:
 
     storage_type const& as_variant() const noexcept {return storage_;}
     storage_type&       as_variant()       noexcept {return storage_;}
+
+    Real3& position() noexcept
+    {
+        return boost::apply_visitor(position_getter(), storage_);
+    }
+    Real3 const& position() const noexcept
+    {
+        return boost::apply_visitor(position_getter(), storage_);
+    }
 
 private:
 
