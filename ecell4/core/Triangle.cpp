@@ -1,5 +1,4 @@
 #include "Triangle.hpp"
-#include <boost/container/static_vector.hpp>
 
 namespace ecell4
 {
@@ -249,33 +248,33 @@ Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, cons
 
     // transpose `pos` according to the center of the AABB
     const Real3 p1 = b->periodic_transpose(pos, center);
-    const Real3 d  = center - p1;
+    const Real  d1 = length(closest_point_on_Triangle(p1, vtxs) - p1);
+    const Real  D  = 2 * (length(width) + d1);
 
-    // the maximum min-dist between point and point in an AABB
-    const Real  minmaxdist = std::sqrt(minmaxdist_sq(lower, upper, p1));
+    // Here, D is the diameter of sphere that represents the region in which
+    // point can be closer to the triangle than the original position, p1.
+    // It means that if a periodic image of p1 exceeds this range, we don't
+    // need to check the image.
+    if(D < edge[0] && D < edge[1] && D < edge[2]) // likely
+    {
+        // we don't need to check any of periodic images. The minimum distance
+        // between p1 and its periodic image is larger than the diameter of the
+        // mindist-bounding sphere.
+        return d1 * d1; // return square distance
+    }
 
-    // expand the AABB of Triangle by minmaxdist
-    lower[0] -= minmaxdist;
-    lower[1] -= minmaxdist;
-    lower[2] -= minmaxdist;
+    // expand the AABB of Triangle by default mindist.
+    // If periodic image exceeds this range along any axis,
+    // we don't need to check it.
+    lower[0] -= d1;
+    lower[1] -= d1;
+    lower[2] -= d1;
 
-    upper[0] += minmaxdist;
-    upper[1] += minmaxdist;
-    upper[2] += minmaxdist;
+    upper[0] += d1;
+    upper[1] += d1;
+    upper[2] += d1;
 
-    //      :              :) minmaxdist
-    //      :    AABB      :).--.
-    // .....+--------------+.....
-    //      |   center     |
-    //    <---d--->x<--w-->|
-    //   o--+--------------+-->o  periodic transpose
-    // .....+--------------+.....
-    //      :              :
-    //      :              :
-
-    boost::container::static_vector<Real, 27> dists{
-        length_sq(closest_point_on_Triangle(p1, vtxs) - p1)
-    };
+    Real dist_sq = d1 * d1;
 
     // check all the possible transpose and find the minimum distance
     for(std::int32_t i_x=-1; i_x<=1; ++i_x)
@@ -294,12 +293,13 @@ Real distance_sq_point_Triangle_impl(const Real3& pos, const Triangle& tri, cons
                 if(p_z < lower[2] || upper[2] < p_z) {continue;}
                 if(i_x == 0 && i_y == 0 && i_z == 0) {continue;}
 
-                dists.push_back(
-                    length_sq(closest_point_on_Triangle(p1, vtxs) - p1));
+                const Real3 p(p_x, p_y, p_z);
+                dist_sq = std::min(dist_sq,
+                    length_sq(closest_point_on_Triangle(p, vtxs) - p));
             }
         }
     }
-    return *std::min_element(dists.begin(), dists.end());
+    return dist_sq;
 }
 
 Real distance_sq_point_Triangle(const Real3& pos, const Triangle& tri,
