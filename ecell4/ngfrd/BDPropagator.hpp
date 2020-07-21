@@ -55,20 +55,32 @@ public:
 private:
 
     void propagate_2D_particle(const ParticleID&, Particle, FaceID);
-    void propagate_3D_particle(const ParticleID&, Particle, FaceID); // TODO
+    void propagate_3D_particle(const ParticleID&, Particle);
 
     bool attempt_single_reaction_2D(const ParticleID&, const Particle&, const FaceID&);
     bool attempt_1to1_reaction_2D(
         const ParticleID&, const Particle&, const FaceID&, const ReactionRule&);
     bool attempt_1to2_reaction_2D(
         const ParticleID&, const Particle&, const FaceID&, const ReactionRule&);
+
+    bool attempt_pair_reaction_2D(const ParticleID&, const Particle&, const FaceID&,
+        const std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>& overlapped);
     bool attempt_2to1_reaction_2D(
         const ParticleID&, const Particle&, const FaceID&,
         const ParticleID&, const Particle&, const FaceID&,
         const ReactionRule&);
 
-    bool attempt_pair_reaction_2D(const ParticleID&, const Particle&, const FaceID&,
-        const std::vector<std::pair<std::pair<ParticleID, Particle>, Real>& overlapped);
+    bool attempt_single_reaction_3D(const ParticleID&, const Particle&);
+    bool attempt_1to1_reaction_3D(
+        const ParticleID&, const Particle&, const FaceID&, const ReactionRule&);
+    bool attempt_1to2_reaction_3D(
+        const ParticleID&, const Particle&, const FaceID&, const ReactionRule&);
+
+    bool attempt_pair_reaction_3D(const ParticleID&, const Particle&,
+                                  const ParticleID&, const Particle&);
+    bool attempt_2to1_reaction_3D(
+        const ParticleID&, const Particle&, const ParticleID&, const Particle&,
+        const ReactionRule&);
 
     bool is_inside_of_shells_3D(const Real3&,                    const Real& radius) const; // TODO
     bool is_inside_of_shells_2D(const std::pair<Real3, FaceID>&, const Real& radius) const; // TODO
@@ -91,26 +103,26 @@ private:
             // reaction.
             // to attempt 2nd order reaction with them, we need to double the
             // acceptance coefficient.
-            return dt_ / reaction_area;
+            return this->dt_ / reaction_area;
         }
         else
         {
             // movable particles checks 2nd order reaction. If the both reactants
             // are movable, both particle attempts reaction. So here it halves
             // the acceptance coefficient to avoid double-counting.
-            return 0.5 * dt_ / reaction_area;
+            return 0.5 * this->dt_ / reaction_area;
         }
     }
     ReactionRule const&
     determine_reaction_rule(const std::vector<ReactionRule>& rules,
-                            const Real k_tot) const noexcept
+                            const Real k_tot) noexcept
     {
         assert(!rules.empty());
         if(rules.size() == 1)
         {
             return rules.front();
         }
-        const Real rnd = rng_.uniform(0.0, 1.0) * k_tot;
+        const Real rnd = this->rng_.uniform(0.0, 1.0) * k_tot;
         Real k_cumm = 0.0;
         for(const auto& rule : rules)
         {
