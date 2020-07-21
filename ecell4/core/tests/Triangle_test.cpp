@@ -127,3 +127,41 @@ BOOST_AUTO_TEST_CASE(Triangle_distance_test)
     }
 }
 
+BOOST_AUTO_TEST_CASE(Triangle_distance_under_PBC)
+{
+    constexpr std::size_t N = 100;
+    constexpr Real tol = 1e-8;
+
+    // A nasty test case where the point which is the nearest periodic image to
+    // the center of mass of the triangle is not the nearest periodic image to
+    // the triangle itself.
+
+    const Real3 edge_lengths(1.0, 20.0, 20.0);
+
+    const ecell4::PeriodicBoundary  periodic(edge_lengths);
+
+    const Real3 probe(0.1, 10.0, 10.0);
+
+    const Triangle tri(
+            Real3(0.1 + 3.0 / 4.0, 10.0 +  0.0,     10.0 + -std::sqrt(3.0) / 12.0),
+            Real3(0.1 + 1.0 / 4.0, 10.0 + -1.0/3.0, 10.0 + -std::sqrt(3.0) /  4.0),
+            Real3(0.1 + 1.0 / 4.0, 10.0 +  1.0/3.0, 10.0 + -std::sqrt(3.0) /  4.0));
+
+    const Real3 CoM = (tri.vertex_at(0) + tri.vertex_at(1) + tri.vertex_at(2)) / 3.0;
+
+    const Real3 nearest_to_CoM = periodic.periodic_transpose(probe, CoM);
+
+    // check that probe is the nearest image to the CoM
+    BOOST_CHECK_CLOSE_FRACTION(nearest_to_CoM[0], probe[0], tol);
+    BOOST_CHECK_CLOSE_FRACTION(nearest_to_CoM[1], probe[1], tol);
+    BOOST_CHECK_CLOSE_FRACTION(nearest_to_CoM[2], probe[2], tol);
+
+    const auto dist_noPBC = distance_point_Triangle(probe, tri);
+    const auto dist_PBC   = distance_point_Triangle(probe, tri, periodic);
+
+    // check if distance_point_Triangle finds the nearest periodic image
+    BOOST_CHECK_CLOSE_FRACTION(dist_noPBC, 0.5, tol);
+    BOOST_CHECK_CLOSE_FRACTION(dist_PBC, std::sqrt(3.0) / 6.0, tol);
+
+    BOOST_CHECK(dist_PBC < dist_noPBC);
+}
