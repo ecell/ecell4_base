@@ -80,8 +80,8 @@ struct ConicalShell
     shape_type&       shape()       noexcept {return shape_;}
     shape_type const& shape() const noexcept {return shape_;}
 
-    FaceID&       vid()       noexcept {return vid_;}
-    FaceID const& vid() const noexcept {return vid_;}
+    VertexID&       vid()       noexcept {return vid_;}
+    VertexID const& vid() const noexcept {return vid_;}
 
   private:
 
