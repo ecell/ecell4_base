@@ -165,6 +165,11 @@ public:
     Polygon&       polygon()       noexcept {return *polygon_;}
     Polygon const& polygon() const noexcept {return *polygon_;}
 
+    PeriodicBoundary boundary() const noexcept
+    {
+        return PeriodicBoundary(edge_lengths);
+    }
+
     // -----------------------------------------------------------------------
     // WorldInterface
 
