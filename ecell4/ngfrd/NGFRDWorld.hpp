@@ -106,6 +106,9 @@ public:
     bool has_overlapping_particle(const std::pair<Real3, FaceID>&,
             const ParticleID&, const ParticleID&) const;
 
+    bool has_overlapping_triangle(const Real3&) const;
+    bool has_overlapping_triangle(const Real3&, const FaceID&) const;
+
     // ------------------------------------------------------------------------
     // list_particles_within_radius
 
