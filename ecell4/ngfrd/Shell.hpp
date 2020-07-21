@@ -173,11 +173,13 @@ struct ShellDistanceCalculator
         : pos(p), boundary(&b)
     {}
 
+    // if the position is inside of the sphere, returns a negative value.
     Real operator()(const SphericalShell& sh) const noexcept
     {
         return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
                sh.shape().radius();
     }
+    // if the position is inside of the sphere, returns a negative value.
     Real operator()(const CylindricalShell& sh) const noexcept
     {
         // a candidate of nearest point
@@ -257,15 +259,21 @@ private:
         const auto lz = length(z);
         const auto lr = length(r);
 
-        if(lz < cyl.half_height())
+        //  | A  |  B
+        //   .--.  ___  A) distance to the center - half height
+        //  |'--'|  C   B) distance to the edge
+        //  |    | ___  C) distance to the axis - radius
+        //   '--'
+
+        if(lz < cyl.half_height()) // C
         {
             return lr - cyl.radius();
         }
-        else if(lr < cyl.radius())
+        else if(lr < cyl.radius()) // A
         {
             return lz - cyl.half_height();
         }
-        else
+        else // B
         {
             const auto a = lz - cyl.half_height();
             const auto b = lr - cyl.radius();
