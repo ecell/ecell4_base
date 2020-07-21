@@ -78,15 +78,15 @@ private:
 
     bool attempt_pair_reaction_3D(const ParticleID&, const Particle&,
                                   const ParticleID&, const Particle&);
-    bool attempt_2to1_reaction_3D(
-        const ParticleID&, const Particle&, const ParticleID&, const Particle&,
-        const ReactionRule&);
+    bool attempt_2to1_reaction_3D(const ParticleID&, const Particle&,
+                                  const ParticleID&, const Particle&,
+                                  const ReactionRule&);
 
-    bool is_inside_of_shells_3D(const Real3&,                    const Real& radius) const; // TODO
-    bool is_inside_of_shells_2D(const std::pair<Real3, FaceID>&, const Real& radius) const; // TODO
+    bool is_inside_of_shells_3D(const Real3&,                    const Real& radius) const;
+    bool is_inside_of_shells_2D(const std::pair<Real3, FaceID>&, const Real& radius) const;
 
-    Real3 draw_2D_displacement(const Particle&, const FaceID&); // TODO
-    Real3 draw_3D_displacement(const Particle&);                // TODO
+    Real3 draw_2D_displacement(const Particle&, const FaceID&);
+    Real3 draw_3D_displacement(const Particle&);
 
     Real calc_pair_acceptance_coef_2D(
             const Particle& p1, const Particle& p2) const noexcept
