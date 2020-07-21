@@ -253,6 +253,7 @@ bool BDPropagator::attempt_1to2_reaction_2D(
     if(world_.has_overlapping_particle(pos1_new, r1, /*ignore = */ pid) ||
        world_.has_overlapping_particle(pos2_new, r2, /*ignore = */ pid))
     {
+        this->rejected_move_count_ += 1;
         return false; // overlaps with a particle at outside of the domain
     }
 
@@ -334,7 +335,7 @@ bool BDPropagator::attempt_pair_reaction_2D(
     Real probability = 0.0;
     const Real threshold = rng_.uniform(0.0, 1.0);
 
-    for(const auto& pidp : overlapped)
+    for(const auto& pidp : overlapped) // try all the particles in the reactive region
     {
         const auto& rules = model_.query_reaction_rules(p1.species(), p2.species());
         if(rules.empty())
@@ -404,7 +405,7 @@ bool BDPropagator::attempt_2to1_reaction_2D(
         const ReactionRule& rule)
 {
     const auto species_new = rule.products().front();
-    const auto molinfo     = world_.get_molecule_info(sp_new);
+    const auto molinfo     = world_.get_molecule_info(species_new);
     const Real radius_new  = molinfo.radius;
     const Real D_new       = molinfo.D;
 
