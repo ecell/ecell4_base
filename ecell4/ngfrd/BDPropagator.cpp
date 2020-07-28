@@ -472,28 +472,120 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         return; // particle does not move. done.
     }
 
+    const auto& boundary = world_.boundary();
+
+    // ------------------------------------------------------------------------
+    // apply displacement, considering collision and reflection with polygon
+
     Real3 new_pos = p.position();
     Real3 disp    = this->draw_3D_displacement(p);
     while(true)
     {
-        // FIXME find an easier way
-        const auto interacting_faces =
-            this->world_.list_faces_across_displacement(p, disp); // !?
-        if(interacting_faces.empty())
+        const Real3 r(p.radius(), p.radius(), p.radius());
+        const auto radius = length(disp * 0.5 + r);
+        const auto center = new_pos + disp * 0.5;
+
+        // {{FID, triangle}, distance}
+        auto interacting_faces_candidates =
+            this->world_.polygon().list_faces_within_radius(center, radius);
+        if(interacting_faces_candidates.empty())
         {
             new_pos += disp;
             break;
         }
-        else // reflect or reaction
+
+        // move triangles to the periodic image where two bounding boxes are
+        // nearest to each other (it does not always means that the center is
+        // nearest to the triangle).
+        for(auto& interacting_face: interacting_faces_candidates)
         {
-            const auto& nearest = interacting_faces.front();
-            // TODO implement apply_reflection / reaction_triangle
-            std::tie(new_pos, disp) =
-                apply_reflection(nearest, new_pos, disp, p.species());
+            auto& tri = interacting_face.first.second;
+            const auto box = this->aabb_of(tri);
+            const auto box_center = (box.upper() + box.lower()) * 0.5;
+            const auto dr = boundary.periodic_transpose(box_center, center) -
+                            box_center;
+
+            tri.vertices()[0] += dr;
+            tri.vertices()[1] += dr;
+            tri.vertices()[2] += dr;
         }
+
+        // reflect or reaction
+        boost::optional<std::pair<FaceID, Triangle>> colliding_face;
+        Real min_distance = std::numeric_limits<Real>::max();
+
+        const AABB moving_region(new_pos - r, new_pos + disp + r);
+        for(const auto& fidp : interacting_faces_candidates)
+        {
+            const auto& tri = fidp.second;
+
+            const Real dist = this->distance_segment_triangle(new_pos, disp, tri);
+
+            if(dist <= p.radius() && dist < min_distance)
+            {
+                colliding_face = fidp;
+                min_distance   = dist;
+            }
+
+            // if there is a possibility that a periodic image of the triangle
+            // collides faster than the original one, check all the images
+
+            const auto  tribox = this->aabb_of(tri);
+            const auto  tbxwid = tribox.upper() - tribox.lower();
+            const auto  mvrwid = disp + 2 * r;
+            const auto& edges  = boundary.edge_lengths();
+
+            // It means the triangle may collide with the moving particle even
+            // after periodic transposition. very unlikely (with a wierd shape).
+            if(edges[0] <= tbxwid[0] + mvrwid[0] ||
+               edges[1] <= tbxwid[1] + mvrwid[1] ||
+               edges[2] <= tbxwid[2] + mvrwid[2] )
+            {
+                for(const auto dx : {-1, 0, 1})
+                {
+                for(const auto dy : {-1, 0, 1})
+                {
+                for(const auto dz : {-1, 0, 1})
+                {
+                    const Real3 dr(edges[0] * dx, edges[1] * dy, edges[2] * dz);
+
+                    Triangle tri_image(tri);
+                    tri_image.vertices()[0] += dr;
+                    tri_image.vertices()[1] += dr;
+                    tri_image.vertices()[2] += dr;
+
+                    if(!this->overlaps(moving_region, this->aabb_of(tri_image)))
+                    {
+                        continue;
+                    }
+
+                    const Real dist = this->distance_segment_triangle(
+                            new_pos, disp, tri_image);
+
+                    if(dist <= p.radius() && dist < min_distance)
+                    {
+                        colliding_face = fidp;
+                        min_distance   = dist;
+                    }
+                } // z
+                } // y
+                } // x
+            }
+        }
+
+        if(!colliding_face)
+        {
+            break;
+        }
+
+        // TODO implement 3DParticle-Face -> 2DParticle reaction later
+
+        // pause particle at the point where it collides with the face,
+        // updating displacement by the reflection.
+        new_pos = apply_reflection(*colliding_face, new_pos, disp, p);
     }
 
-    if(world_.has_overlapping_triangle(p.pos(), radius_new))
+    if(world_.has_overlapping_triangle(p.position(), radius_new))
     {
         throw std::runtime_error("ngfrd::BDPropagator: after moving particle "
                 "reflecting on a triangle, still it overlaps with a face ...?");
