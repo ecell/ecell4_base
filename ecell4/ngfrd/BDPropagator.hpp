@@ -172,6 +172,81 @@ private:
         return std::sqrt(mindist_sq);
     }
 
+    // stops the particle at the place where particle collides with the triangle
+    Real3 apply_reflection(const std::pair<FaceID, Triangle>& fidp,
+            const Real3& pos, Real3& disp, const Particle& p)
+    {
+        // First, check the segment intersects triangle if the triangle is moved
+        // toward pos in the direction of its normal vector.
+        // In that case, the particle "collides" with the triangle.
+
+        const auto len_disp = length(disp);
+        const auto& t = fidp.second;
+        {
+            const auto n = t.normal(); // always |n| = 1
+            const auto dot_v0p_d = dot_product(p - t.vertices()[0], n);
+
+            assert(dot_v0p_d != 0) // already collides
+
+            Real3 q;       // where it collides
+            Bacycentric b; // where it collides (parametric)
+            if(0 < dot_v0p_d) // front side.
+            {
+                const Real3 dr = n * p.radius(); // offset to handle radius
+
+                // intersect_ray_triangle checks only if 0 < n*d.
+                // We need to FLIP front/back
+                Triangle tri(t.vertices()[0] + dr,
+                             t.vertices()[2] + dr,
+                             t.vertices()[1] + dr);
+                if(intersect_ray_triangle(p, disp, tri, b, q))
+                {
+                    // collides within the displacement range?
+                    const auto len_qp = length(qp);
+                    if(len_qp <= len_disp)
+                    {
+                        disp *= (len_disp - len_qp); // rest of the length
+                        disp -= n * (2 * dot_product(n, disp)); // reflect
+
+                        return q; // the new position of (center of) particle
+                    }
+                    // else, do nothing. go ahead.
+                }
+            }
+            else // back side
+            {
+                const Real3 dr = n * (-p.radius()); // offset to handle radius
+
+                // intersect_ray_triangle checks only if 0 < n*d.
+                // We need to FLIP front/back
+                Triangle tri(t.vertices()[0] + dr,
+                             t.vertices()[1] + dr,
+                             t.vertices()[2] + dr);
+                if(intersect_ray_triangle(p, disp, tri, b, q))
+                {
+                    // collides within the displacement range?
+                    const auto len_qp = length(qp);
+                    if(len_qp <= len_disp)
+                    {
+                        disp *= (len_disp - len_qp); // rest of the length
+                        disp -= n * (2 * dot_product(n, disp)); // reflect
+
+                        return q; // the new position of (center of) particle
+                    }
+                    // else, do nothing. go ahead.
+                }
+            }
+        }
+
+        // TODO
+        // Or it grazes
+        //
+        //          `.
+        //            `.-. particle
+        // ------------`-'
+        // <-triangle->
+    }
+
     Real calc_pair_acceptance_coef_2D(
             const Particle& p1, const Particle& p2) const noexcept
     {
