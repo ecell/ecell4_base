@@ -220,6 +220,43 @@ private:
     }
 
 private:
+    // utility
+
+    static AABB aabb_of(const Triangle& tri) noexcept
+    {
+        const auto& v0 = tri.vertices()[0];
+        const auto& v1 = tri.vertices()[1];
+        const auto& v2 = tri.vertices()[2];
+        AABB box;
+        box.lower()[0] = std::min(v0[0], std::min(v1[0], v2[0]));
+        box.lower()[1] = std::min(v0[1], std::min(v1[1], v2[1]));
+        box.lower()[2] = std::min(v0[2], std::min(v1[2], v2[2]));
+
+        box.upper()[0] = std::max(v0[0], std::max(v1[0], v2[0]));
+        box.upper()[1] = std::max(v0[1], std::max(v1[1], v2[1]));
+        box.upper()[2] = std::max(v0[2], std::max(v1[2], v2[2]));
+        return box;
+    }
+
+    static bool overlaps(const AABB& lhs, const AABB& rhs,
+                         const PeriodicBoundary& pbc) noexcept
+    {
+        constexpr Real tol = 1e-12;
+
+        const auto lc = (lhs.upper() + lhs.lower()) * 0.5;
+        const auto rc = (rhs.upper() + rhs.lower()) * 0.5;
+        const auto lr = (lhs.upper() - lhs.lower()) * 0.5;
+        const auto rr = (rhs.upper() - rhs.lower()) * 0.5;
+
+        const auto r2 = lr + rr;
+        const auto dc = ecell4::abs(pbc.periodic_transpose(lc, rc) - rc);
+
+        return (dc[0] - r2[0] < r2[0] * tol) &&
+               (dc[1] - r2[1] < r2[1] * tol) &&
+               (dc[2] - r2[2] < r2[2] * tol);
+    }
+
+private:
 
     Model&                 model_;
     NGFRDWorld&            world_;
