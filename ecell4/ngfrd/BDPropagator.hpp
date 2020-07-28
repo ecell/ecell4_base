@@ -88,6 +88,90 @@ private:
     Real3 draw_2D_displacement(const Particle&, const FaceID&);
     Real3 draw_3D_displacement(const Particle&);
 
+    // {distance, parameter `t` for the segment (p + td)}
+    Real distance_segment_triangle(
+            const Real3& p, const Real3& disp, const Triangle& t)
+    {
+        // Here we don't need to consider the periodic images. Those are
+        // correctly handled by the core algorithm.
+
+        // First, check if the segment intersects triangle.
+        {
+            const auto n = t.normal(); // always |n| = 1
+            const auto dot_v0p_d = dot_product(p - t.vertices()[0], n);
+
+            assert(dot_v0p_d != 0) // already collides
+
+            Real3 q;       // where it collides
+            Bacycentric b; // where it collides (parametric)
+            if(0 < dot_v0p_d) // front side.
+            {
+                // intersect_ray_triangle checks only if 0 < n*d.
+                // We need to FLIP front/back
+                Triangle tri(t.vertices()[0], t.vertices()[2], t.vertices()[1]);
+                if(intersect_ray_triangle(p, disp, tri, b, q))
+                {
+                    // collides within the displacement range?
+                    if(length_sq(q - p) < length_sq(disp))
+                    {
+                        return 0.0;
+                    }
+                    // else, do nothing. go ahead.
+                }
+            }
+            else // back side
+            {
+                Triangle tri(t.vertices()[0], t.vertices()[1], t.vertices()[2]);
+                if(intersect_ray_triangle(p, disp, tri, b, q))
+                {
+                    if(length_sq(q - p) < length_sq(disp))
+                    {
+                        return 0.0;
+                    }
+                    // else, do nothing. go ahead.
+                }
+            }
+        }
+        // It does not collides with the triangle.
+        // Next, check the minimum distance between segment and triangle.
+        Real mindist_sq = std::numeric_limits<Real>::max();
+
+        // - distance between Segment PQ / edge AB
+        {
+            Real  s,  t;
+            Real3 c1, c2;
+            const Real dist_sq = closest_point_segment_segment(p, p + disp,
+                    t.vertices()[0], t.vertices()[1], s, t, c1, c2);
+            mindist_sq = std::min(mindist_sq, dist_sq);
+        }
+        // - distance between Segment PQ / edge BC
+        {
+            Real  s,  t;
+            Real3 c1, c2;
+            const Real dist_sq = closest_point_segment_segment(p, p + disp,
+                    t.vertices()[1], t.vertices()[2], s, t, c1, c2);
+            mindist_sq = std::min(mindist_sq, dist_sq);
+        }
+        // - distance between Segment PQ / edge CA
+        {
+            Real  s,  t;
+            Real3 c1, c2;
+            const Real dist_sq = closest_point_segment_segment(p, p + disp,
+                    t.vertices()[2], t.vertices()[0], s, t, c1, c2);
+            mindist_sq = std::min(mindist_sq, dist_sq);
+        }
+        // - distance between point P / Triangle
+        {
+            mindist_sq = length_sq(p - closest_point_point_triangle(p, t));
+        }
+        // - distance between point Q / Triangle
+        {
+            mindist_sq = length_sq(p + disp -
+                    closest_point_point_triangle(p + disp, t));
+        }
+        return std::sqrt(mindist_sq);
+    }
+
     Real calc_pair_acceptance_coef_2D(
             const Particle& p1, const Particle& p2) const noexcept
     {
