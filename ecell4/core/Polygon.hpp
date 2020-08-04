@@ -819,30 +819,12 @@ class Polygon : public Shape
 
         bool operator()(const AABB& box, const PeriodicBoundary& pbc) const noexcept
         {
-            return this->distance_sq(box, this->center, pbc) <=
-                   this->radius * this->radius;
-        }
+            // transpose it relative to the center of the box
+            const auto nearest_image = pbc.periodic_transpose(
+                    this->center, (box.upper() + box.lower()) * 0.5);
 
-        // -------------------------------------------------------------------
-        // AABB-sphere distance calculation under the PBC
-        Real distance_sq(const AABB& box, Real3 pos, const PeriodicBoundary& pbc) const noexcept
-        {
-            pos = pbc.periodic_transpose(pos, (box.upper() + box.lower()) * 0.5);
-
-            Real dist_sq = 0;
-            for(std::size_t i=0; i<3; ++i)
-            {
-                const auto v = pos[i];
-                if(v < box.lower()[i])
-                {
-                    dist_sq += (v - box.lower()[i]) * (v - box.lower()[i]);
-                }
-                else if(box.upper()[i] < v)
-                {
-                    dist_sq += (v - box.upper()[i]) * (v - box.upper()[i]);
-                }
-            }
-            return dist_sq;
+            return ecell4::collision::distance_sq_point_AABB(
+                    nearest_image, box) <= this->radius * this->radius;
         }
     };
 
@@ -898,30 +880,12 @@ class Polygon : public Shape
 
         bool operator()(const AABB& box, const PeriodicBoundary& pbc) const noexcept
         {
-            return this->distance_sq(box, this->center, pbc) <=
-                   this->radius * this->radius;
-        }
+            // transpose it relative to the center of the box
+            const auto nearest_image = pbc.periodic_transpose(
+                    this->center, (box.upper() + box.lower()) * 0.5);
 
-        // -------------------------------------------------------------------
-        // AABB-sphere distance calculation under the PBC
-        Real distance_sq(const AABB& box, Real3 pos, const PeriodicBoundary& pbc) const noexcept
-        {
-            pos = pbc.periodic_transpose(pos, (box.upper() + box.lower()) * 0.5);
-
-            Real dist_sq = 0;
-            for(std::size_t i=0; i<3; ++i)
-            {
-                const auto v = pos[i];
-                if(v < box.lower()[i])
-                {
-                    dist_sq += (v - box.lower()[i]) * (v - box.lower()[i]);
-                }
-                else if(box.upper()[i] < v)
-                {
-                    dist_sq += (v - box.upper()[i]) * (v - box.upper()[i]);
-                }
-            }
-            return dist_sq;
+            return ecell4::collision::distance_sq_point_AABB(
+                    nearest_image, box) <= this->radius * this->radius;
         }
     };
 
