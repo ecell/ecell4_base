@@ -499,6 +499,31 @@ class Polygon : public Shape
                 });
     }
 
+    bool has_overlapping_faces(const Real3& pos, const Real& radius) const
+    {
+        return this->has_overlapping_faces_impl(pos, radius,
+                [](const FaceID&) noexcept -> bool {
+                    return false;
+                });
+    }
+    bool has_overlapping_faces(const Real3& pos, const Real& radius,
+                               const FaceID& ignore1) const
+    {
+        return this->has_overlapping_faces_impl(pos, radius,
+                [=](const FaceID& fid) noexcept -> bool {
+                    return fid == ignore1;
+                });
+    }
+    bool has_overlapping_faces(const Real3& pos, const Real& radius,
+                               const FaceID& ignore1, const FaceID& ignore2) const
+    {
+        return this->has_overlapping_faces_impl(pos, radius,
+                [=](const FaceID& fid) noexcept -> bool {
+                    return fid == ignore1 || fid == ignore2;
+                });
+    }
+
+
     /* inherited from shape --------------------------------------------------*/
     dimension_kind dimension() const {return THREE;} // TWO?
 
@@ -772,11 +797,6 @@ class Polygon : public Shape
         IntersectionQuery(const Real3& c, const Real r, Filter f) noexcept
             : center(c), radius(r), ignores(std::move(f))
         {}
-        IntersectionQuery(const IntersectionQuery&) = default;
-        IntersectionQuery(IntersectionQuery&&)      = default;
-        IntersectionQuery& operator=(const IntersectionQuery&) = default;
-        IntersectionQuery& operator=(IntersectionQuery&&)      = default;
-        ~IntersectionQuery() = default;
 
         // If it does not matches, return boost::none.
         // If it matches, return pairof(pidp, distance).
@@ -825,12 +845,6 @@ class Polygon : public Shape
             return dist_sq;
         }
     };
-    template<typename Filter>
-    static IntersectionQuery<Filter> make_intersection_query(
-            const Real3& c, const Real r, Filter&& f)
-    {
-        return IntersectionQuery<Filter>(c, r, std::forward<Filter>(f));
-    }
 
     template<typename Filter>
     std::vector<std::pair<std::pair<FaceID, Triangle>, Real>>
@@ -839,7 +853,10 @@ class Polygon : public Shape
     {
         std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
 
-        this->faces_.query(make_intersection_query(
+        using filter_type = typename std::remove_cv<
+            typename std::remove_reference<Filter>::type>::type;
+
+        this->faces_.query(IntersectionQuery<filter_type>(
                     pos, radius, std::forward<Filter>(filter)
                 ), std::back_inserter(retval));
 
@@ -847,6 +864,84 @@ class Polygon : public Shape
             utils::pair_second_element_comparator<std::pair<FaceID, Triangle>, Real>{});
 
         return retval;
+    }
+
+    struct IntersectionFound{};
+
+    template<typename Filter>
+    struct IntersectionFindQuery
+    {
+        Real3  center;
+        Real   radius;
+        Filter ignores;
+
+        IntersectionFindQuery(const Real3& c, const Real r, Filter f) noexcept
+            : center(c), radius(r), ignores(std::move(f))
+        {}
+
+        // If it does not matches, return boost::none.
+        // If it matches, return pairof(pidp, distance).
+        boost::optional<std::pair<std::pair<FaceID, Triangle>, Real>>
+        operator()(const std::pair<FaceID, face_data>& fidp, const PeriodicBoundary& pbc) const
+        {
+            if(ignores(fidp.first)){return boost::none;}
+
+            const auto dist_sq = distance_sq_point_Triangle(
+                    center, fidp.second.triangle, pbc);
+
+            if(dist_sq <= this->radius * this->radius)
+            {
+                throw IntersectionFound{};
+            }
+            return boost::none;
+        }
+
+        bool operator()(const AABB& box, const PeriodicBoundary& pbc) const noexcept
+        {
+            return this->distance_sq(box, this->center, pbc) <=
+                   this->radius * this->radius;
+        }
+
+        // -------------------------------------------------------------------
+        // AABB-sphere distance calculation under the PBC
+        Real distance_sq(const AABB& box, Real3 pos, const PeriodicBoundary& pbc) const noexcept
+        {
+            pos = pbc.periodic_transpose(pos, (box.upper() + box.lower()) * 0.5);
+
+            Real dist_sq = 0;
+            for(std::size_t i=0; i<3; ++i)
+            {
+                const auto v = pos[i];
+                if(v < box.lower()[i])
+                {
+                    dist_sq += (v - box.lower()[i]) * (v - box.lower()[i]);
+                }
+                else if(box.upper()[i] < v)
+                {
+                    dist_sq += (v - box.upper()[i]) * (v - box.upper()[i]);
+                }
+            }
+            return dist_sq;
+        }
+    };
+
+    template<typename Filter>
+    bool has_overlapping_faces_impl(
+            const Real3& pos, const Real& radius, Filter&& filter) const
+    {
+        using filter_type = typename std::remove_cv<
+            typename std::remove_reference<Filter>::type>::type;
+        try
+        {
+            this->faces_.query(IntersectionFindQuery<filter_type>(
+                        pos, radius, std::forward<Filter>(filter)
+                    ), std::back_inserter(retval));
+            return false;
+        }
+        catch(const IntersectionFound&)
+        {
+            return true;
+        }
     }
 
   private:
