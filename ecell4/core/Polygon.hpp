@@ -9,6 +9,7 @@
 #include <ecell4/core/Shape.hpp>
 #include <ecell4/core/Triangle.hpp>
 #include <ecell4/core/geometry.hpp>
+#include <ecell4/core/collision.hpp>
 #include <ecell4/core/triangle_geometry.hpp>
 #include <ecell4/core/Barycentric.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -897,6 +898,7 @@ class Polygon : public Shape
             typename std::remove_reference<Filter>::type>::type;
         try
         {
+            std::vector<std::pair<std::pair<FaceID, Triangle>, Real>> retval;
             this->faces_.query(IntersectionFindQuery<filter_type>(
                         pos, radius, std::forward<Filter>(filter)
                     ), std::back_inserter(retval));
