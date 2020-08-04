@@ -93,7 +93,8 @@ private:
             const Real3& p, const Real3& disp, const Triangle& t)
     {
         // Here we don't need to consider the periodic images. Those are
-        // correctly handled by the core algorithm.
+        // correctly handled by the core algorithm. That means that the triangle
+        // `t` here is the correct nearest image.
 
         // First, check if the segment intersects triangle.
         {

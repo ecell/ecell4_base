@@ -196,8 +196,8 @@ public:
     }
 
     // ------------------------------------------------------------------------
-    // list_particles_within_radius_3D
-    // Note that it returns only 3D particles. No 2D-3D checking.
+    // list_particles_within_radius_2D
+    // Note that it returns only 2D particles. No 2D-3D checking.
 
     std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
     list_particles_within_radius_2D(
