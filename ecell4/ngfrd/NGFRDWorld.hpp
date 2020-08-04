@@ -76,10 +76,40 @@ public:
     // ------------------------------------------------------------------------
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p);
+    new_particle(const Particle& p)
+    {
+        ParticleID pid(this->pidgen_());
+
+        if(polygon_->list_faces_within_radius(p.position(), p.radius()).empty() &&
+           this->list_particles_within_radius_3D(p.position(), p.radius()))
+        {
+            // XXX: do NOT call this->update_particle to avoid redundant check
+            this->ps_->update_particle(pid, p);
+            return std::make_pair(std::make_pair(pid, p), true);
+        }
+        else
+        {
+            return std::make_pair(std::make_pair(pid, p), false);
+        }
+    }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p, const FaceID& fid);
+    new_particle(const Particle& p, const FaceID& fid)
+    {
+        ParticleID pid(this->pidgen_());
+
+        if(this->list_particles_within_radius_2D(
+                    std::make_pair(p.position(), fid), p.radius()).empty())
+        {
+            this->ps_->update_particle(pid, p);
+            this->poly_con_.update(pid, fid);
+            return std::make_pair(std::make_pair(pid, p), true);
+        }
+        else
+        {
+            return std::make_pair(std::make_pair(pid, p), false);
+        }
+    }
 
     bool update_particle(const ParticleID& pid, const Particle& p);
     bool update_particle(const ParticleID& pid, const Particle& p,
