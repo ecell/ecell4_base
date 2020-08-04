@@ -481,16 +481,18 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
     Real3 disp    = this->draw_3D_displacement(p);
     while(true)
     {
+        // construct a sphere that includes both the first and last point
+        // and its linear interpolation.
         const Real3 r(p.radius(), p.radius(), p.radius());
         const auto radius = length(disp * 0.5 + r);
-        const auto center = new_pos + disp * 0.5;
+        const auto center = boundary.apply_boundary(new_pos + disp * 0.5);
 
         // {{FID, triangle}, distance}
         auto interacting_faces_candidates =
             this->world_.polygon().list_faces_within_radius(center, radius);
         if(interacting_faces_candidates.empty())
         {
-            new_pos += disp;
+            new_pos += disp; // no collision can happen.
             break;
         }
 
