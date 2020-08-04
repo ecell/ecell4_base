@@ -80,7 +80,7 @@ public:
     {
         ParticleID pid(this->pidgen_());
 
-        if(polygon_->list_faces_within_radius(p.position(), p.radius()).empty() &&
+        if( ! has_overlapping_faces(p.position(), p.radius()).empty() &&
            this->list_particles_within_radius_3D(p.position(), p.radius()))
         {
             // XXX: do NOT call this->update_particle to avoid redundant check
@@ -113,7 +113,7 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
-        if(polygon_->list_faces_within_radius(p.position(), p.radius()).empty() &&
+        if( ! has_overlapping_faces(p.position(), p.radius()).empty() &&
            this->list_particles_within_radius_3D(p.position(), p.radius()))
         {
             // if `pid` already exists and was a 2D particle, we need to reset
@@ -189,8 +189,15 @@ public:
     bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real,
             const ParticleID&, const ParticleID&) const;
 
-    bool has_overlapping_triangle(const Real3&, const Real) const;
-    bool has_overlapping_triangle(const Real3&, const Real, const FaceID&) const;
+    bool has_overlapping_faces(const Real3& center, const Real radius) const
+    {
+        return polygon_->has_overlapping_faces(center, radius);
+    }
+    bool has_overlapping_faces(const Real3& center, const Real radius,
+                               const FaceID& ignore) const
+    {
+        return polygon_->has_overlapping_faces(center, radius, ignore);
+    }
 
     // ------------------------------------------------------------------------
     // list_particles_within_radius
