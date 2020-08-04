@@ -111,12 +111,54 @@ public:
         }
     }
 
-    bool update_particle(const ParticleID& pid, const Particle& p);
+    bool update_particle(const ParticleID& pid, const Particle& p)
+    {
+        if(polygon_->list_faces_within_radius(p.position(), p.radius()).empty() &&
+           this->list_particles_within_radius_3D(p.position(), p.radius()))
+        {
+            // if `pid` already exists and was a 2D particle, we need to reset
+            // the relationship.
+            if(const auto fid = this->poly_con_.on_which_face(pid))
+            {
+                this->poly_con_.remove(pid, *fid);
+            }
+            return this->ps_->update_particle(pid, p);
+        }
+        else
+        {
+            // overlap found. the update is rejected. no change.
+            return true;
+        }
+    }
     bool update_particle(const ParticleID& pid, const Particle& p,
-                         const FaceID& fid);
+                         const FaceID& fid)
+    {
+        if(this->list_particles_within_radius_2D(
+                    std::make_pair(p.position(), fid), p.radius()).empty())
+        {
+            this->ps_->update_particle(pid, p);
+            this->poly_con_.update(pid, fid);
+            return std::make_pair(std::make_pair(pid, p), true);
+        }
+        else
+        {
+            return std::make_pair(std::make_pair(pid, p), false);
+        }
+    }
 
-    void remove_particle(const ParticleID&);
-    bool has_particle(const ParticleID&);
+    void remove_particle(const ParticleID& pid)
+    {
+        if(const auto fid = poly_con_.on_which_face(pid))
+        {
+            poly_con_.remove(pid, *fid);
+        }
+        ps_->remove_particle(pid);
+        return;
+    }
+    bool has_particle(const ParticleID& pid)
+    {
+        return ps_->has_particle(pid);
+    }
 
     // ------------------------------------------------------------------------
 
@@ -132,20 +174,23 @@ public:
     }
 
     // ------------------------------------------------------------------------
+    // for speedup
 
-    bool has_overlapping_particle(const Real3&) const;
-    bool has_overlapping_particle(const Real3&, const ParticleID& ignore) const;
-    bool has_overlapping_particle(const Real3&, const ParticleID& ignore1,
-            const ParticleID& ignore2) const;
+    bool has_overlapping_particle(const Real3&, const Real) const;
+    bool has_overlapping_particle(const Real3&, const Real,
+            const ParticleID& ignore) const;
+    bool has_overlapping_particle(const Real3&, const Real,
+            const ParticleID& ignore1, const ParticleID& ignore2) const;
 
-    bool has_overlapping_particle(const std::pair<Real3, FaceID>&) const;
-    bool has_overlapping_particle(const std::pair<Real3, FaceID>&,
+    bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real
+            ) const;
+    bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real,
             const ParticleID&) const;
-    bool has_overlapping_particle(const std::pair<Real3, FaceID>&,
+    bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real,
             const ParticleID&, const ParticleID&) const;
 
-    bool has_overlapping_triangle(const Real3&) const;
-    bool has_overlapping_triangle(const Real3&, const FaceID&) const;
+    bool has_overlapping_triangle(const Real3&, const Real) const;
+    bool has_overlapping_triangle(const Real3&, const Real, const FaceID&) const;
 
     // ------------------------------------------------------------------------
     // list_particles_within_radius
