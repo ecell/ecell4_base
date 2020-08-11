@@ -286,7 +286,54 @@ public:
 
     PeriodicBoundary boundary() const noexcept
     {
-        return PeriodicBoundary(edge_lengths);
+        return PeriodicBoundary(this->edge_lengths());
+    }
+
+    molecule_info_type get_molecule_info(const Species& sp) const
+    {
+        Real radius(0.0), D(0.0);
+
+        if (sp.has_attribute("radius") && sp.has_attribute("D"))
+        {
+            radius = sp.get_attribute_as<Real>("radius");
+            D = sp.get_attribute_as<Real>("D");
+        }
+        else if (std::shared_ptr<Model> bound_model = lock_model())
+        {
+            Species newsp(bound_model->apply_species_attributes(sp));
+            if (newsp.has_attribute("radius")
+                && newsp.has_attribute("D"))
+            {
+                radius = newsp.get_attribute_as<Real>("radius");
+                D = newsp.get_attribute_as<Real>("D");
+            }
+        }
+
+        if (radius <= 0.0)
+        {
+            throw_exception<IllegalArgument>("A particle with invalid size [",
+                    radius, "] was given.");
+        }
+
+        return MoleculeInfo{radius, D};
+    }
+
+    void bind_to(std::shared_ptr<Model> model)
+    {
+        if (std::shared_ptr<Model> bound_model = lock_model())
+        {
+            if (bound_model.get() != model.get())
+            {
+                std::cerr << "Warning: Model already bound to NGFRDWorld"
+                    << std::endl;
+            }
+        }
+        model_ = model;
+    }
+
+    std::shared_ptr<Model> lock_model() const
+    {
+        return model_.lock();
     }
 
     // -----------------------------------------------------------------------
