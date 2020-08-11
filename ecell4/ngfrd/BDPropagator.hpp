@@ -82,8 +82,9 @@ private:
                                   const ParticleID&, const Particle&,
                                   const ReactionRule&);
 
-    bool is_inside_of_shells_3D(const Real3&,                    const Real& radius) const;
-    bool is_inside_of_shells_2D(const std::pair<Real3, FaceID>&, const Real& radius) const;
+    bool is_inside_of_shells_3D(const Real3&, const Real& radius) const;
+    bool is_inside_of_shells_2D(
+            const std::pair<Real3, FaceID>&, const Real& radius) const;
 
     Real3 draw_2D_displacement(const Particle&, const FaceID&);
     Real3 draw_3D_displacement(const Particle&);
