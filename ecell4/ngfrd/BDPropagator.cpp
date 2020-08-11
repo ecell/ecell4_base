@@ -45,7 +45,7 @@ void BDPropagator::propagate_2D_particle(
     }
 
     // collect particles within reactive range
-    auto overlapped = world_.list_particles_within_radius(
+    auto overlapped = world_.list_particles_within_radius_2D(
             new_pos, p.radius() + reaction_length_, /*ignore = */ pid);
 
     bool core_overlapped = false;
@@ -64,7 +64,7 @@ void BDPropagator::propagate_2D_particle(
         // movement accepted. update the position.
         p.position() = new_pos.first;
         fid          = new_pos.second;
-        world_.upadte_particle(pid, p, fid);
+        world_.update_particle(pid, p, fid);
     }
     else // core overlap
     {
@@ -72,7 +72,7 @@ void BDPropagator::propagate_2D_particle(
         // if there is a reactive partner around the original position.
 
         // Update overlapping particles with the previous position.
-        overlapped = world_.list_particles_within_radius(
+        overlapped = world_.list_particles_within_radius_2D(
             prev_pos, p.radius() + reaction_length_, /*ignore = */ pid);
     }
 
@@ -148,7 +148,7 @@ bool BDPropagator::attempt_1to1_reaction_2D(
 {
     assert(rule.products().size() == 1);
     const auto species_new = rule.products().front();
-    const auto molinfo     = container_.get_molecule_info(species_new);
+    const auto molinfo     = world_.get_molecule_info(species_new);
     const Real radius_new  = molinfo.radius;
     const Real D_new       = molinfo.D;
 
@@ -331,25 +331,27 @@ bool BDPropagator::attempt_1to2_reaction_2D(
 
 bool BDPropagator::attempt_pair_reaction_2D(
         const ParticleID& pid, const Particle& p, const FaceID& fid,
-        const std::vector<std::pair<std::pair<ParticleID, Particle>, Real>& overlapped)
+        const std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>& overlapped)
 {
     Real probability = 0.0;
     const Real threshold = rng_.uniform(0.0, 1.0);
 
     for(const auto& pidp : overlapped) // try all the particles in the reactive region
     {
-        const auto& rules = model_.query_reaction_rules(p1.species(), p2.species());
+        const auto& pid2  = pidp.first.first;
+        const auto& p2    = pidp.first.second;
+        const auto& rules = model_.query_reaction_rules(p.species(), p2.species());
         if(rules.empty())
         {
             continue;
         }
 
-        const Real k_tot = std::accumurate(rules.begin(), rules.end(), Real(0.0),
+        const Real k_tot = std::accumulate(rules.begin(), rules.end(), Real(0.0),
                 [](const Real k, const ReactionRule& rule) -> Real {
                     return k + rule.k();
                 });
 
-        probability += k_tot * calc_pair_acceptance_coef_2D(p, pidp.second);
+        probability += k_tot * calc_pair_acceptance_coef_2D(p, p2);
 
         if(probability <= threshold)
         {
@@ -369,25 +371,24 @@ bool BDPropagator::attempt_pair_reaction_2D(
             case 0:
             {
                 world_.remove_particle(pid);
-                world_.remove_particle(pidp.first);
+                world_.remove_particle(pid2);
 
-                const auto found = std::find(queue_.begin(), queue_.end(), pidp.first);
+                const auto found = std::find(queue_.begin(), queue_.end(), pid2);
                 if(found != queue_.end())
                 {
                     queue_.erase(found);
                 }
 
                 last_reactions_.emplace_back(rule, make_degradation_reaction_info(
-                            world_.t(), pid, p, pidp.first, pidp.second);
+                            world_.t(), pid, p, pid2, p2));
                 return true;
             }
             case 1:
             {
-                const auto fid2 = world_.on_which_face(pidp.frist);
+                const auto fid2 = world_.on_which_face(pid2);
                 assert(fid2.has_value());
 
-                return attempt_2to1_reaction_2D(p, pid, fid,
-                        pidp.first, pidp.second, *fid2, rule);
+                return attempt_2to1_reaction_2D(pid, p, fid, pid2, p2, *fid2, rule);
             }
             default:
             {
@@ -419,11 +420,11 @@ bool BDPropagator::attempt_2to1_reaction_2D(
     std::pair<Real3, FaceID> new_pos;
     if(D1 == 0.0)
     {
-        new_pos = std::make_pair(pos1, fid1);
+        new_pos = pos1;
     }
     else if(D2 == 0.0)
     {
-        new_pos = std::make_pair(pos2, fid2);
+        new_pos = pos2;
     }
     else
     {
@@ -478,7 +479,7 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
     Real3 disp    = this->draw_3D_displacement(p);
     Real3 new_pos = world_.boundary().apply_boundary(p.position() + disp);
 
-    if(has_overlapping_faces(new_pos, p.radius()))
+    if(world_.has_overlapping_faces(new_pos, p.radius()))
     {
         // collision detected. That means that no reaction happens here because
         // there is no particle overlap.
@@ -490,7 +491,7 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         // determine positions of particles in overlapping shells.
         sim_.determine_positions(new_pos, p.radius());
     }
-    const auto overlapped = world_.list_particles_within_radius(
+    const auto overlapped = world_.list_particles_within_radius_3D(
             new_pos, p.radius(), /*ignore = */ pid);
 
     switch(overlapped.size())
@@ -574,11 +575,11 @@ bool BDPropagator::attempt_1to1_reaction_3D(
 {
     assert(rule.products().size() == 1);
     const auto species_new = rule.products().front();
-    const auto molinfo     = container_.get_molecule_info(species_new);
+    const auto molinfo     = world_.get_molecule_info(species_new);
     const Real radius_new  = molinfo.radius;
     const Real D_new       = molinfo.D;
 
-    if(world_.has_overlapping_faces(p.pos(), radius_new))
+    if(world_.has_overlapping_faces(p.position(), radius_new))
     {
         return false;
     }
@@ -587,14 +588,14 @@ bool BDPropagator::attempt_1to1_reaction_3D(
     {
         sim_.determine_positions(p.position(), radius_new);
     }
-    if(world_.has_overlapping_particles_3D(p.pos(), radius_new, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_3D(p.position(), radius_new, /*ignore = */ pid))
     {
         return false;
     }
 
     Particle particle_new(species_new, p.position(), radius_new, D_new);
 
-    world_.update_particle(pid, particle_new, fid);
+    world_.update_particle(pid, particle_new);
 
     last_reactions_.emplace_back(rule, make_unimolecular_reaction_info(
                 world_.t(), pid, p, pid, particle_new));
@@ -603,8 +604,7 @@ bool BDPropagator::attempt_1to1_reaction_3D(
 
 // return true if reaction is accepted.
 bool BDPropagator::attempt_1to2_reaction_3D(
-        const ParticleID& pid, const Particle& p, const FaceID& fid,
-        const ReactionRule& rule)
+        const ParticleID& pid, const Particle& p, const ReactionRule& rule)
 {
     assert(rule.products().size() == 2);
 
@@ -637,7 +637,7 @@ bool BDPropagator::attempt_1to2_reaction_3D(
     {
         --separation_count;
 
-        const Real3 ipv = draw_ipv_3D(separation_length, D12, n);
+        const Real3 ipv = draw_ipv_3D(separation_length, dt_, D12);
         Real3 disp1 = ipv * (D1 / D12);
         Real3 disp2 = disp1 - ipv; // disp1 + (-disp2) = ipv
 
@@ -694,8 +694,8 @@ bool BDPropagator::attempt_1to2_reaction_3D(
     Particle p1_new(sp1, pos1_new, r1, D1);
     Particle p2_new(sp2, pos2_new, r2, D2);
 
-    const auto result1 = world_.update_particle(pid, p1_new, pos1_new.second);
-    const auto result2 = world_.new_particle   (     p2_new, pos2_new.second);
+    const auto result1 = world_.update_particle(pid, p1_new);
+    const auto result2 = world_.new_particle   (     p2_new);
 
     assert(not result1); // should be already exist (it returns true if it's new)
     assert(result2.second); // should succeed
@@ -722,15 +722,16 @@ bool BDPropagator::attempt_pair_reaction_3D(
     const auto D2 = p2.D();
     const auto r1 = p1.radius();
     const auto r2 = p2.radius();
+    const auto r12 = r1 + r2;
 
     const Real threshold = rng_.uniform(0.0, 1.0);
     Real probability = 0.0;
     for(const auto& rule : rules)
     {
-        const Real term1 = greens_functions::I_bd_3D(r01, dt_, s0.D);
-        const Real term2 = greens_functions::I_bd_3D(r01, dt_, s1.D);
+        const Real term1 = greens_functions::I_bd_3D(r12, dt_, D1);
+        const Real term2 = greens_functions::I_bd_3D(r12, dt_, D2);
 
-        const Real p = r.k() * dt_ / ((term1 + term2) * 4.0 * pi);
+        const Real p = rule.k() * dt_ / ((term1 + term2) * 4.0 * pi);
         assert(0.0 < p);
         probability += p;
 
@@ -755,7 +756,8 @@ bool BDPropagator::attempt_pair_reaction_3D(
                     }
 
                     last_reactions_.emplace_back(rule, make_degradation_reaction_info(
-                                world_.t(), pid1, p1, pid2, p2);
+                                world_.t(), pid1, p1, pid2, p2));
+                    return true;
                 }
                 case 1:
                 {
@@ -796,14 +798,15 @@ bool BDPropagator::attempt_2to1_reaction_3D(
     const auto& boundary = world_.boundary();
 
     // D1==0 -> p1, D2==0 -> p2
-    const Real3 new_pos = boundary.apply_boundary(p1 + (p2 - p1) * D1 / D12);
+    const Real3 new_pos = boundary.apply_boundary(
+            p1.position() + (p2.position() - p1.position()) * D1 / D12);
 
     if(world_.has_overlapping_faces(new_pos, radius_new))
     {
         return false;
     }
 
-    if(not is_inside_of_shells_2D(new_pos, radius_new))
+    if(not is_inside_of_shells_3D(new_pos, radius_new))
     {
         sim_.determine_positions(new_pos, radius_new);
     }
@@ -815,7 +818,7 @@ bool BDPropagator::attempt_2to1_reaction_3D(
     Particle particle_new(species_new, new_pos, radius_new, D_new);
 
     world_.remove_particle(pid2);
-    world_.update_particle(pid1, particle_new, new_pos.second);
+    world_.update_particle(pid1, particle_new);
 
     // remove reaction partner from query to avoid not-found error
     const auto found2 = std::find(queue_.begin(), queue_.end(), pid2);
@@ -877,7 +880,7 @@ bool BDPropagator::is_inside_of_shells_2D(
             const auto& conical = sh.as_conical();
             const Real dist = ecell4::polygon::distance(polygon,
                     pos, std::make_pair(conical.position(), conical.vid()));
-            if(dist + radius < circular.shape().radius())
+            if(dist + radius < conical.shape().slant_height())
             {
                 return true; // particle is inside of this shell.
             }
@@ -893,7 +896,7 @@ Real3 BDPropagator::draw_2D_displacement(const Particle& p, const FaceID& fid)
 
     const Real  r    = rng_.gaussian(std::sqrt(4 * p.D() * dt_));
     const auto& tri  = world_.polygon().triangle_at(fid);
-    const auto& disp = r * (tri.represent() / length(tri.represent()));
+    const auto& disp = (tri.represent() / length(tri.represent())) * r;
 
     const auto theta = rng_.uniform(0.0, 1.0) * 2 * pi;
 
