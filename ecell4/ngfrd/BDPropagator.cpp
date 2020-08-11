@@ -886,7 +886,7 @@ bool BDPropagator::is_inside_of_shells_2D(
     return false;
 }
 
-Real3 draw_2D_displacement(const Particle& p, const FaceID& fid)
+Real3 BDPropagator::draw_2D_displacement(const Particle& p, const FaceID& fid)
 {
     constexpr Real pi = boost::math::constants::pi<Real>();
 
@@ -898,10 +898,56 @@ Real3 draw_2D_displacement(const Particle& p, const FaceID& fid)
 
     return rotate(theta, tri.normal(), disp);
 }
-Real3 draw_3D_displacement(const Particle& p)
+Real3 BDPropagator::draw_3D_displacement(const Particle& p)
 {
     const Real sigma = std::sqrt(2 * p.D() * dt_);
     return Real3(rng_.gaussian(sigma), rng_.gaussian(sigma), rng_.gaussian(sigma));
+}
+
+Real BDPropagator::calc_pair_acceptance_coef_2D(
+        const Particle& p1, const Particle& p2) const noexcept
+{
+    const Real radius_sum     = p1.radius() + p2.radius();
+    const Real reaction_range = radius_sum + reaction_length_;
+
+    const Real reaction_area = boost::math::constants::pi<Real>() *
+        (radius_sum * radius_sum - reaction_range * reaction_range);
+
+    if(p1.D() == 0.0 || p2.D() == 0)
+    {
+        // immovable particles immediately return after attempting 1st order
+        // reaction.
+        // to attempt 2nd order reaction with them, we need to double the
+        // acceptance coefficient.
+        return this->dt_ / reaction_area;
+    }
+    else
+    {
+        // movable particles checks 2nd order reaction. If the both reactants
+        // are movable, both particle attempts reaction. So here it halves
+        // the acceptance coefficient to avoid double-counting.
+        return 0.5 * this->dt_ / reaction_area;
+    }
+}
+ReactionRule const& BDPropagator::determine_reaction_rule(
+        const std::vector<ReactionRule>& rules, const Real k_tot) noexcept
+{
+    assert(!rules.empty());
+    if(rules.size() == 1)
+    {
+        return rules.front();
+    }
+    const Real rnd = this->rng_.uniform(0.0, 1.0) * k_tot;
+    Real k_cumm = 0.0;
+    for(const auto& rule : rules)
+    {
+        k_cumm += rule.k();
+        if(rnd < k_cumm)
+        {
+            return rule;
+        }
+    }
+    return rules.back();
 }
 
 } // ngfrd

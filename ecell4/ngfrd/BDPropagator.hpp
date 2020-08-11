@@ -89,51 +89,10 @@ private:
     Real3 draw_3D_displacement(const Particle&);
 
     Real calc_pair_acceptance_coef_2D(
-            const Particle& p1, const Particle& p2) const noexcept
-    {
-        const Real radius_sum     = p1.radius() + p2.radius();
-        const Real reaction_range = radius_sum + reaction_length_;
+            const Particle& p1, const Particle& p2) const noexcept;
 
-        const Real reaction_area = boost::math::constants::pi<Real>() *
-            (radius_sum * radius_sum - reaction_range * reaction_range);
-
-        if(p1.D() == 0.0 || p2.D() == 0)
-        {
-            // immovable particles immediately return after attempting 1st order
-            // reaction.
-            // to attempt 2nd order reaction with them, we need to double the
-            // acceptance coefficient.
-            return this->dt_ / reaction_area;
-        }
-        else
-        {
-            // movable particles checks 2nd order reaction. If the both reactants
-            // are movable, both particle attempts reaction. So here it halves
-            // the acceptance coefficient to avoid double-counting.
-            return 0.5 * this->dt_ / reaction_area;
-        }
-    }
-    ReactionRule const&
-    determine_reaction_rule(const std::vector<ReactionRule>& rules,
-                            const Real k_tot) noexcept
-    {
-        assert(!rules.empty());
-        if(rules.size() == 1)
-        {
-            return rules.front();
-        }
-        const Real rnd = this->rng_.uniform(0.0, 1.0) * k_tot;
-        Real k_cumm = 0.0;
-        for(const auto& rule : rules)
-        {
-            k_cumm += rule.k();
-            if(rnd < k_cumm)
-            {
-                return rule;
-            }
-        }
-        return rules.back();
-    }
+    ReactionRule const& determine_reaction_rule(
+            const std::vector<ReactionRule>& rules, const Real k_tot) noexcept;
 
 private:
 
