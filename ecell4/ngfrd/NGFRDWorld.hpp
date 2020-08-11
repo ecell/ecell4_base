@@ -44,8 +44,9 @@ public:
 public:
 
     NGFRDWorld(const Real3&    edge_lengths = Real3(1, 1, 1),
-               const Integer3& matrix_sizes = Integer3(3, 3, 3))
-        : ps_(new particle_space_type(edge_lengths, matrix_sizes)),
+               const Integer3& matrix_sizes = Integer3(3, 3, 3),
+               const Real      margin       = 0.1)
+        : ps_(new particle_space_type(edge_lengths, margin)),
           polygon_(std::make_shared<Polygon>(edge_lengths, matrix_sizes))
     {
         rng_ = std::shared_ptr<RandomNumberGenerator>(
@@ -56,9 +57,10 @@ public:
     }
 
     NGFRDWorld(const Real3& edge_lengths, const Integer3& matrix_sizes,
+               const Real margin, // bounding box margin
                std::shared_ptr<RandomNumberGenerator> rng,
                std::shared_ptr<Polygon>               poly)
-        : ps_(new particle_space_type(edge_lengths, matrix_sizes)),
+        : ps_(new particle_space_type(edge_lengths, margin)),
           rng_(std::move(rng)), polygon_(std::move(poly))
     {
         this->prepare_restrictions();
@@ -618,11 +620,11 @@ private:
 
 private:
 
+    std::unique_ptr<particle_space_type>   ps_;
     std::shared_ptr<RandomNumberGenerator> rng_;
     std::weak_ptr<Model>                   model_;
-    particle_id_generator_type             pidgen_;
-    std::unique_ptr<particle_space_type>   ps_;
-    std::shared_ptr<Polygon>               poly_;
+    SerialIDGenerator<ParticleID>          pidgen_;
+    std::shared_ptr<Polygon>               polygon_;
     polygon_container_type                 poly_con_; // PID <-> FaceID
 
     // 2D gfrd specific cache
