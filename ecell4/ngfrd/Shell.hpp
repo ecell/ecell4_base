@@ -105,19 +105,6 @@ public:
     using storage_type = boost::variant<
         SphericalShell, CylindricalShell, CircularShell, ConicalShell>;
 
-    struct position_getter : public boost::static_visitior<Real3>
-    {
-        Real3& operator()(SphericalShell&   sh) const noexcept {return sh.position();}
-        Real3& operator()(CylindricalShell& sh) const noexcept {return sh.position();}
-        Real3& operator()(CircularShell&    sh) const noexcept {return sh.position();}
-        Real3& operator()(ConicalShell&     sh) const noexcept {return sh.position();}
-
-        Real3 const& operator()(SphericalShell const&   sh) const noexcept {return sh.position();}
-        Real3 const& operator()(CylindricalShell const& sh) const noexcept {return sh.position();}
-        Real3 const& operator()(CircularShell const&    sh) const noexcept {return sh.position();}
-        Real3 const& operator()(ConicalShell const&     sh) const noexcept {return sh.position();}
-    };
-
 public:
 
     template<typename S>
@@ -142,13 +129,27 @@ public:
     storage_type const& as_variant() const noexcept {return storage_;}
     storage_type&       as_variant()       noexcept {return storage_;}
 
-    Real3& position() noexcept
+    Real3& position()
     {
-        return boost::apply_visitor(position_getter(), storage_);
+        switch(storage_.which())
+        {
+            case 0: {return boost::get<SphericalShell  >(storage_).position();}
+            case 1: {return boost::get<CylindricalShell>(storage_).position();}
+            case 2: {return boost::get<CircularShell   >(storage_).position();}
+            case 3: {return boost::get<ConicalShell    >(storage_).position();}
+            default:{throw std::runtime_error("Shell::position: bad_visit");}
+        }
     }
-    Real3 const& position() const noexcept
+    Real3 position() const
     {
-        return boost::apply_visitor(position_getter(), storage_);
+        switch(storage_.which())
+        {
+            case 0: {return boost::get<SphericalShell  >(storage_).position();}
+            case 1: {return boost::get<CylindricalShell>(storage_).position();}
+            case 2: {return boost::get<CircularShell   >(storage_).position();}
+            case 3: {return boost::get<ConicalShell    >(storage_).position();}
+            default:{throw std::runtime_error("Shell::position: bad_visit");}
+        }
     }
 
 private:
@@ -157,7 +158,8 @@ private:
 };
 
 template<typename Visitor, typename ... Shells>
-typename Visitor::result_type visit(Visitor&& visitor, Shells&& ... sh)
+typename std::remove_const<typename std::remove_reference<Visitor>::type>::type::result_type
+visit(Visitor&& visitor, Shells&& ... sh)
 {
     return boost::apply_visitor(std::forward<Visitor>(visitor),
             std::forward<Shells>(sh).as_variant() ...);
@@ -176,14 +178,14 @@ struct ShellDistanceCalculator
     // if the position is inside of the sphere, returns a negative value.
     Real operator()(const SphericalShell& sh) const noexcept
     {
-        return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
+        return length(pos - boundary->periodic_transpose(sh.position(), pos)) -
                sh.shape().radius();
     }
     // if the position is inside of the sphere, returns a negative value.
     Real operator()(const CylindricalShell& sh) const noexcept
     {
         // a candidate of nearest point
-        const auto p1 = boundary->periodic_transpose(pos, cyl.center());
+        const auto p1 = boundary->periodic_transpose(pos, sh.position());
         const auto d  = distance(sh.shape(), p1);
 
         const auto& cyl_r = sh.shape().radius();
@@ -208,16 +210,16 @@ struct ShellDistanceCalculator
         Real dist = d;
         for(int ix=-1; ix<=1; ++ix)
         {
-            const Real px = p1[0] + i_x * edge[0];
+            const Real px = p1[0] + ix * edge[0];
             if(px < lower[0] || upper[0] < px) {continue;}
             for(int iy=-1; iy<=1; ++iy)
             {
-                const Real py = p1[1] + i_y * edge[1];
+                const Real py = p1[1] + iy * edge[1];
                 if(py < lower[1] || upper[1] < py) {continue;}
 
                 for(int iz=-1; iz<=1; ++iz)
                 {
-                    const Real pz = p1[2] + i_z * edge[2];
+                    const Real pz = p1[2] + iz * edge[2];
                     if(pz < lower[2] || upper[2] < pz) {continue;}
                     dist = std::min(dist,
                             this->distance(sh.shape(), Real3(px,py,pz)));
@@ -233,7 +235,7 @@ struct ShellDistanceCalculator
         // does not go beyond the bounding sphere. Here, it returns a distance
         // to the bounding sphere. So it UNDER-ESTIMATES the distance.
 
-        return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
+        return length(pos - boundary->periodic_transpose(sh.position(), pos)) -
                sh.shape().radius();
     }
     Real operator()(const ConicalShell& sh) const noexcept
@@ -243,7 +245,7 @@ struct ShellDistanceCalculator
         // does not go beyond the bounding sphere. Here, it returns a distance
         // to the bounding sphere. So it UNDER-ESTIMATES the distance.
 
-        return length(pos - boundary.periodic_transpose(sh.position(), pos)) -
+        return length(pos - boundary->periodic_transpose(sh.position(), pos)) -
                sh.shape().slant_height();
     }
 
@@ -254,7 +256,7 @@ private:
     {
         const auto dr = pos - cyl.center();
         const auto ax = cyl.axis() / length(cyl.axis());
-        const auto z  = dot_product(dr, ax) * ax;
+        const auto z  = ax * dot_product(dr, ax);
         const auto r  = dr - z;
         const auto lz = length(z);
         const auto lr = length(r);
