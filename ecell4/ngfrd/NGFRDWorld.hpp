@@ -223,30 +223,6 @@ public:
     }
 
     // ------------------------------------------------------------------------
-    // list_particles_within_radius
-    //
-    // for compatibility. Currently, it overestimates the number of 2D particles
-
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
-    list_particles_within_radius(const Real3& center, const Real radius) const
-    {
-        return this->list_particles_within_radius_impl(center, radius);
-    }
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
-    list_particles_within_radius(const Real3& center, const Real radius,
-            const ParticleID& ignore) const
-    {
-        return this->list_particles_within_radius_impl(center, radius, ignore);
-    }
-    std::vector<std::pair<std::pair<ParticleID, Particle>, Real>>
-    list_particles_within_radius(const Real3& center, const Real radius,
-            const ParticleID& ignore1, const ParticleID& ignore2) const
-    {
-        return this->list_particles_within_radius_impl(
-                center, radius, ignore1, ignore2);
-    }
-
-    // ------------------------------------------------------------------------
     // list_particles_within_radius_3D
     // Note that it returns only 3D particles. No 2D-3D checking.
 
