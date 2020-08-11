@@ -41,7 +41,7 @@ public:
         const auto pid = queue_.back();
         queue_.pop_back();
 
-        Particle p = world_.get_particle(pid);
+        Particle p = world_.get_particle(pid).second;
         if(auto fid = world_.on_which_face(pid))
         {
             this->propagate_2D_particle(pid, std::move(p), std::move(*fid));
@@ -78,9 +78,9 @@ private:
 
     bool attempt_single_reaction_3D(const ParticleID&, const Particle&);
     bool attempt_1to1_reaction_3D(
-        const ParticleID&, const Particle&, const FaceID&, const ReactionRule&);
+        const ParticleID&, const Particle&, const ReactionRule&);
     bool attempt_1to2_reaction_3D(
-        const ParticleID&, const Particle&, const FaceID&, const ReactionRule&);
+        const ParticleID&, const Particle&, const ReactionRule&);
 
     bool attempt_pair_reaction_3D(const ParticleID&, const Particle&,
                                   const ParticleID&, const Particle&);
