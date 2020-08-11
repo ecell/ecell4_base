@@ -6,6 +6,7 @@
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/extras.hpp>
 #include <ecell4/core/Model.hpp>
+#include <ecell4/core/Segment.hpp>
 #include <ecell4/core/ParticleSpaceRTreeImpl.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
@@ -549,6 +550,71 @@ private:
         // no 3D check (Since particle would never overlaps with any face).
         return list;
     }
+
+  private:
+
+    void prepare_restrictions()
+    {
+        // To avoid edge cases, it calculates the maximum size of particle.
+        // Also, to avoid overlap between shells, it calculates a bisector of
+        // each angle in triangle.
+        Real min_altitude = std::numeric_limits<Real>::max();
+        for(const auto& fid : polygon_->list_face_ids())
+        {
+            const auto& tri = polygon_->triangle_at(fid);
+
+            // Estimate largest particle radius possible.
+            const auto S = tri.area();
+            min_altitude = std::min(min_altitude, 2.0 * S / tri.length_of_edge_at(0));
+            min_altitude = std::min(min_altitude, 2.0 * S / tri.length_of_edge_at(1));
+            min_altitude = std::min(min_altitude, 2.0 * S / tri.length_of_edge_at(2));
+
+            // calculate boundary for shell size
+            const auto& edges = polygon_->edges_of(fid);
+            const auto& vtxs  = polygon_->vertices_of(fid);
+            std::array<Segment, 6> segments;
+            for(std::size_t i=0; i<3; ++i)
+            {
+                // vi1   ei1  vi0  |
+                //     <-----.     |
+                //     \    ^ \    |
+                // ei2  \  /ei0\   |
+                //       v/_____\  |
+                //      vi2        |
+
+                const auto  ei0 = polygon_->opposite_of(edges.at(i));
+                const auto  ei1 = polygon_->next_of(ei0);
+                const auto  ei2 = polygon_->next_of(ei1);
+                const auto lei0 = polygon_->length_of(ei0);
+                const auto lei1 = polygon_->length_of(ei1);
+                const auto lei2 = polygon_->length_of(ei2);
+                const auto dei1 = polygon_->direction_of(ei1);
+                const auto dei2 = polygon_->direction_of(ei2);
+
+                const auto  vi0 = polygon_->target_of(ei0);
+                const auto  vi1 = polygon_->target_of(ei1);
+                const auto  vi2 = polygon_->target_of(ei2);
+
+                assert(vi0 == vtxs[i]);
+                assert(vi2 == vtxs[i==2?0:i+1]);
+
+                const auto pvi0 = tri.vertices()[i];
+                const auto pvi1 = this->boundary().periodic_transpose(
+                        polygon_->position_at(vi1), pvi0);
+                const auto pvi2 = tri.vertices()[(i==2)?0:i+1];
+
+                const auto dst0 = pvi1 + dei2 * (lei1 / (lei1 + lei0));
+                const auto dst2 = pvi0 + dei1 * (lei0 / (lei0 + lei2));
+
+                segments[2*i  ] = Segment(dst0, pvi0);
+                segments[2*i+1] = Segment(dst2, pvi2);
+            }
+            this->barriers_[fid] = segments;
+        }
+        this->estimated_possible_largest_particle_radius_ = min_altitude * 0.5;
+        return;
+    }
+
 
 private:
 
