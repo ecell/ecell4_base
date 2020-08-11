@@ -3,6 +3,7 @@
 #include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/Polygon.hpp>
 #include <boost/optional.hpp>
+#include <unordered_set>
 
 namespace ecell4
 {
@@ -32,7 +33,7 @@ public:
         {
             return boost::none;
         }
-        return *found;
+        return found->second;
     }
     boost::optional<EdgeID> on_which_edge(const ObjectID& id) const noexcept
     {
@@ -41,7 +42,7 @@ public:
         {
             return boost::none;
         }
-        return *found;
+        return found->second;
     }
     boost::optional<VertexID> on_which_vertex(const ObjectID& id) const noexcept
     {
@@ -50,7 +51,7 @@ public:
         {
             return boost::none;
         }
-        return *found;
+        return found->second;
     }
 
     boost::optional<std::vector<ObjectID> const&> objects_on(const FaceID& id) const noexcept
@@ -60,7 +61,7 @@ public:
         {
             return boost::none;
         }
-        return *found;
+        return found->second;
     }
     boost::optional<std::vector<ObjectID> const&> objects_on(const EdgeID& id) const noexcept
     {
@@ -69,7 +70,7 @@ public:
         {
             return boost::none;
         }
-        return *found;
+        return found->second;
     }
     boost::optional<std::vector<ObjectID> const&> objects_on(const VertexID& id) const noexcept
     {
@@ -78,7 +79,7 @@ public:
         {
             return boost::none;
         }
-        return *found;
+        return found->second;
     }
 
     // returns true if object is newly added.
@@ -96,23 +97,23 @@ public:
     bool update(const ObjectID& id, const EdgeID& eid)
     {
         const auto newly_added = this->remove_if_exists(id);
-        if(edge_to_obj_.count(fid) == 0)
+        if(edge_to_obj_.count(eid) == 0)
         {
-            edge_to_obj_[fid] = std::vector<ObjectID>{};
+            edge_to_obj_[eid] = std::vector<ObjectID>{};
         }
-        edge_to_obj_[fid].push_back(id);
-        obj_to_edge_[id] = fid;
+        edge_to_obj_[eid].push_back(id);
+        obj_to_edge_[id] = eid;
         return newly_added;
     }
     bool update(const ObjectID& id, const VertexID& vid)
     {
         const auto newly_added = this->remove_if_exists(id);
-        if(vertex_to_obj_.count(fid) == 0)
+        if(vertex_to_obj_.count(vid) == 0)
         {
-            vertex_to_obj_[fid] = std::vector<ObjectID>{};
+            vertex_to_obj_[vid] = std::vector<ObjectID>{};
         }
-        vertex_to_obj_[fid].push_back(id);
-        obj_to_vertex_[id] = fid;
+        vertex_to_obj_[vid].push_back(id);
+        obj_to_vertex_[id] = vid;
         return newly_added;
     }
 
@@ -143,7 +144,7 @@ public:
     void remove(const ObjectID& id, const EdgeID&   eid)
     {
         using std::swap;
-        auto& objs = edge_to_obj_[fid];
+        auto& objs = edge_to_obj_[eid];
         const auto found = std::find(objs.begin(), objs.end(), id);
         assert(found != objs.end());
         swap(*found, objs.back());
@@ -155,7 +156,7 @@ public:
     void remove(const ObjectID& id, const VertexID& vid)
     {
         using std::swap;
-        auto& objs = vertex_to_obj_[fid];
+        auto& objs = vertex_to_obj_[vid];
         const auto found = std::find(objs.begin(), objs.end(), id);
         assert(found != objs.end());
         swap(*found, objs.back());
