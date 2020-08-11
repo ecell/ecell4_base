@@ -32,7 +32,7 @@ void BDPropagator::propagate_2D_particle(
         // determine positions of particles in overlapping shells.
         sim_.determine_positions(new_pos, p.radius());
 
-        if(world_.has_overlapping_particles_2D(new_pos, p.radius(), /*ignore = */ pid))
+        if(world_.has_overlapping_particles_2D(new_pos, p.radius(), pid))
         {
             // if overlap exists, the movement would be rejected.
 
@@ -60,18 +60,17 @@ void BDPropagator::propagate_2D_particle(
 
     if(not core_overlapped)
     {
-        // movement accepted.
+        // movement accepted. update the position.
         p.position() = new_pos.first;
         fid          = new_pos.second;
         world_.upadte_particle(pid, p, fid);
     }
-
-    if(core_overlapped)
+    else // core overlap
     {
         // reject this displacement. But still, it can attempt pair reaction
         // if there is a reactive partner around the original position.
 
-        // Update overlapping particles.
+        // Update overlapping particles with the previous position.
         overlapped = world_.list_particles_within_radius(
             prev_pos, p.radius() + reaction_length_, /*ignore = */ pid);
     }
@@ -159,7 +158,7 @@ bool BDPropagator::attempt_1to1_reaction_2D(
         sim_.determine_positions(pos_fid, radius_new);
     }
 
-    if(world_.has_overlapping_particles_2D(pos_fid, radius_new, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_2D(pos_fid, radius_new, pid))
     {
         return false;
     }
@@ -472,125 +471,17 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         return; // particle does not move. done.
     }
 
-    const auto& boundary = world_.boundary();
-
     // ------------------------------------------------------------------------
-    // apply displacement, considering collision and reflection with polygon
+    // apply displacement. If it collides with a face, reject it.
 
-    Real3 new_pos = p.position();
     Real3 disp    = this->draw_3D_displacement(p);
-    while(true)
+    Real3 new_pos = world_.boundary().apply_boundary(p.position() + disp);
+
+    if(has_overlapping_faces(new_pos, p.radius()))
     {
-        // construct a sphere that includes both the first and last point
-        // and its linear interpolation.
-        const Real3 r(p.radius(), p.radius(), p.radius());
-        const auto radius = length(disp * 0.5 + r);
-        const auto center = boundary.apply_boundary(new_pos + disp * 0.5);
-
-        // {{FID, triangle}, distance}
-        auto interacting_faces_candidates =
-            this->world_.polygon().list_faces_within_radius(center, radius);
-        if(interacting_faces_candidates.empty())
-        {
-            new_pos += disp; // no collision can happen.
-            break;
-        }
-
-        // move triangles to the periodic image where two bounding boxes are
-        // nearest to each other (it does not always means that the center is
-        // nearest to the triangle).
-        for(auto& interacting_face: interacting_faces_candidates)
-        {
-            auto& tri = interacting_face.first.second;
-            const auto box = this->aabb_of(tri);
-            const auto box_center = (box.upper() + box.lower()) * 0.5;
-            const auto dr = boundary.periodic_transpose(box_center, center) -
-                            box_center;
-
-            tri.vertices()[0] += dr;
-            tri.vertices()[1] += dr;
-            tri.vertices()[2] += dr;
-        }
-
-        // reflect or reaction
-        boost::optional<std::pair<FaceID, Triangle>> colliding_face;
-        Real min_distance = std::numeric_limits<Real>::max();
-
-        const AABB moving_region(new_pos - r, new_pos + disp + r);
-        for(const auto& fidp : interacting_faces_candidates)
-        {
-            const auto& tri = fidp.second;
-
-            const Real dist = this->distance_segment_triangle(new_pos, disp, tri);
-
-            if(dist <= p.radius() && dist < min_distance)
-            {
-                colliding_face = fidp;
-                min_distance   = dist;
-            }
-
-            // if there is a possibility that a periodic image of the triangle
-            // collides faster than the original one, check all the images
-
-            const auto  tribox = this->aabb_of(tri);
-            const auto  tbxwid = tribox.upper() - tribox.lower();
-            const auto  mvrwid = disp + 2 * r;
-            const auto& edges  = boundary.edge_lengths();
-
-            // It means the triangle may collide with the moving particle even
-            // after periodic transposition. very unlikely (with a wierd shape).
-            if(edges[0] <= tbxwid[0] + mvrwid[0] ||
-               edges[1] <= tbxwid[1] + mvrwid[1] ||
-               edges[2] <= tbxwid[2] + mvrwid[2] )
-            {
-                for(const auto dx : {-1, 0, 1})
-                {
-                for(const auto dy : {-1, 0, 1})
-                {
-                for(const auto dz : {-1, 0, 1})
-                {
-                    const Real3 dr(edges[0] * dx, edges[1] * dy, edges[2] * dz);
-
-                    Triangle tri_image(tri);
-                    tri_image.vertices()[0] += dr;
-                    tri_image.vertices()[1] += dr;
-                    tri_image.vertices()[2] += dr;
-
-                    if(!this->overlaps(moving_region, this->aabb_of(tri_image)))
-                    {
-                        continue;
-                    }
-
-                    const Real dist = this->distance_segment_triangle(
-                            new_pos, disp, tri_image);
-
-                    if(dist <= p.radius() && dist < min_distance)
-                    {
-                        colliding_face = fidp;
-                        min_distance   = dist;
-                    }
-                } // z
-                } // y
-                } // x
-            }
-        }
-
-        if(!colliding_face)
-        {
-            break;
-        }
-
-        // TODO implement 3DParticle-Face -> 2DParticle reaction later
-
-        // pause particle at the point where it collides with the face,
-        // updating displacement by the reflection.
-        new_pos = apply_reflection(*colliding_face, new_pos, disp, p);
-    }
-
-    if(world_.has_overlapping_faces(p.position(), radius_new))
-    {
-        throw std::runtime_error("ngfrd::BDPropagator: after moving particle "
-                "reflecting on a triangle, still it overlaps with a face ...?");
+        // collision detected. That means that no reaction happens here because
+        // there is no particle overlap.
+        return ;
     }
 
     if(not is_inside_of_shells_3D(new_pos, p.radius()))
@@ -598,7 +489,6 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         // determine positions of particles in overlapping shells.
         sim_.determine_positions(new_pos, p.radius());
     }
-
     const auto overlapped = world_.list_particles_within_radius(
             new_pos, p.radius(), /*ignore = */ pid);
 
@@ -606,6 +496,7 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
     {
         case 0:
         {
+            // no overlap.
             p.position() = new_pos;
             world_.update_particle(pid, p);
             break;
@@ -686,16 +577,16 @@ bool BDPropagator::attempt_1to1_reaction_3D(
     const Real radius_new  = molinfo.radius;
     const Real D_new       = molinfo.D;
 
+    if(world_.has_overlapping_faces(p.pos(), radius_new))
+    {
+        return false;
+    }
+
     if(not is_inside_of_shells_3D(p.position(), radius_new))
     {
         sim_.determine_positions(p.position(), radius_new);
     }
-
     if(world_.has_overlapping_particles_3D(p.pos(), radius_new, /*ignore = */ pid))
-    {
-        return false;
-    }
-    if(world_.has_overlapping_faces(p.pos(), radius_new))
     {
         return false;
     }
@@ -734,6 +625,8 @@ bool BDPropagator::attempt_1to2_reaction_3D(
             "reaction but both particle is immovable => ", rule.as_string());
     }
 
+    const auto& boundary = world_.boundary();
+
     Real3 pos1_new(p.position());
     Real3 pos2_new(p.position());
 
@@ -747,15 +640,20 @@ bool BDPropagator::attempt_1to2_reaction_3D(
         Real3 disp1 = ipv * (D1 / D12);
         Real3 disp2 = disp1 - ipv; // disp1 + (-disp2) = ipv
 
-        // FIXME apply boundary/polygon!
-        pos1_new = p.position() + disp1;
-        pos2_new = p.position() + disp2;
+        pos1_new = boundary.apply_boundary(p.position() + disp1);
+        pos2_new = boundary.apply_boundary(p.position() + disp2);
 
-        if(length(pos1_new - pos2_new) < r12) // reflection may cause collision
+        if(length_sq(boundary.periodic_transpose(pos1_new, pos2_new) - pos2_new)
+                < r12 * r12) // nervous check
         {
             continue;
         }
 
+        if(world_.has_overlapping_faces(pos1_new, r1) ||
+           world_.has_overlapping_faces(pos2_new, r2))
+        {
+            continue;
+        }
         // TODO: check only particles inside of multi...
         if(world_.has_overlapping_particles_3D(pos1_new, r1, /*ignore = */ pid) ||
            world_.has_overlapping_particles_3D(pos2_new, r2, /*ignore = */ pid))
@@ -765,21 +663,22 @@ bool BDPropagator::attempt_1to2_reaction_3D(
     }
     if(separation_count == 0)
     {
-        return false; // could not find an appropreate configuration.
+        // could not find an appropreate configuration in max_retry_count_.
+        return false;
     }
 
-    // clear volume
+    // clear volume (if needed)
     if(not is_inside_of_shells_3D(pos1_new, r1))
     {
         sim_.determine_positions(pos1_new, r1);
     }
-    if(not is_inside_of_shells_3D(pos1_new, r2))
+    if(not is_inside_of_shells_3D(pos2_new, r2))
     {
         sim_.determine_positions(pos2_new, r2);
     }
 
-    if(world_.has_overlapping_particles_3D(pos1_new, r1, /*ignore = */ pid) ||
-       world_.has_overlapping_particles_3D(pos2_new, r2, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_3D(pos1_new, r1, pid) ||
+       world_.has_overlapping_particles_3D(pos2_new, r2, pid))
     {
         this->rejected_move_count_ += 1;
         return false;
@@ -887,26 +786,20 @@ bool BDPropagator::attempt_2to1_reaction_3D(
     const Real D2   = p2.D();
     const Real D12  = D1 + D2;
 
-    // consider boundary and polygon ...
-    //
-    // Here, because it is 3D, reactive particles overlap each other.
-    // It means that there is no polygon face between particles.
-    // So we don't need to consider polygon while determining the new position.
-    // But after determining the position, the new particle may collide with
-    // a triangle.
+    if(D12 == 0)
+    {
+        throw_exception<IllegalState>("ngfrd::BDPropagator: attempted 2->1 "
+            "reaction ", rule.as_string(), ", but both particles are immovable.");
+    }
 
-    Real3 new_pos;
-    if(D1 == 0)
+    const auto& boundary = world_.boundary();
+
+    // D1==0 -> p1, D2==0 -> p2
+    const Real3 new_pos = boundary.apply_boundary(p1 + (p2 - p1) * D1 / D12);
+
+    if(world_.has_overlapping_faces(new_pos, radius_new))
     {
-        new_pos = p1.position;
-    }
-    else if(D2 == 0)
-    {
-        new_pos = p2.position;
-    }
-    else
-    {
-        new_pos = p1 + (p2 - p1) * D1 / D12; // D1==0 -> p1, D2==0 -> p2
+        return false;
     }
 
     if(not is_inside_of_shells_2D(new_pos, radius_new))
@@ -917,16 +810,13 @@ bool BDPropagator::attempt_2to1_reaction_3D(
     {
         return false;
     }
-    if(world_.has_overlapping_faces(new_pos, radius_new))
-    {
-        return false;
-    }
 
     Particle particle_new(species_new, new_pos, radius_new, D_new);
 
     world_.remove_particle(pid2);
     world_.update_particle(pid1, particle_new, new_pos.second);
 
+    // remove reaction partner from query to avoid not-found error
     const auto found2 = std::find(queue_.begin(), queue_.end(), pid2);
     if(found2 != queue_.end())
     {
