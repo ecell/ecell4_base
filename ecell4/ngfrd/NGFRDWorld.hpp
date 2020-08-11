@@ -83,8 +83,8 @@ public:
     {
         ParticleID pid(this->pidgen_());
 
-        if( ! has_overlapping_faces(p.position(), p.radius()).empty() &&
-           this->list_particles_within_radius_3D(p.position(), p.radius()))
+        if( ! has_overlapping_faces(p.position(), p.radius()) &&
+           list_particles_within_radius_3D(p.position(), p.radius()).empty())
         {
             // XXX: do NOT call this->update_particle to avoid redundant check
             this->ps_->update_particle(pid, p);
@@ -116,8 +116,8 @@ public:
 
     bool update_particle(const ParticleID& pid, const Particle& p)
     {
-        if( ! has_overlapping_faces(p.position(), p.radius()).empty() &&
-           this->list_particles_within_radius_3D(p.position(), p.radius()))
+        if( ! has_overlapping_faces(p.position(), p.radius()) &&
+           list_particles_within_radius_3D(p.position(), p.radius()).empty())
         {
             // if `pid` already exists and was a 2D particle, we need to reset
             // the relationship.
@@ -139,13 +139,13 @@ public:
         if(this->list_particles_within_radius_2D(
                     std::make_pair(p.position(), fid), p.radius()).empty())
         {
-            this->ps_->update_particle(pid, p);
             this->poly_con_.update(pid, fid);
-            return std::make_pair(std::make_pair(pid, p), true);
+            return this->ps_->update_particle(pid, p);
         }
         else
         {
-            return std::make_pair(std::make_pair(pid, p), false);
+            // overlap found. the update is rejected. no change.
+            return true;
         }
     }
 
@@ -170,7 +170,7 @@ public:
         return poly_con_.on_which_face(pid);
     }
 
-    boost::optional<std::vector<ObjectID> const&>
+    boost::optional<std::vector<ParticleID> const&>
     particles_on(const FaceID& fid) const noexcept
     {
         return poly_con_.objects_on(fid);
@@ -266,7 +266,7 @@ public:
             const ParticleID& ignore) const
     {
         return this->list_particles_within_radius_2D_impl(center, radius,
-                [](const ParticleID& pid) noexcept -> bool {
+                [&ignore](const ParticleID& pid) noexcept -> bool {
                     return pid == ignore;
                 });
     }
@@ -276,7 +276,7 @@ public:
             const ParticleID& ignore1, const ParticleID& ignore2) const
     {
         return this->list_particles_within_radius_2D_impl(center, radius,
-                [](const ParticleID& pid) noexcept -> bool {
+                [&ignore1, &ignore2](const ParticleID& pid) noexcept -> bool {
                     return pid == ignore1 || pid == ignore2;
                 });
     }
@@ -444,12 +444,12 @@ public:
      */
     bool has_particle(const ParticleID& pid) const override
     {
-        return ps_->has_particles(pid);
+        return ps_->has_particle(pid);
     }
 
     std::pair<ParticleID, Particle> get_particle(const ParticleID& pid) const override
     {
-        return ps_->get_particles(pid);
+        return ps_->get_particle(pid);
     }
 
     /**
@@ -567,31 +567,37 @@ private:
         const auto& fid = center.second;
 
         // check particles on the same face
-        for(const auto& pid : this->poly_con_.objects_on(fid))
+        if(const auto& particles = this->poly_con_.objects_on(fid))
         {
-            auto pp = ps_->get_particle(pid);
-            // it is okay to use 3D distance because both are on the same face
-            const Real dist = length(pos - pp.second.position()) -
-                              pp.second.radius();
-            if(dist < radius)
+            for(const auto& pid : *particles)
             {
-                retval.push_back(std::make_pair(std::move(pp), dist));
+                auto pp = ps_->get_particle(pid);
+                // it is okay to use 3D distance because both are on the same face
+                const Real dist = length(pos - pp.second.position()) -
+                                  pp.second.radius();
+                if(dist < radius)
+                {
+                    list.push_back(std::make_pair(std::move(pp), dist));
+                }
             }
         }
 
         // check particles on the neighborling faces
         for(const auto& fid : polygon_->neighbor_faces_of(fid))
         {
-            for(const auto& pid : this->poly_con_.objects_on(fid))
+            if(const auto& particles = this->poly_con_.objects_on(fid))
             {
-                auto pp = ps_->get_particle(pid);
-                const Real dist = ecell4::polygon::distance(*polygon_,
-                    pos, std::make_pair(pp.second.position(), fid)
-                    ) - pp.second.radius();
-
-                if(dist < radius)
+                for(const auto& pid : *particles)
                 {
-                    retval.push_back(std::make_pair(std::move(pp), dist));
+                    auto pp = ps_->get_particle(pid);
+                    const Real dist = ecell4::polygon::distance(*polygon_,
+                        center, std::make_pair(pp.second.position(), fid)
+                        ) - pp.second.radius();
+
+                    if(dist < radius)
+                    {
+                        list.push_back(std::make_pair(std::move(pp), dist));
+                    }
                 }
             }
         }
