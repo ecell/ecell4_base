@@ -176,18 +176,41 @@ public:
     // ------------------------------------------------------------------------
     // for speedup
 
-    bool has_overlapping_particle(const Real3&, const Real) const;
-    bool has_overlapping_particle(const Real3&, const Real,
-            const ParticleID& ignore) const;
-    bool has_overlapping_particle(const Real3&, const Real,
-            const ParticleID& ignore1, const ParticleID& ignore2) const;
+    bool has_overlapping_particles_3D(const Real3& center, const Real radius) const
+    {
+        return !(this->list_particles_within_radius_3D(center, radius).empty());
+    }
+    bool has_overlapping_particles_3D(const Real3& center, const Real radius,
+            const ParticleID& ignore) const
+    {
+        return !(this->list_particles_within_radius_3D(center, radius, ignore).empty());
+    }
+    bool has_overlapping_particles_3D(const Real3& center, const Real radius,
+            const ParticleID& ignore1, const ParticleID& ignore2) const
+    {
+        return !(this->list_particles_within_radius_3D(
+                    center, radius, ignore1, ignore2).empty());
+    }
 
-    bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real
-            ) const;
-    bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real,
-            const ParticleID&) const;
-    bool has_overlapping_particle(const std::pair<Real3, FaceID>&, const Real,
-            const ParticleID&, const ParticleID&) const;
+    bool has_overlapping_particles_2D(
+            const std::pair<Real3, FaceID>& center, const Real radius) const
+    {
+        return !(this->list_particles_within_radius_2D(center, radius).empty());
+    }
+    bool has_overlapping_particles_2D(
+            const std::pair<Real3, FaceID>& center, const Real radius,
+            const ParticleID& ignore) const
+    {
+        return !(this->list_particles_within_radius_2D(
+                    center, radius, ignore).empty());
+    }
+    bool has_overlapping_particles_2D(
+            const std::pair<Real3, FaceID>& center, const Real radius,
+            const ParticleID& ignore1, const ParticleID& ignore2) const
+    {
+        return !(this->list_particles_within_radius_2D(
+                    center, radius, ignore1, ignore2).empty());
+    }
 
     bool has_overlapping_faces(const Real3& center, const Real radius) const
     {
