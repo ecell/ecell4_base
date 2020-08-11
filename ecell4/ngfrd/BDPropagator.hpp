@@ -1,7 +1,13 @@
 #ifndef ECELL4_NGFRD_BD_PROPAGATOR_HPP
 #define ECELL4_NGFRD_BD_PROPAGATOR_HPP
 #include <ecell4/core/RandomNumberGenerator.hpp>
+#include <ecell4/core/Model.hpp>
 #include <ecell4/ngfrd/ReactionInfo.hpp>
+#include <ecell4/ngfrd/ShellID.hpp>
+#include <ecell4/ngfrd/Shell.hpp>
+#include <ecell4/ngfrd/NGFRDWorld.hpp>
+#include <ecell4/ngfrd/NGFRDSimulator.hpp>
+
 #include <greens_functions/freeFunctions.hpp>
 #include <boost/math/constants/constants.hpp>
 
