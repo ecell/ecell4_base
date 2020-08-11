@@ -32,7 +32,7 @@ void BDPropagator::propagate_2D_particle(
         // determine positions of particles in overlapping shells.
         sim_.determine_positions(new_pos, p.radius());
 
-        if(world_.has_overlapping_particle(new_pos, p.radius(), /*ignore = */ pid))
+        if(world_.has_overlapping_particles_2D(new_pos, p.radius(), /*ignore = */ pid))
         {
             // if overlap exists, the movement would be rejected.
 
@@ -159,7 +159,7 @@ bool BDPropagator::attempt_1to1_reaction_2D(
         sim_.determine_positions(pos_fid, radius_new);
     }
 
-    if(world_.has_overlapping_particle(pos_fid, radius_new, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_2D(pos_fid, radius_new, /*ignore = */ pid))
     {
         return false;
     }
@@ -228,8 +228,8 @@ bool BDPropagator::attempt_1to2_reaction_2D(
             continue;
         }
 
-        if(world_.has_overlapping_particle(pos1_new, r1, /*ignore = */ pid) ||
-           world_.has_overlapping_particle(pos2_new, r2, /*ignore = */ pid))
+        if(world_.has_overlapping_particles_2D(pos1_new, r1, /*ignore = */ pid) ||
+           world_.has_overlapping_particles_2D(pos2_new, r2, /*ignore = */ pid))
         {
             continue;
         }
@@ -251,8 +251,8 @@ bool BDPropagator::attempt_1to2_reaction_2D(
         sim_.determine_positions(pos2_new, r2);
     }
 
-    if(world_.has_overlapping_particle(pos1_new, r1, /*ignore = */ pid) ||
-       world_.has_overlapping_particle(pos2_new, r2, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_2D(pos1_new, r1, /*ignore = */ pid) ||
+       world_.has_overlapping_particles_2D(pos2_new, r2, /*ignore = */ pid))
     {
         this->rejected_move_count_ += 1;
         return false; // overlaps with a particle at outside of the domain
@@ -288,7 +288,7 @@ bool BDPropagator::attempt_1to2_reaction_2D(
             {
                 sim_.determine_positions(new_pos, p_.radius());
             }
-            if(not world_.has_overlapping_particle(new_pos, p_.radius(), pid_))
+            if(not world_.has_overlapping_particles_2D(new_pos, p_.radius(), pid_))
             {
                 p_.position() = new_pos.first;
                 world_.update_particle(pid_, p_, new_pos.second);
@@ -436,7 +436,7 @@ bool BDPropagator::attempt_2to1_reaction_2D(
     {
         sim_.determine_positions(new_pos, radius_new);
     }
-    if(world_.has_overlapping_particle(new_pos, radius_new, pid1, pid2))
+    if(world_.has_overlapping_particles_2D(new_pos, radius_new, pid1, pid2))
     {
         return false;
     }
@@ -587,7 +587,7 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         new_pos = apply_reflection(*colliding_face, new_pos, disp, p);
     }
 
-    if(world_.has_overlapping_triangle(p.position(), radius_new))
+    if(world_.has_overlapping_faces(p.position(), radius_new))
     {
         throw std::runtime_error("ngfrd::BDPropagator: after moving particle "
                 "reflecting on a triangle, still it overlaps with a face ...?");
@@ -691,11 +691,11 @@ bool BDPropagator::attempt_1to1_reaction_3D(
         sim_.determine_positions(p.position(), radius_new);
     }
 
-    if(world_.has_overlapping_particle(p.pos(), radius_new, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_3D(p.pos(), radius_new, /*ignore = */ pid))
     {
         return false;
     }
-    if(world_.has_overlapping_triangle(p.pos(), radius_new))
+    if(world_.has_overlapping_faces(p.pos(), radius_new))
     {
         return false;
     }
@@ -757,8 +757,8 @@ bool BDPropagator::attempt_1to2_reaction_3D(
         }
 
         // TODO: check only particles inside of multi...
-        if(world_.has_overlapping_particle(pos1_new, r1, /*ignore = */ pid) ||
-           world_.has_overlapping_particle(pos2_new, r2, /*ignore = */ pid))
+        if(world_.has_overlapping_particles_3D(pos1_new, r1, /*ignore = */ pid) ||
+           world_.has_overlapping_particles_3D(pos2_new, r2, /*ignore = */ pid))
         {
             continue;
         }
@@ -778,14 +778,14 @@ bool BDPropagator::attempt_1to2_reaction_3D(
         sim_.determine_positions(pos2_new, r2);
     }
 
-    if(world_.has_overlapping_particle(pos1_new, r1, /*ignore = */ pid) ||
-       world_.has_overlapping_particle(pos2_new, r2, /*ignore = */ pid))
+    if(world_.has_overlapping_particles_3D(pos1_new, r1, /*ignore = */ pid) ||
+       world_.has_overlapping_particles_3D(pos2_new, r2, /*ignore = */ pid))
     {
         this->rejected_move_count_ += 1;
         return false;
     }
-    if(world_.has_overlapping_triangle(pos1_new, r1) ||
-       world_.has_overlapping_triangle(pos2_new, r2))
+    if(world_.has_overlapping_faces(pos1_new, r1) ||
+       world_.has_overlapping_faces(pos2_new, r2))
     {
         this->rejected_move_count_ += 1;
         return false;
@@ -913,11 +913,11 @@ bool BDPropagator::attempt_2to1_reaction_3D(
     {
         sim_.determine_positions(new_pos, radius_new);
     }
-    if(world_.has_overlapping_particle(new_pos, radius_new, pid1, pid2))
+    if(world_.has_overlapping_particles_3D(new_pos, radius_new, pid1, pid2))
     {
         return false;
     }
-    if(world_.has_overlapping_triangle(new_pos, radius_new))
+    if(world_.has_overlapping_faces(new_pos, radius_new))
     {
         return false;
     }
