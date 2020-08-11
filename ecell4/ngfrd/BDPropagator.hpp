@@ -95,6 +95,10 @@ private:
     Real3 draw_2D_displacement(const Particle&, const FaceID&);
     Real3 draw_3D_displacement(const Particle&);
 
+    // TODO
+    Real3 draw_ipv_2D(const Real r, const Real d, const Real3& normal);
+    Real3 draw_ipv_3D(const Real sigma, const Real dt, const Real D);
+
     Real calc_pair_acceptance_coef_2D(
             const Particle& p1, const Particle& p2) const noexcept;
 
@@ -108,6 +112,7 @@ private:
     NGFRDSimulator&        sim_;
     RandomNumberGenerator& rng_;
     Real                   dt_;
+    Real                   reaction_length_;
     std::vector<std::pair<ReactionRule, ReactionInfo>>& last_reactions_;
     std::vector<ParticleID> queue_;
     std::vector<ShellID>    shells_;
