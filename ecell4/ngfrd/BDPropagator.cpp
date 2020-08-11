@@ -1,4 +1,5 @@
 #include <ecell4/ngfrd/BDPropagator.hpp>
+#include <numeric>
 #include <ciso646>
 
 namespace ecell4
