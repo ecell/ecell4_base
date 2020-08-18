@@ -164,6 +164,7 @@ public:
     }
 
     // ------------------------------------------------------------------------
+    // 2D/3D checking
 
     boost::optional<FaceID> on_which_face(const ParticleID& pid) const noexcept
     {
