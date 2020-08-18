@@ -29,7 +29,7 @@ class BDPropagator
 {
 public:
 
-    BDPropagator(Model& model, NGFRDWorld& world, NGFRDSimulator& sim,
+    BDPropagator(const Model& model, NGFRDWorld& world, NGFRDSimulator& sim,
         RandomNumberGenerator& rng, const Real& dt,
         const std::size_t max_retry_count,
         std::vector<ParticleID> particles, std::vector<ShellID> shells,
@@ -158,7 +158,7 @@ private:
 
 private:
 
-    Model&                 model_;
+    const Model&           model_;
     NGFRDWorld&            world_;
     NGFRDSimulator&        sim_;
     RandomNumberGenerator& rng_;
