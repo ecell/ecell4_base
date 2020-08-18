@@ -28,8 +28,7 @@ class MultiDomain
         Reaction,
     };
     using reaction_log_type = std::pair<ReactionRule, ReactionInfo>;
-    using reaction_log_container_type =
-        boost::container::small_vector<reaction_log_type, 2>;
+    using reaction_log_container_type = std::vector<reaction_log_type>;
 
     // To avoid an allocation and to gain memory locality, we use small_vector
     // of Identifiers. Essentially Multi can contain arbitrary number of shells
@@ -53,10 +52,12 @@ class MultiDomain
     MultiDomain(const Real begin_t,
                 const Real dt_factor_3D = 1.0,
                 const Real dt_factor_2D = 0.01,
-                const Real rl_factor    = 0.1) noexcept
-        : kind_(None), begin_time_(begin_t),
-          dt_(-1.0), dt_factor_3D_(dt_factor_3D), dt_factor_2D_(dt_factor_2D)
-          reaction_length_factor_(rl_factor), reaction_length_(-1.0)
+                const Real rl_factor    = 0.1,
+                const std::size_t max_retry = 4) noexcept
+        : kind_(EventKind::None), begin_time_(begin_t),
+          dt_(-1.0), dt_factor_3D_(dt_factor_3D), dt_factor_2D_(dt_factor_2D),
+          reaction_length_(-1.0), reaction_length_factor_(rl_factor),
+          max_retry_(max_retry)
     {}
     ~MultiDomain() = default;
 
@@ -100,13 +101,13 @@ class MultiDomain
     Real& reaction_length()       noexcept {return this->reaction_length_;}
     Real  reaction_length() const noexcept {return this->reaction_length_;}
 
-    shell_id_container_type&          shell_ids()          noexcept {return shells_;}
-    shell_id_container_type    const& shell_ids()    const noexcept {return shells_;}
-    particle_id_container_type&       particle_ids()       noexcept {return particles_;}
-    particle_id_container_type const& particle_ids() const noexcept {return particles_;}
+    shell_id_container_type&          shell_ids()          noexcept {return shell_ids_;}
+    shell_id_container_type    const& shell_ids()    const noexcept {return shell_ids_;}
+    particle_id_container_type&       particle_ids()       noexcept {return particle_ids_;}
+    particle_id_container_type const& particle_ids() const noexcept {return particle_ids_;}
 
-    std::size_t num_shells()   const noexcept {return shells_.size();}
-    std::size_t multiplicity() const noexcept {return particles_.size();}
+    std::size_t num_shells()   const noexcept {return shell_ids_.size();}
+    std::size_t multiplicity() const noexcept {return particle_ids_.size();}
 
     reaction_log_container_type const& last_reactions() const {return last_reactions_;}
 
@@ -168,7 +169,7 @@ class MultiDomain
         Real D_max(0.0), radius_min(std::numeric_limits<Real>::max());
         for(const auto& pid : p3D)
         {
-            const auto& species = world.get_particle(pid).species();
+            const auto& species = world.get_particle(pid).second.species();
             const auto  molinfo = world.get_molecule_info(species);
             D_max      = std::max(molinfo.D,      D_max);
             radius_min = std::min(molinfo.radius, radius_min);
@@ -177,11 +178,11 @@ class MultiDomain
 
         if(birth_prob == 0.0)
         {
-            return dt;
+            return dt_factor_3D_ * dt;
         }
         else
         {
-            return std::min(dt, 1.0 / prob);
+            return dt_factor_3D_ * std::min(dt, 1.0 / birth_prob);
         }
     }
 
@@ -223,7 +224,7 @@ class MultiDomain
         Real D_max = -std::numeric_limits<Real>::max();
         for(const auto& pid : p2D)
         {
-            const auto& species = world.get_particle(pid).species();
+            const auto& species = world.get_particle(pid).second.species();
             const auto  molinfo = world.get_molecule_info(species);
             D_max = std::max(molinfo.D, D_max);
 
@@ -242,7 +243,7 @@ class MultiDomain
             for(std::size_t j=i; j<sps.size(); ++j)
             {
                 const auto& sp2  = sps.at(j);
-                for(auto&& rule : model_.query_reaction_rules(sp1, sp2))
+                for(auto&& rule : model.query_reaction_rules(sp1, sp2))
                 {
                     k_max = std::max(k_max, rule.k());
                 }
@@ -257,7 +258,7 @@ class MultiDomain
         const Real upper_limit_from_k = (k_max > 0.0) ? (P_max * delta / k_max) :
                                         std::numeric_limits<Real>::infinity();
 
-        return dt_factor_2D * std::min(upper_limit_from_D, upper_limit_from_k);
+        return dt_factor_2D_ * std::min(upper_limit_from_D, upper_limit_from_k);
     }
 
   private:
@@ -269,6 +270,7 @@ class MultiDomain
     Real dt_factor_2D_;
     Real reaction_length_;
     Real reaction_length_factor_;
+    std::size_t max_retry_;
     shell_id_container_type     shell_ids_;
     particle_id_container_type  particle_ids_;
     reaction_log_container_type last_reactions_;

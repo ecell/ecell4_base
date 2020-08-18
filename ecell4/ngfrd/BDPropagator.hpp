@@ -1,6 +1,6 @@
 #ifndef ECELL4_NGFRD_BD_PROPAGATOR_HPP
 #define ECELL4_NGFRD_BD_PROPAGATOR_HPP
-#include <ecell4/core/exception.hpp>
+#include <ecell4/core/exceptions.hpp>
 #include <ecell4/core/RandomNumberGenerator.hpp>
 #include <ecell4/core/Model.hpp>
 #include <ecell4/ngfrd/ReactionInfo.hpp>
@@ -23,6 +23,8 @@ namespace bd_math
 {
 Real drawR_gbd_3D(const Real sigma, const Real t, const Real D, const Real rnd) noexcept;
 } // bd_math
+
+class NGFRDSimulator; // forward
 
 class BDPropagator
 {
@@ -109,7 +111,7 @@ private:
         constexpr Real pi = boost::math::constants::pi<Real>();
 
         const Real  theta = this->rng_.uniform(0.0, 2.0 * pi);
-        cosnt Real3 rxy(len * std::cos(theta), len * std::sin(theta), 0.0);
+        const Real3 rxy(len * std::cos(theta), len * std::sin(theta), 0.0);
 
         // dot(z, n), z:=(0,0,1)
         const Real  phi  = std::acos(boost::algorithm::clamp(normal[2], -1.0, 1.0));
@@ -139,14 +141,14 @@ private:
             b = rng_.uniform(0, 1) - 0.5;
             r2 = a * a + b * b;
         }
-        const Real scale(8 * r * std::sqrt(0.25 - r2));
-        return Real3(a * scale, b * scale, r * (8 * r2 - 1));
+        const Real scale(8 * len * std::sqrt(0.25 - r2));
+        return Real3(a * scale, b * scale, len * (8 * r2 - 1));
     }
 
     Real3 draw_ipv_3D(const Real r12, const Real dt, const Real D12)
     {
         return random_spherical_uniform(
-                bd_math::drawR_gbd_3D(r12, dt, D12, rng.uniform(0.0, 1.0)));
+                bd_math::drawR_gbd_3D(r12, dt, D12, rng_.uniform(0.0, 1.0)));
     }
 
     Real calc_pair_acceptance_coef_2D(

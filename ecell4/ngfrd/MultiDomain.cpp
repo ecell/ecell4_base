@@ -15,7 +15,7 @@ void MultiDomain::step(const Model& model, NGFRDSimulator& sim, NGFRDWorld& worl
     this->last_reactions_.clear();
     this->kind_ = EventKind::None;
 
-    BDPropagator propagator(model_, world, sim, sim.random_number_generator(),
+    BDPropagator propagator(model, world, sim, sim.random_number_generator(),
             this->dt_, this->max_retry, this->particle_ids_, this->shell_ids_,
             last_reactions);
 
