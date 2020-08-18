@@ -1,4 +1,5 @@
 #include <ecell4/ngfrd/BDPropagator.hpp>
+#include <ecell4/ngfrd/NGFRDSimulator.hpp>
 #include <numeric>
 #include <ciso646>
 

@@ -7,7 +7,6 @@
 #include <ecell4/ngfrd/ShellID.hpp>
 #include <ecell4/ngfrd/Shell.hpp>
 #include <ecell4/ngfrd/NGFRDWorld.hpp>
-#include <ecell4/ngfrd/NGFRDSimulator.hpp>
 
 #include <greens_functions/freeFunctions.hpp>
 #include <boost/math/constants/constants.hpp>
