@@ -172,6 +172,6 @@ private:
     std::size_t max_retry_count_;
 };
 
-} // egfrd
+} // ngfrd
 } // ecell4
 #endif /* BD_PROPAGATOR_HPP */

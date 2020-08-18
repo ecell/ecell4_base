@@ -276,6 +276,6 @@ class MultiDomain
     reaction_log_container_type last_reactions_;
 };
 
-} // sgfrd
+} // ngfrd
 } // ecell4
 #endif //ECELL4_NGFRD_MULTI_DOMAIN_HPP
