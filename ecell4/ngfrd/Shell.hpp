@@ -5,7 +5,9 @@
 #include <ecell4/core/Circle.hpp>
 #include <ecell4/core/Cone.hpp>
 #include <ecell4/core/Polygon.hpp>
+#include <ecell4/ngfrd/DomainID.hpp>
 #include <boost/variant.hpp>
+#include <boost/optional.hpp>
 
 namespace ecell4
 {
@@ -108,7 +110,7 @@ public:
 public:
 
     template<typename S>
-    explicit Shell(S&& s): storage_(std::forward<S>(s)) {}
+    explicit Shell(S&& s): did_(boost::none), storage_(std::forward<S>(s)) {}
 
     ShellKind kind() const noexcept {return ShellKind(storage_.which());}
 
@@ -152,8 +154,12 @@ public:
         }
     }
 
+    boost::optional<DomainID> const& domain_id() const noexcept {return did_;}
+    boost::optional<DomainID>&       domain_id()       noexcept {return did_;}
+
 private:
 
+    boost::optional<DomainID> did_;
     storage_type storage_;
 };
 
