@@ -77,7 +77,6 @@ public:
         : rtree_(edge_lengths, margin)
     {}
 
-
     std::pair<ShellID, Shell> get_shell(const ShellID& sid) const
     {
         if(!rtree_.has(sid))
@@ -150,6 +149,21 @@ public:
     const_iterator  end()   const noexcept {return this->rtree_.end();}
     const_iterator cbegin() const noexcept {return this->rtree_.cbegin();}
     const_iterator cend()   const noexcept {return this->rtree_.cend();}
+
+    // ------------------------------------------------------------------------
+    // reset
+
+    void clear()
+    {
+        rtree_.clear();
+        return;
+    }
+
+    void reset_boundary(const Real3& edges)
+    {
+        this->rtree_.reset_boundary(edges);
+        return;
+    }
 
     // ------------------------------------------------------------------------
     // testing
