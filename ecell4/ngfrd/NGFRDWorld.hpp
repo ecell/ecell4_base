@@ -479,6 +479,11 @@ public:
         return ps_->list_particles_exact(sp);
     }
 
+    particle_container_type const& particles() const noexcept
+    {
+        return ps_->particles();
+    }
+
     std::shared_ptr<RandomNumberGenerator> const& rng() const noexcept
     {
         return rng_;
