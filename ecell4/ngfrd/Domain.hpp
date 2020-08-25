@@ -7,14 +7,13 @@ namespace ecell4
 namespace ngfrd
 {
 
-enum class DomainKind : int // boost::variant::which returns an int.
-{
-    Multi = 0,
-};
-
 struct Domain
 {
 public:
+    enum class DomainKind : int // boost::variant::which returns an int.
+    {
+        Multi = 0,
+    };
 
     using storage_type = boost::variant<MultiDomain>;
 
