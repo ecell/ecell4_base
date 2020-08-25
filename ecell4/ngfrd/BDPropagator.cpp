@@ -117,7 +117,7 @@ bool BDPropagator::attempt_single_reaction_2D(const ParticleID& pid,
         {
             case 0:
             {
-                world_.remove_particle(pid);
+                this->remove_particle(pid);
                 last_reactions_.emplace_back(rule,
                         make_degradation_reaction_info(world_.t(), pid, p));
                 return true;
@@ -272,6 +272,7 @@ bool BDPropagator::attempt_1to2_reaction_2D(
     assert(result2.second); // should succeed
 
     const auto pid2 = result2.first.first;
+    this->particles_.push_back(pid2);
 
     last_reactions_.emplace_back(rule, make_unbinding_reaction_info(world_.t(),
                 pid, p, pid, p1_new, pid2, p2_new));
@@ -371,8 +372,8 @@ bool BDPropagator::attempt_pair_reaction_2D(
         {
             case 0:
             {
-                world_.remove_particle(pid);
-                world_.remove_particle(pid2);
+                this->remove_particle(pid);
+                this->remove_particle(pid2);
 
                 const auto found = std::find(queue_.begin(), queue_.end(), pid2);
                 if(found != queue_.end())
@@ -445,7 +446,7 @@ bool BDPropagator::attempt_2to1_reaction_2D(
 
     Particle particle_new(species_new, new_pos.first, radius_new, D_new);
 
-    world_.remove_particle(pid2);
+    this->remove_particle(pid2);
     world_.update_particle(pid1, particle_new, new_pos.second);
 
     const auto found2 = std::find(queue_.begin(), queue_.end(), pid2);
@@ -545,7 +546,7 @@ bool BDPropagator::attempt_single_reaction_3D(const ParticleID& pid, const Parti
         {
             case 0: // degradation. never overlaps.
             {
-                world_.remove_particle(pid);
+                this->remove_particle(pid);
                 last_reactions_.emplace_back(rule,
                         make_degradation_reaction_info(world_.t(), pid, p));
                 return true;
@@ -702,6 +703,7 @@ bool BDPropagator::attempt_1to2_reaction_3D(
     assert(result2.second); // should succeed
 
     const auto pid2 = result2.first.first;
+    this->particles_.push_back(pid2);
 
     last_reactions_.emplace_back(rule, make_unbinding_reaction_info(world_.t(),
                 pid, p, pid, p1_new, pid2, p2_new));
@@ -747,8 +749,8 @@ bool BDPropagator::attempt_pair_reaction_3D(
             {
                 case 0:
                 {
-                    world_.remove_particle(pid1);
-                    world_.remove_particle(pid2);
+                    this->remove_particle(pid1);
+                    this->remove_particle(pid2);
 
                     const auto found = std::find(queue_.begin(), queue_.end(), pid2);
                     if(found != queue_.end())
@@ -818,7 +820,7 @@ bool BDPropagator::attempt_2to1_reaction_3D(
 
     Particle particle_new(species_new, new_pos, radius_new, D_new);
 
-    world_.remove_particle(pid2);
+    this->remove_particle(pid2);
     world_.update_particle(pid1, particle_new);
 
     // remove reaction partner from query to avoid not-found error

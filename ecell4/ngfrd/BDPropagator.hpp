@@ -36,7 +36,8 @@ public:
         std::vector<ParticleID> particles, std::vector<ShellID> shells,
         std::vector<std::pair<ReactionRule, ReactionInfo>>& last_reactions)
         : model_(model), world_(world), sim_(sim), rng_(rng), dt_(dt),
-          last_reactions_(last_reactions), queue_(particles), shells_(shells),
+          last_reactions_(last_reactions), particles_(particles),
+          queue_(particles), shells_(shells),
           rejected_move_count_(0), max_retry_count_(max_retry_count)
     {
         shuffle(rng, queue_);
@@ -68,7 +69,24 @@ public:
         return rejected_move_count_;
     }
 
+    // to wrap resulting particles by domains
+    std::vector<ParticleID> particles() const noexcept
+    {
+        return particles_;
+    }
+
 private:
+
+    void remove_particle(const ParticleID& pid)
+    {
+        // remove from internal particle Id cache
+        const auto fnd = std::remove(particles_.begin(), particles_.end(), pid);
+        assert(std::distance(fnd, particles_.end()) == 1);
+        this->particles_.erase(fnd, particles_.end());
+        // remove from (outer-) world
+        this->world_.remove_particle(pid);
+        return;
+    }
 
     void propagate_2D_particle(const ParticleID&, Particle, FaceID);
     void propagate_3D_particle(const ParticleID&, Particle);
@@ -166,6 +184,7 @@ private:
     Real                   dt_;
     Real                   reaction_length_;
     std::vector<std::pair<ReactionRule, ReactionInfo>>& last_reactions_;
+    std::vector<ParticleID> particles_; // resulting particles
     std::vector<ParticleID> queue_;
     std::vector<ShellID>    shells_;
     std::size_t rejected_move_count_;
