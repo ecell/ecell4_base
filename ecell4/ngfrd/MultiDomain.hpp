@@ -37,11 +37,6 @@ class MultiDomain
     // too large statically allocated region in the small_vector and the benefit
     // from avoiding allocation and locality cost. Now we chose 8, but this can
     // be changed.
-    //     The following makes this class relatively bigger (it contains static
-    // array of length 8). It is inefficient to copy/move this class with
-    // others. This means that the domain struct should not be included in the
-    // Event class. Event should contain DomainID, and simulator shopuld map
-    // DomainID to the actual Domain in a container.
     using shell_id_container_type =
         boost::container::small_vector<ShellID, 8>;
     using particle_id_container_type =
