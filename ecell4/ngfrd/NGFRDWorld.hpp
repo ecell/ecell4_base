@@ -479,6 +479,11 @@ public:
         return ps_->list_particles_exact(sp);
     }
 
+    std::shared_ptr<RandomNumberGenerator> const& rng() const noexcept
+    {
+        return rng_;
+    }
+
 private:
 
     template<typename ... Ts>
