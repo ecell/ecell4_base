@@ -52,7 +52,7 @@ struct CircularShell
 {
     using shape_type = Circle;
 
-    explicit CircularShell(shape_type crc): shape_(crc) {}
+    CircularShell(shape_type crc, const FaceID& fid): fid_(fid), shape_(crc) {}
 
     Real3& position()       noexcept {return shape_.position();}
     Real3  position() const noexcept {return shape_.position();}
@@ -74,7 +74,7 @@ struct ConicalShell
 {
     using shape_type = ConicalSurface;
 
-    explicit ConicalShell(shape_type con): shape_(con) {}
+    ConicalShell(shape_type con, const VertexID& vid): vid_(vid), shape_(con) {}
 
     Real3& position()       noexcept {return shape_.position();}
     Real3  position() const noexcept {return shape_.position();}
