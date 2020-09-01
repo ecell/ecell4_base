@@ -79,7 +79,7 @@ public:
     // ------------------------------------------------------------------------
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p)
+    new_particle_3D(const Particle& p)
     {
         ParticleID pid(this->pidgen_());
 
@@ -97,7 +97,7 @@ public:
     }
 
     std::pair<std::pair<ParticleID, Particle>, bool>
-    new_particle(const Particle& p, const FaceID& fid)
+    new_particle_2D(const Particle& p, const FaceID& fid)
     {
         ParticleID pid(this->pidgen_());
 
@@ -114,7 +114,7 @@ public:
         }
     }
 
-    bool update_particle(const ParticleID& pid, const Particle& p)
+    bool update_particle_3D(const ParticleID& pid, const Particle& p)
     {
         if( ! has_overlapping_faces(p.position(), p.radius()) &&
            list_particles_within_radius_3D(p.position(), p.radius()).empty())
@@ -133,8 +133,8 @@ public:
             return true;
         }
     }
-    bool update_particle(const ParticleID& pid, const Particle& p,
-                         const FaceID& fid)
+    bool update_particle_2D(const ParticleID& pid, const Particle& p,
+                            const FaceID& fid)
     {
         if(this->list_particles_within_radius_2D(
                     std::make_pair(p.position(), fid), p.radius()).empty())

@@ -65,7 +65,7 @@ void BDPropagator::propagate_2D_particle(
         // movement accepted. update the position.
         p.position() = new_pos.first;
         fid          = new_pos.second;
-        world_.update_particle(pid, p, fid);
+        world_.update_particle_2D(pid, p, fid);
     }
     else // core overlap
     {
@@ -167,7 +167,7 @@ bool BDPropagator::attempt_1to1_reaction_2D(
 
     Particle particle_new(species_new, p.position(), radius_new, D_new);
 
-    world_.update_particle(pid, particle_new, fid);
+    world_.update_particle_2D(pid, particle_new, fid);
 
     last_reactions_.emplace_back(rule, make_unimolecular_reaction_info(
                 world_.t(), pid, p, pid, particle_new));
@@ -265,8 +265,8 @@ bool BDPropagator::attempt_1to2_reaction_2D(
     Particle p1_new(sp1, pos1_new.first, r1, D1);
     Particle p2_new(sp2, pos2_new.first, r2, D2);
 
-    const auto result1 = world_.update_particle(pid, p1_new, pos1_new.second);
-    const auto result2 = world_.new_particle   (     p2_new, pos2_new.second);
+    const auto result1 = world_.update_particle_2D(pid, p1_new, pos1_new.second);
+    const auto result2 = world_.new_particle_2D   (     p2_new, pos2_new.second);
 
     assert(not result1); // should be already exist (it returns true if it's new)
     assert(result2.second); // should succeed
@@ -293,7 +293,7 @@ bool BDPropagator::attempt_1to2_reaction_2D(
             if(not world_.has_overlapping_particles_2D(new_pos, p_.radius(), pid_))
             {
                 p_.position() = new_pos.first;
-                world_.update_particle(pid_, p_, new_pos.second);
+                world_.update_particle_2D(pid_, p_, new_pos.second);
             }
             return ;
         };
@@ -447,7 +447,7 @@ bool BDPropagator::attempt_2to1_reaction_2D(
     Particle particle_new(species_new, new_pos.first, radius_new, D_new);
 
     this->remove_particle(pid2);
-    world_.update_particle(pid1, particle_new, new_pos.second);
+    world_.update_particle_2D(pid1, particle_new, new_pos.second);
 
     const auto found2 = std::find(queue_.begin(), queue_.end(), pid2);
     if(found2 != queue_.end())
@@ -502,7 +502,7 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         {
             // no overlap.
             p.position() = new_pos;
-            world_.update_particle(pid, p);
+            world_.update_particle_3D(pid, p);
             break;
         }
         case 1:
@@ -597,7 +597,7 @@ bool BDPropagator::attempt_1to1_reaction_3D(
 
     Particle particle_new(species_new, p.position(), radius_new, D_new);
 
-    world_.update_particle(pid, particle_new);
+    world_.update_particle_3D(pid, particle_new);
 
     last_reactions_.emplace_back(rule, make_unimolecular_reaction_info(
                 world_.t(), pid, p, pid, particle_new));
@@ -696,8 +696,8 @@ bool BDPropagator::attempt_1to2_reaction_3D(
     Particle p1_new(sp1, pos1_new, r1, D1);
     Particle p2_new(sp2, pos2_new, r2, D2);
 
-    const auto result1 = world_.update_particle(pid, p1_new);
-    const auto result2 = world_.new_particle   (     p2_new);
+    const auto result1 = world_.update_particle_3D(pid, p1_new);
+    const auto result2 = world_.new_particle_3D   (     p2_new);
 
     assert(not result1); // should be already exist (it returns true if it's new)
     assert(result2.second); // should succeed
@@ -821,7 +821,7 @@ bool BDPropagator::attempt_2to1_reaction_3D(
     Particle particle_new(species_new, new_pos, radius_new, D_new);
 
     this->remove_particle(pid2);
-    world_.update_particle(pid1, particle_new);
+    world_.update_particle_3D(pid1, particle_new);
 
     // remove reaction partner from query to avoid not-found error
     const auto found2 = std::find(queue_.begin(), queue_.end(), pid2);
