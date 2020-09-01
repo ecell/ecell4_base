@@ -63,18 +63,23 @@ public:
         }
     };
 
+    // 3D part
     using rtree_type = PeriodicRTree<ShellID, shell_type, ShellAABBGetter>;
-    using box_type              = typename rtree_type::box_type;
-    using value_type            = typename rtree_type::value_type;
-    using key_to_value_map_type = typename rtree_type::key_to_value_map_type;
-    using container_type        = typename rtree_type::container_type;
-    using iterator              = typename rtree_type::iterator;
-    using const_iterator        = typename rtree_type::const_iterator;
+    using box_type               = typename rtree_type::box_type;
+    using value_type             = typename rtree_type::value_type;
+    using key_to_value_map_type  = typename rtree_type::key_to_value_map_type;
+    using container_type         = typename rtree_type::container_type;
+    using iterator               = typename rtree_type::iterator;
+    using const_iterator         = typename rtree_type::const_iterator;
+
+    // 2D part (contained by another container)
+    using polygon_container_type = PolygonContainer<ShellID>;
 
 public:
 
-    explicit ShellContainer(const Real3& edge_lengths, const Real margin = 0.1)
-        : rtree_(edge_lengths, margin)
+    ShellContainer(const Real3& edge_lengths, std::shared_ptr<Polygon> poly,
+                   const Real margin = 0.1)
+        : rtree_(edge_lengths, margin), polygon_(std::move(poly))
     {}
 
     std::pair<ShellID, Shell> get_shell(const ShellID& sid) const
@@ -90,7 +95,15 @@ public:
     bool update_shell(const ShellID& sid, const Shell& sh)
     {
         const auto retval = rtree_.update(sid, newp);
-        assert(rtree_.diagnosis()); // just want to make sure
+        assert(rtree_.diagnosis()); // just want to make it sure
+        if(sh.is_circular())
+        {
+            poly_con_.update(sid, sh.as_circular().fid());
+        }
+        else if(sh.is_conical())
+        {
+            poly_con_.update(sid, sh.as_conical().vid());
+        }
         return retval;
     }
 
@@ -108,27 +121,98 @@ public:
         }
         const auto& sh = rtree_.get(sid).second;
         rtree_.erase(sid, sh);
+
+        if(sh.is_circular())
+        {
+            poly_con_.remove(sid, sh.as_circular().fid());
+        }
+        else if(sh.is_conical())
+        {
+            poly_con_.remove(sid, sh.as_conical().vid());
+        }
         return ;
     }
 
-    std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
-    list_shells_within_radius(const Real3& pos, const Real& radius) const
+    // ------------------------------------------------------------------------
+    // 2D/3D checking
+
+    boost::optional<FaceID> on_which_face(const ShellID& sid) const noexcept
     {
-        return list_shells_within_radius_impl(pos, radius,
+        return poly_con_.on_which_face(sid);
+    }
+    boost::optional<VertexID> on_which_vertex(const ShellID& sid) const noexcept
+    {
+        return poly_con_.on_which_vertex(sid);
+    }
+
+    boost::optional<std::vector<ShellID> const&>
+    shells_on(const FaceID& fid) const noexcept
+    {
+        return poly_con_.objects_on(fid);
+    }
+    boost::optional<std::vector<ShellID> const&>
+    shells_on(const VertexID& vid) const noexcept
+    {
+        return poly_con_.objects_on(vid);
+    }
+
+    // ------------------------------------------------------------------------
+    // list_shells 3D
+
+    std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
+    list_shells_within_radius_3D(const Real3& pos, const Real& radius) const
+    {
+        return list_shells_within_radius_3D_impl(pos, radius,
+            [this](const ShellID& sid) noexcept -> bool {
+                return this->poly_con_.on_face(sid) ||
+                       this->poly_con_.on_vertex(sid) ;
+            });
+    }
+    std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
+    list_shells_within_radius_3D(const Real3& pos, const Real& radius,
+            const ShellID& ignore) const
+    {
+        return list_shells_within_radius_3D_impl(pos, radius,
+            [this, ignore](const ShellID& sid) noexcept -> bool {
+                return sid == ignore                ||
+                       this->poly_con_.on_face(sid) ||
+                       this->poly_con_.on_vertex(sid) ;
+            });
+    }
+    std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
+    list_shells_within_radius_3D(const Real3& pos, const Real& radius,
+            const ShellID& ignore1, const ShellID& ignore2) const
+    {
+        return list_shells_within_radius_3D_impl(pos, radius,
+            [this, ignore1, ignore2](const ShellID& sid) noexcept -> bool {
+                return sid == ignore1 || sid == ignore2 ||
+                       this->poly_con_.on_face(sid)     ||
+                       this->poly_con_.on_vertex(sid) ;
+            });
+    }
+
+    // ------------------------------------------------------------------------
+    // 2D
+
+    std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
+    list_shells_within_radius_2D(const std::pair<Real3, FaceID>& pos,
+                                 const Real& radius) const
+    {
+        return list_shells_within_radius_2D_impl(pos, radius,
             [](const ShellID&) {return false;});
     }
     std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
-    list_shells_within_radius(const Real3& pos, const Real& radius,
-            const ShellID& ignore) const
+    list_shells_within_radius_2D(const std::pair<Real3, FaceID>& pos,
+            const Real& radius, const ShellID& ignore) const
     {
-        return list_shells_within_radius_impl(pos, radius,
+        return list_shells_within_radius_2D_impl(pos, radius,
             [&](const ShellID& sid) {return sid == ignore;});
     }
     std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
-    list_shells_within_radius(const Real3& pos, const Real& radius,
-            const ShellID& ignore1, const ShellID& ignore2) const
+    list_shells_within_radius_2D(const std::pair<Real3, FaceID>& pos,
+            const Real& radius, const ShellID& ignore1, const ShellID& ignore2) const
     {
-        return list_shells_within_radius_impl(pos, radius,
+        return list_shells_within_radius_2D_impl(pos, radius,
             [&](const ShellID& sid) {return sid == ignore1 || sid == ignore2;});
     }
 
@@ -237,7 +321,7 @@ private:
 
     template<typename Filter>
     std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
-    list_shells_within_radius_impl(
+    list_shells_within_radius_3D_impl(
             const Real3& pos, const Real& radius, Filter filter) const
     {
         std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> retval;
@@ -250,9 +334,93 @@ private:
         return retval;
     }
 
+    template<typename Filter>
+    std::vector<std::pair<std::pair<ShellID, Shell>, Real>>
+    list_shells_within_radius_2D_impl(const std::pair<Real3, FaceID>& center,
+            const Real& radius, Filter filter) const
+    {
+        std::vector<std::pair<std::pair<ShellID, Shell>, Real>> retval;
+
+        const auto& pos = center.first;
+        const auto& fid = center.second;
+
+        // check shells on the same face
+        if(const auto& shells = this->poly_con_.objects_on(fid))
+        {
+            // XXX: Here we assume that shells on a face is circular shells only
+            for(const auto& sid : *shells)
+            {
+                if(filter(sid)) {continue;}
+
+                auto sidp = this->get_shell(sid);
+                const auto& sh = sidp.second.as_circular();
+                // it is okay to use 3D distance because both are on the same face
+                const Real dist = length(pos - sh.position()) - sh.shape().radius();
+                if(dist < radius)
+                {
+                    list.push_back(std::make_pair(std::move(sidp), dist));
+                }
+            }
+        }
+
+        // check shells on the neighborling faces
+        for(const auto& nfid : polygon_->neighbor_faces_of(fid))
+        {
+            // XXX: Here we assume that shells on a face is circular shells only
+            if(const auto& shells = this->poly_con_.objects_on(nfid))
+            {
+                for(const auto& sid : *shells)
+                {
+                    if(filter(sid)) {continue;}
+
+                    auto sidp = this->get_shells(sid);
+                    const auto& sh = sidp.second.as_circular();
+
+                    const Real dist = ecell4::polygon::distance(*polygon_,
+                        center, std::make_pair(sh.position(), sh.fid())
+                        ) - pp.second.radius();
+
+                    if(dist < radius)
+                    {
+                        list.push_back(std::make_pair(std::move(sidp), dist));
+                    }
+                }
+            }
+        }
+        // check shells on the neighborling vertices
+        for(const auto& vid : polygon_->neighbor_vertices_of(fid))
+        {
+            // XXX: Here we assume that shells on a vertex is conical shells only
+            if(const auto& shells = this->poly_con_.objects_on(vid))
+            {
+                for(const auto& sid : *shells)
+                {
+                    if(filter(sid)) {continue;}
+
+                    auto sidp = this->get_shells(sid);
+                    const auto& sh = sidp.second.as_conical();
+
+                    const Real dist = ecell4::polygon::distance(*polygon_,
+                        center, std::make_pair(sh.position(), sh.fid())
+                        ) - pp.second.radius();
+
+                    if(dist < radius)
+                    {
+                        list.push_back(std::make_pair(std::move(sidp), dist));
+                    }
+                }
+            }
+        }
+        std::sort(retval.begin(), retval.end(), utils::pair_second_element_comparator<
+                  std::pair<ShellID, Shell>, Real>());
+        return retval;
+    }
+
 private:
 
     rtree_type rtree_;
+    polygon_container_type poly_con_;
+    std::shared_ptr<Polygon> polygon_;
 };
 
 } // ngfrd
