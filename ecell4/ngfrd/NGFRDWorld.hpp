@@ -285,6 +285,8 @@ public:
     Polygon&       polygon()       noexcept {return *polygon_;}
     Polygon const& polygon() const noexcept {return *polygon_;}
 
+    std::shared_ptr<Polygon> polygon_ptr() const noexcept {return polygon_;}
+
     PeriodicBoundary boundary() const noexcept
     {
         return PeriodicBoundary(this->edge_lengths());
