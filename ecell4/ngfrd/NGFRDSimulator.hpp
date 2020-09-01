@@ -55,7 +55,8 @@ public:
                    const std::size_t max_retry_moves = 1)
         : base_type(world, model), dt_factor_3D_(bd_dt_factor_3D),
           dt_factor_2D_(bd_dt_factor_2D), reaction_length_(reaction_length),
-          max_retry_(max_retry_moves), shells_(world->edge_lengths()),
+          max_retry_(max_retry_moves),
+          shells_(world->edge_lengths(), world->polygon_ptr()),
           is_uninitialized_(true)
     {}
     ~NGFRDSimulator() override = default;
