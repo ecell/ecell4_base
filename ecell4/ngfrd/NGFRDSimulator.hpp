@@ -245,6 +245,21 @@ private:
     boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
     fire_multi(const DomainID& did, MultiDomain dom);
 
+    // shrink domains that overlap with the sphere centered at pos with radius.
+    // Multi domains are kept intact.
+    // If it successfully shrink everything, returns true. If it encounters
+    // multi, returns false.
+    bool determine_positions_3D(const Real3& pos, const Real radius)
+    {
+        // XXX: currently, all the domains are multi.
+        return false;
+    }
+    bool determine_positions_2D(const std::pair<Real3, FaceID>& pos, const Real radius)
+    {
+        // XXX: currently, all the domains are multi.
+        return false;
+    }
+
 private:
 
     // ------------------------------------------------------------------------
