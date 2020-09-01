@@ -596,15 +596,15 @@ private:
         }
 
         // check particles on the neighborling faces
-        for(const auto& fid : polygon_->neighbor_faces_of(fid))
+        for(const auto& nfid : polygon_->neighbor_faces_of(fid))
         {
-            if(const auto& particles = this->poly_con_.objects_on(fid))
+            if(const auto& particles = this->poly_con_.objects_on(nfid))
             {
                 for(const auto& pid : *particles)
                 {
                     auto pp = ps_->get_particle(pid);
                     const Real dist = ecell4::polygon::distance(*polygon_,
-                        center, std::make_pair(pp.second.position(), fid)
+                        center, std::make_pair(pp.second.position(), nfid)
                         ) - pp.second.radius();
 
                     if(dist < radius)
