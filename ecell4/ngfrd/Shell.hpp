@@ -112,6 +112,9 @@ public:
     template<typename S>
     explicit Shell(S&& s): did_(boost::none), storage_(std::forward<S>(s)) {}
 
+    template<typename S>
+    Shell(S&& s, const DomainID& did): did_(did), storage_(std::forward<S>(s)) {}
+
     ShellKind kind() const noexcept {return ShellKind(storage_.which());}
 
     bool is_spherical  () const noexcept {return storage_.which() == 0;}
