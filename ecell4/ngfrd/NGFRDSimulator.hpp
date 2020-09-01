@@ -210,23 +210,28 @@ private:
             this->form_domain_3D(pid, p);
         }
     }
-    void form_domain_2D(const ParticleID& pid, const Particle& p);
+    void form_domain_2D(const ParticleID& pid, const Particle& p, const FaceID& fid);
     void form_domain_3D(const ParticleID& pid, const Particle& p);
 
     void fire_event(const NGFRDEvent& ev)
     {
-        return fire_domain(ev.domain_id(), this->get_domain(ev.domain_id()));
+        // pop domain from domains_ container
+        auto didp_iter = domains_.find(ev.domain_id());
+        assert(ev.domain_id() == didp_iter->first);
+        auto dom = std::move(didp_iter->second);
+        domains_.erase(didp_iter);
+        return fire_domain(ev.domain_id(), std::move(dom));
     }
 
     boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
-    fire_domain(const DomainID& did, const Domain& dom)
+    fire_domain(const DomainID& did, Domain dom)
     {
         switch(dom.kind())
         {
             // TODO: add more
             case Domain::DomainKind::Multi:
             {
-                return this->fire_multi(did, dom.as_multi());
+                return this->fire_multi(did, std::move(dom.as_multi()));
             }
             default:
             {
@@ -237,26 +242,33 @@ private:
     }
 
     boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
-    fire_multi(const DomainID& did, const MultiDomain& dom);
+    fire_multi(const DomainID& did, MultiDomain dom);
 
 private:
 
+    // ------------------------------------------------------------------------
     // inherited from SimulatorBase
 //     std::shared_ptr<world_type> world_;
 //     std::shared_ptr<model_type> model_;
 //     Integer num_steps_;
 
+    // ------------------------------------------------------------------------
+    // parameters
     Real dt_factor_3D_;
     Real dt_factor_2D_;
     Real reaction_length_;
     std::size_t max_retry_;
 
+    // ------------------------------------------------------------------------
+    // domains and shells
     SerialIDGenerator<DomainID> didgen_;
     std::unordered_map<DomainID, std::pair<event_id_type, Domain>> domains_;
 
-    SerialIDGenerator<ShellId> sidgen_;
+    SerialIDGenerator<ShellID> sidgen_;
     ShellContainer             shells_;
 
+    // ------------------------------------------------------------------------
+    // events
     scheduler_type scheduler_;
     Real dt_;
     bool is_uninitialized_;
