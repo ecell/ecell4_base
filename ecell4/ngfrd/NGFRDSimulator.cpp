@@ -6,6 +6,7 @@ namespace ngfrd
 {
 constexpr Real NGFRDSimulator::SAFETY;
 constexpr Real NGFRDSimulator::SINGLE_SHELL_FACTOR;
+constexpr Real NGFRDSimulator::MULTI_SHELL_FACTOR;
 constexpr Real NGFRDSimulator::DEFAULT_DT_FACTOR;
 constexpr Real NGFRDSimulator::CUTOFF_FACTOR;
 
