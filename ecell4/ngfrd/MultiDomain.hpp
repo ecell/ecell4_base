@@ -153,7 +153,7 @@ class MultiDomain
         std::vector<ParticleID> p3D;
         for(const auto& pid : this->particle_ids())
         {
-            if(world.on_which_face(pid).has_value())
+            if(!world.on_which_face(pid).has_value())
             {
                 p3D.push_back(pid);
             }
