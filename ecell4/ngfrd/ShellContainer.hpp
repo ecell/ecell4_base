@@ -221,6 +221,10 @@ public:
 
     container_type const& list_shells() const noexcept {return rtree_.list_objects();}
 
+    // do not modify the shape of a shell via this reference.
+    value_type&       at(const ShellID& sid)       {return this->rtree_.at(sid);}
+    value_type const& at(const ShellID& sid) const {return this->rtree_.at(sid);}
+
     value_type&       front()       noexcept {return this->rtree_.front();}
     value_type const& front() const noexcept {return this->rtree_.front();}
 
