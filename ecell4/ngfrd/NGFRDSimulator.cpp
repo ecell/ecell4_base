@@ -33,7 +33,6 @@ void NGFRDSimulator::form_domain_2D(
             intruders.push_back(did);
         }
     }
-
 //     std::cerr << "form_domain_2D: " << intruders.size() << " intrusive shells found" << std::endl;
     // list 3D multi domains that overlap with the shell.
 
@@ -73,7 +72,7 @@ void NGFRDSimulator::form_domain_2D(
         // update begin_time and re-insert domain into domains_ container
         this->domains_[did] = std::make_pair(evid, Domain(std::move(dom)));
 
-//         std::cerr << "domain container updated" << std::endl;
+//         std::cerr << "all done." << std::endl;
         return;
     }
 

@@ -66,6 +66,7 @@ public:
 
     void initialize() override
     {
+//         std::cerr << "initialize" << std::endl;
         // --------------------------------------------------------------------
         // clear everything
 
@@ -126,6 +127,7 @@ public:
     }
     void finalize()
     {
+//         std::cerr << "finalize" << std::endl;
         std::vector<DomainID> non_singles;
 
         // Single does not stick out from shell when it is bursted.
