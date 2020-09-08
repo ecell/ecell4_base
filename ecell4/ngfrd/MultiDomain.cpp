@@ -21,17 +21,18 @@ void MultiDomain::step(const Model& model, NGFRDSimulator& sim, NGFRDWorld& worl
             std::vector<ShellID   >(shell_ids_   .begin(), shell_ids_   .end()),
             last_reactions_);
 
-    while(propagator())
+//     std::cerr << "MultiDomain::step: dt = " << dt_ << std::endl;
+    while(propagator()) {}
+
+    if(!last_reactions_.empty())
     {
-        if(!last_reactions_.empty())
-        {
-            kind_ = REACTION;
-        }
-        if(propagator.vc().escaped())
-        {
-            kind_ = ESCAPE;
-        }
+        kind_ = EventKind::Reaction;
     }
+    if(propagator.particle_escaped())
+    {
+        kind_ = EventKind::Escape;
+    }
+
     return;
 }
 
