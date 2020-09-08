@@ -85,9 +85,9 @@ public:
 
         // --------------------------------------------------------------------
         // form birth domain if needed
-
         // TODO!
 
+        this->is_uninitialized_ = false;
         return;
     }
     void step() override
