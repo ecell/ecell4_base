@@ -166,6 +166,18 @@ public:
         return;
     }
 
+    void clear()
+    {
+        obj_to_face_.clear();
+        obj_to_edge_.clear();
+        obj_to_vertex_.clear();
+
+        face_to_obj_.clear();
+        edge_to_obj_.clear();
+        vertex_to_obj_.clear();
+        return;
+    }
+
     bool diagnosis() const // for debug
     {
         bool is_ok = true;
