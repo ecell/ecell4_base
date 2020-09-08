@@ -15,8 +15,8 @@ struct NGFRDEvent
         : time_(t), did_(did)
     {}
 
-    Real      const& time()      const noexcept {return time_;}
-    DomainID& const& domain_id() const noexcept {return did_;}
+    Real     const& time()      const noexcept {return time_;}
+    DomainID const& domain_id() const noexcept {return did_;}
 
 private:
     Real     time_;

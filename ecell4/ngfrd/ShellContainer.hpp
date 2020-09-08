@@ -18,9 +18,9 @@ struct ShellAABBGetterVisitor
 
     AABB operator()(const SphericalShell& sh) const noexcept
     {
-        const Real3 radius(sh.radius() * (1.0 + margin),
-                           sh.radius() * (1.0 + margin),
-                           sh.radius() * (1.0 + margin));
+        const Real3 radius(sh.shape().radius() * (1.0 + margin),
+                           sh.shape().radius() * (1.0 + margin),
+                           sh.shape().radius() * (1.0 + margin));
         return AABB(sh.position() - radius, sh.position() + radius);
     }
     AABB operator()(const CylindricalShell& sh) const noexcept
@@ -31,14 +31,14 @@ struct ShellAABBGetterVisitor
         const auto& cyl_h = sh.shape().half_height();
         const Real  r = std::sqrt(cyl_r * cyl_r + cyl_h * cyl_h) * (1.0 + margin);
 
-        return AABB(sh.position() - Real3(r, r, r), sh.position() + Real3(r, r, r);
+        return AABB(sh.position() - Real3(r, r, r), sh.position() + Real3(r, r, r));
     }
     AABB operator()(const CircularShell& sh) const noexcept
     {
         // Consider the case where a shell lies on two faces. In such a case,
         // the shell is no longer planner.
         const Real  r = sh.shape().radius() * (1.0 + margin);
-        return AABB(sh.position() - Real3(r, r, r), sh.position() + Real3(r, r, r);
+        return AABB(sh.position() - Real3(r, r, r), sh.position() + Real3(r, r, r));
     }
     AABB operator()(const ConicalShell& sh) const noexcept
     {
@@ -48,7 +48,7 @@ struct ShellAABBGetterVisitor
         const auto& apx = sh.shape().apex();
         const auto& slt = sh.shape().slant_height();
         const Real  r = slt * (1.0 + margin);
-        return AABB(apx - Real3(r, r, r), apx + Real3(r, r, r);
+        return AABB(apx - Real3(r, r, r), apx + Real3(r, r, r));
     }
 };
 
@@ -64,7 +64,7 @@ public:
     };
 
     // 3D part
-    using rtree_type = PeriodicRTree<ShellID, shell_type, ShellAABBGetter>;
+    using rtree_type = PeriodicRTree<ShellID, Shell, ShellAABBGetter>;
     using box_type               = typename rtree_type::box_type;
     using value_type             = typename rtree_type::value_type;
     using key_to_value_map_type  = typename rtree_type::key_to_value_map_type;
@@ -86,7 +86,7 @@ public:
     {
         if(!rtree_.has(sid))
         {
-            throw_exceptions<NotFound>("ngfrd::ShellContainer::get_shell: "
+            throw_exception<NotFound>("ngfrd::ShellContainer::get_shell: "
                     "No such shell (", sid, ").");
         }
         return rtree_.get(sid);
@@ -94,7 +94,7 @@ public:
 
     bool update_shell(const ShellID& sid, const Shell& sh)
     {
-        const auto retval = rtree_.update(sid, newp);
+        const auto retval = rtree_.update(sid, sh);
         assert(rtree_.diagnosis()); // just want to make it sure
         if(sh.is_circular())
         {
@@ -112,7 +112,7 @@ public:
         return rtree_.has(sid);
     }
 
-    void remove_shell(const ShellID& sid) const
+    void remove_shell(const ShellID& sid)
     {
         if(!rtree_.has(sid))
         {
@@ -324,7 +324,7 @@ private:
     list_shells_within_radius_3D_impl(
             const Real3& pos, const Real& radius, Filter filter) const
     {
-        std::vector<std::pair<std::pair<ParticleID, Particle>, Real>> retval;
+        std::vector<std::pair<std::pair<ShellID, Shell>, Real>> retval;
 
         rtree_.query(IntersectionQuery<Filter>(pos, radius, std::move(filter)),
                      std::back_inserter(retval));
@@ -358,7 +358,7 @@ private:
                 const Real dist = length(pos - sh.position()) - sh.shape().radius();
                 if(dist < radius)
                 {
-                    list.push_back(std::make_pair(std::move(sidp), dist));
+                    retval.push_back(std::make_pair(std::move(sidp), dist));
                 }
             }
         }
@@ -373,16 +373,16 @@ private:
                 {
                     if(filter(sid)) {continue;}
 
-                    auto sidp = this->get_shells(sid);
+                    auto sidp = this->get_shell(sid);
                     const auto& sh = sidp.second.as_circular();
 
                     const Real dist = ecell4::polygon::distance(*polygon_,
                         center, std::make_pair(sh.position(), sh.fid())
-                        ) - pp.second.radius();
+                        ) - sh.shape().radius();
 
                     if(dist < radius)
                     {
-                        list.push_back(std::make_pair(std::move(sidp), dist));
+                        retval.push_back(std::make_pair(std::move(sidp), dist));
                     }
                 }
             }
@@ -397,16 +397,16 @@ private:
                 {
                     if(filter(sid)) {continue;}
 
-                    auto sidp = this->get_shells(sid);
+                    auto sidp = this->get_shell(sid);
                     const auto& sh = sidp.second.as_conical();
 
                     const Real dist = ecell4::polygon::distance(*polygon_,
-                        center, std::make_pair(sh.position(), sh.fid())
-                        ) - pp.second.radius();
+                        center, std::make_pair(sh.position(), sh.vid())
+                        ) - sh.shape().slant_height();
 
                     if(dist < radius)
                     {
-                        list.push_back(std::make_pair(std::move(sidp), dist));
+                        retval.push_back(std::make_pair(std::move(sidp), dist));
                     }
                 }
             }

@@ -93,7 +93,7 @@ struct ConicalShell
 
 enum class ShellKind : int // boost::variant::which returns an int.
 {
-    Shperical   = 0,
+    Spherical   = 0,
     Cylindrical = 1,
     Circular    = 2,
     Conical     = 3,

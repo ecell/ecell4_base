@@ -1,6 +1,6 @@
 #ifndef ECELL4_NGFRD_DOMAIN_HPP
 #define ECELL4_NGFRD_DOMAIN_HPP
-#include <ecell4/MultiDomain.hpp>
+#include <ecell4/ngfrd/MultiDomain.hpp>
 
 namespace ecell4
 {

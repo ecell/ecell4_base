@@ -1021,7 +1021,7 @@ Real drawR_gbd_3D(const Real sigma, const Real t, const Real D, const Real rnd) 
         return std::abs(a - b) < abs_tol || std::abs(a / b - 1.0) < rel_tol;
     };
     const auto Reqn = [=](const Real x) noexcept {
-        return Igbd_r_3D(x, sigma, t, D) - target;
+        return Igbd_r_3d(x, sigma, t, D) - target;
     };
 
     constexpr std::size_t max_iteration = 100;
@@ -1034,7 +1034,7 @@ Real drawR_gbd_3D(const Real sigma, const Real t, const Real D, const Real rnd) 
     {
         throw_exception<std::runtime_error>(
             "ngfrd::BDPropagator::bd_math::drawR_gbd_3D: did not converge. "
-            "(rnd=", rnd, ", r12=", sigma, ", dt=", t, ", D12=", D, ")")
+            "(rnd=", rnd, ", r12=", sigma, ", dt=", t, ", D12=", D, ")");
     }
     return t_range.first;
 }

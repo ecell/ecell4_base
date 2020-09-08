@@ -10,11 +10,13 @@
 #include <ecell4/core/Model.hpp>
 #include <ecell4/core/EventScheduler.hpp>
 #include <ecell4/core/SerialIDGenerator.hpp>
+#include <ecell4/core/SimulatorBase.hpp>
 
 #include <ecell4/ngfrd/ShellID.hpp>
 #include <ecell4/ngfrd/Shell.hpp>
 #include <ecell4/ngfrd/DomainID.hpp>
 #include <ecell4/ngfrd/Domain.hpp>
+#include <ecell4/ngfrd/ShellContainer.hpp>
 #include <ecell4/ngfrd/NGFRDEvent.hpp>
 #include <ecell4/ngfrd/NGFRDWorld.hpp>
 
@@ -70,7 +72,7 @@ public:
         scheduler_.clear();
         domains_  .clear();
         shells_   .clear();
-        shells_.reset_boundary(this->world_.edge_lengths());
+        shells_.reset_boundary(this->world_->edge_lengths());
 
         // --------------------------------------------------------------------
         // form domain for all particles
@@ -123,27 +125,28 @@ public:
     }
     void finalize()
     {
-        std::vector<domain_id_type> non_singles;
+        std::vector<DomainID> non_singles;
 
         // Single does not stick out from shell when it is bursted.
         for(const auto& eidp: scheduler_.events())
         {
             const auto& eid = eidp.first;
             const auto& ev  = eidp.second;
-            const auto& dom = this->get_domain(ev.domain_id());
+            const auto& did = ev->domain_id();
+            const auto& dom = this->get_domain(did);
 
             if(dom.multiplicity() != 1)
             {
-                non_singles.push_back(ev.domain_id());
+                non_singles.push_back(ev->domain_id());
                 continue;
             }
-            this->burst_domain(dom);
+            this->burst_domain(did, dom);
         }
 
         // then burst non-single domains
         for(const auto& did : non_singles)
         {
-            this->burst_domain(this->get_domain(did));
+            this->burst_domain(did, this->get_domain(did));
         }
         this->dt_ = 0.0;
         this->is_uninitialized_ = true;
@@ -152,7 +155,7 @@ public:
         return;
     }
 
-    Real next_time() const override
+    Real next_event_time() const
     {
         return scheduler_.next_time();
     }
@@ -184,7 +187,8 @@ private:
         const auto eidp = scheduler_.pop();
         this->set_t(eidp.second->time());
 
-        const auto fired = fire_event(eidp.second);
+        const auto fired = fire_event(*eidp.second);
+
         for(const auto& pidp : fired)
         {
             this->form_domain(pidp.first, pidp.second);
@@ -197,12 +201,13 @@ private:
         {
             this->zero_step_count_ += 1;
         }
+//         std::cerr << "step_unchecked: done" << std::endl;
         return;
     }
 
     void form_domain(const ParticleID& pid, const Particle& p)
     {
-        if(const auto fid = this->world_.on_which_face(pid))
+        if(const auto fid = this->world_->on_which_face(pid))
         {
             this->form_domain_2D(pid, p, *fid);
         }
@@ -214,14 +219,15 @@ private:
     void form_domain_2D(const ParticleID& pid, const Particle& p, const FaceID& fid);
     void form_domain_3D(const ParticleID& pid, const Particle& p);
 
-    void fire_event(const NGFRDEvent& ev)
+    boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
+    fire_event(const NGFRDEvent& ev)
     {
         // pop domain from domains_ container
         auto didp_iter = domains_.find(ev.domain_id());
         assert(ev.domain_id() == didp_iter->first);
         auto dom = std::move(didp_iter->second);
         domains_.erase(didp_iter);
-        return fire_domain(ev.domain_id(), std::move(dom));
+        return fire_domain(ev.domain_id(), std::move(dom.second));
     }
 
     boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
@@ -245,20 +251,40 @@ private:
     boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
     fire_multi(const DomainID& did, MultiDomain dom);
 
-    // shrink domains that overlap with the sphere centered at pos with radius.
-    // Multi domains are kept intact.
-    // If it successfully shrink everything, returns true. If it encounters
-    // multi, returns false.
-    bool determine_positions_3D(const Real3& pos, const Real radius)
+    boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
+    burst_domain(const DomainID& did, Domain dom)
     {
-        // XXX: currently, all the domains are multi.
-        return false;
+        switch(dom.kind())
+        {
+            // TODO: add more
+            case Domain::DomainKind::Multi:
+            {
+                return this->burst_multi(did, std::move(dom.as_multi()));
+            }
+            default:
+            {
+                throw_exception<NotImplemented>("NGFRD::burst_domain: unknown "
+                        "domain kind (", static_cast<int>(dom.kind()), ").");
+            }
+        }
     }
-    bool determine_positions_2D(const std::pair<Real3, FaceID>& pos, const Real radius)
+
+    boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
+    burst_multi(const DomainID& did, MultiDomain dom)
     {
-        // XXX: currently, all the domains are multi.
-        return false;
+        // - step domain until this->t()
+        // - return resulting particles
+
+        // TODO
+        boost::container::small_vector<std::pair<ParticleID, Particle>, 4> retval;
+        for(const auto& pid : dom.particle_ids())
+        {
+            retval.push_back(world_->get_particle(pid));
+        }
+        return retval;
     }
+
+    Polygon const& polygon() const noexcept {return this->world_->polygon();}
 
 private:
 
