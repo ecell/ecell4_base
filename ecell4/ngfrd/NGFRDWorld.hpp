@@ -513,7 +513,7 @@ public:
      * get all particles.
      * @return a list of particles
      */
-    std::vector<std::pair<ParticleID, Particle>> list_particles() const
+    std::vector<std::pair<ParticleID, Particle>> list_particles() const override
     {
         return ps_->list_particles();
     }
@@ -530,7 +530,7 @@ public:
     }
 
     virtual std::vector<std::pair<ParticleID, Particle> >
-    list_particles_exact(const Species& sp) const
+    list_particles_exact(const Species& sp) const override
     {
         return ps_->list_particles_exact(sp);
     }
