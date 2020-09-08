@@ -243,6 +243,7 @@ public:
 
     void clear()
     {
+        poly_con_.clear();
         rtree_.clear();
         return;
     }
