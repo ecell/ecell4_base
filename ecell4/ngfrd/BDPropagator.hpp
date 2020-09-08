@@ -75,6 +75,29 @@ public:
         return particles_;
     }
 
+    bool particle_escaped() const
+    {
+        for(const auto& pid : this->particles_)
+        {
+            const auto& p = world_.get_particle(pid).second;
+            if(auto fid = world_.on_which_face(pid))
+            {
+                if(!is_inside_of_shells_2D(std::make_pair(p.position(), *fid), p.radius()))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                if(!is_inside_of_shells_3D(p.position(), p.radius()))
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 private:
 
     void remove_particle(const ParticleID& pid)
