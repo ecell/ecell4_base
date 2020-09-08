@@ -174,6 +174,22 @@ visit(Visitor&& visitor, Shells&& ... sh)
             std::forward<Shells>(sh).as_variant() ...);
 }
 
+template<typename charT, typename traitsT>
+std::basic_ostream<charT, traitsT>&
+operator<<(std::basic_ostream<charT, traitsT>& os, const Shell& sh)
+{
+    switch(sh.kind())
+    {
+        case ShellKind::Spherical:   {os << "SphericalShell{"  ; break;}
+        case ShellKind::Cylindrical: {os << "CylindricalShell{"; break;}
+        case ShellKind::Circular:    {os << "CircularShell{"   ; break;}
+        case ShellKind::Conical:     {os << "ConicalShell{"    ; break;}
+        default: {os << "UnknownShell{"; break;}
+    }
+    os << sh.position() << "}";
+    return os;
+}
+
 struct ShellDistanceCalculator
     : boost::static_visitor<Real>
 {

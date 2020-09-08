@@ -79,6 +79,7 @@ public:
 
         for(const auto& pp : world_->particles())
         {
+//             std::cerr << "initializing domain for " << pp.first << std::endl;
             form_domain(pp.first, pp.second);
         }
 
@@ -176,10 +177,12 @@ private:
 
     void step_unchecked()
     {
+//         std::cerr << "step_unchecked: " << num_steps_ << "-th step" << std::endl;
         this->num_steps_ += 1;
 
         if(scheduler_.size() == 0)
         {
+//             std::cerr << "no event found" << std::endl;
             this->set_t(scheduler_.next_time());
             return;
         }
@@ -191,6 +194,7 @@ private:
 
         for(const auto& pidp : fired)
         {
+//             std::cerr << "forming domain for resulting particle " << pidp.first << std::endl;
             this->form_domain(pidp.first, pidp.second);
         }
 

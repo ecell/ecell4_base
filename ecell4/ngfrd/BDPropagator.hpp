@@ -55,10 +55,12 @@ public:
         Particle p = world_.get_particle(pid).second;
         if(auto fid = world_.on_which_face(pid))
         {
+//             std::cerr << "BDPropagator: moving 2D particle " << pid << std::endl;
             this->propagate_2D_particle(pid, std::move(p), std::move(*fid));
         }
         else // 3D particle
         {
+//             std::cerr << "BDPropagator: moving 3D particle " << pid << std::endl;
             this->propagate_3D_particle(pid, std::move(p));
         }
         return true;
