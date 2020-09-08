@@ -170,6 +170,27 @@ public:
         return this->world_->rng();
     }
 
+    // shrink domains that overlap with the sphere centered at pos with radius.
+    // Multi domains are kept intact.
+    // If it successfully shrink everything, returns true. If it encounters
+    // multi, returns false.
+    bool determine_positions_3D(const Real3& pos, const Real radius)
+    {
+        // XXX: currently, all the domains are multi.
+        return false;
+    }
+    bool determine_positions_2D(const std::pair<Real3, FaceID>& pos, const Real radius)
+    {
+        // XXX: currently, all the domains are multi.
+        return false;
+    }
+
+    // XXX currently, BDPropagator calls this. This should be removed later
+    Shell get_shell(const ShellID& sid) const
+    {
+        return shells_.get_shell(sid).second;
+    }
+
 private:
 
     Domain const& get_domain(const DomainID& did) const {return domains_.at(did).second;}
