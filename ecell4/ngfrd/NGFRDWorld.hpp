@@ -78,6 +78,60 @@ public:
 
     // ------------------------------------------------------------------------
 
+    void add_molecules_3D(const Species& sp, const Integer& num)
+    {
+        if (num < 0)
+        {
+            throw std::invalid_argument("The number of molecules must be positive.");
+        }
+        for(Integer i=0; i<num; ++i)
+        {
+            while(this->throw_in_particle_3D(sp).second == false)
+            {
+                /*do nothing*/
+            }
+        }
+        return;
+    }
+    void add_molecules_2D(const Species& sp, const Integer& num)
+    {
+        if (num < 0)
+        {
+            throw std::invalid_argument("The number of molecules must be positive.");
+        }
+        for(Integer i=0; i<num; ++i)
+        {
+            while(this->throw_in_particle_2D(sp).second == false)
+            {
+                /*do nothing*/
+            }
+        }
+        return;
+    }
+
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    throw_in_particle_3D(const Species& sp)
+    {
+        const auto info = this->get_molecule_info(sp);
+        std::shared_ptr<Shape> shape(new AABB(Real3(0, 0, 0), this->edge_lengths()));
+
+        const Real3 pos(shape->draw_position(this->rng_));
+        const Particle p(sp, pos, info.radius, info.D);
+        return this->new_particle_3D(p);
+    }
+    std::pair<std::pair<ParticleID, Particle>, bool>
+    throw_in_particle_2D(const Species& sp)
+    {
+        const auto info = this->get_molecule_info(sp);
+
+        Real3 pos; FaceID fid;
+        pos = this->polygon_->draw_position(this->rng_, fid);
+        const Particle p(sp, pos, info.radius, info.D);
+        return this->new_particle_2D(p, fid);
+    }
+
+    // ------------------------------------------------------------------------
+
     std::pair<std::pair<ParticleID, Particle>, bool>
     new_particle_3D(const Particle& p)
     {
