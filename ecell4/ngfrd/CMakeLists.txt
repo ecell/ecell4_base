@@ -3,6 +3,7 @@ set(CPP_FILES
     BDPropagator.cpp
     MultiDomain.cpp
     NGFRDSimulator.cpp
+    Logger.cpp
 )
 
 add_library(ecell4-ngfrd STATIC ${CPP_FILES})
