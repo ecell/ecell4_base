@@ -1,5 +1,4 @@
 #include <ecell4/ngfrd/NGFRDSimulator.hpp>
-#include <ecell4/ngfrd/Logger.hpp>
 
 namespace ecell4
 {

@@ -20,6 +20,8 @@
 #include <ecell4/ngfrd/NGFRDEvent.hpp>
 #include <ecell4/ngfrd/NGFRDWorld.hpp>
 
+#include <ecell4/ngfrd/Logger.hpp>
+
 #include <greens_functions/PairGreensFunction.hpp>
 #include <greens_functions/GreensFunction3DRadAbs.hpp>
 #include <greens_functions/GreensFunction3DRadInf.hpp>
@@ -66,7 +68,7 @@ public:
 
     void initialize() override
     {
-//         std::cerr << "initialize" << std::endl;
+        ECELL4_NGFRD_LOG_FUNCTION();
         // --------------------------------------------------------------------
         // clear everything
 
@@ -80,7 +82,7 @@ public:
 
         for(const auto& pp : world_->particles())
         {
-//             std::cerr << "initializing domain for " << pp.first << std::endl;
+            ECELL4_NGFRD_LOG("initializing domain for ", pp.first);
             form_domain(pp.first, pp.second);
         }
 
@@ -127,7 +129,7 @@ public:
     }
     void finalize()
     {
-//         std::cerr << "finalize" << std::endl;
+        ECELL4_NGFRD_LOG_FUNCTION();
         std::vector<DomainID> non_singles;
 
         // Single does not stick out from shell when it is bursted.
@@ -200,12 +202,12 @@ private:
 
     void step_unchecked()
     {
-//         std::cerr << "step_unchecked: " << num_steps_ << "-th step" << std::endl;
+        ECELL4_NGFRD_LOG_FUNCTION();
         this->num_steps_ += 1;
 
         if(scheduler_.size() == 0)
         {
-//             std::cerr << "no event found" << std::endl;
+            ECELL4_NGFRD_LOG("no event found");
             this->set_t(scheduler_.next_time());
             return;
         }
@@ -217,7 +219,7 @@ private:
 
         for(const auto& pidp : fired)
         {
-//             std::cerr << "forming domain for resulting particle " << pidp.first << std::endl;
+            ECELL4_NGFRD_LOG("forming domain for resulting particle ", pidp.first);
             this->form_domain(pidp.first, pidp.second);
         }
 
@@ -228,7 +230,6 @@ private:
         {
             this->zero_step_count_ += 1;
         }
-//         std::cerr << "step_unchecked: done" << std::endl;
         return;
     }
 

@@ -1,5 +1,6 @@
 #ifndef ECELL4_NGFRD_MULTI_DOMAIN_HPP
 #define ECELL4_NGFRD_MULTI_DOMAIN_HPP
+#include <ecell4/ngfrd/Logger.hpp>
 #include <ecell4/ngfrd/ShellID.hpp>
 #include <ecell4/ngfrd/BDPropagator.hpp>
 #include <ecell4/ngfrd/NGFRDWorld.hpp>
@@ -127,12 +128,12 @@ class MultiDomain
     }
     void determine_delta_t(const Model& model, const NGFRDWorld& world)
     {
-//         std::cerr << "MultiDomain::determine_delta_t: factor_2D = " << dt_factor_2D_ << ", 3D = " << dt_factor_3D_ << std::endl;
+        ECELL4_NGFRD_LOG_FUNCTION();
+        ECELL4_NGFRD_LOG("factor_2D = ", dt_factor_2D_, ", 3D = ", dt_factor_3D_);
         const Real dt_2D = this->determine_delta_t_2D(model, world);
         const Real dt_3D = this->determine_delta_t_3D(model, world);
-//         std::cerr << "determine_delta_t: dt_2D = " << dt_2D << ", dt_3D = " << dt_3D << std::endl;
         this->dt_ = std::min(dt_2D, dt_3D);
-//         std::cerr << "dt = " << dt_ << std::endl;
+        ECELL4_NGFRD_LOG("dt_2D = ", dt_2D, ", dt_3D = ", dt_3D, ", dt = ", dt_);
         return;
     }
 

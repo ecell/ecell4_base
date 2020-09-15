@@ -466,24 +466,25 @@ bool BDPropagator::attempt_2to1_reaction_2D(
 
 void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
 {
+    ECELL4_NGFRD_LOG_FUNCTION();
     if(attempt_single_reaction_3D(pid, p))
     {
-//         std::cerr << "single reaction happened. done." << std::endl;
-        return; // reaction happened. done.
+        ECELL4_NGFRD_LOG("single reaction happened. done.");
+        return;
     }
     if(p.D() == Real(0.0))
     {
-//         std::cerr << "diffusion coeff is zero. done." << std::endl;
-        return; // particle does not move. done.
+        ECELL4_NGFRD_LOG("diffusion coeff is zero. particle does not move. done.");
+        return;
     }
 
     // ------------------------------------------------------------------------
     // apply displacement. If it collides with a face, reject it.
 
     Real3 disp    = this->draw_3D_displacement(p);
-//     std::cerr << "displacement = " << disp << std::endl;
+    ECELL4_NGFRD_LOG("displacement = ", disp);
     Real3 new_pos = world_.boundary().apply_boundary(p.position() + disp);
-//     std::cerr << "new position = " << new_pos << std::endl;
+    ECELL4_NGFRD_LOG("new position = ", new_pos);
 
     if(world_.has_overlapping_faces(new_pos, p.radius()))
     {
@@ -912,8 +913,6 @@ Real3 BDPropagator::draw_2D_displacement(const Particle& p, const FaceID& fid)
 Real3 BDPropagator::draw_3D_displacement(const Particle& p)
 {
     const Real sigma = std::sqrt(2 * p.D() * dt_);
-//     std::cerr << "dt = " << dt_ << ", D = " << p.D() << std::endl;
-//     std::cerr << "3D displacement sigma = " << sigma << std::endl;
     return Real3(rng_.gaussian(sigma), rng_.gaussian(sigma), rng_.gaussian(sigma));
 }
 

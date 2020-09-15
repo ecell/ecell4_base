@@ -7,6 +7,7 @@
 #include <ecell4/ngfrd/ShellID.hpp>
 #include <ecell4/ngfrd/Shell.hpp>
 #include <ecell4/ngfrd/NGFRDWorld.hpp>
+#include <ecell4/ngfrd/Logger.hpp>
 
 #include <greens_functions/freeFunctions.hpp>
 #include <boost/math/constants/constants.hpp>
@@ -45,6 +46,7 @@ public:
 
     bool operator()()
     {
+        ECELL4_NGFRD_LOG_FUNCTION();
         if(queue_.empty())
         {
             return false;
@@ -55,12 +57,12 @@ public:
         Particle p = world_.get_particle(pid).second;
         if(auto fid = world_.on_which_face(pid))
         {
-//             std::cerr << "BDPropagator: moving 2D particle " << pid << std::endl;
+            ECELL4_NGFRD_LOG("propagating 2D particle ", pid);
             this->propagate_2D_particle(pid, std::move(p), std::move(*fid));
         }
         else // 3D particle
         {
-//             std::cerr << "BDPropagator: moving 3D particle " << pid << std::endl;
+            ECELL4_NGFRD_LOG("propagating 3D particle ", pid);
             this->propagate_3D_particle(pid, std::move(p));
         }
         return true;
