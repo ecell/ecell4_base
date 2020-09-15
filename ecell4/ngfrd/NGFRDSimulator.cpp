@@ -1,4 +1,5 @@
 #include <ecell4/ngfrd/NGFRDSimulator.hpp>
+#include <ecell4/ngfrd/Logger.hpp>
 
 namespace ecell4
 {
@@ -13,8 +14,9 @@ constexpr Real NGFRDSimulator::CUTOFF_FACTOR;
 void NGFRDSimulator::form_domain_2D(
         const ParticleID& pid, const Particle& p, const FaceID& fid)
 {
+    ECELL4_NGFRD_LOG_FUNCTION();
     // TODO: Currently we always form a multi domain.
-//     std::cerr << "form_domain_2D: forming domain for particle " << pid << std::endl;
+    ECELL4_NGFRD_LOG("form_domain_2D: forming domain for particle ", pid);
 
     // -----------------------------------------------------------------------
     // form_multi
@@ -29,11 +31,11 @@ void NGFRDSimulator::form_domain_2D(
         const auto  did   = shell.domain_id().get();
         if(std::find(intruders.begin(), intruders.end(), did) == intruders.end())
         {
-//             std::cerr << "intruder found: 2DShell " << item.first.first << " in " << did << std::endl;
+            ECELL4_NGFRD_LOG("intruder found: 2DShell ", item.first.first, " in ", did);
             intruders.push_back(did);
         }
     }
-//     std::cerr << "form_domain_2D: " << intruders.size() << " intrusive shells found" << std::endl;
+    ECELL4_NGFRD_LOG("form_domain_2D: ", intruders.size(), " intrusive shells found");
 
     // list 3D multi domains that overlap with the shell.
     // Here, we list 3D shells that are within the bounding sphere and overlap
@@ -58,7 +60,7 @@ void NGFRDSimulator::form_domain_2D(
             // the domain overlaps with 2D shell, but a nice approximation (sort of))
             if(std::find(intruders.begin(), intruders.end(), did) == intruders.end())
             {
-    //             std::cerr << "intruder found: 3DShell " << item.first.first << " in " << did << std::endl;
+                ECELL4_NGFRD_LOG("intruder found: 3DShell ", item.first.first, " in ", did);
                 intruders.push_back(did);
             }
         }
@@ -73,31 +75,29 @@ void NGFRDSimulator::form_domain_2D(
         Shell sh(CircularShell(Circle(multi_radius, p.position(),
                         this->polygon().triangle_at(fid).normal()), fid), did);
 
-//         std::cerr << "shell created: " << sid << std::endl;
+        ECELL4_NGFRD_LOG("shell created: ", sid);
         this->shells_.update_shell(sid, sh);
-//         std::cerr << "shell container updated" << std::endl;
+        ECELL4_NGFRD_LOG("shell container updated");
 
         MultiDomain dom(this->t());
         dom.add_particle(pid);
         dom.add_shell(sid);
         dom.determine_parameters(*(this->model()), *(this->world()));
 
-//         std::cerr << "multi domain created " << did << std::endl;
+        ECELL4_NGFRD_LOG("multi domain created ", did);
 
         // add event with the same domain ID
         const auto evid = this->scheduler_.add(
                 std::make_shared<event_type>(this->t() + dom.dt(), did));
 
-//         std::cerr << "event added" << std::endl;
+        ECELL4_NGFRD_LOG("event added");
 
         // update begin_time and re-insert domain into domains_ container
         this->domains_[did] = std::make_pair(evid, Domain(std::move(dom)));
-
-//         std::cerr << "all done." << std::endl;
         return;
     }
 
-//     std::cerr << "intruder found. merge all domains" << std::endl;
+    ECELL4_NGFRD_LOG("intruder found. merge all domains");
     // XXX Currently all the domains are multi domains. merge all those multi domains.
     // Later we need to burst domains and check if the resulting particle should
     // be in Multi or form Single
@@ -108,9 +108,9 @@ void NGFRDSimulator::form_domain_2D(
     const auto sid = sidgen_();
     Shell sh(CircularShell(Circle(multi_radius, p.position(),
                     this->polygon().triangle_at(fid).normal()), fid), host_id);
-//     std::cerr << "shell created " << sid << std::endl;
+    ECELL4_NGFRD_LOG("shell created ", sid);
     this->shells_.update_shell(sid, sh);
-//     std::cerr << "shell inserted" << std::endl;
+    ECELL4_NGFRD_LOG("shell inserted");
 
     assert(domains_.at(host_id).second.is_multi());
     auto& host = domains_.at(host_id).second.as_multi();
@@ -142,8 +142,9 @@ void NGFRDSimulator::form_domain_2D(
 }
 void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
 {
+    ECELL4_NGFRD_LOG_FUNCTION();
     // TODO: Currently we always form a multi domain.
-//     std::cerr << "form_domain_3D: forming domain for particle " << pid << std::endl;
+    ECELL4_NGFRD_LOG("form_domain_3D: forming domain for particle ", pid);
 
     // -----------------------------------------------------------------------
     // form_multi
@@ -158,7 +159,7 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
         const auto  did   = shell.domain_id().get();
         if(std::find(intruders.begin(), intruders.end(), did) == intruders.end())
         {
-//             std::cerr << "intruder found: Shell " << item.first.first << " in " << did << std::endl;
+            ECELL4_NGFRD_LOG("intruder found: Shell ", item.first.first, " in ", did);
             intruders.push_back(did);
         }
     }
@@ -238,44 +239,41 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
         const auto sid = sidgen_();
 
         Shell sh(SphericalShell(Sphere(p.position(), multi_radius)), did);
-//         std::cerr << "shell created: " << sid << std::endl;
+        ECELL4_NGFRD_LOG("shell created: ", sid);
         this->shells_.update_shell(sid, sh);
-//         std::cerr << "shell container updated" << std::endl;
+        ECELL4_NGFRD_LOG("shell inserted");
 
         MultiDomain dom(this->t());
         dom.add_particle(pid);
         dom.add_shell(sid);
         dom.determine_parameters(*(this->model()), *(this->world()));
 
-//         std::cerr << "multi domain created " << did << std::endl;
+        ECELL4_NGFRD_LOG("multi domain created ", did);
 
         // add event with the same domain ID
         const auto evid = this->scheduler_.add(
                 std::make_shared<event_type>(this->t() + dom.dt(), did));
-
-//         std::cerr << "event added" << std::endl;
+        ECELL4_NGFRD_LOG("event added: ", evid);
 
         // update begin_time and re-insert domain into domains_ container
         this->domains_[did] = std::make_pair(evid, Domain(std::move(dom)));
-
-//         std::cerr << "domain container updated" << std::endl;
-//         std::cerr << "all done." << std::endl;
+        ECELL4_NGFRD_LOG("domain container updated");
         return;
     }
 
     // XXX Currently all the domains are multi domains. merge all those multi domains.
     // Later we need to burst domains and check if the resulting particle should
     // be in Multi or form Single
-//     std::cerr << "intruder found. merge all domains" << std::endl;
+    ECELL4_NGFRD_LOG("intruder found. merge all domains");
 
     const auto host_id = intruders.back();
     intruders.pop_back();
 
     const auto sid = sidgen_();
     Shell sh(SphericalShell(Sphere(p.position(), multi_radius)), host_id);
-//     std::cerr << "shell created " << sid << std::endl;
+    ECELL4_NGFRD_LOG("shell created: ", sid);
     this->shells_.update_shell(sid, sh);
-//     std::cerr << "shell inserted" << std::endl;
+    ECELL4_NGFRD_LOG("shell inserted");
 
     assert(domains_.at(host_id).second.is_multi());
     auto& host = domains_.at(host_id).second.as_multi();
@@ -308,11 +306,9 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
 boost::container::small_vector<std::pair<ParticleID, Particle>, 4>
 NGFRDSimulator::fire_multi(const DomainID& did, MultiDomain dom)
 {
-//     std::cerr << "firing multi: " << did << std::endl;
-//     for(const auto& sid : dom.shell_ids())
-//     {
-//         std::cerr << "included shell = " << sid << std::endl;
-//     }
+    ECELL4_NGFRD_LOG_FUNCTION();
+    ECELL4_NGFRD_LOG("firing multi: ", did);
+    ECELL4_NGFRD_LOG("included shells: ", dom.shell_ids());
 
     dom.step(*(this->model_), *this, *(this->world_));
 
@@ -339,7 +335,7 @@ NGFRDSimulator::fire_multi(const DomainID& did, MultiDomain dom)
     // remove shells
     for(const auto& sid : dom.shell_ids())
     {
-//         std::cerr << "removing shell " << sid << std::endl;
+        ECELL4_NGFRD_LOG("removing shell: ", sid);
         this->shells_.remove_shell(sid);
     }
 
