@@ -26,6 +26,8 @@ struct SphericalShell
     shape_type&       shape()       noexcept {return shape_;}
     shape_type const& shape() const noexcept {return shape_;}
 
+    Sphere bounding_sphere() const {return shape_;}
+
   private:
     shape_type shape_;
 };
@@ -41,6 +43,13 @@ struct CylindricalShell
 
     shape_type&       shape()       noexcept {return shape_;}
     shape_type const& shape() const noexcept {return shape_;}
+
+    Sphere bounding_sphere() const
+    {
+        const auto r = shape_.radius();
+        const auto h = shape_.half_height();
+        return Sphere(shape_.center(), std::sqrt(r * r + h * h));
+    }
 
   private:
 
@@ -63,6 +72,11 @@ struct CircularShell
     FaceID&       fid()       noexcept {return fid_;}
     FaceID const& fid() const noexcept {return fid_;}
 
+    Sphere bounding_sphere() const
+    {
+        return Sphere(shape_.center(), shape_.radius());
+    }
+
   private:
 
     FaceID     fid_;
@@ -84,6 +98,11 @@ struct ConicalShell
 
     VertexID&       vid()       noexcept {return vid_;}
     VertexID const& vid() const noexcept {return vid_;}
+
+    Sphere bounding_sphere() const
+    {
+        return Sphere(shape_.apex(), shape_.slant_height());
+    }
 
   private:
 
@@ -159,6 +178,18 @@ public:
 
     boost::optional<DomainID> const& domain_id() const noexcept {return did_;}
     boost::optional<DomainID>&       domain_id()       noexcept {return did_;}
+
+    Sphere bounding_sphere() const
+    {
+        switch(storage_.which())
+        {
+            case 0: {return boost::get<SphericalShell  >(storage_).bounding_sphere();}
+            case 1: {return boost::get<CylindricalShell>(storage_).bounding_sphere();}
+            case 2: {return boost::get<CircularShell   >(storage_).bounding_sphere();}
+            case 3: {return boost::get<ConicalShell    >(storage_).bounding_sphere();}
+            default:{throw std::runtime_error("Shell::bounding_sphere: bad_visit");}
+        }
+    }
 
 private:
 
