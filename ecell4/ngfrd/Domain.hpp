@@ -27,8 +27,7 @@ private:
         {
             throw_exception<IllegalState>("Domain is not initialized");
         }
-        template<typename D>
-        std::size_t operator()(const D& dom) const noexcept
+        std::size_t operator()(const MultiDomain& dom) const noexcept
         {
             return dom.multiplicity();
         }
