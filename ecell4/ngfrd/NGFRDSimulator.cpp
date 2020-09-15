@@ -29,18 +29,39 @@ void NGFRDSimulator::form_domain_2D(
         const auto  did   = shell.domain_id().get();
         if(std::find(intruders.begin(), intruders.end(), did) == intruders.end())
         {
-//             std::cerr << "intruder found: Shell " << item.first.first << " in " << did << std::endl;
+//             std::cerr << "intruder found: 2DShell " << item.first.first << " in " << did << std::endl;
             intruders.push_back(did);
         }
     }
 //     std::cerr << "form_domain_2D: " << intruders.size() << " intrusive shells found" << std::endl;
-    // list 3D multi domains that overlap with the shell.
 
+    // list 3D multi domains that overlap with the shell.
+    // Here, we list 3D shells that are within the bounding sphere and overlap
+    // with the polygon.
+    for(const auto& item : shells_.list_shells_within_radius_3D(
+                p.position(), multi_radius))
     {
-        // TODO: consider overlap between 3D domains and 2D domains
-        // 1. find domains that overlaps with a face (it should be a multi)
-        // 2. calculate the cross section of 3D domain with the plane on which the face belongs.
-        // 3. check overlap between 2D domain and cross section of 3D domain.
+        const auto& shell = item.first.second;
+        const auto  did   = shell.domain_id().get();
+
+        if(!this->domains_.at(did).second.is_multi())
+        {
+            // non-Multi domain never overlaps with the polygon (?)
+            continue;
+        }
+        // Multi 3D Shell is always spherical.
+        const auto& sh = shell.as_spherical();
+        if(this->polygon().has_overlapping_faces(sh.shape().position(), sh.shape().radius()))
+        {
+            // This shell is within the bounding sphere of 2D shell and overlaps
+            // with Polygon. Insert it to multi (that does not always mean that
+            // the domain overlaps with 2D shell, but a nice approximation (sort of))
+            if(std::find(intruders.begin(), intruders.end(), did) == intruders.end())
+            {
+    //             std::cerr << "intruder found: 3DShell " << item.first.first << " in " << did << std::endl;
+                intruders.push_back(did);
+            }
+        }
     }
 
     if(intruders.empty())
@@ -78,7 +99,8 @@ void NGFRDSimulator::form_domain_2D(
 
 //     std::cerr << "intruder found. merge all domains" << std::endl;
     // XXX Currently all the domains are multi domains. merge all those multi domains.
-    assert(false);
+    // Later we need to burst domains and check if the resulting particle should
+    // be in Multi or form Single
 
     const auto host_id = intruders.back();
     intruders.pop_back();
@@ -141,13 +163,72 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
         }
     }
     // list 3D multi domains that overlap with the shell.
-
-    // XXX: todo
+    const auto pbc = this->world_->boundary();
+    for(const auto fidpd : this->polygon().list_faces_within_radius(
+                p.position(), multi_radius))
     {
-        // 0. check if multi domain overlaps with a face
-        // 1. find domains are on the face
-        // 2. calculate the cross section of 3D domain with the plane on which the face belongs.
-        // 3. check overlap between 2D domain and cross section of 3D domain.
+        const auto fid = fidpd.first.first;
+
+        // shells on this triangle
+        if(const auto shids = shells_.shells_on(fid))
+        {
+            for(const auto shid : *shids)
+            {
+                // check overlap with the bounding sphere of 2D shell
+                // as an approximation
+                const auto sh = this->shells_.get_shell(shid).second;
+                const auto bs = sh.bounding_sphere();
+                const auto dist = length(
+                        pbc.periodic_transpose(p.position(), bs.position()) -
+                        bs.position());
+                if(dist <= multi_radius + bs.radius())
+                {
+                    intruders.push_back(*sh.domain_id());
+                }
+            }
+        }
+        // shells on the vertices of the triangle
+        for(const auto vid : this->polygon().vertices_of(fid))
+        {
+            if(const auto shids = shells_.shells_on(vid))
+            {
+                for(const auto shid : *shids)
+                {
+                    // check overlap with the bounding sphere of 2D shell
+                    // as an approximation
+                    const auto sh = this->shells_.get_shell(shid).second;
+                    const auto bs = sh.bounding_sphere();
+                    const auto dist = length(
+                            pbc.periodic_transpose(p.position(), bs.position()) -
+                            bs.position());
+                    if(dist <= multi_radius + bs.radius())
+                    {
+                        intruders.push_back(*sh.domain_id());
+                    }
+                }
+            }
+        }
+        // shells on the neighboring triangles
+        for(const auto nfid : this->polygon().neighbor_faces_of(fid))
+        {
+            if(const auto shids = shells_.shells_on(nfid))
+            {
+                for(const auto shid : *shids)
+                {
+                    // check overlap with the bounding sphere of 2D shell
+                    // as an approximation
+                    const auto sh = this->shells_.get_shell(shid).second;
+                    const auto bs = sh.bounding_sphere();
+                    const auto dist = length(
+                            pbc.periodic_transpose(p.position(), bs.position()) -
+                            bs.position());
+                    if(dist <= multi_radius + bs.radius())
+                    {
+                        intruders.push_back(*sh.domain_id());
+                    }
+                }
+            }
+        }
     }
 
     if(intruders.empty())
@@ -181,9 +262,10 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
 //         std::cerr << "all done." << std::endl;
         return;
     }
-    assert(false);
 
     // XXX Currently all the domains are multi domains. merge all those multi domains.
+    // Later we need to burst domains and check if the resulting particle should
+    // be in Multi or form Single
 //     std::cerr << "intruder found. merge all domains" << std::endl;
 
     const auto host_id = intruders.back();
