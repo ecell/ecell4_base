@@ -6,6 +6,7 @@ set(CPP_FILES
     Logger.cpp
 )
 
+add_definitions(-DECELL4_NGFRD_LOG_DEBUG)
 add_library(ecell4-ngfrd STATIC ${CPP_FILES})
 target_link_libraries(ecell4-ngfrd INTERFACE ecell4-core greens_functions ${GSL_LIBRARIES} ${GSL_CBLAS_LIBRARIES})
 

@@ -180,15 +180,23 @@ private:
 #define ECELL4_NGFRD_CONCAT(x, y) ECELL4_NGFRD_CONCAT_AUX(x, y)
 #endif
 
-#ifndef ECELL4_NGFRD_LOG_FUNCTION
-#define ECELL4_NGFRD_LOG_FUNCTION()\
-    auto& l_o_g_g_e_r_ = ::ecell4::ngfrd::LoggerManager::get_logger();\
-    ::ecell4::ngfrd::Scope ECELL4_NGFRD_CONCAT(s_c_o_p_e_, __LINE__) (l_o_g_g_e_r_, ECELL4_NGFRD_LOG_FUNCTION_NAME, __FILE__ ":" ECELL4_NGFRD_STRINGIZE(__LINE__))\
-    /**/
-#endif
-
-#ifndef ECELL4_NGFRD_LOG
-#define ECELL4_NGFRD_LOG(...) l_o_g_g_e_r_.log(__VA_ARGS__)
+#ifdef ECELL4_NGFRD_LOG_DEBUG
+#  ifndef ECELL4_NGFRD_LOG_FUNCTION
+#    define ECELL4_NGFRD_LOG_FUNCTION()\
+         auto& l_o_g_g_e_r_ = ::ecell4::ngfrd::LoggerManager::get_logger();\
+         ::ecell4::ngfrd::Scope ECELL4_NGFRD_CONCAT(s_c_o_p_e_, __LINE__) (l_o_g_g_e_r_, ECELL4_NGFRD_LOG_FUNCTION_NAME, __FILE__ ":" ECELL4_NGFRD_STRINGIZE(__LINE__))\
+         /**/
+#  endif
+#  ifndef ECELL4_NGFRD_LOG
+#    define ECELL4_NGFRD_LOG(...) l_o_g_g_e_r_.log(__VA_ARGS__)
+#  endif
+#else // no LOG_DEBUG
+#  ifndef ECELL4_NGFRD_LOG_FUNCTION
+#    define ECELL4_NGFRD_LOG_FUNCTION() /**/
+#  endif
+#  ifndef ECELL4_NGFRD_LOG
+#    define ECELL4_NGFRD_LOG(...) /**/
+#  endif
 #endif
 
 #endif
