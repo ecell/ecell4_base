@@ -4,6 +4,9 @@
 #include <ecell4/core/type_name_of.hpp>
 #include <boost/circular_buffer.hpp>
 
+// to output those
+#include <boost/container/small_vector.hpp>
+
 #include <unordered_map>
 #include <ostream>
 #include <fstream>
@@ -28,6 +31,21 @@ operator<<(std::basic_ostream<charT, traits>& os, const std::vector<T, Alloc>& v
     {
         if(!is_front) {os << ", ";} os << v;
         is_front = false;
+    }
+    os << "]";
+    return os;
+}
+template<typename charT, typename traits,
+         typename T, std::size_t N, typename Alloc, typename Options>
+std::basic_ostream<charT, traits>&
+operator<<(std::basic_ostream<charT, traits>& os,
+           const boost::container::small_vector<T, N, Alloc, Options>& v)
+{
+    os << "\"boost::small_vector<" << utils::type_name_of<T>::value() << ", " << N << ">\":[";
+    for(std::size_t i=0; i<v.size(); ++i)
+    {
+        if(i != 0) {os << ", ";}
+        os << v.at(i);
     }
     os << "]";
     return os;
