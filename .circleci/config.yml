@@ -3,7 +3,7 @@ executors:
   default:
     working_directory: ~/circle
     docker:
-      - image: quay.io/ecell/manylinuxbase
+      - image: ghcr.io/ecell/image
     environment:
       ECELLVER: "2.1.0b2"
       BOOSTVER: "1.73.0"
