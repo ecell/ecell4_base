@@ -20,10 +20,15 @@ namespace ngfrd
 
 namespace logger_detail
 {
+template<typename T, typename Alloc>
+std::ostream& operator<<(std::ostream& os, const std::vector<T, Alloc>& v);
+template<typename T, std::size_t N, typename Alloc, typename Options>
+std::ostream& operator<<(std::ostream& os, const boost::container::small_vector<T, N, Alloc, Options>& v);
+template<typename T, typename U>
+std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& p);
 
-template<typename charT, typename traits, typename T, typename Alloc>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os, const std::vector<T, Alloc>& v)
+template<typename T, typename Alloc>
+std::ostream& operator<<(std::ostream& os, const std::vector<T, Alloc>& v)
 {
     os << "\"vector<" << utils::type_name_of<T>::value() << ">\":[";
     bool is_front = true;
@@ -35,10 +40,8 @@ operator<<(std::basic_ostream<charT, traits>& os, const std::vector<T, Alloc>& v
     os << "]";
     return os;
 }
-template<typename charT, typename traits,
-         typename T, std::size_t N, typename Alloc, typename Options>
-std::basic_ostream<charT, traits>&
-operator<<(std::basic_ostream<charT, traits>& os,
+template<typename T, std::size_t N, typename Alloc, typename Options>
+std::ostream& operator<<(std::ostream& os,
            const boost::container::small_vector<T, N, Alloc, Options>& v)
 {
     os << "\"boost::small_vector<" << utils::type_name_of<T>::value() << ", " << N << ">\":[";
@@ -48,6 +51,16 @@ operator<<(std::basic_ostream<charT, traits>& os,
         os << v.at(i);
     }
     os << "]";
+    return os;
+}
+
+template<typename T, typename U>
+std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& p)
+{
+    os << "\"std::pair<" << utils::type_name_of<T>::value() << ", "
+       << utils::type_name_of<U>::value() << ">\":{";
+    os << p.first << ", " << p.second;
+    os << "}";
     return os;
 }
 
