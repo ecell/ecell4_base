@@ -6,10 +6,10 @@
 
 namespace ecell4
 {
-namespace sgfrd
+namespace ngfrd
 {
 
-class Single
+class SingleDomain
 {
   public:
 
@@ -20,17 +20,17 @@ class Single
         Unknown,
     };
     using shell_id_type    = ShellID;
-    using particle_id_type = ParticleId;
+    using particle_id_type = ParticleID;
 
   public:
 
-    Single(): kind_(UNKNOWN), dt_(0.), begin_time_(0.){}
-    Single(const EventKind kind, const Real dt, const Real begin_time,
+    SingleDomain(): kind_(EventKind::Unknown), dt_(0.), begin_time_(0.){}
+    SingleDomain(const EventKind kind, const Real dt, const Real begin_time,
            const shell_id_type shid, const particle_id_type& pid)
         : kind_(kind), dt_(dt), begin_time_(begin_time),
           shell_id_(shid), particle_id_(pid)
     {}
-    ~Single() = default;
+    ~SingleDomain() = default;
 
     shell_id_type&       shell_id()       noexcept {return shell_id_;}
     shell_id_type const& shell_id() const noexcept {return shell_id_;}
@@ -45,8 +45,8 @@ class Single
     EventKind  eventkind() const {return kind_;}
     EventKind& eventkind()       {return kind_;}
 
-    constexpr std::size_t num_shells()   const static {return 1;}
-    constexpr std::size_t multiplicity() const static {return 1;}
+    constexpr std::size_t num_shells()   const noexcept {return 1;}
+    constexpr std::size_t multiplicity() const noexcept {return 1;}
 
   private:
 
@@ -56,7 +56,6 @@ class Single
     shell_id_type    shell_id_;
     particle_id_type particle_id_;
 };
-
 
 } // sgfrd
 } // ecell4
