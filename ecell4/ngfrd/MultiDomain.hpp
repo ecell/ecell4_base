@@ -31,15 +31,8 @@ class MultiDomain
     using reaction_log_type = std::pair<ReactionRule, ReactionInfo>;
     using reaction_log_container_type = std::vector<reaction_log_type>;
 
-    // To avoid an allocation and to gain memory locality, we use small_vector
-    // of Identifiers. Essentially Multi can contain arbitrary number of shells
-    // and particles, so we need to use small_vector instead of static_vector.
-    // We need to find the sweet spot between the risk of memory loss caused by
-    // too large statically allocated region in the small_vector and the benefit
-    // from avoiding allocation and locality cost. Now we chose 8, but this can
-    // be changed.
-    using shell_id_container_type =
-        boost::container::small_vector<ShellID, 8>;
+    using shell_container_type =
+        boost::container::small_vector<std::pair<ShellID, Shell>, 8>;
     using particle_id_container_type =
         boost::container::small_vector<ParticleID, 8>;
 
@@ -68,14 +61,16 @@ class MultiDomain
         this->particle_ids_.push_back(pid);
         return true;
     }
-    bool add_shell(const ShellID& sid)
+    bool add_shell(const std::pair<ShellID, Shell>& sidp)
     {
-        if(std::find(shell_ids_.begin(), shell_ids_.end(), sid) !=
-                     shell_ids_.end()) // found?
+        if(std::find_if(shells_.begin(), shells_.end(),
+                [&sidp](const std::pair<ShellID, Shell>& elem) -> bool {
+                    return elem.first == sidp.first;
+                }) != shells_.end()) // found?
         {
             return false;
         }
-        this->shell_ids_.push_back(sid);
+        this->shells_.push_back(std::move(sidp));
         return true;
     }
 
@@ -97,12 +92,12 @@ class MultiDomain
     Real& reaction_length()       noexcept {return this->reaction_length_;}
     Real  reaction_length() const noexcept {return this->reaction_length_;}
 
-    shell_id_container_type&          shell_ids()          noexcept {return shell_ids_;}
-    shell_id_container_type    const& shell_ids()    const noexcept {return shell_ids_;}
+    shell_container_type&             shells()             noexcept {return shells_;}
+    shell_container_type const&       shells()       const noexcept {return shells_;}
     particle_id_container_type&       particle_ids()       noexcept {return particle_ids_;}
     particle_id_container_type const& particle_ids() const noexcept {return particle_ids_;}
 
-    std::size_t num_shells()   const noexcept {return shell_ids_.size();}
+    std::size_t num_shells()   const noexcept {return shells_.size();}
     std::size_t multiplicity() const noexcept {return particle_ids_.size();}
 
     reaction_log_container_type const& last_reactions() const {return last_reactions_;}
@@ -270,7 +265,7 @@ class MultiDomain
     Real reaction_length_;
     Real reaction_length_factor_;
     std::size_t max_retry_;
-    shell_id_container_type     shell_ids_;
+    shell_container_type        shells_;
     particle_id_container_type  particle_ids_;
     reaction_log_container_type last_reactions_;
 };

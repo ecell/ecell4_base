@@ -33,8 +33,8 @@ public:
 
     BDPropagator(const Model& model, NGFRDWorld& world, NGFRDSimulator& sim,
         RandomNumberGenerator& rng, const Real& dt,
-        const std::size_t max_retry_count,
-        std::vector<ParticleID> particles, std::vector<ShellID> shells,
+        const std::size_t max_retry_count, std::vector<ParticleID> particles,
+        std::vector<std::pair<ShellID, Shell>> shells,
         std::vector<std::pair<ReactionRule, ReactionInfo>>& last_reactions)
         : model_(model), world_(world), sim_(sim), rng_(rng), dt_(dt),
           last_reactions_(last_reactions), particles_(particles),
@@ -213,7 +213,7 @@ private:
     std::vector<std::pair<ReactionRule, ReactionInfo>>& last_reactions_;
     std::vector<ParticleID> particles_; // resulting particles
     std::vector<ParticleID> queue_;
-    std::vector<ShellID>    shells_;
+    std::vector<std::pair<ShellID, Shell>> shells_;
     std::size_t rejected_move_count_;
     std::size_t max_retry_count_;
 };

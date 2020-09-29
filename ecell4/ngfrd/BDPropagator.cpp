@@ -849,9 +849,9 @@ bool BDPropagator::is_inside_of_shells_3D(
         const Real3& pos, const Real& radius) const
 {
     ShellDistanceCalculator dist_visitor(pos, world_.boundary());
-    for(const auto& shid : this->shells_)
+    for(const auto& sidp : this->shells_)
     {
-        const auto& sh = sim_.get_shell(shid);
+        const auto& sh = sidp.second;
         // check 3D shell only
         if(sh.is_spherical() || sh.is_cylindrical())
         {
@@ -869,9 +869,9 @@ bool BDPropagator::is_inside_of_shells_2D(
         const std::pair<Real3, FaceID>& pos, const Real& radius) const
 {
     const Polygon& polygon = world_.polygon();
-    for(const auto& shid : this->shells_)
+    for(const auto& sidp : this->shells_)
     {
-        const auto& sh = sim_.get_shell(shid);
+        const auto& sh = sidp.second;
         if(sh.is_circular())
         {
             const auto& circular = sh.as_circular();

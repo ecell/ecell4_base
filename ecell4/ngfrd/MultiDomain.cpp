@@ -6,8 +6,8 @@ namespace ecell4
 namespace ngfrd
 {
 
-
-void MultiDomain::step(const Model& model, NGFRDSimulator& sim, NGFRDWorld& world, const Real dt)
+void MultiDomain::step(
+    const Model& model, NGFRDSimulator& sim, NGFRDWorld& world, const Real dt)
 {
     assert(this->dt_              > 0.0);
     assert(this->reaction_length_ > 0.0);
@@ -15,13 +15,12 @@ void MultiDomain::step(const Model& model, NGFRDSimulator& sim, NGFRDWorld& worl
     this->last_reactions_.clear();
     this->kind_ = EventKind::None;
 
-    BDPropagator propagator(model, world, sim, *(world.rng()),
-            this->dt_, this->max_retry_,
-            std::vector<ParticleID>(particle_ids_.begin(), particle_ids_.end()),
-            std::vector<ShellID   >(shell_ids_   .begin(), shell_ids_   .end()),
-            last_reactions_);
+    BDPropagator propagator(
+        model, world, sim, *(world.rng()), this->dt_, this->max_retry_,
+        std::vector<ParticleID>(particle_ids_.begin(), particle_ids_.end()),
+        std::vector<std::pair<ShellID, Shell>>(shells_.begin(), shells_.end()),
+        last_reactions_);
 
-//     std::cerr << "MultiDomain::step: dt = " << dt_ << std::endl;
     while(propagator()) {}
 
     if(!last_reactions_.empty())

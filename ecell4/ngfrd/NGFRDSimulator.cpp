@@ -80,7 +80,7 @@ void NGFRDSimulator::form_domain_2D(
 
         MultiDomain dom(this->t());
         dom.add_particle(pid);
-        dom.add_shell(sid);
+        dom.add_shell(shells_.get_shell(sid));
         dom.determine_parameters(*(this->model()), *(this->world()));
 
         ECELL4_NGFRD_LOG("multi domain created ", did);
@@ -114,7 +114,7 @@ void NGFRDSimulator::form_domain_2D(
     assert(domains_.at(host_id).second.is_multi());
     auto& host = domains_.at(host_id).second.as_multi();
     host.add_particle(pid);
-    host.add_shell(sid);
+    host.add_shell(shells_.get_shell(sid));
     for(const auto& did : intruders)
     {
         const auto dom_iter = domains_.find(did);
@@ -128,10 +128,10 @@ void NGFRDSimulator::form_domain_2D(
         {
             host.add_particle(pid);
         }
-        for(const auto& sid : dom.shell_ids())
+        for(const auto& sidp : dom.shells())
         {
-            this->shells_.at(sid).second.domain_id() = host_id;
-            host.add_shell(sid);
+            this->shells_.at(sidp.first).second.domain_id() = host_id;
+            host.add_shell(sidp);
         }
         domains_.erase(dom_iter);
     }
@@ -244,7 +244,7 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
 
         MultiDomain dom(this->t());
         dom.add_particle(pid);
-        dom.add_shell(sid);
+        dom.add_shell(shells_.get_shell(sid));
         dom.determine_parameters(*(this->model()), *(this->world()));
 
         ECELL4_NGFRD_LOG("multi domain created ", did);
@@ -277,7 +277,7 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
     assert(domains_.at(host_id).second.is_multi());
     auto& host = domains_.at(host_id).second.as_multi();
     host.add_particle(pid);
-    host.add_shell(sid);
+    host.add_shell(shells_.get_shell(sid));
     for(const auto& did : intruders)
     {
         const auto dom_iter = domains_.find(did);
@@ -291,9 +291,9 @@ void NGFRDSimulator::form_domain_3D(const ParticleID& pid, const Particle& p)
         {
             host.add_particle(pid);
         }
-        for(const auto& sid : dom.shell_ids())
+        for(const auto& sidp : dom.shells())
         {
-            host.add_shell(sid);
+            host.add_shell(sidp);
         }
         domains_.erase(dom_iter);
     }
@@ -307,7 +307,7 @@ NGFRDSimulator::fire_multi(const DomainID& did, MultiDomain dom)
 {
     ECELL4_NGFRD_LOG_FUNCTION();
     ECELL4_NGFRD_LOG("firing multi: ", did);
-    ECELL4_NGFRD_LOG("included shells: ", dom.shell_ids());
+    ECELL4_NGFRD_LOG("included shells: ", dom.shells());
 
     dom.step(*(this->model_), *this, *(this->world_));
 
@@ -332,10 +332,10 @@ NGFRDSimulator::fire_multi(const DomainID& did, MultiDomain dom)
     // something happens. remove multi and assign domains for each particles.
 
     // remove shells
-    for(const auto& sid : dom.shell_ids())
+    for(const auto& sidp : dom.shells())
     {
-        ECELL4_NGFRD_LOG("removing shell: ", sid);
-        this->shells_.remove_shell(sid);
+        ECELL4_NGFRD_LOG("removing shell: ", sidp);
+        this->shells_.remove_shell(sidp.first);
     }
 
     boost::container::small_vector<std::pair<ParticleID, Particle>, 4> retval;

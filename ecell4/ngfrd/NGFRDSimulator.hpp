@@ -301,17 +301,17 @@ private:
     {
         ECELL4_NGFRD_LOG_FUNCTION();
         ECELL4_NGFRD_LOG("bursting multi: ", did);
-        ECELL4_NGFRD_LOG("included shells: ", dom.shell_ids());
+        ECELL4_NGFRD_LOG("included shells: ", dom.shells());
 
         // step until this->t()
         const auto dt = this->t() - dom.begin_time();
         dom.step(*(this->model_), *this, *(this->world_), dt);
 
         // remove shells
-        for(const auto& sid : dom.shell_ids())
+        for(const auto& sidp : dom.shells())
         {
-            ECELL4_NGFRD_LOG("removing shell: ", sid);
-            this->shells_.remove_shell(sid);
+            ECELL4_NGFRD_LOG("removing shell: ", sidp);
+            this->shells_.remove_shell(sidp.first);
         }
 
         boost::container::small_vector<std::pair<ParticleID, Particle>, 4> retval;
