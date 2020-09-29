@@ -174,7 +174,8 @@ public:
     Scope& operator=(const Scope&) = delete;
 
     Scope(Logger& logger, std::string name, std::string loc)
-        : logger_(logger), name_(std::move(name)), loc_(std::move(loc))
+        : logger_(logger), name_(std::move(name)),
+          loc_(loc.substr(loc.rfind('/')+1))
     {
         logger_.log("\"", this->name_, ":", this->loc_, "\":{");
         logger_.indent();
