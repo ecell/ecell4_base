@@ -189,12 +189,6 @@ public:
         return false;
     }
 
-    // XXX currently, BDPropagator calls this. This should be removed later
-    Shell get_shell(const ShellID& sid) const
-    {
-        return shells_.get_shell(sid).second;
-    }
-
 private:
 
     Domain const& get_domain(const DomainID& did) const {return domains_.at(did).second;}
