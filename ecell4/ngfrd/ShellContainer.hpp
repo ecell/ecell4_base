@@ -119,7 +119,7 @@ public:
             throw_exception<NotFound>("ngfrd::ShellContainer::remove_shell: "
                     "No such shell (", sid, ").");
         }
-        const auto& sh = rtree_.get(sid).second;
+        const auto sh = rtree_.get(sid).second;
         rtree_.erase(sid, sh);
 
         if(sh.is_circular())
