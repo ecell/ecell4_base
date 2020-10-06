@@ -478,26 +478,30 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
         return;
     }
 
+    const auto boundary = world_.boundary();
+
     // ------------------------------------------------------------------------
     // apply displacement. If it collides with a face, reject it.
 
     Real3 disp    = this->draw_3D_displacement(p);
     ECELL4_NGFRD_LOG("displacement = ", disp);
-    Real3 new_pos = world_.boundary().apply_boundary(p.position() + disp);
+    Real3 new_pos = boundary.apply_boundary(p.position() + disp);
     ECELL4_NGFRD_LOG("new position = ", new_pos);
 
     if(world_.has_overlapping_faces(new_pos, p.radius()))
     {
-        // collision detected. That means that no reaction happens here because
-        // there is no particle overlap.
+        ECELL4_NGFRD_LOG("collision between triangle and particle detected.");
         return ;
     }
+    ECELL4_NGFRD_LOG("Particle does not collide with any triangle.");
 
     if(not is_inside_of_shells_3D(new_pos, p.radius()))
     {
+        ECELL4_NGFRD_LOG("Particle sticks out of the domain.");
         // determine positions of particles in overlapping shells.
         sim_.determine_positions_3D(new_pos, p.radius());
     }
+    ECELL4_NGFRD_LOG("collecting overlapping particles");
     const auto overlapped = world_.list_particles_within_radius_3D(
             new_pos, p.radius(), /*ignore = */ pid);
 
@@ -505,19 +509,21 @@ void BDPropagator::propagate_3D_particle(const ParticleID& pid, Particle p)
     {
         case 0:
         {
-            // no overlap.
+            ECELL4_NGFRD_LOG("Particle does not overlap with any particle.");
             p.position() = new_pos;
             world_.update_particle_3D(pid, p);
             break;
         }
         case 1:
         {
+            ECELL4_NGFRD_LOG("Particle overlaps with a particle. try reaction");
             const auto& pp2 = overlapped.front().first;
             attempt_pair_reaction_3D(pid, p, pp2.first, pp2.second);
             break;
         }
-        case 2:
+        defaut:
         {
+            ECELL4_NGFRD_LOG("Particle overlaps with 2 or more particle.");
             this->rejected_move_count_ += 1;
             break;
         }
@@ -633,7 +639,7 @@ bool BDPropagator::attempt_1to2_reaction_3D(
             "reaction but both particle is immovable => ", rule.as_string());
     }
 
-    const auto& boundary = world_.boundary();
+    const auto boundary = world_.boundary();
 
     Real3 pos1_new(p.position());
     Real3 pos2_new(p.position());
@@ -803,7 +809,7 @@ bool BDPropagator::attempt_2to1_reaction_3D(
             "reaction ", rule.as_string(), ", but both particles are immovable.");
     }
 
-    const auto& boundary = world_.boundary();
+    const auto boundary = world_.boundary();
 
     // D1==0 -> p1, D2==0 -> p2
     const Real3 new_pos = boundary.apply_boundary(
@@ -848,7 +854,8 @@ bool BDPropagator::attempt_2to1_reaction_3D(
 bool BDPropagator::is_inside_of_shells_3D(
         const Real3& pos, const Real& radius) const
 {
-    ShellDistanceCalculator dist_visitor(pos, world_.boundary());
+    const auto boundary = world_.boundary();
+    ShellDistanceCalculator dist_visitor(pos, boundary);
     for(const auto& sidp : this->shells_)
     {
         const auto& sh = sidp.second;
