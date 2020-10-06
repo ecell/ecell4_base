@@ -234,7 +234,7 @@ struct ShellDistanceCalculator
     Boundary const* boundary;
 
     ShellDistanceCalculator(const Real3& p, const Boundary& b)
-        : pos(p), boundary(&b)
+        : pos(p), boundary(std::addressof(b))
     {}
 
     // if the position is inside of the sphere, returns a negative value.
