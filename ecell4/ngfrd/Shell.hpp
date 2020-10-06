@@ -156,8 +156,9 @@ public:
     ConicalShell const&     as_conical()     const {return boost::get<ConicalShell    >(storage_);}
     ConicalShell&           as_conical()           {return boost::get<ConicalShell    >(storage_);}
 
-    storage_type const& as_variant() const noexcept {return storage_;}
-    storage_type&       as_variant()       noexcept {return storage_;}
+    storage_type const& as_variant() const& noexcept {return storage_;}
+    storage_type&       as_variant() &      noexcept {return storage_;}
+    storage_type&&      as_variant() &&     noexcept {return static_cast<storage_type&&>(storage_);}
 
     Real3& position()
     {
