@@ -50,7 +50,7 @@ int main()
     {
         while(sim.next_event_time() <= i * dt)
         {
-            std::cerr << "t = " << world->t() << std::endl;
+            std::cout << "t = " << world->t() << std::endl;
             sim.step();
         }
         assert(sim.next_event_time() > i * dt);
