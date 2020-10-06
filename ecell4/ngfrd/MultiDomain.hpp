@@ -164,8 +164,8 @@ class MultiDomain
         Real D_max(0.0), radius_min(std::numeric_limits<Real>::max());
         for(const auto& pid : p3D)
         {
-            const auto& species = world.get_particle(pid).second.species();
-            const auto  molinfo = world.get_molecule_info(species);
+            const auto species = world.get_particle(pid).second.species();
+            const auto molinfo = world.get_molecule_info(species);
             D_max      = std::max(molinfo.D,      D_max);
             radius_min = std::min(molinfo.radius, radius_min);
         }
@@ -222,9 +222,9 @@ class MultiDomain
         for(const auto& pid : p2D)
         {
             ECELL4_NGFRD_LOG("fetching species");
-            const auto& species = world.get_particle(pid).second.species();
+            const auto species = world.get_particle(pid).second.species();
             ECELL4_NGFRD_LOG("fetching molinfo");
-            const auto  molinfo = world.get_molecule_info(species);
+            const auto molinfo = world.get_molecule_info(species);
             ECELL4_NGFRD_LOG("fetched");
             D_max = std::max(molinfo.D, D_max);
 
