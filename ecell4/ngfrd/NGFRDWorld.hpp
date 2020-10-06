@@ -12,6 +12,7 @@
 #include <ecell4/core/SerialIDGenerator.hpp>
 #include <ecell4/core/WorldInterface.hpp>
 #include <ecell4/ngfrd/PolygonContainer.hpp>
+#include <ecell4/ngfrd/Logger.hpp>
 
 namespace ecell4
 {
@@ -348,19 +349,29 @@ public:
 
     molecule_info_type get_molecule_info(const Species& sp) const
     {
+        ECELL4_NGFRD_LOG_FUNCTION();
+
         Real radius(0.0), D(0.0);
+        ECELL4_NGFRD_LOG("getting molinfo from species ", sp.serial());
+        ECELL4_NGFRD_LOG(sp.serial(), " has ", sp.list_attributes().size(), " attributes.");
+        for(const auto& kv : sp.list_attributes())
+        {
+            ECELL4_NGFRD_LOG("attribute ", kv.first, " found.");
+        }
 
         if (sp.has_attribute("radius") && sp.has_attribute("D"))
         {
+            ECELL4_NGFRD_LOG("species ", sp.serial(), " has r and D.");
             radius = sp.get_attribute_as<Real>("radius");
-            D = sp.get_attribute_as<Real>("D");
+            D      = sp.get_attribute_as<Real>("D");
         }
         else if (std::shared_ptr<Model> bound_model = lock_model())
         {
+            ECELL4_NGFRD_LOG("model bound");
             Species newsp(bound_model->apply_species_attributes(sp));
-            if (newsp.has_attribute("radius")
-                && newsp.has_attribute("D"))
+            if (newsp.has_attribute("radius") && newsp.has_attribute("D"))
             {
+                ECELL4_NGFRD_LOG("species ", newsp.serial(), " has r and D.");
                 radius = newsp.get_attribute_as<Real>("radius");
                 D = newsp.get_attribute_as<Real>("D");
             }
