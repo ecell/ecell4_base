@@ -38,7 +38,7 @@ class MultiDomain
 
   public:
 
-    MultiDomain(const Real begin_t,
+    explicit MultiDomain(const Real begin_t,
                 const Real dt_factor_3D = 1.0,
                 const Real dt_factor_2D = 0.01,
                 const Real rl_factor    = 0.1,
@@ -134,6 +134,7 @@ class MultiDomain
 
     Real determine_delta_t_3D(const Model& model, const NGFRDWorld& world)
     {
+        ECELL4_NGFRD_LOG_FUNCTION();
         // check birth events
         Real birth_prob = 0;
         for(const auto& rule : model.reaction_rules())
@@ -182,10 +183,11 @@ class MultiDomain
 
     Real determine_delta_t_2D(const Model& model, const NGFRDWorld& world)
     {
+        ECELL4_NGFRD_LOG_FUNCTION();
         // it assumes this->determine_reaction_length() has already been called
         assert(this->reaction_length_ > 0.0);
 
-        // check birth events
+        ECELL4_NGFRD_LOG("check birth events");
         Real birth_prob = 0;
         for(const auto& rule : model.reaction_rules())
         {
@@ -197,6 +199,7 @@ class MultiDomain
         }
         birth_prob *= world.volume();
 
+        ECELL4_NGFRD_LOG("find 2D particles");
         std::vector<ParticleID> p2D;
         for(const auto& pid : this->particle_ids())
         {
@@ -212,23 +215,27 @@ class MultiDomain
             return std::numeric_limits<Real>::infinity(); // anything is okay
         }
 
-        // find the maximum D in 2D particles
+        ECELL4_NGFRD_LOG("find the maximum D in 2D particles");
         std::vector<Species> sps;
         sps.reserve(p2D.size());
         Real D_max = -std::numeric_limits<Real>::max();
         for(const auto& pid : p2D)
         {
+            ECELL4_NGFRD_LOG("fetching species");
             const auto& species = world.get_particle(pid).second.species();
+            ECELL4_NGFRD_LOG("fetching molinfo");
             const auto  molinfo = world.get_molecule_info(species);
+            ECELL4_NGFRD_LOG("fetched");
             D_max = std::max(molinfo.D, D_max);
 
+            ECELL4_NGFRD_LOG("cache species");
             if(std::find(sps.begin(), sps.end(), species) != sps.end())
             {
                 sps.push_back(species);
             }
         }
 
-        // find the maximum reaction rate in 2 particle reaciton
+        ECELL4_NGFRD_LOG("find the maximum reaction rate in 2 particle reaciton");
         Real k_max = 0.0;
         for(std::size_t i=0; i<sps.size(); ++i)
         {
