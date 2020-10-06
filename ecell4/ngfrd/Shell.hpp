@@ -134,6 +134,12 @@ public:
     template<typename S>
     Shell(S&& s, const DomainID& did): did_(did), storage_(std::forward<S>(s)) {}
 
+    Shell(const Shell& other) = default;
+    Shell(Shell&& other)      = default;
+    Shell& operator=(const Shell& other) = default;
+    Shell& operator=(Shell&& other)      = default;
+    ~Shell() = default;
+
     ShellKind kind() const noexcept {return ShellKind(storage_.which());}
 
     bool is_spherical  () const noexcept {return storage_.which() == 0;}
