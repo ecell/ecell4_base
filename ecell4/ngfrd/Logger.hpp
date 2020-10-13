@@ -178,6 +178,13 @@ public:
         : logger_(logger), name_(std::move(name)),
           loc_(loc.substr(loc.rfind('/')+1))
     {
+        // remove template typenames (e.g. [with T = int]) from the name
+        // because it often become too long to read
+        const auto offset = name_.find('[');
+        if(offset != std::string::npos)
+        {
+            name_.erase(name_.begin() + offset, name_.end());
+        }
         logger_.log("\"", this->name_, ":", this->loc_, "\":{");
         logger_.indent();
     }
