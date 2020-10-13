@@ -59,7 +59,7 @@ public:
     {
         AABB operator()(const Shell& sh, const Real margin) const noexcept
         {
-            return visit(ShellAABBGetterVisitor(margin), sh);
+            return boost::apply_visitor(ShellAABBGetterVisitor(margin), sh.as_variant());
         }
     };
 
