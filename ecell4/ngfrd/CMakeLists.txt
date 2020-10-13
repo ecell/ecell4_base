@@ -3,7 +3,6 @@ set(CPP_FILES
     BDPropagator.cpp
     MultiDomain.cpp
     NGFRDSimulator.cpp
-    Logger.cpp
 )
 
 add_definitions(-DECELL4_NGFRD_LOG_DEBUG)
