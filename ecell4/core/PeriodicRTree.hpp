@@ -11,6 +11,7 @@
 #include <boost/variant.hpp>
 #include <utility>
 #include <vector>
+#include <array>
 #include <limits>
 #include <sstream>
 #include <algorithm>

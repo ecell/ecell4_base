@@ -3,6 +3,7 @@
 
 #include <set>
 #include <boost/multi_array.hpp>
+#include <array>
 
 #include "ParticleSpace.hpp"
 
