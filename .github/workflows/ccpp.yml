@@ -63,10 +63,17 @@ jobs:
         submodules: true
 
     - name: Install dependencies
-      run: brew update && brew upgrade && brew install boost gsl hdf5 cmake python
+      run: |
+        brew update
+        brew upgrade
+        brew install boost gsl hdf5@1.10 cmake python
 
     - name: Build and Install ecell4_base
-      run: /usr/local/bin/python3 setup.py install
+      run: |
+        export PATH="/usr/local/opt/hdf5@1.10/bin:${PATH}"
+        /usr/local/bin/python3 setup.py install
 
     - name: Test ecell4_base
-      run: /usr/local/bin/python3 setup.py test
+      run: |
+        export PATH="/usr/local/opt/hdf5@1.10/bin:${PATH}"
+        /usr/local/bin/python3 setup.py test
