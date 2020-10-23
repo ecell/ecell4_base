@@ -29,7 +29,9 @@ jobs:
   - script: echo hello from macOS 10.15
   - bash: |
       git submodule init && git submodule update
-      brew update && brew install boost gsl hdf5 cmake python
+      brew update
+      brew install boost gsl hdf5@1.10 cmake python
+      export PATH="/usr/local/opt/hdf5@1.10/bin:${PATH}"
       /usr/local/bin/python3 setup.py install
       /usr/local/bin/python3 setup.py test
 - job: macOS1014
@@ -39,6 +41,8 @@ jobs:
   - script: echo hello from macOS 10.14
   - bash: |
       git submodule init && git submodule update
-      brew update && brew install boost gsl hdf5 cmake python
+      brew update
+      brew install boost gsl hdf5 cmake python
+      export PATH="/usr/local/opt/hdf5@1.10/bin:${PATH}"
       /usr/local/bin/python3 setup.py install
       /usr/local/bin/python3 setup.py test
