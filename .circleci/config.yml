@@ -14,7 +14,7 @@ jobs:
     parameters:
       pyver:
         type: enum
-        enum: ["cp35-cp35m", "cp36-cp36m", "cp37-cp37m", "cp38-cp38"]
+        enum: ["cp36-cp36m", "cp37-cp37m", "cp38-cp38"]
     steps:
       - setup_remote_docker
       - checkout
@@ -46,9 +46,6 @@ workflows:
   version: 2
   build_wheels:
     jobs:
-      - build:
-          name: build_py35
-          pyver: cp35-cp35m
       - build:
           name: build_py36
           pyver: cp36-cp36m
