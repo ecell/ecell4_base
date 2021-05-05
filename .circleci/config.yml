@@ -25,7 +25,7 @@ jobs:
           name: Install Dependencies
           command: |
             set -x
-            curl -L -o $BOOSTFILE.tar.bz2 https://dl.bintray.com/boostorg/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
+            curl -L -o $BOOSTFILE.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/$BOOSTVER/source/$BOOSTFILE.tar.bz2
             tar xf $BOOSTFILE.tar.bz2
             cd ~/circle
       - run:
