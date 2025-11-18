@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
-
-project(ecell4)
+cmake_minimum_required(VERSION 3.14)
+project(ecell4 VERSION 4.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -51,12 +50,27 @@ else()
 endif()
 
 find_package(GSL REQUIRED)
-include_directories({${GSL_INCLUDE_DIRS})
+include_directories(${GSL_INCLUDE_DIRS})
 
-find_package(pybind11)
+# Robust pybind11 handling: use installed pybind11 if available, otherwise fetch it.
+include(FetchContent)
+find_package(pybind11 CONFIG QUIET)
 if(NOT pybind11_FOUND)
-    add_subdirectory(pybind11)
+  message(STATUS "pybind11 not found by find_package; fetching pybind11 with FetchContent")
+  FetchContent_Declare(
+    pybind11
+    GIT_REPOSITORY https://github.com/pybind/pybind11.git
+    # Pin a known stable tag; adjust as needed.
+    GIT_TAG v2.11.0
+  )
+  FetchContent_MakeAvailable(pybind11)
 endif()
 
-add_subdirectory(greens_functions)
+# Only add subdirectories if they exist, to avoid configure-time failure for packaging contexts.
+if(EXISTS "${CMAKE_SOURCE_DIR}/greens_functions/CMakeLists.txt")
+  add_subdirectory(greens_functions)
+else()
+  message(STATUS "Skipping greens_functions (no CMakeLists.txt found)")
+endif()
+
 add_subdirectory(ecell4)
