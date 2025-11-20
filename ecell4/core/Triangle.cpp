@@ -1,4 +1,5 @@
 #include "Triangle.hpp"
+#include <cstdint>
 
 namespace ecell4
 {
