@@ -1,8 +1,0 @@
-# Install system library
-[tool.cibuildwheel.linux]
-# Run multiple commands using an array
-before-all = [
-  "yum install hdf5-devel -y",
-  "yum install boost-devel -y",
-  "yum install gsl-devel -y",
-]
