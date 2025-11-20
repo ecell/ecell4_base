@@ -11,3 +11,4 @@ CMakeFiles
 *.so
 ecell4/*/tests/*.h5
 ecell4/*/tests/*_test
+_codeql_detected_source_root
