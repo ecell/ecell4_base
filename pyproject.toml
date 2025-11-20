@@ -1,6 +1,13 @@
 # Install system library
-[tool.cibuildwheel.linux]
+[tool.cibuildwheel.macos]
 # Run multiple commands using an array
+before-all = [
+  "brew install hdf5",
+  "brew install boost",
+  "brew install gsl",
+]
+
+[tool.cibuildwheel.linux]
 before-all = [
   "yum install hdf5-devel -y",
   "yum install boost-devel -y",
