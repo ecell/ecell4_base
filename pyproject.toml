@@ -1,0 +1,23 @@
+# Install system library
+[tool.cibuildwheel.macos]
+# Run multiple commands using an array
+before-all = [
+  "brew install hdf5",
+  "brew install boost",
+  "brew install gsl",
+]
+
+[tool.cibuildwheel.linux]
+before-all = [
+  "yum install hdf5-devel -y",
+  "yum install boost-devel -y",
+  "yum install gsl-devel -y",
+]
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = [
+  "apk add gsl-dev",
+  "apk add boost-dev",
+  "apk add hdf5-dev",
+]
