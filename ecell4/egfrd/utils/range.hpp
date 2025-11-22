@@ -15,14 +15,19 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/iterator/filter_iterator.hpp>
 
+#include <iterator>
+
 namespace ecell4
 {
 namespace egfrd
 {
 
 template<typename Trange_>
-struct range_iterator_category
-    : boost::BOOST_ITERATOR_CATEGORY<typename boost::range_iterator<Trange_>::type> {};
+// struct range_iterator_category
+//     : boost::BOOST_ITERATOR_CATEGORY<typename boost::range_iterator<Trange_>::type> {};
+
+// Replace BOOST_ITERATOR_CATEGORY usages with:
+using iterator_category = typename std::iterator_traits<typename boost::range_iterator<Trange_>::type>::iterator_category;
 
 template<typename Trange_, typename Ticat_>
 struct check_range_iterator_category
