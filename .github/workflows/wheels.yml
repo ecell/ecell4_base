@@ -10,7 +10,7 @@ jobs:
       contents: read
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [macos-latest]
 
     steps:
       - uses: actions/checkout@v5
