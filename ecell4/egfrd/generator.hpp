@@ -81,7 +81,7 @@ template<typename Trange_,
          bool Bra_ =
             std::is_convertible<
                 typename boost::iterator_category_to_traversal<
-                    typename boost::BOOST_ITERATOR_CATEGORY<Titer_>::type
+                    typename std::iterator_traits<Titer_>::iterator_category
                     >::type,
                 boost::random_access_traversal_tag>::value>
 class range_generator: public abstract_limited_generator<Tresult_>
