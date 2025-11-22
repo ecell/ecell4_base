@@ -33,7 +33,7 @@ template<typename Trange_, typename Ticat_>
 struct check_range_iterator_category
     : std::is_convertible<
         typename boost::iterator_category_to_traversal<
-            typename range_iterator_category<Trange_>::type >::type,
+            typename boost::iterator_traversal<typename boost::range_iterator<Trange_>::type>::type >::type,
         typename boost::iterator_category_to_traversal<Ticat_>::type > {};
 
 template<typename Trange_>
