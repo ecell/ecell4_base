@@ -23,10 +23,6 @@ namespace egfrd
 {
 
 template<typename Trange_>
-// struct range_iterator_category
-//     : boost::BOOST_ITERATOR_CATEGORY<typename boost::range_iterator<Trange_>::type> {};
-
-// Replace BOOST_ITERATOR_CATEGORY usages with:
 using iterator_category = typename std::iterator_traits<typename boost::range_iterator<Trange_>::type>::iterator_category;
 
 template<typename Trange_, typename Ticat_>
