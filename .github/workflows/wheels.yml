@@ -39,7 +39,7 @@ jobs:
           CIBW_SKIP: "*-musllinux* *-win32"  # Skip 32-bit Windows
           CIBW_BEFORE_ALL_WINDOWS: >
             C:\vcpkg\bootstrap-vcpkg.bat &&
-            C:\vcpkg\vcpkg install hdf5:x64-windows &&
+            C:\vcpkg\vcpkg install hdf5:x64-windows boost:x64-windows gsl:x64-windows &&
             C:\vcpkg\vcpkg integrate install
 
           CIBW_ENVIRONMENT_WINDOWS: >
