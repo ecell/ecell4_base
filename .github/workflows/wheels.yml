@@ -25,25 +25,10 @@ jobs:
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==3.3.0
 
-      - name: Install vcpkg and HDF5
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git
-          .\vcpkg\bootstrap-vcpkg.bat
-          .\vcpkg\vcpkg install hdf5
-
-      - name: Set VCPKG_ROOT and HDF5_DIR
-        run: |
-          echo "VCPKG_ROOT=D:\a\_temp\vcpkg" >> $GITHUB_ENV
-          echo "HDF5_DIR=D:\a\_temp\vcpkg\installed\x64-windows\share\hdf5" >> $GITHUB_ENV
-
       - name: Build wheels
-        run: cibuildwheel --platform windows
+        run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: "cp312-win_amd64"
-          # CIBW_BEFORE_BUILD_WINDOWS: >-
-          #   if not exist C:\vcpkg git clone https://github.com/microsoft/vcpkg.git C:\vcpkg &&
-          #   C:\vcpkg\bootstrap-vcpkg.bat &&
-          #   C:\vcpkg\vcpkg.exe install hdf5
+          MACOSX_DEPLOYMENT_TARGET: "14.0"
         # to supply options, put them in 'env', like:
         # env:
         #   CIBW_SOME_OPTION: value

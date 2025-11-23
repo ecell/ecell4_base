@@ -26,7 +26,7 @@ else()
 endif()
 
 message(STATUS "Looking for HDF5")
-find_package(HDF5 1.10 COMPONENTS C CXX HL REQUIRED)
+find_package(HDF5 1.10 COMPONENTS C CXX HL CONFIG REQUIRED)
 if (HDF5_FOUND)
   message(STATUS "HDF5 was found ... ${HDF5_VERSION}")
   include_directories(${HDF5_INCLUDE_DIRS})

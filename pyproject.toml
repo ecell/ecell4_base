@@ -1,4 +1,20 @@
 # Install system library
+[tool.cibuildwheel.windows]
+before-build-windows = [
+    "if not exist C:\\vcpkg git clone https://github.com/microsoft/vcpkg.git C:\\vcpkg",
+    "C:\\vcpkg\\bootstrap-vcpkg.bat",
+
+    "C:\\vcpkg\\vcpkg.exe install hdf5:x64-windows",
+
+    "setx VCPKG_ROOT C:\\vcpkg",
+    "setx CMAKE_TOOLCHAIN_FILE C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+]
+
+environment-windows = {
+    VCPKG_ROOT = "C:\\vcpkg",
+    CMAKE_TOOLCHAIN_FILE = "C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
+}
+
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
 before-all = [
