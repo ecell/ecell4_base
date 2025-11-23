@@ -31,6 +31,11 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
           .\vcpkg\vcpkg install hdf5
 
+      - name: Set VCPKG_ROOT and HDF5_DIR
+        run: |
+          echo "VCPKG_ROOT=D:\a\_temp\vcpkg" >> $GITHUB_ENV
+          echo "HDF5_DIR=D:\a\_temp\vcpkg\installed\x64-windows\share\hdf5" >> $GITHUB_ENV
+
       - name: Build wheels
         run: cibuildwheel --platform windows
         env:
