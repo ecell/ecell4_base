@@ -19,11 +19,6 @@ target_link_libraries(ecell4-core PRIVATE
     ${GSL_CBLAS_LIBRARIES}
 )
 
-target_link_libraries(ecell4-core PRIVATE
-      hdf5::hdf5
-      hdf5::hdf5_hl
-)
-
 target_include_directories(ecell4-core PRIVATE
     ${HDF5_INCLUDE_DIRS}
 )
