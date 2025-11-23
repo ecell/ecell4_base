@@ -31,10 +31,6 @@ jobs:
           .\vcpkg\bootstrap-vcpkg.bat
         shell: pwsh
 
-      - name: Set VCPKG_ROOT
-        run: echo 'VCPKG_ROOT=${{ github.workspace }}\vcpkg' >> $env:GITHUB_ENV
-        shell: pwsh
-
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
