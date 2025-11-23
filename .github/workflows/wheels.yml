@@ -44,7 +44,8 @@ jobs:
 
           CIBW_ENVIRONMENT_WINDOWS: >
             CMAKE_TOOLCHAIN_FILE="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-            HDF5_DIR="C:/vcpkg/installed/x64-windows"
+            HDF5_ROOT="C:/vcpkg/installed/x64-windows"
+            HDF5_DIR="C:/vcpkg/installed/x64-windows/share/hdf5"
             GSL_ROOT_DIR="C:/vcpkg/installed/x64-windows"
             BOOST_ROOT="C:/vcpkg/installed/x64-windows"
                   
