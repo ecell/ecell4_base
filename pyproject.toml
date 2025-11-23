@@ -7,7 +7,6 @@ before-all = [
     "setx VCPKG_ROOT C:\\vcpkg",
     "setx CMAKE_TOOLCHAIN_FILE C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"
 ]
-environment = { VCPKG_ROOT = "C:\\vcpkg", CMAKE_TOOLCHAIN_FILE = "C:\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake" }
 
 [tool.cibuildwheel.macos]
 # Run multiple commands using an array
