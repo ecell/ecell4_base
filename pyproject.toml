@@ -1,6 +1,6 @@
 # Install system library
 [tool.cibuildwheel.windows]
-before-build-windows = [
+before-all = [
     "if not exist C:\\vcpkg git clone https://github.com/microsoft/vcpkg.git C:\\vcpkg",
     "C:\\vcpkg\\bootstrap-vcpkg.bat",
     "C:\\vcpkg\\vcpkg.exe install hdf5:x64-windows",
