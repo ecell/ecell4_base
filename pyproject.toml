@@ -4,6 +4,7 @@
 before-all = [
   "brew install hdf5",
   "brew install boost",
+  "brew install cmake",
   "brew install gsl",
 ]
 
