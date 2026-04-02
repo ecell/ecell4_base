@@ -15,6 +15,12 @@ before-all = [
   "yum install gsl-devel -y",
 ]
 
+[tool.cibuildwheel.windows]
+before-all = "vcpkg install --triplet x64-windows"
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair --add-path {project}/vcpkg_installed/x64-windows/bin -w {dest_dir} {wheel}"
+config-settings = { "--build-option" = "--plat-name=win_amd64" }
+
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = [

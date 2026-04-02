@@ -1,0 +1,13 @@
+{
+  "name": "ecell4-base",
+  "version": "2.1.2",
+  "builtin-baseline": "fc3be1ebea7eaeb3071fe716ac65713af1f3a146",
+  "dependencies": [
+    {
+      "name": "hdf5",
+      "features": ["cpp"]
+    },
+    "boost",
+    "gsl"
+  ]
+}

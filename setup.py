@@ -65,14 +65,22 @@ class CMakeBuild(build_ext):
             build_args += ['--', '/m']
         cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
 
+        env = os.environ.copy()
+
+        # Auto-detect vcpkg installed packages relative to source directory
         if platform.system() == "Windows":
-            env = os.environ.copy()
+            vcpkg_prefix = os.path.join(ext.sourcedir, 'vcpkg_installed', 'x64-windows')
+            if os.path.isdir(vcpkg_prefix):
+                cmake_args += ['-DCMAKE_PREFIX_PATH=' + vcpkg_prefix]
+                vcpkg_bin = os.path.join(vcpkg_prefix, 'bin')
+                env['PATH'] = vcpkg_bin + os.pathsep + env.get('PATH', '')
+
+        if platform.system() == "Windows":
             env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\" -I {}'.format(
                     env.get('CXXFLAGS', ''),
                     self.distribution.get_version(),
                     sysconfig.get_path('include'))
         else:
-            env = os.environ.copy()
             env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\" -isystem {}'.format(
                     env.get('CXXFLAGS', ''),
                     self.distribution.get_version(),
@@ -81,7 +89,7 @@ class CMakeBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp, env=env)
 
 
 class CustomTestCommand(test):
