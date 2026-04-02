@@ -16,6 +16,13 @@ jobs:
           submodules: true
           persist-credentials: false
 
+      - name: Set up vcpkg (Windows)
+        if: runner.os == 'Windows'
+        uses: lukka/run-vcpkg@v11
+        with:
+          # Pin to a known-good vcpkg commit/tag
+          vcpkgGitCommitId: 'fc3be1ebea7eaeb3071fe716ac65713af1f3a146'
+
       # Used to host cibuildwheel
       - uses: actions/setup-python@v5
 
