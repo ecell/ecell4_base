@@ -13,3 +13,6 @@ ecell4/*/tests/*.h5
 ecell4/*/tests/*_test
 dist/
 ecell4_base.egg-info/
+vcpkg_installed/
+wheelhouse/
+
